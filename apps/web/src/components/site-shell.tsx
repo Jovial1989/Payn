@@ -1,10 +1,11 @@
+import type { Route } from "next";
 import Link from "next/link";
 
 const categories = [
-  { href: "/loans", label: "Loans" },
-  { href: "/cards", label: "Cards" },
-  { href: "/transfers", label: "Transfers" },
-  { href: "/exchange", label: "Exchange" },
+  { href: "/loans" as Route, label: "Loans" },
+  { href: "/cards" as Route, label: "Cards" },
+  { href: "/transfers" as Route, label: "Transfers" },
+  { href: "/exchange" as Route, label: "Exchange" },
 ];
 
 export function SiteShell({
@@ -45,4 +46,3 @@ export function SiteShell({
     </div>
   );
 }
-

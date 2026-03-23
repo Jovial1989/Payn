@@ -1,23 +1,24 @@
+import type { Route } from "next";
 import Link from "next/link";
 
 const intents = [
   {
-    href: "/loans",
+    href: "/loans" as Route,
     title: "Get a loan",
     description: "Personal loans, refinancing, and country-aware eligibility discovery.",
   },
   {
-    href: "/cards",
+    href: "/cards" as Route,
     title: "Find a card",
     description: "Credit card comparison with pricing, rewards, and fee transparency.",
   },
   {
-    href: "/transfers",
+    href: "/transfers" as Route,
     title: "Send money",
     description: "Cross-border transfer providers with speed, fee, and corridor coverage.",
   },
   {
-    href: "/exchange",
+    href: "/exchange" as Route,
     title: "Exchange currency",
     description: "FX providers, spread visibility, and trust-led partner selection.",
   },
@@ -49,4 +50,3 @@ export function HomePage() {
     </div>
   );
 }
-
