@@ -19,3 +19,4 @@ apps/mobile/.metadata
 backend/bin
 backend/.env
 
+.vercel
