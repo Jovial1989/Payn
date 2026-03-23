@@ -1,46 +1,43 @@
 import type { Route } from "next";
-import Link from "next/link";
-
-const categories = [
-  { href: "/loans" as Route, label: "Loans" },
-  { href: "/cards" as Route, label: "Cards" },
-  { href: "/transfers" as Route, label: "Transfers" },
-  { href: "/exchange" as Route, label: "Exchange" },
-];
+import { Header } from "@/components/header";
+import { SectionContainer } from "@/components/section-container";
+import { Tag } from "@/components/tag";
 
 export function SiteShell({
   title,
   eyebrow,
   description,
   children,
+  activeHref,
+  heroTags = [],
 }: {
   title: string;
   eyebrow: string;
   description: string;
   children: React.ReactNode;
+  activeHref?: Route;
+  heroTags?: string[];
 }) {
   return (
-    <div className="min-h-screen bg-transparent">
-      <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-xl font-semibold tracking-[0.18em] text-ink uppercase">
-            Payn
-          </Link>
-          <nav className="flex gap-6 text-sm text-muted">
-            {categories.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-ink">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-10">
-        <section className="rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(25,195,125,0.16),transparent_42%),rgba(14,31,25,0.9)] p-8 shadow-glow">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-accent">{eyebrow}</p>
-          <h1 className="max-w-3xl text-4xl font-semibold text-ink">{title}</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-muted">{description}</p>
-        </section>
+    <div className="min-h-screen bg-bg">
+      <Header activeHref={activeHref} />
+      <main className="mx-auto flex max-w-[1160px] flex-col gap-6 px-5 py-8 lg:px-8 lg:py-10">
+        <SectionContainer padding="lg">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
+          <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.03em] text-ink sm:text-5xl">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-muted">{description}</p>
+          {heroTags.length > 0 ? (
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              {heroTags.map((tag) => (
+                <Tag key={tag} tone="muted">
+                  {tag}
+                </Tag>
+              ))}
+            </div>
+          ) : null}
+        </SectionContainer>
         {children}
       </main>
     </div>

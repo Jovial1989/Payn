@@ -8,19 +8,20 @@ export default async function CardsPage() {
 
   return (
     <SiteShell
+      activeHref="/cards"
       eyebrow="Credit cards marketplace"
-      title="Discover credit cards with fee visibility and partner transparency."
-      description="This route is ready for future comparison methodology, reward-focused ranking signals, and trusted editorial content blocks."
+      title="Compare cards with fee visibility and clearer provider details"
+      description="The same marketplace system can be extended to cards with pricing, rewards, and key product terms surfaced more clearly."
+      heroTags={["Fee visibility", "Transparent ranking", "Updated regularly"]}
     >
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <FilterPanel category="card offers" />
+        <FilterPanel category="cards" />
         <section className="grid gap-4">
-          {offers.map((offer) => (
-            <OfferCard key={offer.id} offer={offer} />
+          {offers.map((offer, index) => (
+            <OfferCard key={offer.id} offer={offer} rank={index + 1} />
           ))}
         </section>
       </div>
     </SiteShell>
   );
 }
-

@@ -1,52 +1,72 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { SectionContainer } from "@/components/section-container";
+import { Tag } from "@/components/tag";
 
 const intents = [
   {
     href: "/loans" as Route,
-    title: "Get a loan",
-    description: "Personal loans, refinancing, and country-aware eligibility discovery.",
+    title: "Loans",
+    description: "Compare personal loans with transparent ranking, borrowing ranges, and application details.",
   },
   {
     href: "/cards" as Route,
-    title: "Find a card",
-    description: "Credit card comparison with pricing, rewards, and fee transparency.",
+    title: "Cards",
+    description: "Review fees, credit limits, and card features without burying the important terms.",
   },
   {
     href: "/transfers" as Route,
-    title: "Send money",
-    description: "Cross-border transfer providers with speed, fee, and corridor coverage.",
+    title: "Transfers",
+    description: "Compare money transfer providers on speed, payout method, and corridor coverage.",
   },
   {
     href: "/exchange" as Route,
-    title: "Exchange currency",
-    description: "FX providers, spread visibility, and trust-led partner selection.",
+    title: "Exchange",
+    description: "See currency exchange options with spread visibility and route-aware comparison.",
   },
+];
+
+const principles = [
+  "Independent comparison",
+  "Transparent ranking logic",
+  "Commission disclosed when applicable",
 ];
 
 export function HomePage() {
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_320px]">
       <section className="grid gap-4 md:grid-cols-2">
         {intents.map((intent) => (
-          <Link
+          <SectionContainer
             key={intent.href}
+            as={Link}
             href={intent.href}
-            className="rounded-3xl border border-white/10 bg-panel p-6 transition hover:border-accent/40 hover:bg-panel-strong"
+            className="transition-colors hover:bg-panel-strong"
           >
-            <h2 className="text-xl font-semibold text-ink">{intent.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-muted">{intent.description}</p>
-          </Link>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Marketplace</p>
+            <h2 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-ink">{intent.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">{intent.description}</p>
+          </SectionContainer>
         ))}
       </section>
-      <section className="rounded-3xl border border-white/10 bg-panel p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Trust layer</p>
-        <h2 className="mt-4 text-2xl font-semibold text-ink">Editorial discovery, not payout spam.</h2>
-        <p className="mt-4 text-sm leading-6 text-muted">
-          Payn is structured for explainable ranking, affiliate disclosures, and future lead-routing
-          without moving business rules into the client.
+
+      <SectionContainer className="h-fit">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Why Payn</p>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-ink">
+          Financial comparison designed to be readable and trustworthy.
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Payn focuses on ranking clarity, visible disclosures, and product information people can
+          use before they leave for a provider site.
         </p>
-      </section>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {principles.map((principle) => (
+            <Tag key={principle} tone="muted">
+              {principle}
+            </Tag>
+          ))}
+        </div>
+      </SectionContainer>
     </div>
   );
 }

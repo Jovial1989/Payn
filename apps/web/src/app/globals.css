@@ -3,26 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --bg: #04100c;
-  --surface: #07130f;
-  --panel: #0e1f19;
-  --panel-strong: #132921;
-  --accent: #19c37d;
-  --accent-soft: rgba(25, 195, 125, 0.16);
-  --text: #ecf8f2;
-  --muted: #96b5a7;
-  --border: rgba(150, 181, 167, 0.16);
+  color-scheme: dark;
+  --bg: #050b09;
+  --surface: #0b1a14;
+  --panel: #0b1a14;
+  --panel-strong: #0f241b;
+  --primary: #2fa36b;
+  --primary-dark: #1f7a4f;
+  --accent: #43c37f;
+  --text: #e6f4ee;
+  --muted: #a8c5b8;
+  --border: rgba(47, 163, 107, 0.2);
 }
 
 html {
-  background: radial-gradient(circle at top, rgba(25, 195, 125, 0.12), transparent 36%), var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
 body {
   min-height: 100vh;
-  background: transparent;
+  background: var(--bg);
   color: var(--text);
+  font-feature-settings: "ss01" on, "cv01" on;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -34,3 +38,7 @@ a {
   border-color: var(--border);
 }
 
+::selection {
+  background: rgba(67, 195, 127, 0.22);
+  color: var(--text);
+}
