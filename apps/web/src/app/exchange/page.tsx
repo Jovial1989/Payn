@@ -1,45 +1,37 @@
 import { FilterPanel } from "@/components/filter-panel";
+import { OfferCard } from "@/components/offer-card";
 import { SiteShell } from "@/components/site-shell";
+import { Tag } from "@/components/tag";
+import { listCategoryOffers } from "@/server/catalog/catalog-service";
 
-export default function ExchangePage() {
+export default async function ExchangePage() {
+  const offers = await listCategoryOffers("exchange");
+  const markets = new Set(offers.flatMap((offer) => offer.countryCodes));
+
   return (
     <SiteShell
       activeHref="/exchange"
       eyebrow="Currency Exchange Marketplace"
-      title="FX discovery without burying spreads and fees."
-      description="Pair-aware product data, spread visibility, and clearer pricing notes once live providers are connected."
-      heroTags={["Pair-aware", "Spread visibility", "Execution windows"]}
+      title="FX providers with visible spreads, supported pairs, and transparent pricing."
+      description={`${offers.length} exchange services compared on spread, minimum amounts, and currency pair coverage across ${markets.size} markets.`}
+      heroTags={["Spread visibility", "Multi-currency", "Real-time comparison"]}
     >
       <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
         <FilterPanel category="exchange" />
         <section className="grid gap-4">
-          <div className="relative overflow-hidden rounded-2xl border border-line bg-bg-elevated p-8">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-[200px] w-[200px] rounded-full bg-primary opacity-[0.04] blur-[60px]" />
-            <div className="relative">
-              <p className="text-caption uppercase tracking-widest text-primary">Coming soon</p>
-              <h2 className="mt-3 text-h2 text-ink">
-                Pair-level pricing modules and educational content.
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-                The route is prepared for spread-led ranking, execution windows, and visible pricing
-                mechanics instead of hiding FX economics behind generic product cards.
-              </p>
+          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-bg-elevated p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-ink">Ranked exchange providers</p>
+              <p className="mt-0.5 text-xs text-ink-secondary">Compare spreads and supported currencies before exchanging.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Tag tone="success">{offers.length} providers</Tag>
+              <Tag tone="muted">{markets.size} markets</Tag>
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-line bg-bg-elevated p-6">
-              <p className="text-caption uppercase tracking-widest text-ink-tertiary">Planned</p>
-              <p className="mt-3 text-sm font-semibold text-ink">
-                Live pair cards, execution selectors, and spread explainers.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-bg-elevated p-6">
-              <p className="text-caption uppercase tracking-widest text-ink-tertiary">Why it matters</p>
-              <p className="mt-3 text-sm font-semibold text-ink">
-                FX users need price mechanics and trust cues before they commit.
-              </p>
-            </div>
-          </div>
+          {offers.map((offer, index) => (
+            <OfferCard key={offer.id} offer={offer} rank={index + 1} />
+          ))}
         </section>
       </div>
     </SiteShell>
