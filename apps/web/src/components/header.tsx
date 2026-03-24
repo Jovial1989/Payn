@@ -11,28 +11,51 @@ const categories = [
 
 export function Header({ activeHref }: { activeHref?: Route }) {
   return (
-    <header className="border-b border-line bg-bg">
-      <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-6 px-5 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="h-2.5 w-2.5 rounded-sm bg-primary" />
-          <span className="text-lg font-semibold tracking-[-0.02em] text-ink">Payn</span>
+    <header className="sticky top-0 z-50 border-b border-line bg-bg-deep/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-8 px-5 lg:px-8">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 12L8 4L12 12" stroke="#040907" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <span className="text-lg font-bold tracking-tight text-ink">Payn</span>
         </Link>
-        <nav className="hidden items-center gap-6 md:flex">
+
+        <nav className="hidden items-center gap-1 md:flex">
           {categories.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={clsx(
-                "border-b-2 pb-4 pt-1 text-sm transition-colors",
+                "relative rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200",
                 activeHref === item.href
-                  ? "border-primary text-ink"
-                  : "border-transparent text-muted hover:text-ink",
+                  ? "bg-primary-soft text-primary"
+                  : "text-ink-secondary hover:bg-bg-elevated hover:text-ink",
               )}
             >
               {item.label}
+              {activeHref === item.href && (
+                <span className="absolute inset-x-3 -bottom-[17px] h-px bg-primary" />
+              )}
             </Link>
           ))}
         </nav>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hidden rounded-lg border border-line-strong px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-elevated hover:text-ink sm:block"
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            className="rounded-lg gradient-primary px-4 py-2 text-sm font-semibold text-bg-deep shadow-glow transition-shadow hover:shadow-glow-strong"
+          >
+            Get started
+          </button>
+        </div>
       </div>
     </header>
   );

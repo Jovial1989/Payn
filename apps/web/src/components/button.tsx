@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { ButtonHTMLAttributes } from "react";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
-type ButtonSize = "sm" | "md";
+type ButtonSize = "sm" | "md" | "lg";
 
 export function buttonStyles({
   variant = "primary",
@@ -14,13 +14,16 @@ export function buttonStyles({
   fullWidth?: boolean;
 } = {}) {
   return clsx(
-    "inline-flex items-center justify-center rounded-xl border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-    size === "sm" ? "h-10 px-4 text-sm" : "h-11 px-5 text-sm",
+    "inline-flex items-center justify-center font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-deep",
+    size === "sm" && "h-9 rounded-lg px-3.5 text-sm",
+    size === "md" && "h-11 rounded-xl px-5 text-sm",
+    size === "lg" && "h-12 rounded-xl px-6 text-base",
     variant === "primary" &&
-      "border-primary bg-primary text-[#041009] hover:border-accent hover:bg-accent",
+      "gradient-primary text-bg-deep shadow-glow hover:shadow-glow-strong",
     variant === "secondary" &&
-      "border-line bg-panel-strong text-ink hover:bg-panel",
-    variant === "ghost" && "border-transparent bg-transparent text-primary hover:bg-primary-soft",
+      "border border-line-strong bg-bg-elevated text-ink hover:bg-bg-surface hover:border-line-active",
+    variant === "ghost" &&
+      "bg-transparent text-primary hover:bg-primary-soft",
     fullWidth && "w-full",
   );
 }

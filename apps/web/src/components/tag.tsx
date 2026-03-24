@@ -1,14 +1,15 @@
 import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 
-type TagTone = "neutral" | "accent" | "muted";
+type TagTone = "neutral" | "accent" | "muted" | "success";
 
 export function tagStyles({ tone = "neutral" }: { tone?: TagTone } = {}) {
   return clsx(
-    "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium",
-    tone === "neutral" && "border-line bg-bg text-ink",
-    tone === "accent" && "border-line bg-primary-soft text-accent",
-    tone === "muted" && "border-line bg-panel text-muted",
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+    tone === "neutral" && "border border-line bg-bg-elevated text-ink",
+    tone === "accent" && "bg-primary-soft text-primary-400",
+    tone === "muted" && "bg-bg-elevated text-ink-secondary",
+    tone === "success" && "bg-primary-soft text-primary",
   );
 }
 

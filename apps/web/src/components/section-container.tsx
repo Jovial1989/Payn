@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 
-type SectionTone = "default" | "subtle";
+type SectionTone = "default" | "subtle" | "glass";
 type SectionPadding = "sm" | "md" | "lg";
 
 type SectionContainerProps<T extends ElementType> = {
@@ -25,8 +25,10 @@ export function SectionContainer<T extends ElementType = "section">({
   return (
     <Component
       className={clsx(
-        "rounded-3xl border border-line",
-        tone === "default" ? "bg-panel shadow-card" : "bg-transparent",
+        "rounded-2xl border transition-colors duration-200",
+        tone === "default" && "border-line bg-bg-elevated shadow-card",
+        tone === "subtle" && "border-line bg-transparent",
+        tone === "glass" && "glass",
         padding === "sm" && "p-4",
         padding === "md" && "p-6",
         padding === "lg" && "p-8",
