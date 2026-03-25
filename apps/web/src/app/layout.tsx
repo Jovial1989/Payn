@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Payn | European Financial Marketplace",
   description:
     "Compare loans, credit cards, money transfers, and currency exchange across Europe. Transparent ranking, visible terms, commission disclosed.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

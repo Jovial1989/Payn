@@ -9,7 +9,7 @@ const categories = [
   {
     href: "/loans" as Route,
     title: "Loans",
-    description: "Personal loans, credit lines, and financing from Europe's top lenders.",
+    description: "Personal loans and credit lines from European lenders with visible rates and terms.",
     countKey: "loans" as const,
     color: "bg-accent-blue text-accent-blue-text",
     icon: (
@@ -22,7 +22,7 @@ const categories = [
   {
     href: "/cards" as Route,
     title: "Credit Cards",
-    description: "Travel, cashback, and everyday cards with transparent fee structures.",
+    description: "Travel, cashback, and everyday cards with transparent fees and rewards.",
     countKey: "cards" as const,
     color: "bg-accent-purple text-accent-purple-text",
     icon: (
@@ -35,7 +35,7 @@ const categories = [
   {
     href: "/transfers" as Route,
     title: "Transfers",
-    description: "International money transfers with real-time fee and speed comparison.",
+    description: "International money transfers compared by fee, speed, and corridor coverage.",
     countKey: "transfers" as const,
     color: "bg-accent-green text-accent-green-text",
     icon: (
@@ -58,10 +58,28 @@ const categories = [
   },
 ];
 
+/* Provider data with initials and brand colors for logo marks */
 const providers = [
-  "Revolut", "Wise", "N26", "Klarna", "bunq", "Curve", "Zopa", "Monese",
-  "ING", "Santander", "BBVA", "Deutsche Bank", "BNP Paribas", "Barclaycard",
-  "ABN AMRO", "UniCredit", "Rabobank", "XE", "Remitly", "Payoneer",
+  { name: "Revolut", mark: "R", bg: "bg-[#191C1F]", text: "text-white" },
+  { name: "Wise", mark: "W", bg: "bg-[#9FE870]", text: "text-[#163300]" },
+  { name: "N26", mark: "N", bg: "bg-[#36A18B]", text: "text-white" },
+  { name: "Klarna", mark: "K", bg: "bg-[#FFB3C7]", text: "text-[#17120F]" },
+  { name: "bunq", mark: "b", bg: "bg-[#00B7A8]", text: "text-white" },
+  { name: "Curve", mark: "C", bg: "bg-[#12123B]", text: "text-white" },
+  { name: "Zopa", mark: "Z", bg: "bg-[#3B1F65]", text: "text-white" },
+  { name: "Monese", mark: "M", bg: "bg-[#00D2C8]", text: "text-white" },
+  { name: "ING", mark: "ING", bg: "bg-[#FF6200]", text: "text-white" },
+  { name: "Santander", mark: "S", bg: "bg-[#EC0000]", text: "text-white" },
+  { name: "BBVA", mark: "B", bg: "bg-[#004481]", text: "text-white" },
+  { name: "Deutsche Bank", mark: "DB", bg: "bg-[#001E50]", text: "text-white" },
+  { name: "BNP Paribas", mark: "BNP", bg: "bg-[#00915A]", text: "text-white" },
+  { name: "Barclaycard", mark: "BC", bg: "bg-[#00AEEF]", text: "text-white" },
+  { name: "ABN AMRO", mark: "ABN", bg: "bg-[#004832]", text: "text-[#FFD200]" },
+  { name: "UniCredit", mark: "UC", bg: "bg-[#E01A22]", text: "text-white" },
+  { name: "XE", mark: "XE", bg: "bg-[#00245D]", text: "text-white" },
+  { name: "Remitly", mark: "R", bg: "bg-[#3B1B7B]", text: "text-white" },
+  { name: "Payoneer", mark: "P", bg: "bg-[#FF4800]", text: "text-white" },
+  { name: "Rabobank", mark: "R", bg: "bg-[#F29100]", text: "text-white" },
 ];
 
 type CategoryCounts = {
@@ -78,8 +96,6 @@ export function HomePage({
   counts: CategoryCounts;
   featuredOffers: MarketplaceOffer[];
 }) {
-  const totalOffers = counts.loans + counts.cards + counts.transfers + counts.exchange;
-
   return (
     <div className="grid gap-24">
       {/* ══════ HERO ══════ */}
@@ -87,21 +103,16 @@ export function HomePage({
         <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:gap-16">
           {/* Left: Content */}
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-bg-surface px-4 py-2">
-              <div className="h-2 w-2 rounded-full bg-accent-green-text" />
-              <span className="text-xs font-semibold text-ink-secondary">Trusted by 50,000+ Europeans</span>
-            </div>
-
-            <h1 className="mt-8 text-h1 tracking-tight text-ink sm:text-display">
-              Your smarter way to compare financial products
+            <h1 className="text-h1 tracking-tight text-ink sm:text-display">
+              Compare financial products across Europe
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-secondary">
-              {totalOffers} offers across loans, cards, transfers, and exchange — ranked transparently, not by who pays us more.
+              Loans, cards, transfers, and exchange from regulated providers. Every offer ranked by cost, product fit, and provider quality - not by who pays us.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">
               <Link href="/loans" className={buttonStyles({ variant: "primary", size: "lg" })}>
-                Compare offers
+                Browse offers
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="ml-2">
                   <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -111,18 +122,21 @@ export function HomePage({
               </Link>
             </div>
 
-            <div className="mt-10 flex items-center gap-8">
+            {/* Value props instead of vanity metrics */}
+            <div className="mt-10 flex flex-wrap gap-3">
               {[
-                { value: `${totalOffers}`, label: "Products" },
-                { value: `${providers.length}+`, label: "Providers" },
-                { value: "13", label: "EU Markets" },
-              ].map((stat, i, arr) => (
-                <div key={stat.label} className="flex items-center gap-8">
-                  <div>
-                    <p className="text-2xl font-extrabold tabular-nums tracking-tight text-ink">{stat.value}</p>
-                    <p className="text-xs font-medium text-ink-tertiary">{stat.label}</p>
-                  </div>
-                  {i < arr.length - 1 && <div className="h-10 w-px bg-line" />}
+                "Transparent ranking",
+                "Commission disclosed",
+                "Real provider data",
+              ].map((tag) => (
+                <div
+                  key={tag}
+                  className="flex items-center gap-2 rounded-full bg-bg-surface px-4 py-2"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-accent-green-text">
+                    <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-xs font-semibold text-ink-secondary">{tag}</span>
                 </div>
               ))}
             </div>
@@ -142,7 +156,7 @@ export function HomePage({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-ink">Klarna</p>
-                    <p className="text-xs text-ink-tertiary">Top Loan</p>
+                    <p className="text-xs text-ink-tertiary">Personal Loan</p>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -157,7 +171,7 @@ export function HomePage({
                 </div>
               </div>
 
-              {/* Floating card 2 - Best card */}
+              {/* Floating card 2 - Card */}
               <div className="absolute right-4 top-32 z-20 w-[240px] rounded-3xl border border-line bg-white p-5 shadow-elevated">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-purple text-xs font-bold text-accent-purple-text">
@@ -165,7 +179,7 @@ export function HomePage({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-ink">Revolut</p>
-                    <p className="text-xs text-ink-tertiary">Best Card</p>
+                    <p className="text-xs text-ink-tertiary">Metal Card</p>
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl bg-bg-surface px-3 py-2.5">
@@ -182,7 +196,7 @@ export function HomePage({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-ink">Wise</p>
-                    <p className="text-xs text-ink-tertiary">Best Transfer</p>
+                    <p className="text-xs text-ink-tertiary">Money Transfer</p>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -203,7 +217,7 @@ export function HomePage({
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-accent-green-text">
                     <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="text-xs font-semibold text-ink">Updated today</span>
+                  <span className="text-xs font-semibold text-ink">Updated regularly</span>
                 </div>
               </div>
             </div>
@@ -215,7 +229,7 @@ export function HomePage({
       <section>
         <div className="mb-10">
           <h2 className="text-h2 text-ink">Browse by category</h2>
-          <p className="mt-3 text-base text-ink-secondary">Compare products across Europe&apos;s leading financial providers</p>
+          <p className="mt-3 text-base text-ink-secondary">Compare products across regulated European providers</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {categories.map((cat) => (
@@ -244,16 +258,24 @@ export function HomePage({
         </div>
       </section>
 
-      {/* ══════ PROVIDERS ══════ */}
-      <section className="rounded-3xl bg-white px-8 py-8 shadow-card">
-        <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-ink-tertiary">
+      {/* ══════ PROVIDERS - LOGO MARKS ══════ */}
+      <section className="rounded-3xl bg-white px-8 py-10 shadow-card">
+        <p className="mb-8 text-center text-xs font-semibold uppercase tracking-widest text-ink-tertiary">
           Providers on Payn
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          {providers.map((name) => (
-            <span key={name} className="text-sm font-semibold text-ink-tertiary transition-colors hover:text-ink">
-              {name}
-            </span>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          {providers.map((p) => (
+            <div
+              key={p.name}
+              className="group flex items-center gap-2.5 rounded-full border border-line px-4 py-2 transition-all duration-200 hover:border-line-strong hover:shadow-subtle"
+            >
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${p.bg} ${p.text} text-[10px] font-bold opacity-80 grayscale transition-all duration-200 group-hover:opacity-100 group-hover:grayscale-0`}>
+                {p.mark}
+              </div>
+              <span className="text-xs font-semibold text-ink-tertiary transition-colors group-hover:text-ink">
+                {p.name}
+              </span>
+            </div>
           ))}
         </div>
       </section>
@@ -263,10 +285,10 @@ export function HomePage({
         <section>
           <div className="mb-10 flex items-center justify-between">
             <div>
-              <h2 className="text-h2 text-ink">Featured offers</h2>
-              <p className="mt-3 text-base text-ink-secondary">Top-ranked products across categories</p>
+              <h2 className="text-h2 text-ink">Top-ranked offers</h2>
+              <p className="mt-3 text-base text-ink-secondary">Highest-scoring products across categories</p>
             </div>
-            <Tag tone="blue">Updated daily</Tag>
+            <Tag tone="blue">Updated regularly</Tag>
           </div>
           <div className="grid gap-4">
             {featuredOffers.map((offer, i) => (
@@ -276,54 +298,98 @@ export function HomePage({
         </section>
       )}
 
-      {/* ══════ MOBILE APP — DARK INVERSION ══════ */}
-      <section className="overflow-hidden rounded-[40px] bg-gray-900 text-white">
-        <div className="grid gap-10 p-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-16 lg:p-16">
-          {/* Phone visual */}
-          <div className="relative mx-auto w-[220px] lg:w-[250px]">
-            <div className="rounded-[2rem] border border-white/10 bg-gray-800 p-2.5 shadow-2xl">
-              <div className="overflow-hidden rounded-[1.5rem] bg-gray-900">
-                <div className="flex items-center justify-between px-5 py-2.5">
-                  <span className="text-[10px] font-medium text-gray-500">9:41</span>
-                  <div className="flex gap-1">
-                    <div className="h-2 w-2 rounded-full bg-gray-600" />
-                    <div className="h-2 w-2 rounded-full bg-gray-600" />
-                    <div className="h-2 w-3.5 rounded-full bg-gray-600" />
+      {/* ══════ MOBILE APP - PREMIUM DEVICE MOCKUP ══════ */}
+      <section className="overflow-hidden rounded-[40px] bg-gray-950 text-white">
+        <div className="grid gap-10 p-8 lg:grid-cols-[0.65fr_1.35fr] lg:items-center lg:gap-16 lg:p-16">
+          {/* Premium iPhone mockup */}
+          <div className="relative mx-auto w-[260px] lg:w-[280px]">
+            {/* Device frame - titanium style */}
+            <div className="rounded-[3rem] border-[3px] border-gray-700/50 bg-gradient-to-b from-gray-800 to-gray-900 p-3 shadow-[0_0_60px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]">
+              {/* Dynamic Island */}
+              <div className="relative">
+                <div className="absolute left-1/2 top-2 z-20 h-[22px] w-[90px] -translate-x-1/2 rounded-full bg-black" />
+              </div>
+              {/* Screen */}
+              <div className="overflow-hidden rounded-[2.25rem] bg-black">
+                {/* Status bar */}
+                <div className="flex items-center justify-between px-7 pb-1 pt-4">
+                  <span className="text-[11px] font-semibold text-white">9:41</span>
+                  <div className="flex items-center gap-1">
+                    <svg width="16" height="10" viewBox="0 0 16 10" fill="white">
+                      <rect x="0" y="4" width="3" height="6" rx="0.5" opacity="0.4" />
+                      <rect x="4" y="2.5" width="3" height="7.5" rx="0.5" opacity="0.6" />
+                      <rect x="8" y="1" width="3" height="9" rx="0.5" opacity="0.8" />
+                      <rect x="12" y="0" width="3" height="10" rx="0.5" />
+                    </svg>
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="white" opacity="0.9">
+                      <path d="M1 7.5C3.5 3 10.5 3 13 7.5" stroke="white" fill="none" strokeWidth="1.2" />
+                      <circle cx="7" cy="8" r="1.5" />
+                    </svg>
+                    <svg width="22" height="10" viewBox="0 0 22 10" fill="none">
+                      <rect x="0" y="1" width="18" height="8" rx="2" stroke="white" strokeWidth="1" opacity="0.5" />
+                      <rect x="1.5" y="2.5" width="12" height="5" rx="1" fill="#34D399" />
+                      <rect x="19" y="3.5" width="2" height="3" rx="0.5" fill="white" opacity="0.5" />
+                    </svg>
                   </div>
                 </div>
-                <div className="px-4 pb-5 pt-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-white">
-                      <svg width="8" height="8" viewBox="0 0 16 16" fill="none">
-                        <path d="M4 12L8 4L12 12" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                {/* App content */}
+                <div className="px-5 pb-6 pt-3">
+                  {/* App header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                          <path d="M4 12L8 4L12 12" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-bold text-white">Payn</span>
+                    </div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
                       </svg>
                     </div>
-                    <span className="text-xs font-bold text-white">Payn</span>
                   </div>
-                  <div className="mt-3 space-y-2">
-                    {["Loans", "Cards", "Transfers", "Exchange"].map((cat) => (
-                      <div key={cat} className="flex items-center justify-between rounded-xl bg-gray-800 px-3 py-2">
-                        <span className="text-[10px] font-medium text-gray-300">{cat}</span>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-gray-600">
-                          <path d="M3 2l4 3-4 3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+
+                  {/* Notification banner */}
+                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3 py-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <p className="text-[10px] font-medium text-emerald-300">3 better rates found today</p>
+                  </div>
+
+                  {/* Category cards */}
+                  <div className="mt-4 space-y-2">
+                    {[
+                      { name: "Loans", count: "17", accent: "bg-blue-500/20 text-blue-300" },
+                      { name: "Cards", count: "14", accent: "bg-purple-500/20 text-purple-300" },
+                      { name: "Transfers", count: "13", accent: "bg-emerald-500/20 text-emerald-300" },
+                      { name: "Exchange", count: "12", accent: "bg-orange-500/20 text-orange-300" },
+                    ].map((cat) => (
+                      <div key={cat.name} className="flex items-center justify-between rounded-2xl bg-white/[0.04] px-4 py-3 backdrop-blur">
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${cat.accent} text-[9px] font-bold`}>
+                            {cat.count}
+                          </div>
+                          <span className="text-xs font-semibold text-white">{cat.name}</span>
+                        </div>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-500">
+                          <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 rounded-xl bg-white/10 p-2.5 text-center">
-                    <p className="text-[10px] font-semibold text-white">New offers available</p>
+
+                  {/* Quick action */}
+                  <div className="mt-4 rounded-2xl bg-white px-4 py-3 text-center">
+                    <p className="text-[11px] font-bold text-gray-900">Compare all offers</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Notification */}
-            <div className="absolute -right-4 top-10 rounded-2xl border border-white/10 bg-gray-800 px-3 py-2 shadow-2xl">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-green-400" />
-                <p className="text-[9px] font-medium text-gray-300">Better rate found</p>
-              </div>
-            </div>
+            {/* Glow effect behind phone */}
+            <div className="absolute -inset-8 -z-10 rounded-full bg-emerald-500/5 blur-3xl" />
           </div>
 
           {/* Content */}
@@ -333,21 +399,21 @@ export function HomePage({
             </div>
 
             <h2 className="mt-6 text-h1 tracking-tight text-white">
-              Your financial marketplace, in your pocket
+              Payn in your pocket
             </h2>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-gray-400">
-              The Payn app brings the same transparent comparison experience to iOS and Android.
+              The same transparent comparison experience, built for mobile. Browse offers, compare rates, and track your favourite products on the go.
             </p>
 
             <div className="mt-8 grid gap-4">
               {[
-                "Compare offers on the go",
-                "Get alerts when better rates appear",
-                "Save and track your favourite products",
+                "Browse and filter offers anywhere",
+                "Get notified when better rates appear",
+                "Save products and compare side by side",
               ].map((text) => (
                 <div key={text} className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400">
                       <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
@@ -403,24 +469,23 @@ export function HomePage({
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">Why Payn</p>
             <h2 className="mt-4 text-h2 text-ink">
-              Financial comparison designed for transparency.
+              Financial comparison built on transparency
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-              Payn focuses on ranking clarity, visible disclosures, and product information
-              you can actually use before you visit a provider site.
+              Clear rankings, visible terms, and disclosed commissions. See exactly how offers are scored before visiting a provider.
             </p>
             <div className="mt-8 flex items-center gap-4">
               <div className="flex -space-x-2">
-                {["KL", "RV", "WS", "N2", "ING"].map((mark) => (
+                {providers.slice(0, 5).map((p) => (
                   <div
-                    key={mark}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-bg-surface text-[10px] font-bold text-ink-secondary shadow-subtle"
+                    key={p.name}
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${p.bg} ${p.text} text-[10px] font-bold shadow-subtle`}
                   >
-                    {mark}
+                    {p.mark}
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-ink-tertiary">{providers.length}+ regulated providers</p>
+              <p className="text-sm text-ink-tertiary">Multiple regulated providers</p>
             </div>
           </div>
 
@@ -428,7 +493,7 @@ export function HomePage({
             {[
               {
                 title: "Independent comparison",
-                description: "Rankings are built on product fit, cost, and quality — not on how much a provider pays us.",
+                description: "Rankings are based on product fit, cost, and quality. Compensation does not determine order.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -438,7 +503,7 @@ export function HomePage({
               },
               {
                 title: "Transparent methodology",
-                description: "Every ranking factor is disclosed. You can see why an offer appears where it does.",
+                description: "Every ranking factor is disclosed. See why an offer scores higher or lower.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
@@ -449,7 +514,7 @@ export function HomePage({
               },
               {
                 title: "Commission disclosed",
-                description: "When we earn commission, we say so. Compensation alone never determines ranking order.",
+                description: "When we earn commission from a provider, we say so. Always visible, never hidden.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />

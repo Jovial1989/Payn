@@ -10,13 +10,11 @@ export default async function Page() {
     listCategoryOffers("exchange"),
   ]);
 
-  const totalOffers = loans.length + cards.length + transfers.length + exchange.length;
-
   return (
     <SiteShell
       eyebrow="European Financial Marketplace"
       title="Compare financial products with clarity and confidence."
-      description={`${totalOffers} offers across loans, cards, transfers, and exchange from Europe's regulated providers. Transparent ranking, visible terms, commission always disclosed.`}
+      description="Compare loans, cards, transfers, and exchange from regulated European providers. Transparent ranking, visible terms, commission disclosed."
       heroTags={[]}
       hideHero
     >

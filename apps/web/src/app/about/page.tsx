@@ -22,12 +22,12 @@ export default function AboutPage() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-secondary">
             Payn is a European financial marketplace that helps consumers compare loans, credit cards,
             money transfers, and currency exchange services. We believe financial decisions should be
-            made with full context — not hidden terms, not misleading rankings.
+            made with full context, not hidden terms or misleading rankings.
           </p>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
             Every offer on Payn is ranked by product fit, cost, and provider quality. When we earn
             commission from a provider, we disclose it. Compensation alone never determines ranking
-            order. That&apos;s not a marketing claim — it&apos;s how the system is built.
+            order. That&apos;s not a marketing claim. It&apos;s how the system is built.
           </p>
         </section>
 
@@ -67,7 +67,7 @@ export default function AboutPage() {
               <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-secondary">
                 Kyrylo is building Payn to bring transparency and clarity to European financial
                 product comparison. With a background in fintech and product development, he&apos;s
-                focused on creating a marketplace that puts consumers first — with honest rankings,
+                focused on creating a marketplace that puts consumers first: honest rankings,
                 visible methodology, and no hidden incentives.
               </p>
               <a
@@ -88,7 +88,7 @@ export default function AboutPage() {
         {/* CTA */}
         <section className="text-center">
           <h2 className="text-h2 text-ink">Ready to compare?</h2>
-          <p className="mt-3 text-base text-ink-secondary">Browse 66+ financial products across Europe</p>
+          <p className="mt-3 text-base text-ink-secondary">Browse financial products across Europe</p>
           <div className="mt-8 flex justify-center gap-3">
             <Link href="/loans" className={buttonStyles({ variant: "primary", size: "lg" })}>
               Explore offers

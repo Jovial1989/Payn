@@ -64,7 +64,7 @@ export function SiteShell({
             </div>
             <p className="max-w-lg text-xs leading-5 text-ink-tertiary lg:text-right">
               Payn compares financial products from regulated European providers. Commission may be earned from some partners.
-              Rankings are based on product fit, cost, and provider quality — not compensation alone.
+              Rankings are based on product fit, cost, and provider quality. Compensation does not determine order.
             </p>
           </div>
         </div>

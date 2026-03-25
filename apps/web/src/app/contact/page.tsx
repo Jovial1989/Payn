@@ -6,7 +6,7 @@ export default function ContactPage() {
       activeHref="/contact"
       eyebrow="Contact"
       title="Get in touch"
-      description="Questions, partnerships, or feedback — we'd like to hear from you."
+      description="Questions, partnerships, or feedback? We'd love to hear from you."
       hideHero
     >
       <div className="grid gap-16">
@@ -16,7 +16,7 @@ export default function ContactPage() {
           <h1 className="mt-4 text-h1 tracking-tight text-ink">Let&apos;s talk</h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-secondary">
             Whether you have a question about how Payn works, want to discuss a partnership,
-            or have feedback on the platform — reach out directly.
+            or have feedback on the platform, reach out directly.
           </p>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
@@ -71,8 +71,8 @@ export default function ContactPage() {
               </p>
               <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-secondary">
                 We work with regulated European providers across loans, credit cards, money transfers,
-                and currency exchange. All partnerships are subject to our independent ranking methodology —
-                compensation does not determine placement.
+                and currency exchange. All partnerships are subject to our independent ranking methodology.
+                Compensation does not determine placement.
               </p>
             </div>
             <div className="shrink-0 rounded-3xl border border-line bg-bg-surface p-6 lg:w-[300px]">
@@ -81,7 +81,7 @@ export default function ContactPage() {
                 Send a message with your company name, product type, and markets covered.
               </p>
               <a
-                href="mailto:petrov.cpay@gmail.com?subject=Partnership%20enquiry%20—%20Payn"
+                href="mailto:petrov.cpay@gmail.com?subject=Partnership%20enquiry%20-%20Payn"
                 className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
               >
                 Email us
