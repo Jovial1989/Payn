@@ -1,135 +1,206 @@
-import type { MarketplaceCategory } from "@payn/types";
-import clsx from "clsx";
+"use client";
 
-const categoryNotes: Record<Exclude<MarketplaceCategory, "loans">, string> = {
-  cards: "Card filtering will layer pricing, rewards, and annual fee signals into the same ranking framework.",
-  transfers:
-    "Transfer filtering will surface corridor, payout method, and speed preferences once live provider data is connected.",
-  exchange:
-    "FX filtering will focus on pair, execution window, and spread visibility as exchange products are added.",
+import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
+import clsx from "clsx";
+import { useCallback, useState } from "react";
+
+export interface FilterState {
+  amount: number;
+  term: number;
+  creditScore: string | null;
+  purpose: string | null;
+  provider: string | null;
+}
+
+const defaultFilters: FilterState = {
+  amount: 25000,
+  term: 48,
+  creditScore: null,
+  purpose: null,
+  provider: null,
 };
 
 const creditScoreOptions = [
   { label: "Excellent", detail: "720+" },
-  { label: "Good", detail: "660 - 719" },
-  { label: "Fair", detail: "600 - 659" },
+  { label: "Good", detail: "660 – 719" },
+  { label: "Fair", detail: "600 – 659" },
   { label: "Building", detail: "Below 600" },
 ];
 
-const purposeOptions = ["Debt consolidation", "Large purchases", "Home improvements", "Other personal use"];
+const purposeOptions: Record<MarketplaceCategory, string[]> = {
+  loans: ["Debt consolidation", "Large purchases", "Home improvements", "Digital application", "Fast funding"],
+  cards: ["Travel", "Cashback", "No FX fees", "BNPL", "Free card"],
+  transfers: ["Best rates", "Remittances", "Fast delivery", "Free P2P", "Business payments"],
+  exchange: ["Mid-market rate", "Rate alerts", "Business FX", "Multi-currency hold", "Free exchanges"],
+};
 
-export function FilterPanel({ category }: { category: MarketplaceCategory }) {
-  if (category !== "loans") {
-    return (
-      <aside className="h-fit rounded-2xl border border-line bg-bg-elevated p-6 lg:sticky lg:top-20">
-        <p className="text-caption uppercase tracking-widest text-primary">Filters</p>
-        <h2 className="mt-3 text-h3 text-ink">Filters for {category}</h2>
-        <p className="mt-3 text-sm leading-relaxed text-ink-secondary">{categoryNotes[category]}</p>
-      </aside>
-    );
-  }
+function formatAmount(val: number) {
+  if (val >= 1000) return `EUR ${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k`;
+  return `EUR ${val}`;
+}
+
+export function FilterPanel({
+  category,
+  offers,
+  onFilter,
+}: {
+  category: MarketplaceCategory;
+  offers: MarketplaceOffer[];
+  onFilter: (filtered: MarketplaceOffer[]) => void;
+}) {
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const isLoan = category === "loans";
+
+  const providers = Array.from(new Set(offers.map((o) => o.providerName))).sort();
+
+  const applyFilters = useCallback(
+    (next: FilterState) => {
+      let result = [...offers];
+
+      // purpose / bestFor filter
+      if (next.purpose) {
+        result = result.filter((o) =>
+          o.bestFor.some((b) => b.toLowerCase().includes(next.purpose!.toLowerCase())),
+        );
+      }
+
+      // provider filter
+      if (next.provider) {
+        result = result.filter((o) => o.providerName === next.provider);
+      }
+
+      // amount filter (loans): exclude offers whose max amount is below slider
+      if (isLoan) {
+        result = result.filter((o) => {
+          const amtMetric = o.metrics.find((m) => m.label === "Amount");
+          if (!amtMetric) return true;
+          const nums = amtMetric.value.match(/[\d,.]+/g);
+          if (!nums || nums.length === 0) return true;
+          const maxVal = parseFloat(nums[nums.length - 1].replace(/,/g, "")) * (amtMetric.value.includes("k") ? 1000 : 1);
+          return maxVal >= next.amount;
+        });
+      }
+
+      result.sort((a, b) => b.affiliatePriorityScore - a.affiliatePriorityScore);
+      onFilter(result);
+    },
+    [offers, onFilter, isLoan],
+  );
+
+  const update = (patch: Partial<FilterState>) => {
+    const next = { ...filters, ...patch };
+    setFilters(next);
+    applyFilters(next);
+  };
+
+  const reset = () => {
+    setFilters(defaultFilters);
+    applyFilters(defaultFilters);
+  };
+
+  const hasActiveFilter = filters.purpose !== null || filters.provider !== null || (isLoan && filters.amount !== 25000);
 
   return (
     <aside className="h-fit rounded-2xl border border-line bg-bg-elevated p-6 lg:sticky lg:top-20">
-      <p className="text-caption uppercase tracking-widest text-primary">Refine</p>
-      <h2 className="mt-3 text-h3 text-ink">Adjust your search</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-caption uppercase tracking-widest text-primary">Refine</p>
+          <h2 className="mt-2 text-h3 text-ink">Filter results</h2>
+        </div>
+        {hasActiveFilter && (
+          <button
+            type="button"
+            onClick={reset}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary-soft"
+          >
+            Reset all
+          </button>
+        )}
+      </div>
       <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-        Narrow results by amount, term, credit profile, and purpose.
+        Narrow offers by {isLoan ? "amount, purpose, and provider" : "use case and provider"}.
       </p>
 
-      <form className="mt-6 grid gap-6">
-        {/* Amount slider */}
-        <section>
-          <div className="flex items-center justify-between gap-4">
-            <label htmlFor="amount" className="text-sm font-medium text-ink">
-              Amount
-            </label>
-            <span className="rounded-md bg-bg-surface px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
-              EUR 25,000
-            </span>
-          </div>
-          <input
-            id="amount"
-            type="range"
-            min="1000"
-            max="50000"
-            defaultValue="25000"
-            className="mt-3 w-full accent-primary"
-          />
-          <div className="mt-1.5 flex items-center justify-between text-xs text-ink-tertiary">
-            <span>EUR 1k</span>
-            <span>EUR 50k</span>
-          </div>
-        </section>
+      <div className="mt-6 grid gap-6">
+        {/* Amount slider (loans only) */}
+        {isLoan && (
+          <section>
+            <div className="flex items-center justify-between gap-4">
+              <label htmlFor="amount" className="text-sm font-medium text-ink">
+                Amount needed
+              </label>
+              <span className="rounded-md bg-bg-surface px-2.5 py-1 text-xs font-semibold tabular-nums text-primary">
+                {formatAmount(filters.amount)}
+              </span>
+            </div>
+            <input
+              id="amount"
+              type="range"
+              min={1000}
+              max={80000}
+              step={1000}
+              value={filters.amount}
+              onChange={(e) => update({ amount: Number(e.target.value) })}
+              className="mt-3 w-full accent-primary"
+            />
+            <div className="mt-1.5 flex items-center justify-between text-xs text-ink-tertiary">
+              <span>EUR 1k</span>
+              <span>EUR 80k</span>
+            </div>
+          </section>
+        )}
 
-        {/* Term slider */}
+        {/* Purpose / use-case */}
         <section>
-          <div className="flex items-center justify-between gap-4">
-            <label htmlFor="term" className="text-sm font-medium text-ink">
-              Term
-            </label>
-            <span className="rounded-md bg-bg-surface px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
-              48 months
-            </span>
-          </div>
-          <input
-            id="term"
-            type="range"
-            min="12"
-            max="84"
-            defaultValue="48"
-            className="mt-3 w-full accent-primary"
-          />
-          <div className="mt-1.5 flex items-center justify-between text-xs text-ink-tertiary">
-            <span>12 mo</span>
-            <span>84 mo</span>
-          </div>
-        </section>
-
-        {/* Credit score */}
-        <section>
-          <p className="text-sm font-medium text-ink">Credit score</p>
-          <div className="mt-3 grid gap-1.5">
-            {creditScoreOptions.map((option, index) => (
+          <p className="mb-3 text-sm font-medium text-ink">
+            {isLoan ? "Purpose" : "Best for"}
+          </p>
+          <div className="grid gap-1.5">
+            {purposeOptions[category].map((option) => (
               <button
-                key={option.label}
+                key={option}
                 type="button"
+                onClick={() => update({ purpose: filters.purpose === option ? null : option })}
                 className={clsx(
-                  "flex items-center justify-between rounded-xl border px-4 py-2.5 text-left transition-all duration-200",
-                  index === 1
-                    ? "border-line-active bg-primary-soft text-ink"
+                  "flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm transition-all duration-200",
+                  filters.purpose === option
+                    ? "border-line-active bg-primary-soft font-medium text-ink"
                     : "border-line bg-bg-surface text-ink-secondary hover:border-line-strong hover:text-ink",
                 )}
               >
-                <span className="text-sm font-medium">{option.label}</span>
-                <span className="text-xs text-ink-tertiary">{option.detail}</span>
+                <span>{option}</span>
+                {filters.purpose === option && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-primary">
+                    <path d="M3 7l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
               </button>
             ))}
           </div>
         </section>
 
-        {/* Purpose */}
+        {/* Provider filter */}
         <section>
-          <label htmlFor="purpose" className="text-sm font-medium text-ink">
-            Purpose
+          <label htmlFor="provider" className="mb-2 block text-sm font-medium text-ink">
+            Provider
           </label>
           <select
-            id="purpose"
-            defaultValue="Debt consolidation"
-            className="mt-2 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink transition-colors focus:border-line-active focus:outline-none focus:ring-2 focus:ring-primary/20"
+            id="provider"
+            value={filters.provider ?? ""}
+            onChange={(e) => update({ provider: e.target.value || null })}
+            className="h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink transition-colors focus:border-line-active focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            {purposeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
+            <option value="">All providers</option>
+            {providers.map((p) => (
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
         </section>
-      </form>
+      </div>
 
       <div className="mt-6 border-t border-line pt-4">
         <p className="text-xs leading-5 text-ink-tertiary">
-          Filters refine comparison views using information available from providers and Payn&apos;s ranking rules.
+          Filters refine comparison views using provider data and Payn&apos;s ranking rules.
         </p>
       </div>
     </aside>

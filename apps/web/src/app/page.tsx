@@ -17,7 +17,8 @@ export default async function Page() {
       eyebrow="European Financial Marketplace"
       title="Compare financial products with clarity and confidence."
       description={`${totalOffers} offers across loans, cards, transfers, and exchange from Europe's regulated providers. Transparent ranking, visible terms, commission always disclosed.`}
-      heroTags={["Independent comparison", "Updated regularly", "Commission disclosed"]}
+      heroTags={[]}
+      hideHero
     >
       <HomePage
         counts={{ loans: loans.length, cards: cards.length, transfers: transfers.length, exchange: exchange.length }}

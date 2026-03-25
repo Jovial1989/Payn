@@ -9,6 +9,7 @@ export function SiteShell({
   children,
   activeHref,
   heroTags = [],
+  hideHero = false,
 }: {
   title: string;
   eyebrow: string;
@@ -16,34 +17,37 @@ export function SiteShell({
   children: React.ReactNode;
   activeHref?: Route;
   heroTags?: string[];
+  hideHero?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-bg-deep">
       <Header activeHref={activeHref} />
       <main className="mx-auto flex max-w-[1200px] flex-col gap-8 px-5 py-10 lg:px-8 lg:py-14">
-        {/* Hero */}
-        <section className="relative overflow-hidden rounded-3xl border border-line bg-bg-elevated p-8 lg:p-12">
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute -right-32 -top-32 h-[400px] w-[400px] rounded-full bg-primary opacity-[0.04] blur-[100px]" />
-          <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-secondary opacity-[0.03] blur-[80px]" />
+        {/* Hero — hidden on homepage where it's built into the page */}
+        {!hideHero && (
+          <section className="relative overflow-hidden rounded-3xl border border-line bg-bg-elevated p-8 lg:p-12">
+            {/* Ambient glow */}
+            <div className="pointer-events-none absolute -right-32 -top-32 h-[400px] w-[400px] rounded-full bg-primary opacity-[0.04] blur-[100px]" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-secondary opacity-[0.03] blur-[80px]" />
 
-          <div className="relative">
-            <p className="text-caption uppercase tracking-widest text-primary">{eyebrow}</p>
-            <h1 className="mt-4 max-w-3xl text-h1 text-ink sm:text-display">
-              {title}
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-secondary">{description}</p>
-            {heroTags.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
-                {heroTags.map((tag) => (
-                  <Tag key={tag} tone="muted">
-                    {tag}
-                  </Tag>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+            <div className="relative">
+              <p className="text-caption uppercase tracking-widest text-primary">{eyebrow}</p>
+              <h1 className="mt-4 max-w-3xl text-h1 text-ink sm:text-display">
+                {title}
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-secondary">{description}</p>
+              {heroTags.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {heroTags.map((tag) => (
+                    <Tag key={tag} tone="muted">
+                      {tag}
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
         {children}
       </main>
 
