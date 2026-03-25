@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
 import { buttonStyles } from "@/components/button";
@@ -53,9 +54,13 @@ export default function AboutPage() {
         <section className="rounded-3xl bg-white p-8 shadow-card lg:p-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">Founder</p>
           <div className="mt-6 flex flex-col gap-8 sm:flex-row sm:items-start">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-bg-surface text-2xl font-extrabold text-ink">
-              KP
-            </div>
+            <Image
+              src="/kyrylo.jpeg"
+              alt="Kyrylo Petrov"
+              width={80}
+              height={80}
+              className="h-20 w-20 shrink-0 rounded-full object-cover"
+            />
             <div>
               <h2 className="text-h2 text-ink">Kyrylo Petrov</h2>
               <p className="mt-1 text-sm font-medium text-ink-secondary">Founder &amp; CEO</p>

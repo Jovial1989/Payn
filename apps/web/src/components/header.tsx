@@ -7,6 +7,8 @@ const categories = [
   { href: "/cards" as Route, label: "Cards" },
   { href: "/transfers" as Route, label: "Transfers" },
   { href: "/exchange" as Route, label: "Exchange" },
+  { href: "/about" as Route, label: "About" },
+  { href: "/contact" as Route, label: "Contact" },
 ];
 
 export function Header({ activeHref }: { activeHref?: Route }) {
