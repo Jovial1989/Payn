@@ -4,10 +4,21 @@ import type { ChatMessage } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
+function detectPageCategory(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const path = window.location.pathname;
+  if (path.startsWith("/loans")) return "loans";
+  if (path.startsWith("/cards")) return "cards";
+  if (path.startsWith("/transfers")) return "transfers";
+  if (path.startsWith("/exchange")) return "exchange";
+  return undefined;
+}
+
 export function ChatWidget() {
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -34,6 +45,7 @@ export function ChatWidget() {
 
       setMessages((prev) => [...prev, userMsg]);
       setInput("");
+      setSuggestions([]);
       setLoading(true);
 
       try {
@@ -46,6 +58,7 @@ export function ChatWidget() {
               content: m.content,
             })),
             context: {
+              category: detectPageCategory(),
               country: profile?.home_country,
               goals: profile?.goals,
               categories: profile?.selected_categories,
@@ -64,6 +77,10 @@ export function ChatWidget() {
             timestamp: Date.now(),
           },
         ]);
+
+        if (data.suggestions?.length) {
+          setSuggestions(data.suggestions);
+        }
       } catch {
         setMessages((prev) => [
           ...prev,
@@ -103,7 +120,7 @@ export function ChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[480px] w-[380px] flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-elevated">
+        <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-[400px] flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-elevated">
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-line px-5 py-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black">
@@ -111,10 +128,22 @@ export function ChatWidget() {
                 <path d="M12 2a4 4 0 014 4v1a1 1 0 001 1h1a4 4 0 010 8h-1a1 1 0 00-1 1v1a4 4 0 01-8 0v-1a1 1 0 00-1-1H6a4 4 0 010-8h1a1 1 0 001-1V6a4 4 0 014-4z" />
               </svg>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-bold text-ink">Payn AI</p>
-              <p className="text-[11px] text-ink-tertiary">Financial assistant</p>
+              <p className="text-[11px] text-ink-tertiary">Powered by Gemini</p>
             </div>
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMessages([]);
+                  setSuggestions([]);
+                }}
+                className="rounded-full px-3 py-1 text-[11px] font-medium text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Messages */}
@@ -132,7 +161,7 @@ export function ChatWidget() {
                 </p>
                 <div className="mt-4 grid w-full gap-2">
                   {[
-                    "What's the best loan rate available?",
+                    "What is APR?",
                     "How do transfer fees work?",
                     "Compare Revolut vs Wise",
                   ].map((q) => (
@@ -172,6 +201,22 @@ export function ChatWidget() {
                 </div>
               )}
             </div>
+
+            {/* Suggestions */}
+            {!loading && suggestions.length > 0 && messages.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => sendMessage(s)}
+                    className="rounded-full border border-line px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Input */}
