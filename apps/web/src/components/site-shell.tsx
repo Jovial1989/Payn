@@ -1,4 +1,5 @@
 import type { Route } from "next";
+import Link from "next/link";
 import { Header } from "@/components/header";
 import { Tag } from "@/components/tag";
 
@@ -56,10 +57,16 @@ export function SiteShell({
             <span className="text-sm font-semibold text-ink">Payn</span>
             <span className="text-xs text-ink-tertiary">European Financial Marketplace</span>
           </div>
-          <p className="max-w-lg text-xs leading-5 text-ink-tertiary">
-            Payn compares financial products from regulated European providers. Commission may be earned from some partners.
-            Rankings are based on product fit, cost, and provider quality — not compensation alone.
-          </p>
+          <div className="flex flex-col gap-4 lg:items-end">
+            <div className="flex gap-6">
+              <Link href="/about" className="text-xs font-medium text-ink-secondary transition-colors hover:text-ink">About</Link>
+              <Link href="/contact" className="text-xs font-medium text-ink-secondary transition-colors hover:text-ink">Contact</Link>
+            </div>
+            <p className="max-w-lg text-xs leading-5 text-ink-tertiary lg:text-right">
+              Payn compares financial products from regulated European providers. Commission may be earned from some partners.
+              Rankings are based on product fit, cost, and provider quality — not compensation alone.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
