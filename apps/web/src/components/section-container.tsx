@@ -25,8 +25,8 @@ export function SectionContainer<T extends ElementType = "section">({
   return (
     <Component
       className={clsx(
-        "rounded-2xl border transition-colors duration-200",
-        tone === "default" && "border-line bg-bg-elevated shadow-card",
+        "rounded-3xl border transition-all duration-200",
+        tone === "default" && "border-line bg-white shadow-card",
         tone === "subtle" && "border-line bg-transparent",
         tone === "glass" && "glass",
         padding === "sm" && "p-4",

@@ -14,16 +14,16 @@ export function buttonStyles({
   fullWidth?: boolean;
 } = {}) {
   return clsx(
-    "inline-flex items-center justify-center font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-deep",
-    size === "sm" && "h-9 rounded-lg px-3.5 text-sm",
-    size === "md" && "h-11 rounded-xl px-5 text-sm",
-    size === "lg" && "h-12 rounded-xl px-6 text-base",
+    "inline-flex items-center justify-center font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2",
+    size === "sm" && "h-9 rounded-full px-4 text-sm",
+    size === "md" && "h-11 rounded-full px-6 text-sm",
+    size === "lg" && "h-12 rounded-full px-7 text-base",
     variant === "primary" &&
-      "gradient-primary text-bg-deep shadow-glow hover:shadow-glow-strong",
+      "bg-black text-white hover:bg-gray-800 active:bg-gray-900",
     variant === "secondary" &&
-      "border border-line-strong bg-bg-elevated text-ink hover:bg-bg-surface hover:border-line-active",
+      "border border-line-strong bg-white text-ink hover:bg-bg-surface",
     variant === "ghost" &&
-      "bg-transparent text-primary hover:bg-primary-soft",
+      "bg-transparent text-ink hover:bg-bg-surface",
     fullWidth && "w-full",
   );
 }

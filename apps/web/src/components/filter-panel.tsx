@@ -20,13 +20,6 @@ const defaultFilters: FilterState = {
   provider: null,
 };
 
-const creditScoreOptions = [
-  { label: "Excellent", detail: "720+" },
-  { label: "Good", detail: "660 – 719" },
-  { label: "Fair", detail: "600 – 659" },
-  { label: "Building", detail: "Below 600" },
-];
-
 const purposeOptions: Record<MarketplaceCategory, string[]> = {
   loans: ["Debt consolidation", "Large purchases", "Home improvements", "Digital application", "Fast funding"],
   cards: ["Travel", "Cashback", "No FX fees", "BNPL", "Free card"],
@@ -57,19 +50,16 @@ export function FilterPanel({
     (next: FilterState) => {
       let result = [...offers];
 
-      // purpose / bestFor filter
       if (next.purpose) {
         result = result.filter((o) =>
           o.bestFor.some((b) => b.toLowerCase().includes(next.purpose!.toLowerCase())),
         );
       }
 
-      // provider filter
       if (next.provider) {
         result = result.filter((o) => o.providerName === next.provider);
       }
 
-      // amount filter (loans): exclude offers whose max amount is below slider
       if (isLoan) {
         result = result.filter((o) => {
           const amtMetric = o.metrics.find((m) => m.label === "Amount");
@@ -101,19 +91,19 @@ export function FilterPanel({
   const hasActiveFilter = filters.purpose !== null || filters.provider !== null || (isLoan && filters.amount !== 25000);
 
   return (
-    <aside className="h-fit rounded-2xl border border-line bg-bg-elevated p-6 lg:sticky lg:top-20">
+    <aside className="h-fit rounded-3xl border border-line bg-white p-6 shadow-card lg:sticky lg:top-20">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-caption uppercase tracking-widest text-primary">Refine</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">Refine</p>
           <h2 className="mt-2 text-h3 text-ink">Filter results</h2>
         </div>
         {hasActiveFilter && (
           <button
             type="button"
             onClick={reset}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary-soft"
+            className="rounded-full bg-bg-surface px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
           >
-            Reset all
+            Reset
           </button>
         )}
       </div>
@@ -122,14 +112,13 @@ export function FilterPanel({
       </p>
 
       <div className="mt-6 grid gap-6">
-        {/* Amount slider (loans only) */}
         {isLoan && (
           <section>
             <div className="flex items-center justify-between gap-4">
               <label htmlFor="amount" className="text-sm font-medium text-ink">
                 Amount needed
               </label>
-              <span className="rounded-md bg-bg-surface px-2.5 py-1 text-xs font-semibold tabular-nums text-primary">
+              <span className="rounded-full bg-bg-surface px-3 py-1 text-xs font-bold tabular-nums text-ink">
                 {formatAmount(filters.amount)}
               </span>
             </div>
@@ -141,7 +130,7 @@ export function FilterPanel({
               step={1000}
               value={filters.amount}
               onChange={(e) => update({ amount: Number(e.target.value) })}
-              className="mt-3 w-full accent-primary"
+              className="mt-3 w-full"
             />
             <div className="mt-1.5 flex items-center justify-between text-xs text-ink-tertiary">
               <span>EUR 1k</span>
@@ -150,7 +139,6 @@ export function FilterPanel({
           </section>
         )}
 
-        {/* Purpose / use-case */}
         <section>
           <p className="mb-3 text-sm font-medium text-ink">
             {isLoan ? "Purpose" : "Best for"}
@@ -162,15 +150,15 @@ export function FilterPanel({
                 type="button"
                 onClick={() => update({ purpose: filters.purpose === option ? null : option })}
                 className={clsx(
-                  "flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm transition-all duration-200",
+                  "flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-all duration-200",
                   filters.purpose === option
-                    ? "border-line-active bg-primary-soft font-medium text-ink"
-                    : "border-line bg-bg-surface text-ink-secondary hover:border-line-strong hover:text-ink",
+                    ? "border-black bg-black/[0.03] font-medium text-ink"
+                    : "border-line bg-white text-ink-secondary hover:border-line-strong hover:text-ink",
                 )}
               >
                 <span>{option}</span>
                 {filters.purpose === option && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-primary">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink">
                     <path d="M3 7l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
@@ -179,7 +167,6 @@ export function FilterPanel({
           </div>
         </section>
 
-        {/* Provider filter */}
         <section>
           <label htmlFor="provider" className="mb-2 block text-sm font-medium text-ink">
             Provider
@@ -188,7 +175,7 @@ export function FilterPanel({
             id="provider"
             value={filters.provider ?? ""}
             onChange={(e) => update({ provider: e.target.value || null })}
-            className="h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink transition-colors focus:border-line-active focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-11 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink transition-colors focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
           >
             <option value="">All providers</option>
             {providers.map((p) => (
