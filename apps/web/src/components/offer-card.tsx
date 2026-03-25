@@ -1,6 +1,8 @@
 import type { MarketplaceOffer } from "@payn/types";
 import { buttonStyles } from "@/components/button";
 import { Tag } from "@/components/tag";
+import { getMatchReasons } from "@/lib/match-reasons";
+import { getProviderBrand } from "@/lib/provider-brands";
 
 const ctaLabels: Record<MarketplaceOffer["linkType"], string> = {
   affiliate_redirect: "Apply now",
@@ -15,6 +17,9 @@ function formatDate(value: string) {
 }
 
 export function OfferCard({ offer, rank }: { offer: MarketplaceOffer; rank: number }) {
+  const brand = getProviderBrand(offer.providerName);
+  const reasons = getMatchReasons(offer, rank);
+
   return (
     <article
       className="group rounded-3xl border border-line bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover sm:p-8"
@@ -23,8 +28,11 @@ export function OfferCard({ offer, rank }: { offer: MarketplaceOffer; rank: numb
       {/* Provider row */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-bg-surface text-sm font-bold text-ink">
-            {offer.providerMark}
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold"
+            style={{ backgroundColor: brand.bg, color: brand.text }}
+          >
+            {brand.mark}
           </div>
           <div>
             <p className="text-sm font-bold text-ink">{offer.providerName}</p>
@@ -58,6 +66,19 @@ export function OfferCard({ offer, rank }: { offer: MarketplaceOffer; rank: numb
           </Tag>
         ))}
       </div>
+
+      {/* Explainability: why this result */}
+      {reasons.length > 0 && (
+        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-accent-blue bg-accent-blue/30 px-4 py-3">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-accent-blue-text">
+            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
+          <p className="text-xs font-medium text-accent-blue-text">
+            {reasons.join(" · ")}
+          </p>
+        </div>
+      )}
 
       {/* CTA row */}
       <div className="mt-6 flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">

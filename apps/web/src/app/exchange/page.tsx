@@ -10,7 +10,7 @@ export default async function ExchangePage() {
       activeHref="/exchange"
       eyebrow="Currency Exchange Marketplace"
       title="FX providers with visible spreads, supported pairs, and transparent pricing."
-      description={`${offers.length} exchange services compared on spread, supported currencies, and pricing transparency.`}
+      description="Exchange services compared on spread, supported currencies, and pricing transparency."
       heroTags={["Spread visibility", "Multi-currency", "Real-time comparison"]}
     >
       <CategoryPageContent category="exchange" offers={offers} label="exchange providers" />

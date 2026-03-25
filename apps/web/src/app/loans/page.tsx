@@ -4,20 +4,13 @@ import { listCategoryOffers } from "@/server/catalog/catalog-service";
 
 export default async function LoansPage() {
   const offers = await listCategoryOffers("loans");
-  const markets = new Set(offers.flatMap((offer) => offer.countryCodes));
-  const latestTimestamp = Math.max(...offers.map((offer) => new Date(offer.updatedAt).getTime()));
-  const lastUpdated = new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(latestTimestamp));
 
   return (
     <SiteShell
       activeHref="/loans"
       eyebrow="Loans Marketplace"
       title="Find the right loan with transparent, data-driven comparison."
-      description={`${offers.length} loan offers ranked by borrowing cost, product fit, and provider quality across ${markets.size} markets.`}
+      description="Loan offers ranked by borrowing cost, product fit, and provider quality across multiple European markets."
       heroTags={["Updated regularly", "Independent comparison", "Methodology disclosed"]}
     >
       {/* Trust strip */}
@@ -35,7 +28,7 @@ export default async function LoansPage() {
           },
           {
             title: "Updated recently",
-            text: `Rates and provider details last reviewed ${lastUpdated}.`,
+            text: "Rates and provider details reviewed and updated regularly.",
             icon: <path d="M3 8l3 3 7-7" strokeLinecap="round" strokeLinejoin="round" />,
           },
         ].map((item) => (

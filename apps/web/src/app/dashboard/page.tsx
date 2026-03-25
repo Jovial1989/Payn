@@ -26,16 +26,30 @@ const GOAL_LABELS: Record<string, string> = {
   no_hidden_fees: "No hidden fees",
 };
 
+function roundCount(n: number): string {
+  if (n <= 5) return `${n}`;
+  if (n < 15) return `${Math.floor(n / 5) * 5}+`;
+  return `${Math.floor(n / 10) * 10}+`;
+}
+
 export default function DashboardPage() {
   const { user, profile, loading, signOut } = useAuth();
   const [offers, setOffers] = useState<MarketplaceOffer[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
-  // Fetch mock offers for recommendations
   useEffect(() => {
     const loadOffers = async () => {
       try {
         const mod = await import("@/features/catalog/mock-data");
         const allOffers = mod.featuredOffers;
+
+        // Calculate category counts dynamically
+        const counts: Record<string, number> = {};
+        for (const o of allOffers) {
+          counts[o.category] = (counts[o.category] ?? 0) + 1;
+        }
+        setCategoryCounts(counts);
+
         if (profile?.selected_categories?.length) {
           setOffers(
             allOffers
@@ -156,19 +170,18 @@ export default function DashboardPage() {
 
         {/* Quick actions */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { href: "/loans", label: "Browse loans", count: "17 offers" },
-            { href: "/cards", label: "Browse cards", count: "14 offers" },
-            { href: "/transfers", label: "Browse transfers", count: "13 offers" },
-            { href: "/exchange", label: "Browse exchange", count: "12 offers" },
-          ].map((item) => (
+          {(["loans", "cards", "transfers", "exchange"] as const).map((cat) => (
             <Link
-              key={item.href}
-              href={item.href}
+              key={cat}
+              href={`/${cat}`}
               className="group rounded-2xl border border-line bg-white p-5 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
             >
-              <p className="text-sm font-bold text-ink group-hover:text-black">{item.label}</p>
-              <p className="mt-1 text-xs text-ink-tertiary">{item.count}</p>
+              <p className="text-sm font-bold text-ink group-hover:text-black">
+                Browse {CATEGORY_LABELS[cat]?.toLowerCase() ?? cat}
+              </p>
+              <p className="mt-1 text-xs text-ink-tertiary">
+                {categoryCounts[cat] ? `${roundCount(categoryCounts[cat])} offers` : "View offers"}
+              </p>
             </Link>
           ))}
         </section>

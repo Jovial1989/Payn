@@ -10,7 +10,7 @@ export default async function TransfersPage() {
       activeHref="/transfers"
       eyebrow="Money Transfers Marketplace"
       title="Compare international transfer providers on fees, speed, and corridors."
-      description={`${offers.length} transfer services ranked by cost, delivery speed, and corridor coverage.`}
+      description="Transfer services ranked by cost, delivery speed, and corridor coverage."
       heroTags={["Fee transparency", "Corridor-aware", "Speed comparison"]}
     >
       <CategoryPageContent category="transfers" offers={offers} label="transfer providers" />
