@@ -4,6 +4,7 @@ import type { MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { buttonStyles } from "@/components/button";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { OfferCard } from "@/components/offer-card";
 import { SiteShell } from "@/components/site-shell";
 import { Tag } from "@/components/tag";
@@ -11,9 +12,11 @@ import { useAuth } from "@/hooks/use-auth";
 
 const CATEGORY_LABELS: Record<string, string> = {
   loans: "Loans",
-  cards: "Credit Cards",
+  cards: "Cards",
   transfers: "Transfers",
   exchange: "Exchange",
+  insurance: "Insurance",
+  investments: "Investments",
 };
 
 const GOAL_LABELS: Record<string, string> = {
@@ -34,14 +37,15 @@ function roundCount(n: number): string {
 
 export default function DashboardPage() {
   const { user, profile, loading, signOut } = useAuth();
+  const preferences = useMarketplacePreferences();
   const [offers, setOffers] = useState<MarketplaceOffer[]>([]);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadOffers = async () => {
       try {
-        const mod = await import("@/features/catalog/mock-data");
-        const allOffers = mod.featuredOffers;
+        const mod = await import("@/features/catalog/marketplace-offers");
+        const allOffers = mod.marketplaceOffers;
 
         // Calculate category counts dynamically
         const counts: Record<string, number> = {};
@@ -101,7 +105,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <SiteShell eyebrow="" title="" description="" hideHero activeHref="/dashboard">
+    <SiteShell activePage="marketplace" hideHero>
       <div className="grid gap-8">
         {/* Welcome header */}
         <section className="rounded-3xl bg-white p-8 shadow-card lg:p-10">
@@ -162,7 +166,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid gap-4">
               {offers.map((offer, i) => (
-                <OfferCard key={offer.id} offer={offer} rank={i + 1} />
+                <OfferCard key={offer.id} offer={offer} rank={i + 1} locale={preferences.locale} />
               ))}
             </div>
           </section>
@@ -170,10 +174,10 @@ export default function DashboardPage() {
 
         {/* Quick actions */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(["loans", "cards", "transfers", "exchange"] as const).map((cat) => (
+          {(["loans", "cards", "transfers", "exchange", "insurance", "investments"] as const).map((cat) => (
             <Link
               key={cat}
-              href={`/${cat}`}
+              href={`/${preferences.market}/${cat}`}
               className="group rounded-2xl border border-line bg-white p-5 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
             >
               <p className="text-sm font-bold text-ink group-hover:text-black">

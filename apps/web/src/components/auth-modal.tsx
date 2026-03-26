@@ -10,8 +10,8 @@ const VALUE_POINTS = [
   "Save and compare offers across categories",
   "Get personalised rate recommendations",
   "Track when better rates appear",
-  "Join the Payn app waitlist",
-  "Early access to rewards and perks",
+  "Join the Payn mobile waitlist",
+  "Early access to new product features",
 ];
 
 export function AuthModal({
@@ -279,7 +279,7 @@ export function AuthModal({
 
             {mode === "sign-up" && (
               <p className="mt-3 text-center text-[10px] text-ink-tertiary">
-                By creating an account you agree to our terms of service.
+                Create an account to save offers and stay informed about product updates.
               </p>
             )}
           </>

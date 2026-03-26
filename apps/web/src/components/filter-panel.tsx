@@ -25,6 +25,8 @@ const purposeOptions: Record<MarketplaceCategory, string[]> = {
   cards: ["Travel", "Cashback", "No FX fees", "BNPL", "Free card"],
   transfers: ["Best rates", "Remittances", "Fast delivery", "Free P2P", "Business payments"],
   exchange: ["Mid-market rate", "Rate alerts", "Business FX", "Multi-currency hold", "Free exchanges"],
+  insurance: ["Health cover", "Travel cover", "Car cover", "Family protection", "Digital claims"],
+  investments: ["Stocks", "ETF plans", "Crypto", "Long-term investing", "Low-cost trading"],
 };
 
 function formatAmount(val: number) {

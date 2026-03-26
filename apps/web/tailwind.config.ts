@@ -13,13 +13,13 @@ const config: Config = {
           surface: "#F4F5F7",
           overlay: "#F0F1F3",
         },
-        // Primary – pure black for CTAs
+        // Primary - pure black for CTAs
         primary: {
           DEFAULT: "#000000",
           soft: "rgba(0, 0, 0, 0.04)",
           glow: "rgba(0, 0, 0, 0.06)",
         },
-        // Accent – subtle blue for badges
+        // Accent - subtle blue for badges
         accent: {
           blue: "#E8F0FE",
           "blue-text": "#1A73E8",
@@ -52,7 +52,7 @@ const config: Config = {
         "glow-strong": "0 0 0 rgba(0, 0, 0, 0)",
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
+        sans: ["Manrope", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
       },
       fontSize: {
         display: ["4rem", { lineHeight: "1.05", fontWeight: "800", letterSpacing: "-0.04em" }],

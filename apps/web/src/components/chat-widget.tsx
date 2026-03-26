@@ -130,7 +130,7 @@ export function ChatWidget() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-ink">Payn AI</p>
-              <p className="text-[11px] text-ink-tertiary">Powered by Gemini</p>
+              <p className="text-[11px] text-ink-tertiary">Offer guidance beta</p>
             </div>
             {messages.length > 0 && (
               <button

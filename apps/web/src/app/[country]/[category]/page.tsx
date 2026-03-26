@@ -1,5 +1,8 @@
-import { SectionContainer } from "@/components/section-container";
+import { notFound } from "next/navigation";
+import { CategoryPageContent } from "@/components/category-page-content";
 import { SiteShell } from "@/components/site-shell";
+import { isMarketplaceCategory, isSupportedMarket } from "@/lib/marketplace";
+import { listCategoryOffers } from "@/server/catalog/catalog-service";
 
 export default async function CountryCategoryPage({
   params,
@@ -8,17 +11,23 @@ export default async function CountryCategoryPage({
 }) {
   const { country, category } = await params;
 
+  if (!isSupportedMarket(country) || !isMarketplaceCategory(category)) {
+    notFound();
+  }
+
+  const offers = await listCategoryOffers(category);
+
   return (
     <SiteShell
-      eyebrow="Country-aware marketplace"
-      title={`Localized ${category} discovery for ${country.toUpperCase()}.`}
-      description="Country-aware routes are scaffolded now so compliance notes, metadata, and local market variations can be added without rewriting route architecture."
-      heroTags={["Localized catalog", "Compliance notes", "Market-specific routing"]}
+      activePage="marketplace"
+      activeCategory={category}
+      hideHero
     >
-      <SectionContainer className="text-sm leading-7 text-muted">
-        This route is reserved for country-specific catalog retrieval, content blocks, and future
-        localization.
-      </SectionContainer>
+      <CategoryPageContent
+        category={category}
+        offers={offers}
+        market={country}
+      />
     </SiteShell>
   );
 }

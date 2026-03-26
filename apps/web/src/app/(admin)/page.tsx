@@ -3,6 +3,7 @@ import { SiteShell } from "@/components/site-shell";
 export default function AdminIndexPage() {
   return (
     <SiteShell
+      activePage="marketplace"
       eyebrow="Admin foundation"
       title="Operational tools will live behind a dedicated admin surface."
       description="Offer management, ranking controls, editorial workflows, and ingestion observability should remain isolated from the public marketplace experience."
@@ -13,4 +14,3 @@ export default function AdminIndexPage() {
     </SiteShell>
   );
 }
-

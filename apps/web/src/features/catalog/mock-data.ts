@@ -22,7 +22,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.95,
     providerWebsiteUrl: "https://klarna.com",
-    affiliateLink: "https://klarna.com/loans",
+    affiliateLink: "https://klarna.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -43,7 +43,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.91,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/loans",
+    affiliateLink: "https://n26.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -64,7 +64,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.88,
     providerWebsiteUrl: "https://zopa.com",
-    affiliateLink: "https://zopa.com/loans",
+    affiliateLink: "https://zopa.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -85,7 +85,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.86,
     providerWebsiteUrl: "https://ing.com",
-    affiliateLink: "https://ing.com/loans",
+    affiliateLink: "https://ing.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -106,7 +106,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.83,
     providerWebsiteUrl: "https://santander.com",
-    affiliateLink: "https://santander.com/loans",
+    affiliateLink: "https://santander.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -127,7 +127,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.79,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://bunq.com/loans",
+    affiliateLink: "https://bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -148,7 +148,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     providerWebsiteUrl: "https://bbva.es",
-    affiliateLink: "https://bbva.es/loans",
+    affiliateLink: "https://bbva.es",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -169,7 +169,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.84,
     providerWebsiteUrl: "https://bnpparibas.fr",
-    affiliateLink: "https://bnpparibas.fr/loans",
+    affiliateLink: "https://bnpparibas.fr",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -190,7 +190,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.85,
     providerWebsiteUrl: "https://deutsche-bank.de",
-    affiliateLink: "https://deutsche-bank.de/loans",
+    affiliateLink: "https://deutsche-bank.de",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -211,7 +211,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.90,
     providerWebsiteUrl: "https://revolut.com",
-    affiliateLink: "https://revolut.com/loans",
+    affiliateLink: "https://revolut.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -232,7 +232,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.68,
     providerWebsiteUrl: "https://monese.com",
-    affiliateLink: "https://monese.com/loans",
+    affiliateLink: "https://monese.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -253,7 +253,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.81,
     providerWebsiteUrl: "https://barclays.co.uk",
-    affiliateLink: "https://barclays.co.uk/loans",
+    affiliateLink: "https://barclays.co.uk",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -274,7 +274,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
     providerWebsiteUrl: "https://abnamro.nl",
-    affiliateLink: "https://abnamro.nl/loans",
+    affiliateLink: "https://abnamro.nl",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -295,7 +295,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.77,
     providerWebsiteUrl: "https://unicredit.it",
-    affiliateLink: "https://unicredit.it/loans",
+    affiliateLink: "https://unicredit.it",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -316,7 +316,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.87,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/credit",
+    affiliateLink: "https://wise.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -337,7 +337,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.78,
     providerWebsiteUrl: "https://rabobank.nl",
-    affiliateLink: "https://rabobank.nl/loans",
+    affiliateLink: "https://rabobank.nl",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -358,7 +358,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.65,
     providerWebsiteUrl: "https://curve.com",
-    affiliateLink: "https://curve.com/credit",
+    affiliateLink: "https://curve.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
 
@@ -383,7 +383,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.94,
     providerWebsiteUrl: "https://revolut.com",
-    affiliateLink: "https://revolut.com/metal",
+    affiliateLink: "https://revolut.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -404,7 +404,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.89,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/you",
+    affiliateLink: "https://n26.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -425,7 +425,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.92,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/card",
+    affiliateLink: "https://wise.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -446,7 +446,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.81,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://bunq.com/travel",
+    affiliateLink: "https://bunq.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -467,7 +467,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
     providerWebsiteUrl: "https://curve.com",
-    affiliateLink: "https://curve.com/card",
+    affiliateLink: "https://curve.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -488,7 +488,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.88,
     providerWebsiteUrl: "https://klarna.com",
-    affiliateLink: "https://klarna.com/card",
+    affiliateLink: "https://klarna.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -509,7 +509,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.72,
     providerWebsiteUrl: "https://monese.com",
-    affiliateLink: "https://monese.com/premium",
+    affiliateLink: "https://monese.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -530,7 +530,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.76,
     providerWebsiteUrl: "https://barclaycard.co.uk",
-    affiliateLink: "https://barclaycard.co.uk/rewards",
+    affiliateLink: "https://barclaycard.co.uk",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -551,7 +551,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.85,
     providerWebsiteUrl: "https://revolut.com",
-    affiliateLink: "https://revolut.com/standard",
+    affiliateLink: "https://revolut.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -572,7 +572,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.83,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/metal",
+    affiliateLink: "https://n26.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -593,7 +593,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.75,
     providerWebsiteUrl: "https://santander.co.uk",
-    affiliateLink: "https://santander.co.uk/123",
+    affiliateLink: "https://santander.co.uk",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -614,7 +614,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/business-card",
+    affiliateLink: "https://wise.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -635,7 +635,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.71,
     providerWebsiteUrl: "https://ing.com",
-    affiliateLink: "https://ing.com/cards",
+    affiliateLink: "https://ing.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
   {
@@ -656,7 +656,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.74,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://bunq.com/easy-green",
+    affiliateLink: "https://bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
 
@@ -681,7 +681,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.96,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/send",
+    affiliateLink: "https://wise.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -702,7 +702,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.93,
     providerWebsiteUrl: "https://revolut.com",
-    affiliateLink: "https://revolut.com/transfer",
+    affiliateLink: "https://revolut.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -723,7 +723,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.84,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/moneybeam",
+    affiliateLink: "https://n26.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -744,7 +744,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.79,
     providerWebsiteUrl: "https://worldremit.com",
-    affiliateLink: "https://worldremit.com/send",
+    affiliateLink: "https://worldremit.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -765,7 +765,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.75,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://bunq.com/transfers",
+    affiliateLink: "https://bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -786,7 +786,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.67,
     providerWebsiteUrl: "https://monese.com",
-    affiliateLink: "https://monese.com/transfers",
+    affiliateLink: "https://monese.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -807,7 +807,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.73,
     providerWebsiteUrl: "https://currencyfair.com",
-    affiliateLink: "https://currencyfair.com/send",
+    affiliateLink: "https://currencyfair.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
   {
@@ -828,7 +828,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.81,
     providerWebsiteUrl: "https://xe.com",
-    affiliateLink: "https://xe.com/send",
+    affiliateLink: "https://xe.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -849,7 +849,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.77,
     providerWebsiteUrl: "https://remitly.com",
-    affiliateLink: "https://remitly.com/send",
+    affiliateLink: "https://remitly.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -870,7 +870,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.74,
     providerWebsiteUrl: "https://payoneer.com",
-    affiliateLink: "https://payoneer.com/send",
+    affiliateLink: "https://payoneer.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -891,7 +891,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.70,
     providerWebsiteUrl: "https://westernunion.com",
-    affiliateLink: "https://westernunion.com/send",
+    affiliateLink: "https://westernunion.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -912,7 +912,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.69,
     providerWebsiteUrl: "https://santander.com",
-    affiliateLink: "https://santander.com/transfers",
+    affiliateLink: "https://santander.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
   {
@@ -933,7 +933,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.65,
     providerWebsiteUrl: "https://ing.com",
-    affiliateLink: "https://ing.com/transfers",
+    affiliateLink: "https://ing.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
 
@@ -958,7 +958,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.95,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/multi",
+    affiliateLink: "https://wise.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -979,7 +979,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.93,
     providerWebsiteUrl: "https://revolut.com",
-    affiliateLink: "https://revolut.com/exchange",
+    affiliateLink: "https://revolut.com",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -1000,7 +1000,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/exchange",
+    affiliateLink: "https://n26.com",
     updatedAt: "2026-03-23T00:00:00Z",
   },
   {
@@ -1021,7 +1021,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.78,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://bunq.com/exchange",
+    affiliateLink: "https://bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -1042,7 +1042,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.76,
     providerWebsiteUrl: "https://currencyfair.com",
-    affiliateLink: "https://currencyfair.com/exchange",
+    affiliateLink: "https://currencyfair.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -1063,7 +1063,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
     providerWebsiteUrl: "https://interactivebrokers.com",
-    affiliateLink: "https://interactivebrokers.com/fx",
+    affiliateLink: "https://interactivebrokers.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -1084,7 +1084,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.77,
     providerWebsiteUrl: "https://xe.com",
-    affiliateLink: "https://xe.com/exchange",
+    affiliateLink: "https://xe.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -1105,7 +1105,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.85,
     providerWebsiteUrl: "https://revolut.com/business",
-    affiliateLink: "https://revolut.com/business/fx",
+    affiliateLink: "https://revolut.com/business",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -1126,7 +1126,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.64,
     providerWebsiteUrl: "https://klarna.com",
-    affiliateLink: "https://klarna.com/fx",
+    affiliateLink: "https://klarna.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
   {
@@ -1147,7 +1147,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.62,
     providerWebsiteUrl: "https://monese.com",
-    affiliateLink: "https://monese.com/exchange",
+    affiliateLink: "https://monese.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
   {
@@ -1168,7 +1168,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.72,
     providerWebsiteUrl: "https://bnpparibas.fr",
-    affiliateLink: "https://bnpparibas.fr/fx",
+    affiliateLink: "https://bnpparibas.fr",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -1189,7 +1189,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.71,
     providerWebsiteUrl: "https://curve.com",
-    affiliateLink: "https://curve.com/fx",
+    affiliateLink: "https://curve.com",
     updatedAt: "2026-03-21T00:00:00Z",
   },
   {
@@ -1210,7 +1210,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.88,
     providerWebsiteUrl: "https://wise.com/business",
-    affiliateLink: "https://wise.com/business/multi",
+    affiliateLink: "https://wise.com/business",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
@@ -1231,7 +1231,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.66,
     providerWebsiteUrl: "https://santander.com",
-    affiliateLink: "https://santander.com/fx",
+    affiliateLink: "https://santander.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
 ];

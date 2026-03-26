@@ -19,7 +19,7 @@ export function buttonStyles({
     size === "md" && "h-11 rounded-full px-6 text-sm",
     size === "lg" && "h-12 rounded-full px-7 text-base",
     variant === "primary" &&
-      "bg-black text-white hover:bg-gray-800 active:bg-gray-900",
+      "bg-black text-white shadow-subtle hover:bg-gray-800 active:bg-gray-900",
     variant === "secondary" &&
       "border border-line-strong bg-white text-ink hover:bg-bg-surface",
     variant === "ghost" &&

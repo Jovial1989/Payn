@@ -1,19 +1,8 @@
-import { CategoryPageContent } from "@/components/category-page-content";
-import { SiteShell } from "@/components/site-shell";
-import { listCategoryOffers } from "@/server/catalog/catalog-service";
+import { redirect } from "next/navigation";
+import { getMarketCategoryHref } from "@/lib/marketplace";
+import { getRequestPreferences } from "@/lib/request-preferences";
 
 export default async function TransfersPage() {
-  const offers = await listCategoryOffers("transfers");
-
-  return (
-    <SiteShell
-      activeHref="/transfers"
-      eyebrow="Money Transfers Marketplace"
-      title="Compare international transfer providers on fees, speed, and corridors."
-      description="Transfer services ranked by cost, delivery speed, and corridor coverage."
-      heroTags={["Fee transparency", "Corridor-aware", "Speed comparison"]}
-    >
-      <CategoryPageContent category="transfers" offers={offers} label="transfer providers" />
-    </SiteShell>
-  );
+  const preferences = await getRequestPreferences();
+  redirect(getMarketCategoryHref(preferences.market, "transfers"));
 }
