@@ -24,37 +24,27 @@ const steps = [
   "Get ranked offers",
 ];
 
-function PhoneMock() {
+function HeroPhoneMock() {
   return (
-    <div className="relative mx-auto w-full max-w-[360px]">
+    <div className="relative mx-auto w-full max-w-[340px]">
       <div className="rounded-[44px] bg-[#101111] p-[10px] shadow-[0_30px_90px_rgba(0,0,0,0.16)]">
         <div className="relative overflow-hidden rounded-[36px] bg-[#F3F6F4] p-4">
           <div className="absolute left-1/2 top-3 h-7 w-28 -translate-x-1/2 rounded-full bg-black/90" />
 
           <div className="mt-10 grid gap-3">
             <div className="rounded-[22px] bg-white p-4 shadow-subtle">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                Payn
-              </p>
-              <h3 className="mt-2 text-lg font-bold tracking-tight text-ink">
-                Your financial marketplace
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-                Europe selected. Ranked offers ready.
-              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Payn</p>
+              <h3 className="mt-2 text-lg font-bold tracking-tight text-ink">Your financial marketplace</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">Europe selected. Ranked offers ready.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-[20px] bg-[#DFF3E7] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#216B45]">
-                  Country
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#216B45]">Country</p>
                 <p className="mt-2 text-sm font-bold text-[#123B27]">Germany</p>
               </div>
               <div className="rounded-[20px] bg-[#E8EEF8] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#40618E]">
-                  Category
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#40618E]">Category</p>
                 <p className="mt-2 text-sm font-bold text-[#1D2A3D]">Transfers</p>
               </div>
             </div>
@@ -65,40 +55,130 @@ function PhoneMock() {
                   <p className="text-sm font-bold text-ink">Wise Transfer</p>
                   <p className="mt-1 text-xs text-ink-secondary">Matches your country and payout speed filter</p>
                 </div>
-                <span className="rounded-full bg-accent-blue px-2.5 py-1 text-xs font-semibold text-accent-blue-text">
-                  #1
-                </span>
+                <span className="rounded-full bg-accent-blue px-2.5 py-1 text-xs font-semibold text-accent-blue-text">#1</span>
               </div>
-
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
                   { label: "Fee", value: "EUR 2.10" },
                   { label: "Speed", value: "Same day" },
                   { label: "FX", value: "0.41%" },
-                ].map((metric) => (
-                  <div key={metric.label} className="rounded-2xl bg-bg-surface px-3 py-3">
-                    <p className="text-[11px] text-ink-tertiary">{metric.label}</p>
-                    <p className="mt-1 text-xs font-bold text-ink">{metric.value}</p>
+                ].map((m) => (
+                  <div key={m.label} className="rounded-2xl bg-bg-surface px-3 py-3">
+                    <p className="text-[11px] text-ink-tertiary">{m.label}</p>
+                    <p className="mt-1 text-xs font-bold text-ink">{m.value}</p>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            <div className="rounded-[24px] bg-[#121716] p-4 text-white">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
-                Saved shortlist
-              </p>
-              <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/[0.06] px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold">3 offers saved</p>
-                  <p className="mt-1 text-xs text-white/60">Ready to review on mobile</p>
+function MobileAppPhoneMock() {
+  const savedOffers = [
+    {
+      provider: "Revolut",
+      mark: "R",
+      name: "Revolut Ultra",
+      tag: "Best for travel",
+      tagTone: "text-[#216B45] bg-[#DFF3E7]",
+      metrics: [
+        { label: "Cashback", value: "1%" },
+        { label: "FX fee", value: "0%" },
+      ],
+    },
+    {
+      provider: "Wise",
+      mark: "W",
+      name: "Wise Multi-Currency",
+      tag: "Lowest FX",
+      tagTone: "text-[#40618E] bg-[#E8EEF8]",
+      metrics: [
+        { label: "Fee", value: "EUR 2.10" },
+        { label: "Speed", value: "Same day" },
+      ],
+    },
+    {
+      provider: "N26",
+      mark: "N",
+      name: "N26 You",
+      tag: "No monthly fee",
+      tagTone: "text-[#7C5C2E] bg-[#FEF3C7]",
+      metrics: [
+        { label: "Monthly", value: "EUR 0" },
+        { label: "ATM", value: "5 free" },
+      ],
+    },
+  ];
+
+  return (
+    <div className="relative mx-auto w-full max-w-[340px]">
+      <div className="rounded-[44px] bg-[#0A0A0A] p-[10px] shadow-[0_30px_90px_rgba(0,0,0,0.35)]">
+        <div className="relative overflow-hidden rounded-[36px] bg-[#111614] px-4 pb-5 pt-4">
+          <div className="absolute left-1/2 top-3 h-7 w-28 -translate-x-1/2 rounded-full bg-black" />
+
+          {/* Header */}
+          <div className="mt-10 flex items-center justify-between">
+            <div>
+              <p className="text-[15px] font-bold text-white">Your shortlist</p>
+              <p className="mt-0.5 text-[11px] text-white/50">Germany selected</p>
+            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white">
+              KP
+            </div>
+          </div>
+
+          {/* Saved offer cards */}
+          <div className="mt-4 grid gap-2.5">
+            {savedOffers.map((offer) => (
+              <div key={offer.name} className="rounded-[18px] bg-white/[0.07] px-3.5 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/10 text-[11px] font-bold text-white">
+                      {offer.mark}
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-white">{offer.name}</p>
+                      <p className="mt-0.5 text-[11px] text-white/45">{offer.provider}</p>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${offer.tagTone}`}>
+                    {offer.tag}
+                  </span>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 3l4.5 2.7v4.6L8 13 3.5 10.3V5.7L8 3z" stroke="white" strokeWidth="1.4" strokeLinejoin="round" />
-                  </svg>
+                <div className="mt-2.5 flex gap-2">
+                  {offer.metrics.map((m) => (
+                    <div key={m.label} className="rounded-xl bg-white/[0.06] px-2.5 py-2">
+                      <p className="text-[10px] text-white/40">{m.label}</p>
+                      <p className="mt-0.5 text-[12px] font-bold text-white">{m.value}</p>
+                    </div>
+                  ))}
+                  <button type="button" className="ml-auto flex items-center rounded-xl bg-white px-3 py-2 text-[11px] font-semibold text-black">
+                    Apply
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Compare bar */}
+          <button type="button" className="mt-3 flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] py-2.5 text-[12px] font-semibold text-white/70">
+            Compare selected
+          </button>
+
+          {/* Bottom status */}
+          <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/[0.04] px-3.5 py-2.5">
+            <div>
+              <p className="text-[12px] font-semibold text-white">3 offers saved</p>
+              <p className="text-[11px] text-white/40">2 reviewed, 1 left</p>
+            </div>
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8l4 4 6-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
         </div>
@@ -149,7 +229,7 @@ export function HomePage() {
           <div className="relative">
             <div className="absolute inset-0 rounded-[36px] bg-[radial-gradient(circle_at_top,_rgba(24,94,69,0.16),_transparent_42%),radial-gradient(circle_at_bottom_right,_rgba(26,115,232,0.14),_transparent_36%)]" />
             <div className="relative grid min-h-full place-items-center rounded-[36px] bg-[#F4F5F2] p-4 sm:p-6">
-              <PhoneMock />
+              <HeroPhoneMock />
             </div>
           </div>
         </div>
@@ -202,7 +282,7 @@ export function HomePage() {
           </div>
 
           <div className="justify-self-center">
-            <PhoneMock />
+            <MobileAppPhoneMock />
           </div>
         </div>
       </section>

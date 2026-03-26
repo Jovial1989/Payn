@@ -575,6 +575,56 @@ function toInsightForOffer(
   );
 }
 
+function CatalogOfferGrid({
+  offers,
+  emptyTitle,
+  emptyDescription,
+}: {
+  offers: MarketplaceOffer[];
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (offers.length === 0) {
+    return (
+      <EmptyState
+        title={emptyTitle}
+        description={emptyDescription}
+        href="/explore"
+        cta="Explore offers"
+      />
+    );
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {offers.map((offer) => (
+        <DashboardOfferTile key={offer.id} offer={offer} />
+      ))}
+    </div>
+  );
+}
+
+function getMarketOffers(market: string) {
+  return marketplaceOffers.filter((offer) =>
+    matchesOfferMarket(offer, market as import("@payn/types").MarketplaceMarket),
+  );
+}
+
+function getCategoryOffers(market: string, category: MarketplaceCategory) {
+  return getMarketOffers(market).filter((offer) => offer.category === category);
+}
+
+function getUniqueProviders(offers: MarketplaceOffer[]) {
+  const seen = new Set<string>();
+  return offers
+    .filter((offer) => {
+      if (seen.has(offer.providerName)) return false;
+      seen.add(offer.providerName);
+      return true;
+    })
+    .map((offer) => offer.providerName);
+}
+
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const activeView = useMemo(
@@ -585,45 +635,30 @@ export default function DashboardPage() {
   const { user, profile, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-  const [insightsLoading, setInsightsLoading] = useState(true);
-  const [insightsError, setInsightsError] = useState<string | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
 
   const dashboardMarket = profile ? resolveProfileMarket(profile.home_country) : preferences.market;
+  const marketLabel = marketDefinitions[dashboardMarket].label;
 
+  // Try to load insights in background - never blocks UI
   const loadInsights = useCallback(async () => {
-    if (!user || !profile?.onboarding_completed) {
-      setInsights(null);
-      setInsightsLoading(false);
-      setInsightsError(null);
-      return;
-    }
-
+    if (!user || !profile?.onboarding_completed) return;
     setInsightsLoading(true);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
       const response = await fetch("/api/v1/dashboard", {
         cache: "no-store",
         signal: controller.signal,
       });
-
-      if (!response.ok) {
-        throw new Error("Unable to load dashboard insights.");
+      if (response.ok) {
+        const payload = (await response.json()) as DashboardInsights;
+        setInsights(payload);
       }
-
-      const payload = (await response.json()) as DashboardInsights;
-      setInsights(payload);
-      setInsightsError(null);
-    } catch (error) {
-      if (controller.signal.aborted) {
-        setInsightsError("Dashboard took too long to respond. Try again or explore offers directly.");
-      } else {
-        setInsightsError(
-          error instanceof Error ? error.message : "Unable to load dashboard insights.",
-        );
-      }
+    } catch {
+      // Insights are optional - dashboard works without them
     } finally {
       clearTimeout(timeout);
       setInsightsLoading(false);
@@ -635,17 +670,10 @@ export default function DashboardPage() {
   }, [loadInsights]);
 
   useEffect(() => {
-    if (!user || !profile?.onboarding_completed) {
-      return;
-    }
-
-    const refresh = () => {
-      void loadInsights();
-    };
-
+    if (!user || !profile?.onboarding_completed) return;
+    const refresh = () => void loadInsights();
     window.addEventListener("payn:saved-offers-changed", refresh);
     window.addEventListener("payn:provider-click", refresh);
-
     return () => {
       window.removeEventListener("payn:saved-offers-changed", refresh);
       window.removeEventListener("payn:provider-click", refresh);
@@ -653,20 +681,13 @@ export default function DashboardPage() {
   }, [loadInsights, profile?.onboarding_completed, user]);
 
   const userLabel = useMemo(() => {
-    if (!profile) {
-      return null;
-    }
-
+    if (!profile?.user_type) return null;
     return profile.user_type === "personal"
       ? "Personal"
       : profile.user_type === "freelancer"
         ? "Freelancer"
         : "Business";
   }, [profile]);
-
-  const marketLabel = insights
-    ? marketDefinitions[insights.market].label
-    : marketDefinitions[dashboardMarket].label;
 
   const insightMap = useMemo(
     () => (insights ? createInsightMap(insights) : new Map<string, DashboardOfferInsight>()),
@@ -677,54 +698,27 @@ export default function DashboardPage() {
     ? (activeView as MarketplaceCategory)
     : null;
 
-  const categoryWorkspace = useMemo(() => {
-    if (!insights || !activeCategory) {
-      return null;
-    }
-
-    const scopedOffers = marketplaceOffers
-      .filter((offer) => matchesOfferMarket(offer, insights.market))
-      .filter((offer) => offer.category === activeCategory);
-
-    const merged = mergeInsights(
-      insights.recommended.filter((item) => item.offer.category === activeCategory),
-      insights.bestValueToday.filter((item) => item.offer.category === activeCategory),
-      insights.popularWithUsersLikeYou.filter((item) => item.offer.category === activeCategory),
-      insights.trendingInMarket.filter((item) => item.offer.category === activeCategory),
-    );
-
-    const fill = scopedOffers
-      .map((offer) => toInsightForOffer(offer, insightMap))
-      .filter((item) => !merged.some((existing) => existing.offer.id === item.offer.id));
-
-    return {
-      title: categoryLabels[activeCategory],
-      offers: [...merged, ...fill].slice(0, 6),
-      saved: insights.savedOffers.filter((offer) => offer.category === activeCategory),
-      watched: insights.watchedOffers.filter((offer) => offer.category === activeCategory),
-      trendingProviders: insights.trendingProviders.filter((provider) =>
-        scopedOffers.some((offer) => offer.providerName === provider.providerName),
-      ),
-      totalCount: scopedOffers.length,
-    };
-  }, [activeCategory, insightMap, insights]);
-
   const alerts = useMemo(
     () => (insights ? buildAlertFeed(insights, activeCategory ?? undefined) : []),
     [activeCategory, insights],
   );
 
+  // Static catalog data for the current market
+  const allOffers = useMemo(() => getMarketOffers(dashboardMarket), [dashboardMarket]);
+
+  // --- Auth loading gate (with safety timeout in auth hook) ---
   if (loading) {
     return <LoadingState label="Loading your product workspace" />;
   }
 
+  // --- Not signed in ---
   if (!user) {
     return (
       <div className="grid gap-6">
         <SectionCard
           eyebrow="Dashboard"
           title="Sign in to access your Payn workspace"
-          description="The dashboard is now a real product control center with saved products, trends, market signals, and recommendations in one place."
+          description="Compare loans, cards, transfers, exchange, insurance, and investments - all in one workspace."
         >
           <div className="flex flex-wrap gap-3">
             <Link href="/login" className={buttonStyles({ variant: "primary", size: "lg" })}>
@@ -735,144 +729,261 @@ export default function DashboardPage() {
             </Link>
           </div>
         </SectionCard>
-      </div>
-    );
-  }
 
-  if (!profile?.onboarding_completed) {
-    return (
-      <div className="grid gap-6">
         <SectionCard
-          eyebrow="Welcome back"
-          title="Finish your setup to unlock the dashboard"
-          description="Choose how you use Payn so the product dashboard can rank the most relevant products for your account."
+          eyebrow="Preview"
+          title="What you get with a Payn account"
         >
-          <UserTypeOnboardingCard />
-        </SectionCard>
-      </div>
-    );
-  }
-
-  if (insightsLoading && !insights) {
-    return <LoadingState label="Loading live recommendations, trends, and tracking" />;
-  }
-
-  if (insightsError && !insights) {
-    return (
-      <SectionCard
-        eyebrow="Dashboard"
-        title="Dashboard data could not be loaded"
-        description={insightsError}
-      >
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => void loadInsights()}
-            className={buttonStyles({ variant: "primary", size: "md" })}
-          >
-            Try again
-          </button>
-          <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
-            Explore offers
-          </Link>
-        </div>
-      </SectionCard>
-    );
-  }
-
-  if (!insights) {
-    return null;
-  }
-
-  const trackedCount = insights.savedOffers.length + insights.watchedOffers.length;
-
-  const renderOverview = () => (
-    <div className="grid gap-5">
-      <MarketSnapshot insights={insights} />
-
-      <SectionCard
-        eyebrow="Recommended"
-        title="Across-category recommendations"
-        description="Multiple products are ranked here from the recommendation engine, not a single oversized feature card."
-        action={
-          <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
-            Explore more
-          </Link>
-        }
-      >
-        <OfferTileGrid
-          items={insights.recommended}
-          emptyTitle="No recommendations yet"
-          emptyDescription="Recommendations appear here once your profile, market, and activity create enough signal."
-        />
-      </SectionCard>
-
-      <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <SectionCard
-          eyebrow="Saved / tracking"
-          title="Saved offers, watched products, and alerts"
-          description="Tracking is part of the dashboard product now - not a dead-end favorites list."
-        >
-          <div className="grid gap-5">
-            <SavedOffersGrid offers={insights.savedOffers.slice(0, 4)} insightMap={insightMap} />
-            <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                  Recently viewed
-                </p>
-                {insights.watchedOffers.length > 0 ? (
-                  <div className="mt-4 grid gap-3">
-                    {insights.watchedOffers.map((offer) => (
-                      <Link key={offer.id} href={`/offers/${offer.slug}`} className="text-sm font-medium text-ink transition-colors hover:text-ink-secondary">
-                        {offer.title}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-ink-secondary">
-                    Viewed offers appear here once you open offer detail pages while signed in.
-                  </p>
-                )}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { label: "Saved shortlist", desc: "Track and compare products you are considering" },
+              { label: "Market trends", desc: "See what is gaining attention in your market" },
+              { label: "Payn score", desc: "Earn points as you research and engage with products" },
+            ].map((item) => (
+              <div key={item.label} className="rounded-[24px] bg-bg-surface px-5 py-5">
+                <p className="text-sm font-semibold text-ink">{item.label}</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{item.desc}</p>
               </div>
-              <div>
-                <AlertsList alerts={alerts} />
-              </div>
-            </div>
+            ))}
           </div>
         </SectionCard>
+      </div>
+    );
+  }
 
-        <div className="grid gap-5">
-          <SectionCard
-            eyebrow="Trends"
-            title="Trending products and rising providers"
-            description="Backed by real internal activity and explicit ranking rules."
-          >
-            <OfferTileGrid
-              items={insights.trendingInMarket.slice(0, 3)}
-              emptyTitle="No live trend data yet"
-              emptyDescription="Trending products will appear here as product activity builds in your market."
-              href={getDashboardHref("trends")}
-              cta="Open trends"
-            />
-          </SectionCard>
+  // --- Signed in, onboarding not done: show inline, don't block ---
+  const needsOnboarding = !profile?.onboarding_completed;
 
-          <RewardsBlock insights={insights} />
+  // === RENDER FUNCTIONS ===
+
+  const renderSummary = () => (
+    <section className="rounded-[30px] border border-line bg-white p-5 shadow-subtle sm:p-6 lg:p-7">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Summary</p>
+          <h1 className="mt-3 text-h2 text-ink">
+            Welcome back{user.email ? `, ${user.email.split("@")[0]}` : ""}
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
+            Your product workspace across loans, cards, transfers, exchange, insurance, and investments.
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Tag tone="success">{marketLabel}</Tag>
+            {userLabel ? <Tag tone="muted">{userLabel}</Tag> : null}
+            {(profile?.selected_categories ?? []).slice(0, 3).map((cat) => (
+              <Tag key={cat} tone="blue">{normalizeDisplayText(cat)}</Tag>
+            ))}
+            {insightsLoading ? (
+              <Tag tone="muted">Loading insights...</Tag>
+            ) : null}
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/explore" className={buttonStyles({ variant: "primary", size: "md" })}>
+              Explore offers
+            </Link>
+            <Link href={getDashboardHref("saved")} className={buttonStyles({ variant: "secondary", size: "md" })}>
+              Open saved
+            </Link>
+            <Link href={getDashboardHref("profile")} className={buttonStyles({ variant: "ghost", size: "md" })}>
+              View profile
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Payn score</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{insights?.loyalty.score ?? 0}</p>
+          </div>
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Available products</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{allOffers.length}</p>
+          </div>
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Focus market</p>
+            <p className="mt-2 text-lg font-bold text-ink">{marketLabel}</p>
+          </div>
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Profile</p>
+            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Account"}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 
-  const renderCategoryWorkspace = () => {
-    if (!categoryWorkspace || !activeCategory) {
-      return null;
-    }
+  const renderOverview = () => {
+    const recommended = insights
+      ? insights.recommended
+      : allOffers.slice(0, 6).map((offer) => ({
+          offer,
+          activityScore: 0,
+          saveCount: 0,
+          providerClickCount: 0,
+          offerViewCount: 0,
+        }));
+
+    return (
+      <div className="grid gap-5">
+        {needsOnboarding ? (
+          <SectionCard
+            eyebrow="Setup"
+            title="Complete your profile to unlock personalized recommendations"
+          >
+            <UserTypeOnboardingCard />
+          </SectionCard>
+        ) : null}
+
+        {insights ? (
+          <MarketSnapshot insights={insights} />
+        ) : (
+          <SectionCard
+            eyebrow="Market snapshot"
+            title={`${marketLabel} marketplace`}
+            description={`${allOffers.length} products available from ${getUniqueProviders(allOffers).length} providers across 6 categories.`}
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              {(["loans", "cards", "transfers", "exchange", "insurance", "investments"] as MarketplaceCategory[]).map((cat) => {
+                const count = getCategoryOffers(dashboardMarket, cat).length;
+                return (
+                  <Link
+                    key={cat}
+                    href={getDashboardHref(cat)}
+                    className="rounded-[24px] bg-bg-surface px-5 py-5 transition-colors hover:bg-bg-overlay"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                      {categoryLabels[cat]}
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-ink">{count}</p>
+                    <p className="mt-1 text-xs text-ink-tertiary">products</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </SectionCard>
+        )}
+
+        <SectionCard
+          eyebrow="Recommended"
+          title="Top products in your market"
+          action={
+            <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
+              Explore more
+            </Link>
+          }
+        >
+          <OfferTileGrid
+            items={recommended}
+            emptyTitle="No recommendations yet"
+            emptyDescription="Recommendations appear once your profile and market create enough signal."
+          />
+        </SectionCard>
+
+        <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+          <SectionCard
+            eyebrow="Saved / tracking"
+            title="Your saved products and alerts"
+          >
+            {insights ? (
+              <div className="grid gap-5">
+                <SavedOffersGrid offers={insights.savedOffers.slice(0, 4)} insightMap={insightMap} />
+                {alerts.length > 0 ? <AlertsList alerts={alerts} /> : null}
+              </div>
+            ) : (
+              <EmptyState
+                title="Start building your shortlist"
+                description="Save products from Explore to track and compare them here."
+                href="/explore"
+                cta="Browse offers"
+              />
+            )}
+          </SectionCard>
+
+          <div className="grid gap-5">
+            <SectionCard
+              eyebrow="Trends"
+              title="What is gaining attention"
+            >
+              {insights && insights.trendingInMarket.length > 0 ? (
+                <OfferTileGrid
+                  items={insights.trendingInMarket.slice(0, 3)}
+                  emptyTitle="No trends yet"
+                  emptyDescription="Trends appear as activity builds."
+                  href={getDashboardHref("trends")}
+                  cta="Open trends"
+                />
+              ) : (
+                <div className="grid gap-3">
+                  {allOffers.slice(0, 3).map((offer) => (
+                    <Link
+                      key={offer.id}
+                      href={`/offers/${offer.slug}`}
+                      className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ProviderLogo providerName={offer.providerName} size="sm" />
+                        <div>
+                          <p className="text-sm font-semibold text-ink">{offer.title}</p>
+                          <p className="mt-0.5 text-xs text-ink-tertiary">{offer.providerName}</p>
+                        </div>
+                      </div>
+                      <Tag tone="muted">{categoryLabels[offer.category]}</Tag>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+
+            {insights ? (
+              <RewardsBlock insights={insights} />
+            ) : (
+              <SectionCard eyebrow="Rewards" title="Payn score">
+                <div className="rounded-[24px] bg-black px-6 py-6 text-white">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Your Payn score</p>
+                  <p className="mt-3 text-5xl font-bold tracking-tight">0</p>
+                  <p className="mt-3 text-sm leading-relaxed text-white/70">
+                    Save offers and click through to providers to earn points.
+                  </p>
+                </div>
+              </SectionCard>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCategoryView = (category: MarketplaceCategory) => {
+    const offers = getCategoryOffers(dashboardMarket, category);
+    const providers = getUniqueProviders(offers);
+    const savedInCategory = insights?.savedOffers.filter((o) => o.category === category) ?? [];
+
+    // If insights exist, try to get insight-enhanced offers
+    const insightOffers = insights
+      ? mergeInsights(
+          insights.recommended.filter((i) => i.offer.category === category),
+          insights.bestValueToday.filter((i) => i.offer.category === category),
+          insights.trendingInMarket.filter((i) => i.offer.category === category),
+        )
+      : [];
+
+    const displayOffers = insightOffers.length > 0
+      ? insightOffers
+      : offers.slice(0, 6).map((offer) => ({
+          offer,
+          activityScore: 0,
+          saveCount: 0,
+          providerClickCount: 0,
+          offerViewCount: 0,
+        }));
 
     return (
       <div className="grid gap-5">
         <SectionCard
-          eyebrow={categoryWorkspace.title}
-          title={`${categoryWorkspace.title} workspace`}
-          description="This keeps the same dashboard shell and swaps the main content for category-specific signals, saved items, and recommendations."
+          eyebrow={categoryLabels[category]}
+          title={`${categoryLabels[category]} workspace`}
           action={
             <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
               Open Explore
@@ -881,103 +992,69 @@ export default function DashboardPage() {
         >
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Available offers
-              </p>
-              <p className="mt-2 text-2xl font-bold text-ink">{categoryWorkspace.totalCount}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Available offers</p>
+              <p className="mt-2 text-2xl font-bold text-ink">{offers.length}</p>
             </div>
             <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Saved in category
-              </p>
-              <p className="mt-2 text-2xl font-bold text-ink">{categoryWorkspace.saved.length}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
+              <p className="mt-2 text-2xl font-bold text-ink">{providers.length}</p>
             </div>
             <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Recently viewed
-              </p>
-              <p className="mt-2 text-2xl font-bold text-ink">{categoryWorkspace.watched.length}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
+              <p className="mt-2 text-2xl font-bold text-ink">{savedInCategory.length}</p>
             </div>
           </div>
         </SectionCard>
 
         <SectionCard
           eyebrow="Recommended"
-          title={`Best ${categoryWorkspace.title.toLowerCase()} products for your profile`}
-          description="The same recommendation engine is filtered into a category workspace so the app feels focused, not like a website redirect."
+          title={`Best ${categoryLabels[category].toLowerCase()} products for your profile`}
         >
           <OfferTileGrid
-            items={categoryWorkspace.offers}
-            emptyTitle={`No ${categoryWorkspace.title.toLowerCase()} recommendations yet`}
-            emptyDescription="As more offers and user activity become available in this category, the workspace will fill in."
+            items={displayOffers}
+            emptyTitle={`No ${categoryLabels[category].toLowerCase()} offers available`}
+            emptyDescription="Check back soon as more offers become available in this category."
           />
         </SectionCard>
 
         <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
           <SectionCard
             eyebrow="Tracking"
-            title={`Saved and watched ${categoryWorkspace.title.toLowerCase()}`}
-            description="Tracking stays inside the same dashboard workspace rather than pushing you into a different website flow."
+            title={`Saved ${categoryLabels[category].toLowerCase()}`}
           >
-            <div className="grid gap-5">
-              <SavedOffersGrid offers={categoryWorkspace.saved} insightMap={insightMap} />
-              <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                  Recently viewed in {categoryWorkspace.title.toLowerCase()}
-                </p>
-                {categoryWorkspace.watched.length > 0 ? (
-                  <div className="mt-4 grid gap-3">
-                    {categoryWorkspace.watched.map((offer) => (
-                      <Link key={offer.id} href={`/offers/${offer.slug}`} className="text-sm font-medium text-ink transition-colors hover:text-ink-secondary">
-                        {offer.title}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-ink-secondary">
-                    Viewed products in this category will appear here.
-                  </p>
-                )}
-              </div>
-            </div>
+            {savedInCategory.length > 0 ? (
+              <SavedOffersGrid offers={savedInCategory} insightMap={insightMap} />
+            ) : (
+              <EmptyState
+                title={`No saved ${categoryLabels[category].toLowerCase()} yet`}
+                description={`Save ${categoryLabels[category].toLowerCase()} products from Explore to track them here.`}
+                href="/explore"
+                cta="Browse offers"
+              />
+            )}
           </SectionCard>
 
-          <div className="grid gap-5">
-            <SectionCard
-              eyebrow="Category trends"
-              title={`What is moving inside ${categoryWorkspace.title.toLowerCase()}`}
-              description="These alerts and provider cues are still backed by market activity and recommendation rules."
-            >
-              <AlertsList alerts={alerts} />
-            </SectionCard>
-
-            <SectionCard
-              eyebrow="Providers"
-              title={`Active ${categoryWorkspace.title.toLowerCase()} providers`}
-              description="Top providers in this category are surfaced inside the same layout."
-            >
-              <div className="grid gap-3">
-                {categoryWorkspace.trendingProviders.length > 0 ? (
-                  categoryWorkspace.trendingProviders.slice(0, 4).map((provider) => (
-                    <div
-                      key={provider.providerName}
-                      className="flex items-center justify-between rounded-[22px] bg-bg-surface px-4 py-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <ProviderLogo providerName={provider.providerName} size="sm" />
-                        <span className="text-sm font-semibold text-ink">{provider.providerName}</span>
-                      </div>
-                      <Tag tone="muted">{provider.activityScore.toFixed(1)}</Tag>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-ink-secondary">
-                    Category-specific provider momentum will appear here once enough activity is available.
-                  </p>
-                )}
-              </div>
-            </SectionCard>
-          </div>
+          <SectionCard
+            eyebrow="Providers"
+            title={`${categoryLabels[category]} providers`}
+          >
+            <div className="grid gap-3">
+              {providers.slice(0, 6).map((name) => (
+                <div key={name} className="flex items-center gap-3 rounded-[20px] bg-bg-surface px-4 py-3">
+                  <ProviderLogo providerName={name} size="sm" />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{name}</p>
+                    <p className="mt-0.5 text-xs text-ink-tertiary">
+                      {offers.filter((o) => o.providerName === name).length} products
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {providers.length === 0 ? (
+                <p className="text-sm text-ink-secondary">No providers available in this category for your market.</p>
+              ) : null}
+            </div>
+          </SectionCard>
         </div>
       </div>
     );
@@ -988,18 +1065,22 @@ export default function DashboardPage() {
       <SectionCard
         eyebrow="Saved"
         title="Your tracked products"
-        description="Saved offers, recently viewed products, and real alert logic live together here."
       >
-        <SavedOffersGrid offers={insights.savedOffers} insightMap={insightMap} />
+        {insights && insights.savedOffers.length > 0 ? (
+          <SavedOffersGrid offers={insights.savedOffers} insightMap={insightMap} />
+        ) : (
+          <EmptyState
+            title="No saved offers yet"
+            description="Save products from Explore to build your shortlist here."
+            href="/explore"
+            cta="Go to Explore"
+          />
+        )}
       </SectionCard>
 
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <SectionCard
-          eyebrow="Watched"
-          title="Recently viewed"
-          description="These are pulled from signed-in offer views, not fake watchlist placeholders."
-        >
-          {insights.watchedOffers.length > 0 ? (
+        <SectionCard eyebrow="Watched" title="Recently viewed">
+          {insights && insights.watchedOffers.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {insights.watchedOffers.map((offer) => (
                 <DashboardOfferTile key={offer.id} offer={offer} insight={insightMap.get(offer.id)} eyebrow="Viewed" />
@@ -1007,7 +1088,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <EmptyState
-              title="No recently viewed offers yet"
+              title="No recently viewed offers"
               description="Open an offer detail page while signed in and it will appear here."
               href="/explore"
               cta="Browse offers"
@@ -1015,11 +1096,7 @@ export default function DashboardPage() {
           )}
         </SectionCard>
 
-        <SectionCard
-          eyebrow="Alerts"
-          title="What needs attention"
-          description="Alerts are created from real changes in saved offers, recent views, and market signals."
-        >
+        <SectionCard eyebrow="Alerts" title="What needs attention">
           <AlertsList alerts={alerts} />
         </SectionCard>
       </div>
@@ -1028,79 +1105,78 @@ export default function DashboardPage() {
 
   const renderTrendsView = () => (
     <div className="grid gap-5">
-      <MarketSnapshot insights={insights} />
-
-      <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+      {insights ? (
+        <MarketSnapshot insights={insights} />
+      ) : (
         <SectionCard
-          eyebrow="Trending products"
-          title="Offers gaining attention"
-          description="Most viewed, clicked, and saved offers in your market are surfaced here."
+          eyebrow="Market snapshot"
+          title={`${marketLabel} marketplace`}
+          description={`${allOffers.length} products from ${getUniqueProviders(allOffers).length} providers.`}
         >
-          <OfferTileGrid
-            items={insights.trendingInMarket}
-            emptyTitle="No trending offers yet"
-            emptyDescription="Trend blocks are waiting for more market activity."
-          />
-        </SectionCard>
-
-        <SectionCard
-          eyebrow="Rising transfer / FX options"
-          title="Products reacting to market movement"
-          description="FX-sensitive products become more visible here when exchange rates move or transfer demand increases."
-        >
-          <OfferTileGrid
-            items={insights.marketSignals.risingFxOffers}
-            emptyTitle="No transfer or FX momentum yet"
-            emptyDescription="This block will fill as transfer and exchange activity builds."
-          />
-        </SectionCard>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-        <SectionCard
-          eyebrow="Investment platforms"
-          title="Trending crypto and investment platforms"
-          description="This block combines CoinGecko signals when available with internal activity on investment products."
-        >
-          <OfferTileGrid
-            items={insights.marketSignals.cryptoPlatforms}
-            emptyTitle="No investment-platform trend yet"
-            emptyDescription="As crypto and investment activity grows, this block will surface the strongest signals."
-          />
-        </SectionCard>
-
-        <SectionCard
-          eyebrow="Insurance demand"
-          title="Most viewed insurance categories"
-          description="Interest by subtype comes from real offer views and clicks in your market."
-        >
-          <div className="flex flex-wrap gap-2">
-            {insights.marketSignals.insuranceCategories.length > 0 ? (
-              insights.marketSignals.insuranceCategories.map((item) => (
-                <Tag key={item.subtype} tone="blue">
-                  {item.subtype.charAt(0).toUpperCase()}
-                  {item.subtype.slice(1)} · {item.activityScore.toFixed(1)}
-                </Tag>
-              ))
-            ) : (
-              <p className="text-sm text-ink-secondary">
-                Insurance demand will appear once enough users interact with insurance products.
-              </p>
-            )}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {(["loans", "cards", "transfers"] as MarketplaceCategory[]).map((cat) => (
+              <div key={cat} className="rounded-[24px] bg-bg-surface px-5 py-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{categoryLabels[cat]}</p>
+                <p className="mt-2 text-2xl font-bold text-ink">{getCategoryOffers(dashboardMarket, cat).length}</p>
+              </div>
+            ))}
           </div>
         </SectionCard>
-      </div>
+      )}
+
+      <SectionCard eyebrow="Trending products" title="Offers gaining attention">
+        {insights && insights.trendingInMarket.length > 0 ? (
+          <OfferTileGrid
+            items={insights.trendingInMarket}
+            emptyTitle="No trends yet"
+            emptyDescription="Trends appear as activity builds."
+          />
+        ) : (
+          <CatalogOfferGrid
+            offers={allOffers.slice(0, 6)}
+            emptyTitle="No offers available"
+            emptyDescription="Check back soon."
+          />
+        )}
+      </SectionCard>
+
+      <SectionCard eyebrow="Top providers" title="Most active providers in your market">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {getUniqueProviders(allOffers).slice(0, 8).map((name) => (
+            <div key={name} className="flex items-center gap-3 rounded-[20px] bg-bg-surface px-4 py-3">
+              <ProviderLogo providerName={name} size="sm" />
+              <div>
+                <p className="text-sm font-semibold text-ink">{name}</p>
+                <p className="mt-0.5 text-xs text-ink-tertiary">
+                  {allOffers.filter((o) => o.providerName === name).length} products
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     </div>
   );
 
   const renderRewardsView = () => (
     <div className="grid gap-5">
-      <RewardsBlock insights={insights} />
+      {insights ? (
+        <RewardsBlock insights={insights} />
+      ) : (
+        <SectionCard eyebrow="Rewards" title="Payn score and engagement">
+          <div className="rounded-[24px] bg-black px-6 py-6 text-white">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Your Payn score</p>
+            <p className="mt-3 text-5xl font-bold tracking-tight">0</p>
+            <p className="mt-3 text-sm leading-relaxed text-white/70">
+              Save offers and click through to providers to start earning points.
+            </p>
+          </div>
+        </SectionCard>
+      )}
 
       <SectionCard
         eyebrow="How to earn"
         title="A simple engagement system"
-        description="The rewards system is intentionally light. It reflects real product actions rather than generic streak mechanics."
       >
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
@@ -1108,27 +1184,21 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
               Add products to your shortlist as you compare options across categories.
             </p>
-            <Tag tone="success" className="mt-4">
-              +1 point
-            </Tag>
+            <Tag tone="success" className="mt-4">+1 point</Tag>
           </div>
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
             <p className="text-sm font-semibold text-ink">Click through to provider</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
               Continue to a provider once you are ready to review full terms outside Payn.
             </p>
-            <Tag tone="blue" className="mt-4">
-              +2 points
-            </Tag>
+            <Tag tone="blue" className="mt-4">+2 points</Tag>
           </div>
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
             <p className="text-sm font-semibold text-ink">Research your market</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
               Views improve recommendations but do not inflate loyalty points on their own.
             </p>
-            <Tag tone="muted" className="mt-4">
-              Recommendation signal
-            </Tag>
+            <Tag tone="muted" className="mt-4">Recommendation signal</Tag>
           </div>
         </div>
       </SectionCard>
@@ -1140,47 +1210,46 @@ export default function DashboardPage() {
       <SectionCard
         eyebrow="Profile"
         title="Your dashboard setup"
-        description="This profile powers recommendations, market matching, and similar-user trend rules."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              User type
-            </p>
-            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Profile"}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Email</p>
+            <p className="mt-2 text-sm font-bold text-ink">{user.email ?? "Not set"}</p>
           </div>
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Home market
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">User type</p>
+            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Not set"}</p>
+          </div>
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Home market</p>
             <p className="mt-2 text-lg font-bold text-ink">{marketLabel}</p>
           </div>
           <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Interests
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Categories</p>
             <p className="mt-2 text-lg font-bold text-ink">
-              {profile.selected_categories.length || dashboardCategories.length}
+              {profile?.selected_categories?.length || dashboardCategories.length}
             </p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Goals
-            </p>
-            <p className="mt-2 text-lg font-bold text-ink">{profile.goals.length}</p>
           </div>
         </div>
       </SectionCard>
 
+      {needsOnboarding ? (
+        <SectionCard
+          eyebrow="Setup"
+          title="Complete your profile"
+        >
+          <UserTypeOnboardingCard />
+        </SectionCard>
+      ) : null}
+
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
         <SectionCard
           eyebrow="Selected categories"
-          title="What you want Payn to optimize for"
-          description="These interests are already feeding the recommendation engine."
+          title="Your interests"
         >
           <div className="flex flex-wrap gap-2">
-            {(profile.selected_categories.length > 0
-              ? profile.selected_categories
+            {((profile?.selected_categories ?? []).length > 0
+              ? profile!.selected_categories
               : dashboardCategories
             ).map((category) => (
               <Tag key={category} tone="blue">
@@ -1192,19 +1261,18 @@ export default function DashboardPage() {
 
         <SectionCard
           eyebrow="Goals"
-          title="Business rules behind your recommendations"
-          description="Goals do not trigger AI guesses. They explicitly influence category and fee-fit scoring."
+          title="What guides your recommendations"
         >
           <div className="flex flex-wrap gap-2">
-            {profile.goals.length > 0 ? (
-              profile.goals.map((goal) => (
+            {(profile?.goals ?? []).length > 0 ? (
+              profile!.goals.map((goal) => (
                 <Tag key={goal} tone="muted">
                   {normalizeDisplayText(goal.replace(/_/g, " "))}
                 </Tag>
               ))
             ) : (
               <p className="text-sm text-ink-secondary">
-                No explicit goals saved yet. Recommendations currently rely more on user type, country, and recent activity.
+                No explicit goals saved yet. Recommendations rely on user type, country, and activity.
               </p>
             )}
           </div>
@@ -1213,10 +1281,11 @@ export default function DashboardPage() {
     </div>
   );
 
-  let body: React.ReactNode = renderOverview();
+  // === VIEW ROUTING ===
+  let body: React.ReactNode;
 
   if (activeCategory) {
-    body = renderCategoryWorkspace();
+    body = renderCategoryView(activeCategory);
   } else if (activeView === "saved") {
     body = renderSavedView();
   } else if (activeView === "trends") {
@@ -1225,22 +1294,13 @@ export default function DashboardPage() {
     body = renderRewardsView();
   } else if (activeView === "profile") {
     body = renderProfileView();
+  } else {
+    body = renderOverview();
   }
 
   return (
     <div className="grid gap-5">
-      <SummaryPanel
-        email={user.email}
-        marketLabel={marketLabel}
-        userLabel={userLabel}
-        score={insights.loyalty.score}
-        selectedCategories={
-          profile.selected_categories.length > 0
-            ? profile.selected_categories
-            : [profile.user_type]
-        }
-        trackedCount={trackedCount}
-      />
+      {renderSummary()}
       {body}
     </div>
   );

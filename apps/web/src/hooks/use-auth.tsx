@@ -107,7 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
     };
-    init();
+
+    // Safety timeout: never hang on loading forever
+    const safetyTimeout = setTimeout(() => setLoading(false), 5000);
+    init().finally(() => clearTimeout(safetyTimeout));
 
     if (!isSupabaseConfigured()) return;
 
