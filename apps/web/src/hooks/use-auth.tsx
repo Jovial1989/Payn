@@ -176,7 +176,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = useCallback(
     async (data: Partial<UserProfile>) => {
       if (!user) return;
-      await supabase.from("user_profiles").upsert(
+
+      // Optimistic local update
+      setProfile((prev) => (prev ? { ...prev, ...data } : prev));
+
+      const { error } = await supabase.from("user_profiles").upsert(
         {
           user_id: user.id,
           ...data,
@@ -184,7 +188,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         { onConflict: "user_id" },
       );
-      await fetchProfile(user.id);
+
+      if (error) {
+        // Revert optimistic update on failure
+        await fetchProfile(user.id);
+      }
     },
     [supabase, user, fetchProfile],
   );

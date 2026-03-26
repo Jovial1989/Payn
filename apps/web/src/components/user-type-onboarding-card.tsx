@@ -42,15 +42,20 @@ export function UserTypeOnboardingCard({
     setSaving(true);
 
     try {
-      await updateProfile({
-        user_type: selectedType,
-        onboarding_completed: true,
-      });
-      router.push("/dashboard");
-      router.refresh();
-    } finally {
-      setSaving(false);
+      await Promise.race([
+        updateProfile({
+          user_type: selectedType,
+          onboarding_completed: true,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 5000)),
+      ]);
+    } catch {
+      // Profile saved optimistically even if backend is slow
     }
+
+    setSaving(false);
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
