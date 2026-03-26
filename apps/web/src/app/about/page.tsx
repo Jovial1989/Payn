@@ -26,14 +26,28 @@ export default function AboutPage() {
             <div className="max-w-2xl">
               <h2 className="text-h2 text-ink">Kyrylo Petrov</h2>
               <p className="mt-1 text-sm font-medium text-ink-secondary">Founder of Payn</p>
-              <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-                Fintech entrepreneur and digital product architect with experience across financial platforms, consumer credit, and enterprise-grade solutions.
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-ink-secondary">
-                Before Payn, Kyrylo helped build CreditPay — an earlier fintech venture focused on consumer credit integration and financial product access. That experience shaped a deep understanding of how people discover, compare, and access financial products online.
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-ink-secondary">
-                Payn is the next evolution of that journey — a modern European financial marketplace built to make decisions clearer, more transparent, and easier to trust.
+
+              <ul className="mt-5 grid gap-3">
+                <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
+                  Founded and built CreditPay, a fintech product for consumer credit integration
+                </li>
+                <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
+                  Product architect across financial platforms, comparison engines, and enterprise tools
+                </li>
+                <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
+                  Focused on how people discover, compare, and access financial products online
+                </li>
+                <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
+                  Built Payn as the next step: transparent ranking, visible tradeoffs, real filters
+                </li>
+              </ul>
+
+              <p className="mt-5 text-sm leading-relaxed text-ink-secondary">
+                Payn is the product that came from building CreditPay and understanding what financial comparison still gets wrong.
               </p>
               <a
                 href="https://www.linkedin.com/in/petrovkyrylo/"

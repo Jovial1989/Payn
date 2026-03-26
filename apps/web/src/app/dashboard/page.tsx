@@ -18,6 +18,7 @@ import {
   normalizeDashboardView,
   type DashboardView,
 } from "@/lib/dashboard-navigation";
+import { MarketplaceExplorer } from "@/components/marketplace-explorer";
 import { marketDefinitions, matchesOfferMarket, normalizeDisplayText } from "@/lib/marketplace";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
@@ -143,7 +144,7 @@ function SummaryPanel({
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/explore" className={buttonStyles({ variant: "primary", size: "md" })}>
+            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "primary", size: "md" })}>
               Explore offers
             </Link>
             <Link href={getDashboardHref("saved")} className={buttonStyles({ variant: "secondary", size: "md" })}>
@@ -231,7 +232,7 @@ function SavedOffersGrid({
       <EmptyState
         title="No saved offers yet"
         description="Save products from Explore or an offer detail page to build your shortlist here."
-        href="/explore"
+        href={getDashboardHref("explore" as DashboardView)}
         cta="Go to Explore"
       />
     );
@@ -589,7 +590,7 @@ function CatalogOfferGrid({
       <EmptyState
         title={emptyTitle}
         description={emptyDescription}
-        href="/explore"
+        href={getDashboardHref("explore" as DashboardView)}
         cta="Explore offers"
       />
     );
@@ -780,7 +781,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/explore" className={buttonStyles({ variant: "primary", size: "md" })}>
+            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "primary", size: "md" })}>
               Explore offers
             </Link>
             <Link href={getDashboardHref("saved")} className={buttonStyles({ variant: "secondary", size: "md" })}>
@@ -869,7 +870,7 @@ export default function DashboardPage() {
           eyebrow="Recommended"
           title="Top products in your market"
           action={
-            <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
+            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "secondary", size: "md" })}>
               Explore more
             </Link>
           }
@@ -895,7 +896,7 @@ export default function DashboardPage() {
               <EmptyState
                 title="Start building your shortlist"
                 description="Save products from Explore to track and compare them here."
-                href="/explore"
+                href={getDashboardHref("explore" as DashboardView)}
                 cta="Browse offers"
               />
             )}
@@ -985,7 +986,7 @@ export default function DashboardPage() {
           eyebrow={categoryLabels[category]}
           title={`${categoryLabels[category]} workspace`}
           action={
-            <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
+            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "secondary", size: "md" })}>
               Open Explore
             </Link>
           }
@@ -1028,7 +1029,7 @@ export default function DashboardPage() {
               <EmptyState
                 title={`No saved ${categoryLabels[category].toLowerCase()} yet`}
                 description={`Save ${categoryLabels[category].toLowerCase()} products from Explore to track them here.`}
-                href="/explore"
+                href={getDashboardHref("explore" as DashboardView)}
                 cta="Browse offers"
               />
             )}
@@ -1072,7 +1073,7 @@ export default function DashboardPage() {
           <EmptyState
             title="No saved offers yet"
             description="Save products from Explore to build your shortlist here."
-            href="/explore"
+            href={getDashboardHref("explore" as DashboardView)}
             cta="Go to Explore"
           />
         )}
@@ -1090,7 +1091,7 @@ export default function DashboardPage() {
             <EmptyState
               title="No recently viewed offers"
               description="Open an offer detail page while signed in and it will appear here."
-              href="/explore"
+              href={getDashboardHref("explore" as DashboardView)}
               cta="Browse offers"
             />
           )}
@@ -1233,58 +1234,75 @@ export default function DashboardPage() {
         </div>
       </SectionCard>
 
-      {needsOnboarding ? (
-        <SectionCard
-          eyebrow="Setup"
-          title="Complete your profile"
-        >
-          <UserTypeOnboardingCard />
-        </SectionCard>
-      ) : null}
-
-      <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-        <SectionCard
-          eyebrow="Selected categories"
-          title="Your interests"
-        >
-          <div className="flex flex-wrap gap-2">
-            {((profile?.selected_categories ?? []).length > 0
-              ? profile!.selected_categories
-              : dashboardCategories
-            ).map((category) => (
-              <Tag key={category} tone="blue">
-                {normalizeDisplayText(category)}
-              </Tag>
-            ))}
+      <SectionCard
+        eyebrow="Preferences"
+        title="Your preferences"
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Country</p>
+            <p className="mt-2 text-sm font-bold text-ink">{marketLabel}</p>
+            <p className="mt-1 text-xs text-ink-tertiary">Affects which products and providers are shown</p>
           </div>
-        </SectionCard>
-
-        <SectionCard
-          eyebrow="Goals"
-          title="What guides your recommendations"
-        >
-          <div className="flex flex-wrap gap-2">
-            {(profile?.goals ?? []).length > 0 ? (
-              profile!.goals.map((goal) => (
-                <Tag key={goal} tone="muted">
-                  {normalizeDisplayText(goal.replace(/_/g, " "))}
-                </Tag>
-              ))
-            ) : (
-              <p className="text-sm text-ink-secondary">
-                No explicit goals saved yet. Recommendations rely on user type, country, and activity.
-              </p>
-            )}
+          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Profile type</p>
+            <p className="mt-2 text-sm font-bold text-ink">{userLabel ?? "Personal"}</p>
+            <p className="mt-1 text-xs text-ink-tertiary">Shapes recommendations and ranking logic</p>
           </div>
-        </SectionCard>
-      </div>
+          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Interests</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {((profile?.selected_categories ?? []).length > 0
+                ? profile!.selected_categories
+                : dashboardCategories
+              ).map((cat) => (
+                <Tag key={cat} tone="blue">{normalizeDisplayText(cat)}</Tag>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Use cases</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {(profile?.goals ?? []).length > 0 ? (
+                profile!.goals.map((goal) => (
+                  <Tag key={goal} tone="muted">{normalizeDisplayText(goal.replace(/_/g, " "))}</Tag>
+                ))
+              ) : (
+                <p className="text-xs text-ink-secondary">No use cases set yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        eyebrow="Account type"
+        title="Change how you use Payn"
+      >
+        <UserTypeOnboardingCard
+          title="Update your profile type"
+          description="Changing your type will adjust recommendations, trends, and category ranking."
+          completeLabel="Save changes"
+        />
+      </SectionCard>
     </div>
+  );
+
+  const renderExploreView = () => (
+    <MarketplaceExplorer
+      offers={marketplaceOffers}
+      initialMarket={dashboardMarket}
+      initialCategory="all"
+      mode="home"
+    />
   );
 
   // === VIEW ROUTING ===
   let body: React.ReactNode;
 
-  if (activeCategory) {
+  if (activeView === "explore") {
+    body = renderExploreView();
+  } else if (activeCategory) {
     body = renderCategoryView(activeCategory);
   } else if (activeView === "saved") {
     body = renderSavedView();

@@ -78,42 +78,6 @@ function HeroPhoneMock() {
 }
 
 function MobileAppPhoneMock() {
-  const savedOffers = [
-    {
-      provider: "Revolut",
-      mark: "R",
-      name: "Revolut Ultra",
-      tag: "Best for travel",
-      tagTone: "text-[#216B45] bg-[#DFF3E7]",
-      metrics: [
-        { label: "Cashback", value: "1%" },
-        { label: "FX fee", value: "0%" },
-      ],
-    },
-    {
-      provider: "Wise",
-      mark: "W",
-      name: "Wise Multi-Currency",
-      tag: "Lowest FX",
-      tagTone: "text-[#40618E] bg-[#E8EEF8]",
-      metrics: [
-        { label: "Fee", value: "EUR 2.10" },
-        { label: "Speed", value: "Same day" },
-      ],
-    },
-    {
-      provider: "N26",
-      mark: "N",
-      name: "N26 You",
-      tag: "No monthly fee",
-      tagTone: "text-[#7C5C2E] bg-[#FEF3C7]",
-      metrics: [
-        { label: "Monthly", value: "EUR 0" },
-        { label: "ATM", value: "5 free" },
-      ],
-    },
-  ];
-
   return (
     <div className="relative mx-auto w-full max-w-[340px]">
       <div className="rounded-[44px] bg-[#0A0A0A] p-[10px] shadow-[0_30px_90px_rgba(0,0,0,0.35)]">
@@ -124,61 +88,82 @@ function MobileAppPhoneMock() {
           <div className="mt-10 flex items-center justify-between">
             <div>
               <p className="text-[15px] font-bold text-white">Your shortlist</p>
-              <p className="mt-0.5 text-[11px] text-white/50">Germany selected</p>
+              <p className="mt-0.5 text-[11px] text-white/50">3 products saved</p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white">
-              KP
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3l4.5 2.7v4.6L8 13 3.5 10.3V5.7L8 3z" stroke="white" strokeWidth="1.4" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
 
-          {/* Saved offer cards */}
-          <div className="mt-4 grid gap-2.5">
-            {savedOffers.map((offer) => (
-              <div key={offer.name} className="rounded-[18px] bg-white/[0.07] px-3.5 py-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/10 text-[11px] font-bold text-white">
-                      {offer.mark}
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-semibold text-white">{offer.name}</p>
-                      <p className="mt-0.5 text-[11px] text-white/45">{offer.provider}</p>
-                    </div>
+          {/* Saved items */}
+          <div className="mt-4 grid gap-2">
+            {[
+              { label: "Best for travel", tone: "text-[#216B45] bg-[#DFF3E7]", status: "Reviewed" },
+              { label: "Lowest fees", tone: "text-[#40618E] bg-[#E8EEF8]", status: "Reviewed" },
+              { label: "Best overall", tone: "text-[#7C5C2E] bg-[#FEF3C7]", status: "New" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between rounded-[18px] bg-white/[0.07] px-3.5 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-white/10">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <rect x="2" y="2" width="12" height="12" rx="3" stroke="white" strokeWidth="1.3" />
+                      <path d="M5 8h6M8 5v6" stroke="white" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${offer.tagTone}`}>
-                    {offer.tag}
-                  </span>
+                  <div>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.tone}`}>
+                      {item.label}
+                    </span>
+                    <p className="mt-1 text-[11px] text-white/40">{item.status}</p>
+                  </div>
                 </div>
-                <div className="mt-2.5 flex gap-2">
-                  {offer.metrics.map((m) => (
-                    <div key={m.label} className="rounded-xl bg-white/[0.06] px-2.5 py-2">
-                      <p className="text-[10px] text-white/40">{m.label}</p>
-                      <p className="mt-0.5 text-[12px] font-bold text-white">{m.value}</p>
-                    </div>
-                  ))}
-                  <button type="button" className="ml-auto flex items-center rounded-xl bg-white px-3 py-2 text-[11px] font-semibold text-black">
-                    Apply
-                  </button>
-                </div>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 4l4 4-4 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
             ))}
           </div>
 
-          {/* Compare bar */}
-          <button type="button" className="mt-3 flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] py-2.5 text-[12px] font-semibold text-white/70">
-            Compare selected
-          </button>
-
-          {/* Bottom status */}
-          <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/[0.04] px-3.5 py-2.5">
-            <div>
-              <p className="text-[12px] font-semibold text-white">3 offers saved</p>
-              <p className="text-[11px] text-white/40">2 reviewed, 1 left</p>
+          {/* Comparison block */}
+          <div className="mt-3 rounded-[18px] bg-white/[0.05] px-3.5 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">Compare</p>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex -space-x-1.5">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex h-6 w-6 items-center justify-center rounded-full border border-[#111614] bg-white/15 text-[9px] font-bold text-white">
+                    {i + 1}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[12px] text-white/60">3 products side by side</p>
             </div>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8l4 4 6-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <button type="button" className="mt-2.5 flex w-full items-center justify-center rounded-xl bg-white py-2 text-[12px] font-semibold text-black">
+              Compare now
+            </button>
+          </div>
+
+          {/* Decision block */}
+          <div className="mt-3 rounded-[18px] border border-white/[0.08] bg-white/[0.03] px-3.5 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[12px] font-semibold text-white">Best option selected</p>
+                <p className="text-[11px] text-white/40">Ready to apply</p>
+              </div>
+              <button type="button" className="rounded-xl bg-white px-4 py-1.5 text-[11px] font-semibold text-black">
+                Apply
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom progress */}
+          <div className="mt-3 flex items-center justify-between px-1">
+            <p className="text-[11px] text-white/35">2 reviewed, 1 left</p>
+            <div className="flex gap-1">
+              <div className="h-1 w-5 rounded-full bg-white/30" />
+              <div className="h-1 w-5 rounded-full bg-white/30" />
+              <div className="h-1 w-5 rounded-full bg-white/10" />
             </div>
           </div>
         </div>
