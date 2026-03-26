@@ -4,9 +4,9 @@ import { getRequestPreferences } from "@/lib/request-preferences";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Payn | Country-Based Financial Marketplace",
+  title: "Payn | Financial Marketplace Across Europe",
   description:
-    "Compare loans, cards, transfers, exchange, insurance, and investments by country with usable filters, translated UI, and transparent ranking.",
+    "Compare loans, cards, transfers, exchange, insurance, and investments across Europe with real filters, transparent ranking, and a clean path from search to decision.",
   icons: {
     icon: "/icon.svg",
   },

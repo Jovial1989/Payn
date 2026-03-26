@@ -7,7 +7,11 @@ import { env } from "@/lib/env";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  const next = searchParams.get("next") ?? "/signup";
+
+  if (!env.supabaseUrl || !env.supabaseAnonKey) {
+    return NextResponse.redirect(`${origin}/login?auth_error=true`);
+  }
 
   if (code) {
     const cookieStore = await cookies();
@@ -30,5 +34,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/?auth_error=true`);
+  return NextResponse.redirect(`${origin}/login?auth_error=true`);
 }

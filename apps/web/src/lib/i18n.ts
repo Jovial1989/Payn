@@ -129,12 +129,12 @@ const baseMetrics = {
 const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   en: {
     nav: {
-      marketplace: "Marketplace",
+      marketplace: "Explore",
       about: "About",
       contact: "Contact",
       signIn: "Sign in",
       dashboard: "Dashboard",
-      compareOptions: "Compare options",
+      compareOptions: "Get started",
       myOffers: "My offers",
       mobileWaitlist: "Mobile waitlist",
       country: "Country",
@@ -192,10 +192,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       anySubtype: "Any subtype",
     },
     explorer: {
-      eyebrow: "Country-first marketplace",
-      title: "Start with country, category, and real filters.",
+      eyebrow: "Explore by market",
+      title: "Find products by country, category, and real filters.",
       description:
-        "Payn now leads with market selection, usable filters, and live results instead of a hero-first landing flow.",
+        "Select a country, narrow the category, and adjust filters to see ranked offers immediately.",
       resultsLabel: "matching results",
       providersLabel: "providers",
       filteredFrom: "Filtered from",
@@ -275,12 +275,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   },
   de: {
     nav: {
-      marketplace: "Marktplatz",
+      marketplace: "Entdecken",
       about: "Über Payn",
       contact: "Kontakt",
       signIn: "Anmelden",
       dashboard: "Dashboard",
-      compareOptions: "Optionen vergleichen",
+      compareOptions: "Loslegen",
       myOffers: "Meine Angebote",
       mobileWaitlist: "Mobile-Warteliste",
       country: "Land",
@@ -338,10 +338,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       anySubtype: "Jeder Untertyp",
     },
     explorer: {
-      eyebrow: "Länderbasierter Marktplatz",
-      title: "Mit Land, Kategorie und echten Filtern starten.",
+      eyebrow: "Nach Markt entdecken",
+      title: "Produkte nach Land, Kategorie und echten Filtern finden.",
       description:
-        "Payn beginnt jetzt mit Marktauswahl, nutzbaren Filtern und direkten Ergebnissen statt mit einem dominanten Hero.",
+        "Land auswählen, Kategorie eingrenzen und Filter anpassen, um sofort sortierte Angebote zu sehen.",
       resultsLabel: "passende Ergebnisse",
       providersLabel: "Anbieter",
       filteredFrom: "Gefiltert aus",
@@ -439,12 +439,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   },
   es: {
     nav: {
-      marketplace: "Mercado",
+      marketplace: "Explorar",
       about: "Acerca de",
       contact: "Contacto",
       signIn: "Iniciar sesión",
       dashboard: "Panel",
-      compareOptions: "Comparar opciones",
+      compareOptions: "Empezar",
       myOffers: "Mis ofertas",
       mobileWaitlist: "Lista de espera móvil",
       country: "País",
@@ -602,12 +602,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   },
   fr: {
     nav: {
-      marketplace: "Marché",
+      marketplace: "Explorer",
       about: "À propos",
       contact: "Contact",
       signIn: "Connexion",
       dashboard: "Tableau de bord",
-      compareOptions: "Comparer",
+      compareOptions: "Commencer",
       myOffers: "Mes offres",
       mobileWaitlist: "Liste mobile",
       country: "Pays",
@@ -765,12 +765,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   },
   it: {
     nav: {
-      marketplace: "Marketplace",
+      marketplace: "Esplora",
       about: "Chi siamo",
       contact: "Contatti",
       signIn: "Accedi",
       dashboard: "Dashboard",
-      compareOptions: "Confronta opzioni",
+      compareOptions: "Inizia",
       myOffers: "Le mie offerte",
       mobileWaitlist: "Lista app",
       country: "Paese",
@@ -928,12 +928,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
   },
   pt: {
     nav: {
-      marketplace: "Marketplace",
+      marketplace: "Explorar",
       about: "Sobre",
       contact: "Contacto",
       signIn: "Entrar",
       dashboard: "Painel",
-      compareOptions: "Comparar opções",
+      compareOptions: "Começar",
       myOffers: "As minhas ofertas",
       mobileWaitlist: "Lista móvel",
       country: "País",

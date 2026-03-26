@@ -1,7 +1,9 @@
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { buttonStyles } from "@/components/button";
+import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
+import { SaveOfferButton } from "@/components/save-offer-button";
 import { Tag } from "@/components/tag";
 import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import { getMatchReasons } from "@/lib/match-reasons";
@@ -75,16 +77,22 @@ export function OfferCard({
       </div>
 
       {reasons.length > 0 && (
-        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-accent-blue bg-accent-blue/30 px-4 py-3">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-accent-blue-text">
-            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
-            <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
-          <p className="text-xs font-medium text-accent-blue-text">
-            {reasons
-              .map((reason) => normalizeDisplayText(translateMatchReason(locale, reason)))
-              .join(" · ")}
+        <div className="mt-5 rounded-2xl border border-accent-blue bg-accent-blue/30 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-blue-text">
+            Why this result
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-accent-blue-text">
+              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            <p className="text-xs font-medium text-accent-blue-text">
+              This matches your selected country and filters.{" "}
+              {reasons
+                .map((reason) => normalizeDisplayText(translateMatchReason(locale, reason)))
+                .join(" · ")}
+            </p>
+          </div>
         </div>
       )}
 
@@ -106,20 +114,14 @@ export function OfferCard({
           <span>{dictionary.offerCard.reviewBeforeLeave}</span>
         </div>
         <div className="flex flex-wrap gap-2">
+          <SaveOfferButton offer={offer} variant="ghost" size="md" />
           <Link href={getOfferHref(offer)} className={buttonStyles({ variant: "primary", size: "md" })}>
             {dictionary.offerCard.reviewOffer}
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="ml-1.5">
               <path d="M3 7h8m0 0L8 4m3 3L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <a
-            href={offer.providerWebsiteUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={buttonStyles({ variant: "secondary", size: "md" })}
-          >
-            {dictionary.offerCard.providerSite}
-          </a>
+          <ProviderLinkButton offer={offer} label={dictionary.offerCard.providerSite} variant="secondary" size="md" />
         </div>
       </div>
     </article>

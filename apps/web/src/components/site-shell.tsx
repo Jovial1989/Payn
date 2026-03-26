@@ -10,7 +10,7 @@ import { getMarketCategoryHref, marketplaceCategories } from "@/lib/marketplace"
 
 export function SiteShell({
   children,
-  activePage = "marketplace",
+  activePage,
   activeCategory,
   eyebrow,
   title,
@@ -97,6 +97,9 @@ export function SiteShell({
               {dictionary.footer.company}
             </p>
             <div className="mt-4 grid gap-3">
+              <Link href="/explore" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+                {dictionary.nav.marketplace}
+              </Link>
               <Link href="/about" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.about}
               </Link>

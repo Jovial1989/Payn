@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import type { MarketplaceMarket } from "@payn/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { OfferCard } from "@/components/offer-card";
-import { ProviderLogo } from "@/components/provider-logo";
-import { Tag } from "@/components/tag";
 import { buttonStyles } from "@/components/button";
+import { OfferCard } from "@/components/offer-card";
+import { ProviderLinkButton } from "@/components/provider-link-button";
+import { ProviderLogo } from "@/components/provider-logo";
+import { SaveOfferButton } from "@/components/save-offer-button";
 import { SiteShell } from "@/components/site-shell";
+import { Tag } from "@/components/tag";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import {
@@ -124,17 +126,11 @@ export default async function OfferDetailPage({
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <SaveOfferButton offer={offer} variant="secondary" size="md" />
             <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
               {dictionary.offerDetail.backToCategory}
             </Link>
-            <a
-              href={offer.providerWebsiteUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={buttonStyles({ variant: "primary", size: "md" })}
-            >
-              {dictionary.offerDetail.visitProvider}
-            </a>
+            <ProviderLinkButton offer={offer} label={dictionary.offerDetail.visitProvider} variant="primary" size="md" source="offer_detail" />
           </div>
         </div>
 

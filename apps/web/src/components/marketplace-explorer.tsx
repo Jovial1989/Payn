@@ -105,8 +105,8 @@ export function MarketplaceExplorer({
   };
 
   return (
-    <div className="grid gap-8">
-      <section className="rounded-[32px] border border-line bg-white/95 p-5 shadow-card sm:p-7">
+    <div className="grid gap-6">
+      <section className="rounded-[32px] border border-line bg-white p-5 shadow-card sm:p-7">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -159,7 +159,7 @@ export function MarketplaceExplorer({
             </label>
           </div>
 
-          <div className="grid gap-3 rounded-[28px] border border-line bg-bg-surface/70 p-4">
+          <div className="grid gap-3 rounded-[28px] border border-line bg-[#FBFBFA] p-4">
             <div className="flex flex-wrap gap-2">
               {explorerCategories.map((category) => {
                 const count =
@@ -176,7 +176,7 @@ export function MarketplaceExplorer({
                       "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
                       selectedCategory === category
                         ? "bg-black text-white"
-                        : "bg-white text-ink-secondary hover:text-ink",
+                        : "bg-white text-ink-secondary hover:bg-white hover:text-ink",
                     )}
                   >
                     <span>{dictionary.categories[category]}</span>
