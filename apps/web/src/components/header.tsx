@@ -16,6 +16,83 @@ const navItems = [
   { href: "/contact", key: "contact" },
 ] as const;
 
+function UserAvatar({ email, onClick }: { email: string; onClick: () => void }) {
+  const initials = email
+    .split("@")[0]
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-xs font-bold text-white transition-colors hover:bg-gray-800"
+      aria-label="Account menu"
+    >
+      {initials}
+    </button>
+  );
+}
+
+function UserDropdown({
+  email,
+  userType,
+  onClose,
+  onSignOut,
+}: {
+  email: string;
+  userType: string | null;
+  onClose: () => void;
+  onSignOut: () => void;
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="absolute right-0 top-full z-50 mt-2 w-[240px] rounded-2xl border border-line bg-white p-2 shadow-elevated">
+        <div className="px-3 py-3">
+          <p className="text-sm font-semibold text-ink">{email.split("@")[0]}</p>
+          <p className="mt-0.5 text-xs text-ink-tertiary">{email}</p>
+          {userType && (
+            <p className="mt-1 text-xs text-ink-tertiary capitalize">{userType} account</p>
+          )}
+        </div>
+        <div className="border-t border-line pt-1">
+          <Link
+            href="/dashboard"
+            onClick={onClose}
+            className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/dashboard?view=saved"
+            onClick={onClose}
+            className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+          >
+            Saved offers
+          </Link>
+          <Link
+            href="/dashboard?view=profile"
+            onClick={onClose}
+            className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+          >
+            Profile
+          </Link>
+        </div>
+        <div className="border-t border-line pt-1">
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="flex w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function Header({
   activePage,
   activeCategory,
@@ -24,13 +101,12 @@ export function Header({
   activeCategory?: MarketplaceCategory;
 }) {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const signInHref = user ? "/dashboard" : "/login";
-  const getStartedHref =
-    user && profile?.onboarding_completed ? "/dashboard" : "/signup";
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const isSignedIn = Boolean(user);
 
   const handleLocaleChange = (nextLocale: MarketplaceLocale) => {
     preferences.setLocale(nextLocale);
@@ -54,6 +130,13 @@ export function Header({
     });
   };
 
+  const handleSignOut = async () => {
+    setUserMenuOpen(false);
+    setMobileMenuOpen(false);
+    await signOut();
+    window.location.href = "/";
+  };
+
   return (
     <header className="glass sticky top-0 z-50">
       <div className="mx-auto flex min-h-16 max-w-[1240px] items-center justify-between gap-5 px-5 py-3 lg:px-8">
@@ -66,6 +149,7 @@ export function Header({
           <span className="text-lg font-bold tracking-tight text-ink">Payn</span>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) => {
             const label =
@@ -92,6 +176,7 @@ export function Header({
           })}
         </nav>
 
+        {/* Desktop market/language selectors */}
         <div className="hidden items-center gap-2 lg:flex">
           <label className="flex items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink-secondary">
             <span>{dictionary.nav.country}</span>
@@ -124,19 +209,43 @@ export function Header({
           </label>
         </div>
 
+        {/* Auth area */}
         <div className="flex items-center gap-3">
-          <Link
-            href={signInHref}
-            className="hidden rounded-full px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:text-ink sm:block"
-          >
-            {user ? dictionary.nav.dashboard : dictionary.nav.signIn}
-          </Link>
-          <Link
-            href={getStartedHref}
-            className="hidden rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800 sm:block"
-          >
-            {user && profile?.onboarding_completed ? dictionary.nav.dashboard : dictionary.nav.compareOptions}
-          </Link>
+          {isSignedIn ? (
+            /* Signed-in: avatar with dropdown */
+            <div className="relative hidden sm:block">
+              <UserAvatar
+                email={user!.email ?? "U"}
+                onClick={() => setUserMenuOpen((o) => !o)}
+              />
+              {userMenuOpen && (
+                <UserDropdown
+                  email={user!.email ?? ""}
+                  userType={profile?.user_type ?? null}
+                  onClose={() => setUserMenuOpen(false)}
+                  onSignOut={handleSignOut}
+                />
+              )}
+            </div>
+          ) : (
+            /* Anonymous: sign in + CTA */
+            <>
+              <Link
+                href="/login"
+                className="hidden rounded-full px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:text-ink sm:block"
+              >
+                {dictionary.nav.signIn}
+              </Link>
+              <Link
+                href="/signup"
+                className="hidden rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800 sm:block"
+              >
+                {dictionary.nav.compareOptions}
+              </Link>
+            </>
+          )}
+
+          {/* Mobile hamburger */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
@@ -156,6 +265,7 @@ export function Header({
         </div>
       </div>
 
+      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="border-t border-line bg-white px-5 pb-5 pt-4 lg:hidden">
           <nav className="grid gap-1">
@@ -183,6 +293,15 @@ export function Header({
                 </Link>
               );
             })}
+            {isSignedIn && (
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-2xl px-4 py-3 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           <div className="mt-4 grid gap-3 border-t border-line pt-4">
@@ -222,20 +341,43 @@ export function Header({
           </div>
 
           <div className="mt-4 grid gap-2 border-t border-line pt-4">
-            <Link
-              href={signInHref}
-              onClick={() => setMobileMenuOpen(false)}
-              className="rounded-full border border-line px-4 py-2.5 text-center text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface"
-            >
-              {user ? dictionary.nav.dashboard : dictionary.nav.signIn}
-            </Link>
-            <Link
-              href={getStartedHref}
-              onClick={() => setMobileMenuOpen(false)}
-              className="rounded-full bg-black px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gray-800"
-            >
-              {user && profile?.onboarding_completed ? dictionary.nav.dashboard : dictionary.nav.compareOptions}
-            </Link>
+            {isSignedIn ? (
+              <>
+                <div className="flex items-center gap-3 px-3 py-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                    {(user!.email ?? "U").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{user!.email?.split("@")[0]}</p>
+                    <p className="text-xs text-ink-tertiary">{user!.email}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="rounded-full border border-line px-4 py-2.5 text-center text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-full border border-line px-4 py-2.5 text-center text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface"
+                >
+                  {dictionary.nav.signIn}
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-full bg-black px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+                >
+                  {dictionary.nav.compareOptions}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

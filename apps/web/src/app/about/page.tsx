@@ -27,7 +27,13 @@ export default function AboutPage() {
               <h2 className="text-h2 text-ink">Kyrylo Petrov</h2>
               <p className="mt-1 text-sm font-medium text-ink-secondary">Founder of Payn</p>
               <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-                Serial entrepreneur and digital product builder with experience in fintech and enterprise solutions. Focused on simplifying financial decision-making.
+                Fintech entrepreneur and digital product architect with experience across financial platforms, consumer credit, and enterprise-grade solutions.
+              </p>
+              <p className="mt-3 text-base leading-relaxed text-ink-secondary">
+                Before Payn, Kyrylo helped build CreditPay — an earlier fintech venture focused on consumer credit integration and financial product access. That experience shaped a deep understanding of how people discover, compare, and access financial products online.
+              </p>
+              <p className="mt-3 text-base leading-relaxed text-ink-secondary">
+                Payn is the next evolution of that journey — a modern European financial marketplace built to make decisions clearer, more transparent, and easier to trust.
               </p>
               <a
                 href="https://www.linkedin.com/in/petrovkyrylo/"
@@ -44,18 +50,42 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
+          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">From CreditPay to Payn</p>
+          <div className="mt-5 grid gap-6 lg:grid-cols-3">
+            <div>
+              <h3 className="text-lg font-semibold text-ink">CreditPay</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+                An earlier fintech venture focused on consumer credit integration. It proved the demand for clearer, more accessible financial product comparison — and revealed the gaps that still needed solving.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-ink">The insight</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+                People don't struggle to find financial products. They struggle to understand them, compare them fairly, and trust the results they see. Most platforms optimize for clicks, not clarity.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-ink">Payn today</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+                A European marketplace covering loans, cards, transfers, exchange, insurance, and investments — built around transparent ranking, visible tradeoffs, and country-aware availability.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">What Payn does</p>
             <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-              Payn helps people compare loans, cards, transfers, insurance, exchange, and investments with country-aware availability and a cleaner explanation of why results appear.
+              Payn helps people compare loans, cards, transfers, insurance, exchange, and investments across European markets with real filters, visible provider context, and a clearer explanation of why results rank the way they do.
             </p>
           </div>
 
           <div className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">How Payn works</p>
             <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-              The product focuses on transparent comparison, visible provider context, and product-fit ranking instead of burying decisions behind vague marketing copy.
+              Transparent comparison with product-fit ranking, match reasons you can read, and tradeoff visibility — instead of burying decisions behind vague marketing copy or paid placements.
             </p>
           </div>
         </section>
