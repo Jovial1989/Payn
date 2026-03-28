@@ -27,101 +27,113 @@ export function OfferCard({
   const reasons = getMatchReasons(offer, rank);
   const tradeoff = getOfferTradeoff(offer);
   const dictionary = getDictionary(locale);
+  const isTopRank = rank === 1;
 
   return (
     <article
-      className="group rounded-[28px] border border-line bg-white/95 p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover sm:p-8"
+      className={`group rounded-[22px] border bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5 ${
+        isTopRank
+          ? "border-accent-green/60 shadow-[0_4px_20px_rgba(19,115,51,0.06)]"
+          : "border-line shadow-card"
+      }`}
       aria-label={`${offer.providerName} ${offer.title}`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" />
-          <div>
-            <p className="text-sm font-bold text-ink">{offer.providerName}</p>
-            <p className="mt-0.5 text-xs text-ink-tertiary">
-              {dictionary.offerCard.updated} {formatDate(offer.updatedAt, locale)}
+      {/* ─── Header: Provider + Rank + Metrics (single row on lg) ─── */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-5">
+        {/* Provider identity */}
+        <div className="flex min-w-0 flex-1 items-start gap-3.5">
+          <div className="relative shrink-0">
+            <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="md" />
+            {isTopRank && (
+              <div className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-accent-green text-[9px] font-bold text-accent-green-text shadow-subtle">
+                1
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-ink">{offer.providerName}</p>
+              {!isTopRank && (
+                <span className="rounded-md bg-accent-blue px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-accent-blue-text">
+                  #{rank}
+                </span>
+              )}
+              <span className="hidden text-[11px] text-ink-tertiary sm:inline">
+                {dictionary.offerCard.updated} {formatDate(offer.updatedAt, locale)}
+              </span>
+            </div>
+            <Link href={getOfferHref(offer)} className="group/title mt-0.5 block">
+              <h3 className="text-[15px] font-bold leading-snug tracking-tight text-ink transition-colors group-hover/title:text-ink-secondary">
+                {offer.title}
+              </h3>
+            </Link>
+            <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-ink-secondary">
+              {normalizeDisplayText(offer.subtitle)}
             </p>
           </div>
         </div>
-        <Tag tone="blue">#{rank}</Tag>
+
+        {/* Metrics — compact tiles */}
+        <dl className="flex shrink-0 gap-2 lg:gap-1.5">
+          {offer.metrics.map((metric) => (
+            <div key={metric.label} className="min-w-0 flex-1 rounded-xl bg-bg-surface px-3 py-2.5 lg:w-[105px] lg:flex-none">
+              <dt className="truncate text-[10px] font-medium uppercase tracking-wide text-ink-tertiary">
+                {normalizeDisplayText(getMetricLabel(locale, metric.label))}
+              </dt>
+              <dd className="mt-0.5 truncate text-sm font-bold tabular-nums tracking-tight text-ink">
+                {normalizeDisplayText(metric.value)}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <div className="mt-5">
-        <Link href={getOfferHref(offer)} className="transition-colors hover:text-ink-secondary">
-          <h3 className="text-h3 text-ink">{offer.title}</h3>
-        </Link>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-          {normalizeDisplayText(offer.subtitle)}
-        </p>
-      </div>
-
-      <dl className="mt-6 grid gap-3 sm:grid-cols-3">
-        {offer.metrics.map((metric) => (
-          <div key={metric.label} className="rounded-2xl bg-bg-surface px-5 py-4">
-            <dt className="text-xs font-medium text-ink-tertiary">
-              {normalizeDisplayText(getMetricLabel(locale, metric.label))}
-            </dt>
-            <dd className="mt-1.5 text-lg font-bold tabular-nums tracking-tight text-ink">
-              {normalizeDisplayText(metric.value)}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="mt-5 flex flex-wrap gap-2">
-        {offer.bestFor.map((item, i) => (
+      {/* ─── Tags + Insights (single compact row) ─── */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {offer.bestFor.slice(0, 4).map((item, i) => (
           <Tag key={item} tone={tagTones[i % tagTones.length]}>
             {normalizeDisplayText(item)}
           </Tag>
         ))}
-      </div>
 
-      {reasons.length > 0 && (
-        <div className="mt-5 rounded-2xl border border-accent-blue bg-accent-blue/30 px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-blue-text">
-            Why this result
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-accent-blue-text">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        {/* Inline match reason */}
+        {reasons.length > 0 && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-accent-blue/40 px-2.5 py-1 text-[11px] font-medium text-accent-blue-text">
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none" className="shrink-0">
+              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            <p className="text-xs font-medium text-accent-blue-text">
-              This matches your selected country and filters.{" "}
-              {reasons
-                .map((reason) => normalizeDisplayText(translateMatchReason(locale, reason)))
-                .join(" · ")}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 rounded-2xl border border-line bg-[#FCFCFB] px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-          {dictionary.offerCard.keyTradeoff}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-          {normalizeDisplayText(translateTradeoff(locale, tradeoff))}
-        </p>
+            {reasons
+              .slice(0, 2)
+              .map((reason) => normalizeDisplayText(translateMatchReason(locale, reason)))
+              .join(" · ")}
+          </span>
+        )}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 border-t border-line pt-5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2 text-xs text-ink-tertiary">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">
-            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
-            <path d="M7 4v3l2 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      {/* ─── Tradeoff + Actions (compact bottom bar) ─── */}
+      <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Tradeoff — slim inline */}
+        <div className="flex min-w-0 flex-1 items-center gap-2 text-[12px] text-ink-tertiary">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="shrink-0">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
-          <span>{dictionary.offerCard.reviewBeforeLeave}</span>
+          <span className="truncate">
+            <span className="font-semibold text-ink-secondary">{dictionary.offerCard.keyTradeoff}:</span>{" "}
+            {normalizeDisplayText(translateTradeoff(locale, tradeoff))}
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <SaveOfferButton offer={offer} variant="ghost" size="md" />
-          <Link href={getOfferHref(offer)} className={buttonStyles({ variant: "primary", size: "md" })}>
+
+        {/* CTAs — tight row */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          <SaveOfferButton offer={offer} variant="ghost" size="sm" />
+          <Link href={getOfferHref(offer)} className={buttonStyles({ variant: "primary", size: "sm" })}>
             {dictionary.offerCard.reviewOffer}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="ml-1.5">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="ml-1">
               <path d="M3 7h8m0 0L8 4m3 3L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <ProviderLinkButton offer={offer} label={dictionary.offerCard.providerSite} variant="secondary" size="md" />
+          <ProviderLinkButton offer={offer} label={dictionary.offerCard.providerSite} variant="secondary" size="sm" />
         </div>
       </div>
     </article>
