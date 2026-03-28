@@ -1,5 +1,11 @@
 import Link from "next/link";
 import { buttonStyles } from "@/components/button";
+import {
+  HeroPhoneMockup,
+  AppStoreButton,
+  GooglePlayButton,
+  WaitlistBadge,
+} from "@/components/hero-phone-mockup";
 import { ProviderStrip } from "@/components/provider-strip";
 
 const featuredProviders = [
@@ -24,157 +30,10 @@ const steps = [
   "Get ranked offers",
 ];
 
-function HeroPhoneMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-[340px]">
-      <div className="rounded-[44px] bg-[#101111] p-[10px] shadow-[0_30px_90px_rgba(0,0,0,0.16)]">
-        <div className="relative overflow-hidden rounded-[36px] bg-[#F3F6F4] p-4">
-          <div className="absolute left-1/2 top-3 h-7 w-28 -translate-x-1/2 rounded-full bg-black/90" />
-
-          <div className="mt-10 grid gap-3">
-            <div className="rounded-[22px] bg-white p-4 shadow-subtle">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Payn</p>
-              <h3 className="mt-2 text-lg font-bold tracking-tight text-ink">Your financial marketplace</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">Europe selected. Ranked offers ready.</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[20px] bg-[#DFF3E7] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#216B45]">Country</p>
-                <p className="mt-2 text-sm font-bold text-[#123B27]">Germany</p>
-              </div>
-              <div className="rounded-[20px] bg-[#E8EEF8] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#40618E]">Category</p>
-                <p className="mt-2 text-sm font-bold text-[#1D2A3D]">Transfers</p>
-              </div>
-            </div>
-
-            <div className="rounded-[24px] bg-white p-4 shadow-subtle">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-bold text-ink">Wise Transfer</p>
-                  <p className="mt-1 text-xs text-ink-secondary">Matches your country and payout speed filter</p>
-                </div>
-                <span className="rounded-full bg-accent-blue px-2.5 py-1 text-xs font-semibold text-accent-blue-text">#1</span>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {[
-                  { label: "Fee", value: "EUR 2.10" },
-                  { label: "Speed", value: "Same day" },
-                  { label: "FX", value: "0.41%" },
-                ].map((m) => (
-                  <div key={m.label} className="rounded-2xl bg-bg-surface px-3 py-3">
-                    <p className="text-[11px] text-ink-tertiary">{m.label}</p>
-                    <p className="mt-1 text-xs font-bold text-ink">{m.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MobileAppPhoneMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-[340px]">
-      <div className="rounded-[44px] bg-[#0A0A0A] p-[10px] shadow-[0_30px_90px_rgba(0,0,0,0.35)]">
-        <div className="relative overflow-hidden rounded-[36px] bg-[#111614] px-4 pb-5 pt-4">
-          <div className="absolute left-1/2 top-3 h-7 w-28 -translate-x-1/2 rounded-full bg-black" />
-
-          {/* Header */}
-          <div className="mt-10 flex items-center justify-between">
-            <div>
-              <p className="text-[15px] font-bold text-white">Your shortlist</p>
-              <p className="mt-0.5 text-[11px] text-white/50">3 products saved</p>
-            </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3l4.5 2.7v4.6L8 13 3.5 10.3V5.7L8 3z" stroke="white" strokeWidth="1.4" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Saved items */}
-          <div className="mt-4 grid gap-2">
-            {[
-              { label: "Best for travel", tone: "text-[#216B45] bg-[#DFF3E7]", status: "Reviewed" },
-              { label: "Lowest fees", tone: "text-[#40618E] bg-[#E8EEF8]", status: "Reviewed" },
-              { label: "Best overall", tone: "text-[#7C5C2E] bg-[#FEF3C7]", status: "New" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between rounded-[18px] bg-white/[0.07] px-3.5 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-white/10">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <rect x="2" y="2" width="12" height="12" rx="3" stroke="white" strokeWidth="1.3" />
-                      <path d="M5 8h6M8 5v6" stroke="white" strokeWidth="1.2" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.tone}`}>
-                      {item.label}
-                    </span>
-                    <p className="mt-1 text-[11px] text-white/40">{item.status}</p>
-                  </div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 4l4 4-4 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            ))}
-          </div>
-
-          {/* Comparison block */}
-          <div className="mt-3 rounded-[18px] bg-white/[0.05] px-3.5 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">Compare</p>
-            <div className="mt-2 flex items-center gap-2">
-              <div className="flex -space-x-1.5">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="flex h-6 w-6 items-center justify-center rounded-full border border-[#111614] bg-white/15 text-[9px] font-bold text-white">
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
-              <p className="text-[12px] text-white/60">3 products side by side</p>
-            </div>
-            <button type="button" className="mt-2.5 flex w-full items-center justify-center rounded-xl bg-white py-2 text-[12px] font-semibold text-black">
-              Compare now
-            </button>
-          </div>
-
-          {/* Decision block */}
-          <div className="mt-3 rounded-[18px] border border-white/[0.08] bg-white/[0.03] px-3.5 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[12px] font-semibold text-white">Best option selected</p>
-                <p className="text-[11px] text-white/40">Ready to apply</p>
-              </div>
-              <button type="button" className="rounded-xl bg-white px-4 py-1.5 text-[11px] font-semibold text-black">
-                Apply
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom progress */}
-          <div className="mt-3 flex items-center justify-between px-1">
-            <p className="text-[11px] text-white/35">2 reviewed, 1 left</p>
-            <div className="flex gap-1">
-              <div className="h-1 w-5 rounded-full bg-white/30" />
-              <div className="h-1 w-5 rounded-full bg-white/30" />
-              <div className="h-1 w-5 rounded-full bg-white/10" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function HomePage() {
   return (
     <div className="grid gap-10">
+      {/* ─── Hero ─── */}
       <section className="overflow-hidden rounded-[40px] border border-line bg-white shadow-card">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[0.94fr_1.06fr] lg:px-10 lg:py-12">
           <div className="flex flex-col justify-center">
@@ -211,15 +70,39 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 rounded-[36px] bg-[radial-gradient(circle_at_top,_rgba(24,94,69,0.16),_transparent_42%),radial-gradient(circle_at_bottom_right,_rgba(26,115,232,0.14),_transparent_36%)]" />
-            <div className="relative grid min-h-full place-items-center rounded-[36px] bg-[#F4F5F2] p-4 sm:p-6">
-              <HeroPhoneMock />
+          {/* Phone mockup — visible on md+, hidden on mobile */}
+          <div className="relative hidden md:block">
+            <div className="absolute inset-0 rounded-[36px] bg-[radial-gradient(circle_at_30%_20%,_rgba(16,185,129,0.12),_transparent_50%),radial-gradient(circle_at_80%_70%,_rgba(59,130,246,0.10),_transparent_50%)]" />
+            <div className="relative grid min-h-full place-items-center rounded-[36px] bg-[#0c0f0e] p-6 sm:p-8">
+              <HeroPhoneMockup />
+            </div>
+          </div>
+
+          {/* Mobile: simplified app preview cards */}
+          <div className="md:hidden">
+            <div className="grid gap-3 overflow-x-auto pb-2">
+              <div className="rounded-2xl bg-bg-surface p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-xs font-bold text-white">P</div>
+                  <div>
+                    <p className="text-sm font-bold text-ink">Payn mobile</p>
+                    <p className="text-xs text-ink-secondary">Shortlist, compare, decide</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  {["Shortlist", "Compare", "Apply"].map((label) => (
+                    <span key={label} className="rounded-full bg-accent-green px-2.5 py-1 text-[10px] font-semibold text-accent-green-text">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* ─── Why Payn ─── */}
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
@@ -241,37 +124,67 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[32px] border border-line bg-[#101717] px-6 py-8 text-white shadow-card sm:px-8 sm:py-10">
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-          <div>
-            <p className="text-caption uppercase tracking-[0.28em] text-white/55">Mobile app</p>
-            <h2 className="mt-3 max-w-xl text-h2 text-white">Take Payn with you from shortlist to decision</h2>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/70">
-              Save offers on the web, review them later on mobile, and keep your next decision close without losing context.
+      {/* ─── Mobile App Section ─── */}
+      <section className="overflow-hidden rounded-[32px] border border-line bg-[#0c0f0e] shadow-card">
+        <div className="grid gap-0 lg:grid-cols-[1fr_0.85fr]">
+          {/* Left: copy + CTAs */}
+          <div className="flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-14 lg:py-16">
+            <WaitlistBadge />
+
+            <h2 className="mt-5 max-w-lg text-h2 text-white lg:text-h1">
+              Save on web, continue on mobile
+            </h2>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/60 sm:text-base">
+              Build your shortlist on any device. Compare side by side. When you are ready to decide, everything is right where you left it.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/waitlist" className="inline-flex h-12 items-center gap-3 rounded-full bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-white/90">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.707 12.293a1 1 0 010 1.414l-5 5A1 1 0 0111 18V8a1 1 0 011.707-.707l5 5zM6 5a1 1 0 011 1v12a1 1 0 11-2 0V6a1 1 0 011-1z" />
-                </svg>
-                App Store
-              </Link>
-              <Link href="/waitlist" className="inline-flex h-12 items-center gap-3 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.09]">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.5 3.5l10.5 6-3.5 3.5-7-9.5zm11.8 6.7l3.7 2.1c.7.4.7 1.4 0 1.8l-3.7 2.1-3.6-3.1 3.6-2.9zM7 14l3.5 3.5-7 3 3.5-6.5zm4.2-.5l3.8 3.3-10.2 4.4 6.4-7.7z" />
-                </svg>
-                Google Play
-              </Link>
+            <div className="mt-5 grid gap-3">
+              {[
+                "Your shortlist syncs across devices",
+                "Side-by-side comparison on the go",
+                "Pick up where you left off",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8l4 4 6-6" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-white/55">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* App store buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <AppStoreButton />
+              <GooglePlayButton />
+            </div>
+
+            <p className="mt-4 text-[12px] text-white/30">
+              Join the waitlist for early access. iOS and Android.
+            </p>
+          </div>
+
+          {/* Right: phone mockup — visible on lg+ */}
+          <div className="relative hidden lg:flex lg:items-center lg:justify-center">
+            {/* Gradient backdrop */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.08),_transparent_60%)]" />
+            <div className="relative py-10">
+              <HeroPhoneMockup variant="dark" />
             </div>
           </div>
 
-          <div className="justify-self-center">
-            <MobileAppPhoneMock />
+          {/* Tablet/mobile: show phone inline centered */}
+          <div className="flex items-center justify-center px-6 pb-10 lg:hidden">
+            <div className="scale-90">
+              <HeroPhoneMockup variant="dark" />
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ─── How It Works ─── */}
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -295,6 +208,7 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* ─── Trusted Providers ─── */}
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>

@@ -53,6 +53,10 @@
     border-radius: 16px;
   }
 
+  .duration-400 {
+    transition-duration: 400ms;
+  }
+
   /* Range slider light theme */
   input[type="range"] {
     -webkit-appearance: none;
