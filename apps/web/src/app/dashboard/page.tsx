@@ -12,6 +12,7 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
 import { resolveProfileMarket } from "@/lib/dashboard";
+import { localePath } from "@/lib/locale";
 import {
   getDashboardHref,
   normalizeDashboardView,
@@ -173,6 +174,7 @@ function ProfileEditor({
   );
   const [editGoals, setEditGoals] = useState<string[]>(goals);
   const [saving, setSaving] = useState(false);
+  const { locale } = useMarketplacePreferences();
   const { signOut } = useAuth();
 
   const toggleCategory = (cat: string) => {
@@ -216,7 +218,7 @@ function ProfileEditor({
             type="button"
             onClick={async () => {
               await signOut();
-              window.location.href = "/";
+              window.location.href = localePath(locale, "/");
             }}
             className={buttonStyles({ variant: "ghost", size: "md" })}
           >
@@ -368,10 +370,10 @@ export default function DashboardPage() {
           description="Compare loans, cards, transfers, exchange, insurance, and investments in one place."
         >
           <div className="flex flex-wrap gap-3">
-            <Link href="/login" className={buttonStyles({ variant: "primary", size: "lg" })}>
+            <Link href={localePath(preferences.locale, "/login")} className={buttonStyles({ variant: "primary", size: "lg" })}>
               Sign in
             </Link>
-            <Link href="/signup" className={buttonStyles({ variant: "secondary", size: "lg" })}>
+            <Link href={localePath(preferences.locale, "/signup")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
               Get started
             </Link>
           </div>
@@ -529,7 +531,7 @@ export default function DashboardPage() {
                 {trendingOffers.slice(0, 3).map((item) => (
                   <Link
                     key={item.offer.id}
-                    href={`/offers/${item.offer.slug}`}
+                    href={localePath(preferences.locale, `/offers/${item.offer.slug}`)}
                     className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
                   >
                     <div className="flex items-center gap-3">
@@ -548,7 +550,7 @@ export default function DashboardPage() {
                 {allOffers.slice(0, 3).map((offer) => (
                   <Link
                     key={offer.id}
-                    href={`/offers/${offer.slug}`}
+                    href={localePath(preferences.locale, `/offers/${offer.slug}`)}
                     className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
                   >
                     <div className="flex items-center gap-3">

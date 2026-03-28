@@ -2,8 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { buttonStyles } from "@/components/button";
 import { SiteShell } from "@/components/site-shell";
+import { localePath } from "@/lib/locale";
+import { getRequestPreferences } from "@/lib/request-preferences";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const { locale } = await getRequestPreferences();
+
   return (
     <SiteShell
       activePage="about"
@@ -114,10 +118,10 @@ export default function AboutPage() {
               <h2 className="mt-3 text-h2 text-ink">See the marketplace in action</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/explore" className={buttonStyles({ variant: "primary", size: "lg" })}>
+              <Link href={localePath(locale, "/explore")} className={buttonStyles({ variant: "primary", size: "lg" })}>
                 Explore offers
               </Link>
-              <Link href="/contact" className={buttonStyles({ variant: "secondary", size: "lg" })}>
+              <Link href={localePath(locale, "/contact")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
                 Contact Payn
               </Link>
             </div>

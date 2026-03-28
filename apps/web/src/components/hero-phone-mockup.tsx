@@ -1,13 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 // ─── Status Bar ───
 
-function StatusBar({ light = false }: { light?: boolean }) {
-  const color = light ? "text-black" : "text-white";
+function StatusBar() {
   return (
-    <div className={`flex items-center justify-between px-5 pt-3 pb-1 ${color}`}>
+    <div className="flex items-center justify-between px-5 pt-3 pb-1 text-white">
       <span className="text-[11px] font-semibold tabular-nums">9:41</span>
       <div className="flex items-center gap-1.5">
         {/* Signal */}
@@ -36,7 +31,7 @@ function StatusBar({ light = false }: { light?: boolean }) {
 
 // ─── Bottom Navigation ───
 
-function BottomNav({ active = 0, light = false }: { active?: number; light?: boolean }) {
+function BottomNav({ active = 0 }: { active?: number }) {
   const items = [
     { label: "Home", icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -63,16 +58,12 @@ function BottomNav({ active = 0, light = false }: { active?: number; light?: boo
     )},
   ];
 
-  const bg = light ? "bg-white/80 border-t border-black/[0.06]" : "bg-[#0d1110]/90 border-t border-white/[0.06]";
-  const activeColor = light ? "text-black" : "text-white";
-  const inactiveColor = light ? "text-black/35" : "text-white/35";
-
   return (
-    <div className={`flex items-end justify-around px-2 pb-2 pt-1.5 backdrop-blur-md ${bg}`}>
+    <div className="flex items-end justify-around px-2 pb-2 pt-1.5 backdrop-blur-md bg-[#0d1110]/90 border-t border-white/[0.06]">
       {items.map((item, i) => (
         <div
           key={item.label}
-          className={`flex flex-col items-center gap-0.5 ${i === active ? activeColor : inactiveColor}`}
+          className={`flex flex-col items-center gap-0.5 ${i === active ? "text-white" : "text-white/35"}`}
         >
           {item.icon}
           <span className="text-[9px] font-semibold">{item.label}</span>
@@ -83,7 +74,7 @@ function BottomNav({ active = 0, light = false }: { active?: number; light?: boo
   );
 }
 
-// ─── Screen 1: Shortlist ───
+// ─── Static Screen: Shortlist ───
 
 function ShortlistScreen() {
   const saved = [
@@ -114,7 +105,7 @@ function ShortlistScreen() {
         </div>
 
         <div className="mt-4 grid gap-2.5">
-          {saved.map((item, i) => (
+          {saved.map((item) => (
             <div
               key={item.provider}
               className="flex items-center justify-between rounded-2xl bg-white/[0.06] px-3.5 py-3 backdrop-blur-sm"
@@ -176,185 +167,9 @@ function ShortlistScreen() {
   );
 }
 
-// ─── Screen 2: Explore ───
-
-function ExploreScreen() {
-  const categories = ["All", "Transfers", "Cards", "Loans"];
-  const results = [
-    { rank: 1, name: "Wise Transfer", provider: "Wise", metric: "EUR 2.10 fee", tag: "Fastest" },
-    { rank: 2, name: "Revolut Standard", provider: "Revolut", metric: "Free transfer", tag: "No fees" },
-    { rank: 3, name: "N26 You", provider: "N26", metric: "EUR 1.50 fee", tag: "Best value" },
-  ];
-
-  return (
-    <div className="flex h-full flex-col bg-[#0d1110]">
-      <StatusBar />
-      <div className="mx-auto mt-0.5 h-[26px] w-[100px] rounded-full bg-black" />
-
-      <div className="flex-1 overflow-hidden px-4 pt-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Germany</p>
-            <h3 className="text-[17px] font-bold text-white">Explore offers</h3>
-          </div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.08]">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Category chips */}
-        <div className="mt-4 flex gap-1.5">
-          {categories.map((cat, i) => (
-            <div
-              key={cat}
-              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                i === 1
-                  ? "bg-white text-black"
-                  : "bg-white/[0.07] text-white/50"
-              }`}
-            >
-              {cat}
-            </div>
-          ))}
-        </div>
-
-        {/* Results */}
-        <div className="mt-4 grid gap-2.5">
-          {results.map((item) => (
-            <div key={item.rank} className="rounded-2xl bg-white/[0.06] p-3.5 backdrop-blur-sm">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-[11px] font-bold text-white/70">
-                    {item.provider.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-white">{item.name}</p>
-                    <p className="text-[10px] text-white/40">{item.provider}</p>
-                  </div>
-                </div>
-                <span className="rounded-md bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-400">
-                  #{item.rank}
-                </span>
-              </div>
-              <div className="mt-2.5 flex items-center gap-2">
-                <span className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-medium tabular-nums text-white/60">
-                  {item.metric}
-                </span>
-                <span className="rounded-md bg-emerald-500/15 px-2 py-1 text-[10px] font-medium text-emerald-400">
-                  {item.tag}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <BottomNav active={1} />
-    </div>
-  );
-}
-
-// ─── Screen 3: Compare / Decision ───
-
-function CompareScreen() {
-  const metrics = [
-    { label: "Transfer fee", a: "EUR 2.10", b: "Free", winner: "b" },
-    { label: "Speed", a: "Same day", b: "1-2 days", winner: "a" },
-    { label: "FX markup", a: "0.41%", b: "0.30%", winner: "b" },
-    { label: "Max amount", a: "EUR 1M", b: "EUR 40K", winner: "a" },
-  ];
-
-  return (
-    <div className="flex h-full flex-col bg-[#0d1110]">
-      <StatusBar />
-      <div className="mx-auto mt-0.5 h-[26px] w-[100px] rounded-full bg-black" />
-
-      <div className="flex-1 overflow-hidden px-4 pt-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Compare</p>
-        <h3 className="mt-1 text-[17px] font-bold text-white">Side by side</h3>
-
-        {/* Provider headers */}
-        <div className="mt-4 grid grid-cols-[80px_1fr_1fr] gap-2">
-          <div />
-          <div className="rounded-xl bg-emerald-500/10 px-3 py-2.5 text-center">
-            <p className="text-[12px] font-bold text-emerald-400">Wise</p>
-            <p className="text-[9px] text-white/40">Transfer</p>
-          </div>
-          <div className="rounded-xl bg-white/[0.06] px-3 py-2.5 text-center">
-            <p className="text-[12px] font-bold text-white/80">Revolut</p>
-            <p className="text-[9px] text-white/40">Standard</p>
-          </div>
-        </div>
-
-        {/* Metrics rows */}
-        <div className="mt-3 grid gap-1.5">
-          {metrics.map((m) => (
-            <div key={m.label} className="grid grid-cols-[80px_1fr_1fr] gap-2">
-              <div className="flex items-center">
-                <span className="text-[10px] font-medium text-white/40">{m.label}</span>
-              </div>
-              <div className={`rounded-lg px-2.5 py-2 text-center text-[11px] font-semibold tabular-nums ${
-                m.winner === "a" ? "bg-emerald-500/10 text-emerald-400" : "bg-white/[0.04] text-white/60"
-              }`}>
-                {m.a}
-              </div>
-              <div className={`rounded-lg px-2.5 py-2 text-center text-[11px] font-semibold tabular-nums ${
-                m.winner === "b" ? "bg-emerald-500/10 text-emerald-400" : "bg-white/[0.04] text-white/60"
-              }`}>
-                {m.b}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Verdict */}
-        <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <p className="text-[12px] font-semibold text-emerald-400">Wise wins on speed + limits</p>
-          </div>
-          <p className="mt-1 text-[10px] text-white/40">Best match for your profile</p>
-        </div>
-
-        <div className="mt-3">
-          <div className="flex w-full items-center justify-center rounded-xl bg-white py-2.5 text-[12px] font-semibold text-black">
-            Continue with Wise
-          </div>
-        </div>
-      </div>
-
-      <BottomNav active={2} />
-    </div>
-  );
-}
-
 // ─── Phone Device Frame ───
 
-const screens = [ShortlistScreen, ExploreScreen, CompareScreen];
-
-export function HeroPhoneMockup({ variant = "dark" }: { variant?: "dark" | "light" }) {
-  const [activeScreen, setActiveScreen] = useState(0);
-  const [transitioning, setTransitioning] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTransitioning(true);
-      setTimeout(() => {
-        setActiveScreen((prev) => (prev + 1) % screens.length);
-        setTransitioning(false);
-      }, 400);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const Screen = screens[activeScreen];
-
+export function HeroPhoneMockup() {
   return (
     <div className="relative mx-auto w-[280px] max-w-[300px]">
       {/* Ambient glow behind device */}
@@ -388,13 +203,7 @@ export function HeroPhoneMockup({ variant = "dark" }: { variant?: "dark" | "ligh
           className="relative h-full w-full overflow-hidden"
           style={{ borderRadius: 38 }}
         >
-          {/* Screen content */}
-          <div
-            className="absolute inset-0 transition-opacity duration-400"
-            style={{ opacity: transitioning ? 0 : 1 }}
-          >
-            <Screen />
-          </div>
+          <ShortlistScreen />
         </div>
 
         {/* Glass reflection overlay */}
@@ -414,27 +223,6 @@ export function HeroPhoneMockup({ variant = "dark" }: { variant?: "dark" | "ligh
             background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
           }}
         />
-      </div>
-
-      {/* Screen indicators */}
-      <div className="mt-6 flex items-center justify-center gap-2">
-        {screens.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => {
-              setTransitioning(true);
-              setTimeout(() => {
-                setActiveScreen(i);
-                setTransitioning(false);
-              }, 300);
-            }}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === activeScreen ? "w-6 bg-white/60" : "w-1.5 bg-white/20"
-            }`}
-            aria-label={`Show screen ${i + 1}`}
-          />
-        ))}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { OfferCard } from "@/components/offer-card";
 import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { getDictionary } from "@/lib/i18n";
+import { localePath } from "@/lib/locale";
 import {
   countOffersByCategory,
   defaultMarketplaceFilters,
@@ -120,7 +121,7 @@ export function MarketplaceExplorer({
             </div>
             {selectedCategory !== "all" && (
               <Link
-                href={getMarketCategoryHref(preferences.market, selectedCategory)}
+                href={localePath(preferences.locale, getMarketCategoryHref(preferences.market, selectedCategory))}
                 className={buttonStyles({ variant: "secondary", size: "md" })}
               >
                 {dictionary.explorer.openCategoryPage}

@@ -3,18 +3,20 @@
 import type { MarketplaceCategory, MarketplaceLocale, MarketplaceMarket } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { getDictionary } from "@/lib/i18n";
+import { localePath, switchLocalePath } from "@/lib/locale";
 import { getMarketCategoryHref } from "@/lib/marketplace";
 
-const navItems = [
-  { href: "/explore", key: "marketplace" },
-  { href: "/about", key: "about" },
-  { href: "/contact", key: "contact" },
-] as const;
+const navKeys = ["marketplace", "about", "contact"] as const;
+const navPaths: Record<(typeof navKeys)[number], string> = {
+  marketplace: "/explore",
+  about: "/about",
+  contact: "/contact",
+};
 
 function UserAvatar({ email, onClick }: { email: string; onClick: () => void }) {
   const initials = email
@@ -37,11 +39,13 @@ function UserAvatar({ email, onClick }: { email: string; onClick: () => void }) 
 function UserDropdown({
   email,
   userType,
+  locale,
   onClose,
   onSignOut,
 }: {
   email: string;
   userType: string | null;
+  locale: MarketplaceLocale;
   onClose: () => void;
   onSignOut: () => void;
 }) {
@@ -58,21 +62,21 @@ function UserDropdown({
         </div>
         <div className="border-t border-line pt-1">
           <Link
-            href="/dashboard"
+            href={localePath(locale, "/dashboard")}
             onClick={onClose}
             className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
           >
             Dashboard
           </Link>
           <Link
-            href="/dashboard?view=saved"
+            href={localePath(locale, "/dashboard?view=saved")}
             onClick={onClose}
             className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
           >
             Saved offers
           </Link>
           <Link
-            href="/dashboard?view=profile"
+            href={localePath(locale, "/dashboard?view=profile")}
             onClick={onClose}
             className="flex w-full rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
           >
@@ -101,17 +105,19 @@ export function Header({
   activeCategory?: MarketplaceCategory;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, profile, signOut } = useAuth();
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isSignedIn = Boolean(user);
+  const { locale } = preferences;
 
   const handleLocaleChange = (nextLocale: MarketplaceLocale) => {
     preferences.setLocale(nextLocale);
     startTransition(() => {
-      router.refresh();
+      router.push(switchLocalePath(pathname, nextLocale));
     });
   };
 
@@ -120,7 +126,7 @@ export function Header({
 
     if (activePage === "marketplace" && activeCategory) {
       startTransition(() => {
-        router.push(getMarketCategoryHref(nextMarket, activeCategory));
+        router.push(localePath(locale, getMarketCategoryHref(nextMarket, activeCategory)));
       });
       return;
     }
@@ -134,13 +140,13 @@ export function Header({
     setUserMenuOpen(false);
     setMobileMenuOpen(false);
     await signOut();
-    window.location.href = "/";
+    window.location.href = localePath(locale, "/");
   };
 
   return (
     <header className="glass sticky top-0 z-50">
       <div className="mx-auto flex min-h-16 max-w-[1240px] items-center justify-between gap-5 px-5 py-3 lg:px-8">
-        <Link href="/" className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
+        <Link href={localePath(locale, "/")} className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-black">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -151,21 +157,21 @@ export function Header({
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => {
+          {navKeys.map((key) => {
             const label =
-              item.key === "marketplace"
+              key === "marketplace"
                 ? dictionary.nav.marketplace
-                : item.key === "about"
+                : key === "about"
                   ? dictionary.nav.about
                   : dictionary.nav.contact;
 
             return (
               <Link
-                key={item.href}
-                href={item.href}
+                key={key}
+                href={localePath(locale, navPaths[key])}
                 className={clsx(
                   "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  activePage === item.key
+                  activePage === key
                     ? "bg-bg-surface text-ink"
                     : "text-ink-secondary hover:text-ink",
                 )}
@@ -222,6 +228,7 @@ export function Header({
                 <UserDropdown
                   email={user!.email ?? ""}
                   userType={profile?.user_type ?? null}
+                  locale={locale}
                   onClose={() => setUserMenuOpen(false)}
                   onSignOut={handleSignOut}
                 />
@@ -231,13 +238,13 @@ export function Header({
             /* Anonymous: sign in + CTA */
             <>
               <Link
-                href="/login"
+                href={localePath(locale, "/login")}
                 className="hidden rounded-full px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:text-ink sm:block"
               >
                 {dictionary.nav.signIn}
               </Link>
               <Link
-                href="/signup"
+                href={localePath(locale, "/signup")}
                 className="hidden rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800 sm:block"
               >
                 {dictionary.nav.compareOptions}
@@ -269,22 +276,22 @@ export function Header({
       {mobileMenuOpen && (
         <div className="border-t border-line bg-white px-5 pb-5 pt-4 lg:hidden">
           <nav className="grid gap-1">
-            {navItems.map((item) => {
+            {navKeys.map((key) => {
               const label =
-                item.key === "marketplace"
+                key === "marketplace"
                   ? dictionary.nav.marketplace
-                  : item.key === "about"
+                  : key === "about"
                     ? dictionary.nav.about
                     : dictionary.nav.contact;
 
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={key}
+                  href={localePath(locale, navPaths[key])}
                   onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
                     "rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
-                    activePage === item.key
+                    activePage === key
                       ? "bg-bg-surface text-ink"
                       : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
                   )}
@@ -295,7 +302,7 @@ export function Header({
             })}
             {isSignedIn && (
               <Link
-                href="/dashboard"
+                href={localePath(locale, "/dashboard")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-2xl px-4 py-3 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
               >
@@ -363,14 +370,14 @@ export function Header({
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href={localePath(locale, "/login")}
                   onClick={() => setMobileMenuOpen(false)}
                   className="rounded-full border border-line px-4 py-2.5 text-center text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface"
                 >
                   {dictionary.nav.signIn}
                 </Link>
                 <Link
-                  href="/signup"
+                  href={localePath(locale, "/signup")}
                   onClick={() => setMobileMenuOpen(false)}
                   className="rounded-full bg-black px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gray-800"
                 >

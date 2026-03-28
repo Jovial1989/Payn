@@ -5,7 +5,9 @@ import Link from "next/link";
 import { buttonStyles } from "@/components/button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
+import { localePath } from "@/lib/locale";
 import { getOfferHref, normalizeDisplayText } from "@/lib/marketplace";
 
 type OfferInsightLike = {
@@ -24,6 +26,7 @@ export function DashboardOfferTile({
   insight?: OfferInsightLike;
   eyebrow?: string;
 }) {
+  const { locale } = useMarketplacePreferences();
   const metrics = offer.metrics.slice(0, 2);
 
   return (
@@ -51,7 +54,7 @@ export function DashboardOfferTile({
       </div>
 
       <div className="mt-4">
-        <Link href={getOfferHref(offer)} className="transition-colors hover:text-ink-secondary">
+        <Link href={localePath(locale, getOfferHref(offer))} className="transition-colors hover:text-ink-secondary">
           <h3 className="text-lg font-bold tracking-tight text-ink">{offer.title}</h3>
         </Link>
         <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
@@ -88,7 +91,7 @@ export function DashboardOfferTile({
 
       <div className="mt-5 flex flex-wrap gap-2">
         <SaveOfferButton offer={offer} variant="ghost" size="sm" />
-        <Link href={getOfferHref(offer)} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+        <Link href={localePath(locale, getOfferHref(offer))} className={buttonStyles({ variant: "secondary", size: "sm" })}>
           Review
         </Link>
       </div>

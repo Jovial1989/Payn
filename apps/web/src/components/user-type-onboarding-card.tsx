@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { localePath } from "@/lib/locale";
 
 const userTypes = [
   {
@@ -32,6 +34,7 @@ export function UserTypeOnboardingCard({
   completeLabel?: string;
 }) {
   const router = useRouter();
+  const { locale } = useMarketplacePreferences();
   const { profile, updateProfile } = useAuth();
   const [selectedType, setSelectedType] = useState<
     "personal" | "freelancer" | "business"
@@ -54,7 +57,7 @@ export function UserTypeOnboardingCard({
     }
 
     setSaving(false);
-    router.push("/dashboard");
+    router.push(localePath(locale, "/dashboard"));
     router.refresh();
   };
 

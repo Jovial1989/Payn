@@ -3,6 +3,7 @@ import { buttonStyles } from "@/components/button";
 import { SiteShell } from "@/components/site-shell";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { getDictionary } from "@/lib/i18n";
+import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
 
 function getInitialPlatform(value?: string): "ios" | "android" | "both" {
@@ -68,10 +69,10 @@ export default async function WaitlistPage({
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/" className={buttonStyles({ variant: "primary", size: "lg" })}>
+            <Link href={localePath(preferences.locale, "/")} className={buttonStyles({ variant: "primary", size: "lg" })}>
               {dictionary.nav.marketplace}
             </Link>
-            <Link href="/contact" className={buttonStyles({ variant: "secondary", size: "lg" })}>
+            <Link href={localePath(preferences.locale, "/contact")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
               {dictionary.nav.contact}
             </Link>
           </div>

@@ -158,7 +158,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Investment platforms across stocks, crypto, and multi-asset accounts.",
     },
     markets: {
-      eu: "Europe",
+      eu: "All Europe",
       international: "International",
       de: "Germany",
       es: "Spain",
@@ -304,7 +304,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Investmentplattformen für Aktien, Krypto und Multi-Asset-Zugänge.",
     },
     markets: {
-      eu: "Europa",
+      eu: "Ganz Europa",
       international: "International",
       de: "Deutschland",
       es: "Spanien",
@@ -468,7 +468,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Plataformas de inversión en acciones, cripto y cuentas multi-activo.",
     },
     markets: {
-      eu: "Europa",
+      eu: "Toda Europa",
       international: "Internacional",
       de: "Alemania",
       es: "España",
@@ -631,7 +631,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Plateformes pour actions, crypto et comptes multi-actifs.",
     },
     markets: {
-      eu: "Europe",
+      eu: "Toute l'Europe",
       international: "International",
       de: "Allemagne",
       es: "Espagne",
@@ -794,7 +794,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Piattaforme per azioni, crypto e conti multi-asset.",
     },
     markets: {
-      eu: "Europa",
+      eu: "Tutta Europa",
       international: "Internazionale",
       de: "Germania",
       es: "Spagna",
@@ -957,7 +957,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       investments: "Plataformas para ações, cripto e contas multi-ativo.",
     },
     markets: {
-      eu: "Europa",
+      eu: "Toda a Europa",
       international: "Internacional",
       de: "Alemanha",
       es: "Espanha",

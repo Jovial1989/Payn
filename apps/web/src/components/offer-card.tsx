@@ -6,6 +6,7 @@ import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { Tag } from "@/components/tag";
 import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
+import { localePath } from "@/lib/locale";
 import { getMatchReasons } from "@/lib/match-reasons";
 import { getOfferHref, getOfferTradeoff, normalizeDisplayText } from "@/lib/marketplace";
 
@@ -62,7 +63,7 @@ export function OfferCard({
                 {dictionary.offerCard.updated} {formatDate(offer.updatedAt, locale)}
               </span>
             </div>
-            <Link href={getOfferHref(offer)} className="group/title mt-0.5 block">
+            <Link href={localePath(locale, getOfferHref(offer))} className="group/title mt-0.5 block">
               <h3 className="text-[15px] font-bold leading-snug tracking-tight text-ink transition-colors group-hover/title:text-ink-secondary">
                 {offer.title}
               </h3>
@@ -127,7 +128,7 @@ export function OfferCard({
         {/* CTAs — tight row */}
         <div className="flex shrink-0 items-center gap-1.5">
           <SaveOfferButton offer={offer} variant="ghost" size="sm" />
-          <Link href={getOfferHref(offer)} className={buttonStyles({ variant: "primary", size: "sm" })}>
+          <Link href={localePath(locale, getOfferHref(offer))} className={buttonStyles({ variant: "primary", size: "sm" })}>
             {dictionary.offerCard.reviewOffer}
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="ml-1">
               <path d="M3 7h8m0 0L8 4m3 3L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

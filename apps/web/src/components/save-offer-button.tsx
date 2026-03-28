@@ -4,7 +4,9 @@ import type { MarketplaceOffer } from "@payn/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/button";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { localePath } from "@/lib/locale";
 import { getOfferHref } from "@/lib/marketplace";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 
@@ -18,6 +20,7 @@ export function SaveOfferButton({
   size?: "sm" | "md" | "lg";
 }) {
   const router = useRouter();
+  const { locale } = useMarketplacePreferences();
   const { user } = useAuth();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [saved, setSaved] = useState(false);
@@ -68,7 +71,7 @@ export function SaveOfferButton({
     }
 
     if (!isSupabaseConfigured()) {
-      router.push("/login");
+      router.push(localePath(locale, "/login"));
       return;
     }
 

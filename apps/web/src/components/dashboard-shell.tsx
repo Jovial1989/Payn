@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -11,6 +12,7 @@ import {
   getDashboardHref,
   normalizeDashboardView,
 } from "@/lib/dashboard-navigation";
+import { localePath } from "@/lib/locale";
 
 function SidebarItem({
   label,
@@ -43,6 +45,7 @@ function SidebarItem({
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
+  const { locale } = useMarketplacePreferences();
   const { user, profile, signOut } = useAuth();
 
   const activeView = useMemo(
@@ -64,7 +67,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-5 lg:py-5">
         <aside className="overflow-hidden rounded-[30px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[280px] lg:flex-col">
           <div className="flex items-center justify-between border-b border-line px-5 py-5">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href={localePath(locale, "/")} className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
@@ -180,7 +183,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Link href="/" className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
+                <Link href={localePath(locale, "/")} className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
                   Back to site
                 </Link>
                 {user ? (
@@ -188,14 +191,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     type="button"
                     onClick={async () => {
                       await signOut();
-                      window.location.href = "/";
+                      window.location.href = localePath(locale, "/");
                     }}
                     className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink"
                   >
                     Sign out
                   </button>
                 ) : (
-                  <Link href="/login" className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
+                  <Link href={localePath(locale, "/login")} className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
                     Sign in
                   </Link>
                 )}

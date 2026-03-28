@@ -41,7 +41,7 @@ export const marketDefinitions: Record<
     label: string;
   }
 > = {
-  eu: { marketCode: "EU", currency: "EUR", fallbackLocale: "en", label: "Europe" },
+  eu: { marketCode: "EU", currency: "EUR", fallbackLocale: "en", label: "All Europe" },
   international: {
     marketCode: "INTL",
     currency: "Multi-currency",

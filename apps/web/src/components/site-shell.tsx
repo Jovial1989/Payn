@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
 import { getDictionary } from "@/lib/i18n";
+import { localePath } from "@/lib/locale";
 import { getMarketCategoryHref, marketplaceCategories } from "@/lib/marketplace";
 
 export function SiteShell({
@@ -29,6 +30,7 @@ export function SiteShell({
 }) {
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
+  const { locale } = preferences;
 
   return (
     <div className="min-h-screen bg-bg-deep">
@@ -83,7 +85,7 @@ export function SiteShell({
               {marketplaceCategories.map((category) => (
                 <Link
                   key={category}
-                  href={getMarketCategoryHref(preferences.market, category)}
+                  href={localePath(locale, getMarketCategoryHref(preferences.market, category))}
                   className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
                 >
                   {dictionary.categories[category]}
@@ -97,16 +99,16 @@ export function SiteShell({
               {dictionary.footer.company}
             </p>
             <div className="mt-4 grid gap-3">
-              <Link href="/explore" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+              <Link href={localePath(locale, "/explore")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.marketplace}
               </Link>
-              <Link href="/about" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+              <Link href={localePath(locale, "/about")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.about}
               </Link>
-              <Link href="/contact" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+              <Link href={localePath(locale, "/contact")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.contact}
               </Link>
-              <Link href="/waitlist" className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+              <Link href={localePath(locale, "/waitlist")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.mobileWaitlist}
               </Link>
             </div>

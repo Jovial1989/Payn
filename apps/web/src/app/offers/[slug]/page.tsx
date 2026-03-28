@@ -19,6 +19,7 @@ import {
   normalizeDisplayText,
 } from "@/lib/marketplace";
 import { getMatchReasons } from "@/lib/match-reasons";
+import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getOfferBySlug, listCategoryOffers, listRelatedOffers } from "@/server/catalog/catalog-service";
 
@@ -95,7 +96,7 @@ export default async function OfferDetailPage({
   }
 
   const resolvedMarket = resolveOfferMarket(preferences.market, offer.slug);
-  const categoryHref = getMarketCategoryHref(resolvedMarket, offer.category);
+  const categoryHref = localePath(preferences.locale, getMarketCategoryHref(resolvedMarket, offer.category));
   const categoryLabel = dictionary.categories[offer.category];
   const categoryOffers = await listCategoryOffers(offer.category);
   const offerRank = Math.max(categoryOffers.findIndex((item) => item.slug === offer.slug) + 1, 1);

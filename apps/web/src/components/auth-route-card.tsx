@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { localePath } from "@/lib/locale";
 import { isSupabaseConfigured } from "@/lib/supabase-browser";
 import { UserTypeOnboardingCard } from "@/components/user-type-onboarding-card";
 
@@ -31,13 +33,14 @@ function mapAuthError(message: string) {
 export function AuthRouteCard({ mode }: { mode: AuthMode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale } = useMarketplacePreferences();
   const { user, profile, loading: authLoading, signInWithEmail, signUpWithEmail } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [verificationPending, setVerificationPending] = useState(false);
-  const nextHref = searchParams.get("next") || "/dashboard";
+  const nextHref = searchParams.get("next") || localePath(locale, "/dashboard");
   const callbackAuthError = searchParams.get("auth_error");
 
   useEffect(() => {
@@ -141,13 +144,13 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href="/login"
+            href={localePath(locale, "/login")}
             className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
           >
             Go to sign in
           </Link>
           <Link
-            href="/explore"
+            href={localePath(locale, "/explore")}
             className="inline-flex h-11 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface"
           >
             Explore offers
@@ -249,7 +252,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
         <p className="mt-5 text-sm text-ink-secondary">
           {mode === "login" ? "New to Payn?" : "Already have an account?"}{" "}
           <Link
-            href={mode === "login" ? "/signup" : "/login"}
+            href={localePath(locale, mode === "login" ? "/signup" : "/login")}
             className="font-semibold text-ink underline underline-offset-4"
           >
             {mode === "login" ? "Get started" : "Sign in"}

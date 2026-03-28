@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonStyles } from "@/components/button";
 import { MarketplaceExplorer } from "@/components/marketplace-explorer";
 import { ProviderStrip } from "@/components/provider-strip";
+import { localePath } from "@/lib/locale";
 
 const featuredProviders = [
   "Revolut",
@@ -71,7 +72,7 @@ export function ExplorePageContent({
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/waitlist" className={buttonStyles({ variant: "secondary", size: "lg" })}>
+              <Link href={localePath(locale, "/waitlist")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
                 Join mobile waitlist
               </Link>
             </div>

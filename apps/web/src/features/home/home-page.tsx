@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { buttonStyles } from "@/components/button";
 import {
@@ -6,7 +8,9 @@ import {
   GooglePlayButton,
   WaitlistBadge,
 } from "@/components/hero-phone-mockup";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { ProviderStrip } from "@/components/provider-strip";
+import { localePath } from "@/lib/locale";
 
 const featuredProviders = [
   "Revolut",
@@ -73,6 +77,7 @@ const topResults = [
 ];
 
 export function HomePage() {
+  const { locale } = useMarketplacePreferences();
   return (
     <div className="grid gap-10">
       {/* ─── Hero: Discovery ─── */}
@@ -91,10 +96,10 @@ export function HomePage() {
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/explore" className={buttonStyles({ variant: "primary", size: "lg" })}>
+              <Link href={localePath(locale, "/explore")} className={buttonStyles({ variant: "primary", size: "lg" })}>
                 Explore offers
               </Link>
-              <Link href="/signup" className={buttonStyles({ variant: "secondary", size: "lg" })}>
+              <Link href={localePath(locale, "/signup")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
                 Get started
               </Link>
             </div>
@@ -122,7 +127,7 @@ export function HomePage() {
                 {categories.map((cat) => (
                   <Link
                     key={cat.label}
-                    href={`/explore`}
+                    href={localePath(locale, "/explore")}
                     className="flex items-center gap-2.5 rounded-2xl bg-white px-3.5 py-3 text-ink-secondary shadow-subtle transition-all hover:shadow-card hover:text-ink"
                   >
                     <span className="shrink-0 text-ink-tertiary">{cat.icon}</span>
@@ -142,7 +147,7 @@ export function HomePage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Top ranked</p>
                   <p className="mt-1 text-sm font-bold text-ink">Transfers in Europe</p>
                 </div>
-                <Link href="/explore" className="text-xs font-semibold text-ink-tertiary transition-colors hover:text-ink">
+                <Link href={localePath(locale, "/explore")} className="text-xs font-semibold text-ink-tertiary transition-colors hover:text-ink">
                   See all
                 </Link>
               </div>
@@ -203,7 +208,7 @@ export function HomePage() {
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">How it works</p>
             <h2 className="mt-3 text-h2 text-ink">A simple path from search to shortlist</h2>
           </div>
-          <Link href="/explore" className={buttonStyles({ variant: "secondary", size: "md" })}>
+          <Link href={localePath(locale, "/explore")} className={buttonStyles({ variant: "secondary", size: "md" })}>
             Open Explore
           </Link>
         </div>
@@ -266,14 +271,14 @@ export function HomePage() {
           <div className="relative hidden lg:flex lg:items-center lg:justify-center">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,_rgba(16,185,129,0.08),_transparent_60%)]" />
             <div className="relative py-10">
-              <HeroPhoneMockup variant="dark" />
+              <HeroPhoneMockup />
             </div>
           </div>
 
           {/* Tablet/mobile: show phone inline centered */}
           <div className="flex items-center justify-center px-6 pb-10 lg:hidden">
             <div className="scale-90">
-              <HeroPhoneMockup variant="dark" />
+              <HeroPhoneMockup />
             </div>
           </div>
         </div>
