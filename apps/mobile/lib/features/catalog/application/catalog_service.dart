@@ -1,8 +1,7 @@
 import '../data/catalog_repository.dart';
 
 class CatalogService {
-  CatalogService(this._repository);
+  CatalogService(this.repository);
 
-  final CatalogRepository _repository;
+  final CatalogRepository repository;
 }
-

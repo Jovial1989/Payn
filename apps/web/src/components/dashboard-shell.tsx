@@ -4,7 +4,6 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { buttonStyles } from "@/components/button";
 import { Tag } from "@/components/tag";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -55,7 +54,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     () => ({
       core: dashboardNavItems.filter((item) => item.group === "core"),
       products: dashboardNavItems.filter((item) => item.group === "products"),
-      activity: dashboardNavItems.filter((item) => item.group === "activity"),
       account: dashboardNavItems.filter((item) => item.group === "account"),
     }),
     [],
@@ -145,23 +143,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
               <div>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Activity
-                </p>
-                <div className="mt-2 grid gap-1">
-                  {groupedItems.activity.map((item) => (
-                    <SidebarItem
-                      key={item.id}
-                      label={item.label}
-                      description={item.description}
-                      href={getDashboardHref(item.id)}
-                      active={activeView === item.id}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                   Account
                 </p>
                 <div className="mt-2 grid gap-1">
@@ -189,12 +170,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 ) : null}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">
-                    {user?.email ? user.email.split("@")[0] : "Guest access"}
+                    {user?.email ? user.email.split("@")[0] : "Guest"}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-ink-tertiary">
                     {profile?.user_type
                       ? `${profile.user_type.charAt(0).toUpperCase()}${profile.user_type.slice(1)} profile`
-                      : "Sign in to unlock your dashboard"}
+                      : user ? "Account" : "Not signed in"}
                   </p>
                 </div>
               </div>
@@ -220,15 +201,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 )}
               </div>
             </div>
-
-            {!user ? (
-              <Link
-                href="/signup"
-                className={buttonStyles({ variant: "primary", size: "md", fullWidth: true }) + " mt-3"}
-              >
-                Get started
-              </Link>
-            ) : null}
           </div>
         </aside>
 

@@ -1,8 +1,7 @@
 import '../../../core/network/api_client.dart';
 
 class CatalogRepository {
-  CatalogRepository(this._apiClient);
+  CatalogRepository(this.apiClient);
 
-  final ApiClient _apiClient;
+  final ApiClient apiClient;
 }
-

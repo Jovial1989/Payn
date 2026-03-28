@@ -43,6 +43,8 @@ export function ProviderLinkButton({
             metadata: {
               href: targetUrl,
               source,
+              providerName: offer.providerName,
+              subtype: offer.attributes?.subtype ?? null,
             },
           });
 

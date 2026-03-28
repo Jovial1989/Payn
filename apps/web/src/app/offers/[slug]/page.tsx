@@ -9,6 +9,7 @@ import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { SiteShell } from "@/components/site-shell";
 import { Tag } from "@/components/tag";
+import { OfferViewTracker } from "@/components/offer-view-tracker";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import {
@@ -106,6 +107,7 @@ export default async function OfferDetailPage({
 
   return (
     <SiteShell activePage="marketplace" activeCategory={offer.category}>
+      <OfferViewTracker offer={offer} market={resolvedMarket} />
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">

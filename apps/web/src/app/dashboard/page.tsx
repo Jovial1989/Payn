@@ -8,7 +8,6 @@ import { buttonStyles } from "@/components/button";
 import { DashboardOfferTile } from "@/components/dashboard-offer-tile";
 import { ProviderLogo } from "@/components/provider-logo";
 import { Tag } from "@/components/tag";
-import { UserTypeOnboardingCard } from "@/components/user-type-onboarding-card";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
@@ -33,13 +32,7 @@ const categoryLabels: Record<MarketplaceCategory, string> = {
 
 const dashboardCategories = Object.keys(categoryLabels) as MarketplaceCategory[];
 
-interface DashboardAlert {
-  id: string;
-  title: string;
-  detail: string;
-  href: string;
-  tone: "blue" | "success" | "orange";
-}
+// ─── Shared UI ───
 
 function EmptyState({
   title,
@@ -80,17 +73,15 @@ function SectionCard({
   description,
   action,
   children,
-  className = "",
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section className={`rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6 ${className}`}>
+    <section className="rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>
@@ -106,504 +97,7 @@ function SectionCard({
   );
 }
 
-function SummaryPanel({
-  email,
-  marketLabel,
-  userLabel,
-  score,
-  selectedCategories,
-  trackedCount,
-}: {
-  email: string | null | undefined;
-  marketLabel: string;
-  userLabel: string | null;
-  score: number;
-  selectedCategories: string[];
-  trackedCount: number;
-}) {
-  return (
-    <section className="rounded-[30px] border border-line bg-white p-5 shadow-subtle sm:p-6 lg:p-7">
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Summary</p>
-          <h1 className="mt-3 text-h2 text-ink">
-            Welcome back{email ? `, ${email.split("@")[0]}` : ""}
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-            This is your product workspace - a single place to track market changes, compare saved products, and pick up where you left off.
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Tag tone="success">{marketLabel}</Tag>
-            {userLabel ? <Tag tone="muted">{userLabel}</Tag> : null}
-            {selectedCategories.slice(0, 3).map((category) => (
-              <Tag key={category} tone="blue">
-                {normalizeDisplayText(category)}
-              </Tag>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "primary", size: "md" })}>
-              Explore offers
-            </Link>
-            <Link href={getDashboardHref("saved")} className={buttonStyles({ variant: "secondary", size: "md" })}>
-              Open saved
-            </Link>
-            <Link href={getDashboardHref("profile")} className={buttonStyles({ variant: "ghost", size: "md" })}>
-              View profile
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Payn score
-            </p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{score}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Tracked products
-            </p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{trackedCount}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Focus market
-            </p>
-            <p className="mt-2 text-lg font-bold text-ink">{marketLabel}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Profile
-            </p>
-            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Account"}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function OfferTileGrid({
-  items,
-  emptyTitle,
-  emptyDescription,
-  href = "/explore",
-  cta = "Explore offers",
-}: {
-  items: DashboardOfferInsight[];
-  emptyTitle: string;
-  emptyDescription: string;
-  href?: string;
-  cta?: string;
-}) {
-  if (items.length === 0) {
-    return (
-      <EmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-        href={href}
-        cta={cta}
-      />
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => (
-        <DashboardOfferTile key={item.offer.id} offer={item.offer} insight={item} />
-      ))}
-    </div>
-  );
-}
-
-function SavedOffersGrid({
-  offers,
-  insightMap,
-}: {
-  offers: MarketplaceOffer[];
-  insightMap: Map<string, DashboardOfferInsight>;
-}) {
-  if (offers.length === 0) {
-    return (
-      <EmptyState
-        title="No saved offers yet"
-        description="Save products from Explore or an offer detail page to build your shortlist here."
-        href={getDashboardHref("explore" as DashboardView)}
-        cta="Go to Explore"
-      />
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {offers.map((offer) => (
-        <DashboardOfferTile
-          key={offer.id}
-          offer={offer}
-          insight={insightMap.get(offer.id)}
-          eyebrow="Saved"
-        />
-      ))}
-    </div>
-  );
-}
-
-function AlertsList({ alerts }: { alerts: DashboardAlert[] }) {
-  if (alerts.length === 0) {
-    return (
-      <div className="rounded-[24px] border border-dashed border-line-strong bg-white p-5">
-        <p className="text-sm font-semibold text-ink">No live alerts right now</p>
-        <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-          Alerts appear when saved products, recent views, or market signals create a useful action for you.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-3">
-      {alerts.map((alert) => (
-        <Link
-          key={alert.id}
-          href={alert.href}
-          className="rounded-[24px] border border-line bg-white px-4 py-4 shadow-subtle transition-colors hover:bg-bg-surface"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-ink">{alert.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{alert.detail}</p>
-            </div>
-            <Tag tone={alert.tone}>Alert</Tag>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function MarketSnapshot({
-  insights,
-}: {
-  insights: DashboardInsights;
-}) {
-  return (
-    <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-      <SectionCard
-        eyebrow="Market snapshot"
-        title="What is changing around you"
-        description="Live FX input, provider momentum, and category demand make the dashboard feel current instead of static."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              FX movement
-            </p>
-            {insights.marketSignals.fx ? (
-              <>
-                <p className="mt-3 text-xl font-bold text-ink">{insights.marketSignals.fx.pair}</p>
-                <p className="mt-1 text-sm text-ink-secondary">
-                  {insights.marketSignals.fx.rate.toFixed(4)} now, {insights.marketSignals.fx.changePct >= 0 ? "+" : ""}
-                  {insights.marketSignals.fx.changePct.toFixed(2)}% vs previous day
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-                FX data is ready to appear here when a server-side exchange-rate source is configured.
-              </p>
-            )}
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Market tone
-            </p>
-            {insights.marketSignals.news ? (
-              <>
-                <p className="mt-3 text-xl font-bold capitalize text-ink">{insights.marketSignals.news.tone}</p>
-                <p className="mt-1 text-sm text-ink-secondary">
-                  {insights.marketSignals.news.headlineCount} recent headlines from {insights.marketSignals.news.source}
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-                Investment news sentiment will appear here when the Finnhub server key is available.
-              </p>
-            )}
-          </div>
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        eyebrow="Momentum"
-        title="Trending providers and categories"
-        description="These blocks come from actual saves, views, and provider clicks in your market and among similar account types."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Trending providers
-            </p>
-            <div className="mt-4 grid gap-3">
-              {insights.trendingProviders.length > 0 ? (
-                insights.trendingProviders.slice(0, 4).map((provider) => (
-                  <div
-                    key={provider.providerName}
-                    className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ProviderLogo providerName={provider.providerName} size="sm" />
-                      <div>
-                        <p className="text-sm font-semibold text-ink">{provider.providerName}</p>
-                        <p className="mt-1 text-xs text-ink-tertiary">
-                          {provider.offerCount} active products
-                        </p>
-                      </div>
-                    </div>
-                    <Tag tone="muted">{provider.activityScore.toFixed(1)}</Tag>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-ink-secondary">
-                  Provider momentum will appear once enough signed-in activity is available.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Trending categories
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {insights.marketSignals.categoryMomentum.length > 0 ? (
-                insights.marketSignals.categoryMomentum.map((item) => (
-                  <Tag key={item.category} tone="blue">
-                    {categoryLabels[item.category]} · {item.activityScore.toFixed(1)}
-                  </Tag>
-                ))
-              ) : (
-                <p className="text-sm text-ink-secondary">
-                  Category demand will appear here as user activity builds.
-                </p>
-              )}
-            </div>
-            <div className="mt-5 rounded-[20px] bg-bg-surface px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Trending crypto
-              </p>
-              {insights.marketSignals.crypto.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {insights.marketSignals.crypto.slice(0, 4).map((coin) => (
-                    <Tag key={coin.id} tone="purple">
-                      {coin.symbol}
-                      {coin.priceChange24h !== null
-                        ? ` ${coin.priceChange24h >= 0 ? "+" : ""}${coin.priceChange24h.toFixed(1)}%`
-                        : ""}
-                    </Tag>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 text-sm text-ink-secondary">
-                  CoinGecko trends will appear here when available.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </SectionCard>
-    </div>
-  );
-}
-
-function RewardsBlock({ insights }: { insights: DashboardInsights }) {
-  return (
-    <SectionCard
-      eyebrow="Rewards"
-      title="Payn score and engagement"
-      description="Rewards stay tied to real activity only: saves, provider clicks, and tracked research."
-    >
-      <div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <div className="rounded-[24px] bg-black px-6 py-6 text-white">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
-            Your Payn score
-          </p>
-          <p className="mt-3 text-5xl font-bold tracking-tight">{insights.loyalty.score}</p>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
-            Save offer = +1 point. Click provider = +2 points. Score reflects product engagement, not decorative gamification.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Saved
-            </p>
-            <p className="mt-2 text-2xl font-bold text-ink">{insights.loyalty.savedCount}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Provider clicks
-            </p>
-            <p className="mt-2 text-2xl font-bold text-ink">{insights.loyalty.providerClickCount}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Offer views
-            </p>
-            <p className="mt-2 text-2xl font-bold text-ink">{insights.loyalty.viewedCount}</p>
-          </div>
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
-
-function buildAlertFeed(
-  insights: DashboardInsights,
-  activeCategory?: MarketplaceCategory,
-): DashboardAlert[] {
-  const alerts: DashboardAlert[] = [];
-  const savedIds = new Set(insights.savedOffers.map((offer) => offer.id));
-
-  if (
-    insights.marketSignals.fx &&
-    Math.abs(insights.marketSignals.fx.changePct) >= 0.6 &&
-    (!activeCategory || activeCategory === "transfers" || activeCategory === "exchange")
-  ) {
-    alerts.push({
-      id: "fx-move",
-      title: `FX moved on ${insights.marketSignals.fx.pair}`,
-      detail: `${insights.marketSignals.fx.changePct >= 0 ? "Up" : "Down"} ${Math.abs(
-        insights.marketSignals.fx.changePct,
-      ).toFixed(2)}% since yesterday. Review transfer and exchange products if timing matters.`,
-      href: getDashboardHref("trends"),
-      tone: "blue",
-    });
-  }
-
-  const savedTrending = insights.trendingInMarket.find((item) => savedIds.has(item.offer.id));
-  if (savedTrending) {
-    alerts.push({
-      id: "saved-trending",
-      title: `${savedTrending.offer.title} is gaining attention`,
-      detail: "A saved product is also trending in your market right now.",
-      href: getDashboardHref("saved"),
-      tone: "success",
-    });
-  }
-
-  if (insights.watchedOffers.length > 0) {
-    alerts.push({
-      id: "recent-research",
-      title: "You have recent research to pick back up",
-      detail: `${insights.watchedOffers.length} recently viewed product${insights.watchedOffers.length === 1 ? "" : "s"} can be reviewed or saved from your tracking block.`,
-      href: getDashboardHref("saved"),
-      tone: "orange",
-    });
-  }
-
-  if (
-    insights.marketSignals.news?.tone === "cautious" &&
-    (!activeCategory || activeCategory === "investments")
-  ) {
-    alerts.push({
-      id: "news-caution",
-      title: "Investment sentiment turned cautious",
-      detail: "Recent market headlines are leaning cautious. Review platform and crypto exposure carefully before clicking through.",
-      href: getDashboardHref("trends"),
-      tone: "orange",
-    });
-  }
-
-  return alerts.slice(0, 3);
-}
-
-function createInsightMap(insights: DashboardInsights) {
-  const map = new Map<string, DashboardOfferInsight>();
-  const buckets = [
-    insights.recommended,
-    insights.bestValueToday,
-    insights.popularWithUsersLikeYou,
-    insights.trendingInMarket,
-    insights.marketSignals.risingFxOffers,
-    insights.marketSignals.cryptoPlatforms,
-  ];
-
-  for (const bucket of buckets) {
-    for (const item of bucket) {
-      if (!map.has(item.offer.id)) {
-        map.set(item.offer.id, item);
-      }
-    }
-  }
-
-  return map;
-}
-
-function mergeInsights(...buckets: DashboardOfferInsight[][]) {
-  const seen = new Set<string>();
-  const merged: DashboardOfferInsight[] = [];
-
-  for (const bucket of buckets) {
-    for (const item of bucket) {
-      if (seen.has(item.offer.id)) {
-        continue;
-      }
-
-      seen.add(item.offer.id);
-      merged.push(item);
-    }
-  }
-
-  return merged;
-}
-
-function toInsightForOffer(
-  offer: MarketplaceOffer,
-  insightMap: Map<string, DashboardOfferInsight>,
-): DashboardOfferInsight {
-  return (
-    insightMap.get(offer.id) ?? {
-      offer,
-      activityScore: 0,
-      saveCount: 0,
-      providerClickCount: 0,
-      offerViewCount: 0,
-    }
-  );
-}
-
-function CatalogOfferGrid({
-  offers,
-  emptyTitle,
-  emptyDescription,
-}: {
-  offers: MarketplaceOffer[];
-  emptyTitle: string;
-  emptyDescription: string;
-}) {
-  if (offers.length === 0) {
-    return (
-      <EmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-        href={getDashboardHref("explore" as DashboardView)}
-        cta="Explore offers"
-      />
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {offers.map((offer) => (
-        <DashboardOfferTile key={offer.id} offer={offer} />
-      ))}
-    </div>
-  );
-}
+// ─── Data helpers ───
 
 function getMarketOffers(market: string) {
   return marketplaceOffers.filter((offer) =>
@@ -617,14 +111,192 @@ function getCategoryOffers(market: string, category: MarketplaceCategory) {
 
 function getUniqueProviders(offers: MarketplaceOffer[]) {
   const seen = new Set<string>();
-  return offers
-    .filter((offer) => {
-      if (seen.has(offer.providerName)) return false;
-      seen.add(offer.providerName);
-      return true;
-    })
-    .map((offer) => offer.providerName);
+  return offers.filter((offer) => {
+    if (seen.has(offer.providerName)) return false;
+    seen.add(offer.providerName);
+    return true;
+  }).map((offer) => offer.providerName);
 }
+
+function mergeInsights(...buckets: DashboardOfferInsight[][]) {
+  const seen = new Set<string>();
+  const merged: DashboardOfferInsight[] = [];
+  for (const bucket of buckets) {
+    for (const item of bucket) {
+      if (!seen.has(item.offer.id)) {
+        seen.add(item.offer.id);
+        merged.push(item);
+      }
+    }
+  }
+  return merged;
+}
+
+// ─── Profile editor ───
+
+const userTypes = [
+  { id: "personal", label: "Personal" },
+  { id: "freelancer", label: "Freelancer" },
+  { id: "business", label: "Business" },
+] as const;
+
+const interestOptions = dashboardCategories;
+
+const useCaseOptions = [
+  "travel",
+  "savings",
+  "crypto",
+  "international_transfers",
+  "investing",
+  "insurance",
+  "everyday_banking",
+] as const;
+
+function ProfileEditor({
+  email,
+  userType,
+  marketLabel,
+  selectedCategories,
+  goals,
+  onSave,
+}: {
+  email: string;
+  userType: string;
+  marketLabel: string;
+  selectedCategories: string[];
+  goals: string[];
+  onSave: (data: { user_type: string; selected_categories: string[]; goals: string[] }) => void;
+}) {
+  const [editType, setEditType] = useState(userType);
+  const [editCategories, setEditCategories] = useState<string[]>(
+    selectedCategories.length > 0 ? selectedCategories : [...dashboardCategories],
+  );
+  const [editGoals, setEditGoals] = useState<string[]>(goals);
+  const [saving, setSaving] = useState(false);
+  const { signOut } = useAuth();
+
+  const toggleCategory = (cat: string) => {
+    setEditCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
+    );
+  };
+
+  const toggleGoal = (goal: string) => {
+    setEditGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal],
+    );
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    onSave({
+      user_type: editType,
+      selected_categories: editCategories,
+      goals: editGoals,
+    });
+    await new Promise((r) => setTimeout(r, 400));
+    setSaving(false);
+  };
+
+  return (
+    <div className="grid gap-5">
+      <SectionCard eyebrow="Account" title="Your account">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Email</p>
+            <p className="mt-2 text-sm font-bold text-ink">{email}</p>
+          </div>
+          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Market</p>
+            <p className="mt-2 text-sm font-bold text-ink">{marketLabel}</p>
+          </div>
+        </div>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={async () => {
+              await signOut();
+              window.location.href = "/";
+            }}
+            className={buttonStyles({ variant: "ghost", size: "md" })}
+          >
+            Sign out
+          </button>
+        </div>
+      </SectionCard>
+
+      <SectionCard eyebrow="Profile type" title="How you use Payn">
+        <div className="grid gap-2 sm:grid-cols-3">
+          {userTypes.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => setEditType(option.id)}
+              className={`rounded-[20px] border px-4 py-4 text-left transition-all ${
+                editType === option.id
+                  ? "border-black bg-black/[0.03]"
+                  : "border-line hover:border-line-strong"
+              }`}
+            >
+              <p className="text-sm font-bold text-ink">{option.label}</p>
+            </button>
+          ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard eyebrow="Interests" title="Categories you care about">
+        <div className="flex flex-wrap gap-2">
+          {interestOptions.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => toggleCategory(cat)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                editCategories.includes(cat)
+                  ? "border-black bg-black text-white"
+                  : "border-line text-ink-secondary hover:border-line-strong"
+              }`}
+            >
+              {categoryLabels[cat]}
+            </button>
+          ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard eyebrow="Use cases" title="What you use financial products for">
+        <div className="flex flex-wrap gap-2">
+          {useCaseOptions.map((goal) => (
+            <button
+              key={goal}
+              type="button"
+              onClick={() => toggleGoal(goal)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                editGoals.includes(goal)
+                  ? "border-black bg-black text-white"
+                  : "border-line text-ink-secondary hover:border-line-strong"
+              }`}
+            >
+              {normalizeDisplayText(goal.replace(/_/g, " "))}
+            </button>
+          ))}
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="h-11 rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save preferences"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main page ───
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
@@ -633,7 +305,7 @@ export default function DashboardPage() {
     [searchParams],
   );
 
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, updateProfile } = useAuth();
   const preferences = useMarketplacePreferences();
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
@@ -641,45 +313,30 @@ export default function DashboardPage() {
   const dashboardMarket = profile ? resolveProfileMarket(profile.home_country) : preferences.market;
   const marketLabel = marketDefinitions[dashboardMarket].label;
 
-  // Try to load insights in background - never blocks UI
   const loadInsights = useCallback(async () => {
-    if (!user || !profile?.onboarding_completed) return;
+    if (!user) return;
     setInsightsLoading(true);
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
-
     try {
       const response = await fetch("/api/v1/dashboard", {
         cache: "no-store",
         signal: controller.signal,
       });
       if (response.ok) {
-        const payload = (await response.json()) as DashboardInsights;
-        setInsights(payload);
+        setInsights((await response.json()) as DashboardInsights);
       }
     } catch {
-      // Insights are optional - dashboard works without them
+      // Insights are optional
     } finally {
       clearTimeout(timeout);
       setInsightsLoading(false);
     }
-  }, [profile?.onboarding_completed, user]);
+  }, [user]);
 
   useEffect(() => {
     void loadInsights();
   }, [loadInsights]);
-
-  useEffect(() => {
-    if (!user || !profile?.onboarding_completed) return;
-    const refresh = () => void loadInsights();
-    window.addEventListener("payn:saved-offers-changed", refresh);
-    window.addEventListener("payn:provider-click", refresh);
-    return () => {
-      window.removeEventListener("payn:saved-offers-changed", refresh);
-      window.removeEventListener("payn:provider-click", refresh);
-    };
-  }, [loadInsights, profile?.onboarding_completed, user]);
 
   const userLabel = useMemo(() => {
     if (!profile?.user_type) return null;
@@ -690,26 +347,15 @@ export default function DashboardPage() {
         : "Business";
   }, [profile]);
 
-  const insightMap = useMemo(
-    () => (insights ? createInsightMap(insights) : new Map<string, DashboardOfferInsight>()),
-    [insights],
-  );
+  const allOffers = useMemo(() => getMarketOffers(dashboardMarket), [dashboardMarket]);
 
   const activeCategory = dashboardCategories.includes(activeView as MarketplaceCategory)
     ? (activeView as MarketplaceCategory)
     : null;
 
-  const alerts = useMemo(
-    () => (insights ? buildAlertFeed(insights, activeCategory ?? undefined) : []),
-    [activeCategory, insights],
-  );
-
-  // Static catalog data for the current market
-  const allOffers = useMemo(() => getMarketOffers(dashboardMarket), [dashboardMarket]);
-
-  // --- Auth loading gate (with safety timeout in auth hook) ---
+  // --- Auth loading ---
   if (loading) {
-    return <LoadingState label="Loading your product workspace" />;
+    return <LoadingState label="Loading your workspace" />;
   }
 
   // --- Not signed in ---
@@ -719,7 +365,7 @@ export default function DashboardPage() {
         <SectionCard
           eyebrow="Dashboard"
           title="Sign in to access your Payn workspace"
-          description="Compare loans, cards, transfers, exchange, insurance, and investments - all in one workspace."
+          description="Compare loans, cards, transfers, exchange, insurance, and investments in one place."
         >
           <div className="flex flex-wrap gap-3">
             <Link href="/login" className={buttonStyles({ variant: "primary", size: "lg" })}>
@@ -730,94 +376,55 @@ export default function DashboardPage() {
             </Link>
           </div>
         </SectionCard>
-
-        <SectionCard
-          eyebrow="Preview"
-          title="What you get with a Payn account"
-        >
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              { label: "Saved shortlist", desc: "Track and compare products you are considering" },
-              { label: "Market trends", desc: "See what is gaining attention in your market" },
-              { label: "Payn score", desc: "Earn points as you research and engage with products" },
-            ].map((item) => (
-              <div key={item.label} className="rounded-[24px] bg-bg-surface px-5 py-5">
-                <p className="text-sm font-semibold text-ink">{item.label}</p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
       </div>
     );
   }
 
-  // --- Signed in, onboarding not done: show inline, don't block ---
-  const needsOnboarding = !profile?.onboarding_completed;
+  // ─── Summary bar (always visible) ───
 
-  // === RENDER FUNCTIONS ===
+  const preferencesLine = [
+    marketLabel,
+    userLabel,
+    ...(profile?.selected_categories ?? []).slice(0, 3).map((c) => normalizeDisplayText(c)),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const renderSummary = () => (
-    <section className="rounded-[30px] border border-line bg-white p-5 shadow-subtle sm:p-6 lg:p-7">
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+    <section className="rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Summary</p>
-          <h1 className="mt-3 text-h2 text-ink">
+          <h1 className="mt-2 text-h3 text-ink">
             Welcome back{user.email ? `, ${user.email.split("@")[0]}` : ""}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-            Your product workspace across loans, cards, transfers, exchange, insurance, and investments.
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Tag tone="success">{marketLabel}</Tag>
-            {userLabel ? <Tag tone="muted">{userLabel}</Tag> : null}
-            {(profile?.selected_categories ?? []).slice(0, 3).map((cat) => (
-              <Tag key={cat} tone="blue">{normalizeDisplayText(cat)}</Tag>
-            ))}
-            {insightsLoading ? (
-              <Tag tone="muted">Loading insights...</Tag>
-            ) : null}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "primary", size: "md" })}>
-              Explore offers
-            </Link>
-            <Link href={getDashboardHref("saved")} className={buttonStyles({ variant: "secondary", size: "md" })}>
-              Open saved
-            </Link>
-            <Link href={getDashboardHref("profile")} className={buttonStyles({ variant: "ghost", size: "md" })}>
-              View profile
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm text-ink-secondary">{preferencesLine}</p>
+            <Link
+              href={getDashboardHref("profile")}
+              className="text-xs font-semibold text-ink-tertiary transition-colors hover:text-ink"
+            >
+              Edit
             </Link>
           </div>
         </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Payn score</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{insights?.loyalty.score ?? 0}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Available products</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-ink">{allOffers.length}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Focus market</p>
-            <p className="mt-2 text-lg font-bold text-ink">{marketLabel}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Profile</p>
-            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Account"}</p>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "primary", size: "sm" })}>
+            Explore offers
+          </Link>
+          <Link href={getDashboardHref("profile")} className={buttonStyles({ variant: "ghost", size: "sm" })}>
+            Profile
+          </Link>
         </div>
       </div>
     </section>
   );
 
+  // ─── Dashboard overview ───
+
   const renderOverview = () => {
     const recommended = insights
-      ? insights.recommended
+      ? insights.recommended.slice(0, 6)
       : allOffers.slice(0, 6).map((offer) => ({
           offer,
           activityScore: 0,
@@ -826,142 +433,148 @@ export default function DashboardPage() {
           offerViewCount: 0,
         }));
 
+    const savedOffers = insights?.savedOffers ?? [];
+    const trendingOffers = insights?.trendingInMarket ?? [];
+
     return (
       <div className="grid gap-5">
-        {needsOnboarding ? (
-          <SectionCard
-            eyebrow="Setup"
-            title="Complete your profile to unlock personalized recommendations"
-          >
-            <UserTypeOnboardingCard />
-          </SectionCard>
-        ) : null}
+        {/* Stats row */}
+        <div className="grid gap-3 sm:grid-cols-4">
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Payn score</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{insights?.loyalty.score ?? 0}</p>
+          </div>
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Products</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{allOffers.length}</p>
+          </div>
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{savedOffers.length}</p>
+          </div>
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{getUniqueProviders(allOffers).length}</p>
+          </div>
+        </div>
 
-        {insights ? (
-          <MarketSnapshot insights={insights} />
-        ) : (
-          <SectionCard
-            eyebrow="Market snapshot"
-            title={`${marketLabel} marketplace`}
-            description={`${allOffers.length} products available from ${getUniqueProviders(allOffers).length} providers across 6 categories.`}
-          >
-            <div className="grid gap-3 sm:grid-cols-3">
-              {(["loans", "cards", "transfers", "exchange", "insurance", "investments"] as MarketplaceCategory[]).map((cat) => {
-                const count = getCategoryOffers(dashboardMarket, cat).length;
-                return (
-                  <Link
-                    key={cat}
-                    href={getDashboardHref(cat)}
-                    className="rounded-[24px] bg-bg-surface px-5 py-5 transition-colors hover:bg-bg-overlay"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      {categoryLabels[cat]}
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-ink">{count}</p>
-                    <p className="mt-1 text-xs text-ink-tertiary">products</p>
-                  </Link>
-                );
-              })}
-            </div>
-          </SectionCard>
-        )}
+        {/* Categories grid */}
+        <SectionCard eyebrow="Categories" title="Browse by category">
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {dashboardCategories.map((cat) => {
+              const count = getCategoryOffers(dashboardMarket, cat).length;
+              return (
+                <Link
+                  key={cat}
+                  href={getDashboardHref(cat)}
+                  className="rounded-[20px] bg-bg-surface px-4 py-4 text-center transition-colors hover:bg-bg-overlay"
+                >
+                  <p className="text-xl font-bold text-ink">{count}</p>
+                  <p className="mt-1 text-xs font-semibold text-ink-tertiary">{categoryLabels[cat]}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </SectionCard>
 
+        {/* Recommended */}
         <SectionCard
           eyebrow="Recommended"
           title="Top products in your market"
           action={
-            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "secondary", size: "md" })}>
-              Explore more
+            <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+              See all
             </Link>
           }
         >
-          <OfferTileGrid
-            items={recommended}
-            emptyTitle="No recommendations yet"
-            emptyDescription="Recommendations appear once your profile and market create enough signal."
-          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {recommended.map((item) => (
+              <DashboardOfferTile key={item.offer.id} offer={item.offer} insight={item} />
+            ))}
+          </div>
         </SectionCard>
 
-        <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+        {/* Saved preview + Trending side by side */}
+        <div className="grid gap-5 xl:grid-cols-2">
           <SectionCard
-            eyebrow="Saved / tracking"
-            title="Your saved products and alerts"
+            eyebrow="Saved"
+            title="Your shortlist"
+            action={
+              savedOffers.length > 0 ? (
+                <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "ghost", size: "sm" })}>
+                  Browse more
+                </Link>
+              ) : null
+            }
           >
-            {insights ? (
-              <div className="grid gap-5">
-                <SavedOffersGrid offers={insights.savedOffers.slice(0, 4)} insightMap={insightMap} />
-                {alerts.length > 0 ? <AlertsList alerts={alerts} /> : null}
+            {savedOffers.length > 0 ? (
+              <div className="grid gap-3">
+                {savedOffers.slice(0, 3).map((offer) => (
+                  <DashboardOfferTile key={offer.id} offer={offer} eyebrow="Saved" />
+                ))}
               </div>
             ) : (
               <EmptyState
-                title="Start building your shortlist"
-                description="Save products from Explore to track and compare them here."
-                href={getDashboardHref("explore" as DashboardView)}
-                cta="Browse offers"
+                title="No saved offers yet"
+                description="Save products from Explore to build your shortlist."
+                href={getDashboardHref("explore")}
+                cta="Explore offers"
               />
             )}
           </SectionCard>
 
-          <div className="grid gap-5">
-            <SectionCard
-              eyebrow="Trends"
-              title="What is gaining attention"
-            >
-              {insights && insights.trendingInMarket.length > 0 ? (
-                <OfferTileGrid
-                  items={insights.trendingInMarket.slice(0, 3)}
-                  emptyTitle="No trends yet"
-                  emptyDescription="Trends appear as activity builds."
-                  href={getDashboardHref("trends")}
-                  cta="Open trends"
-                />
-              ) : (
-                <div className="grid gap-3">
-                  {allOffers.slice(0, 3).map((offer) => (
-                    <Link
-                      key={offer.id}
-                      href={`/offers/${offer.slug}`}
-                      className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
-                    >
-                      <div className="flex items-center gap-3">
-                        <ProviderLogo providerName={offer.providerName} size="sm" />
-                        <div>
-                          <p className="text-sm font-semibold text-ink">{offer.title}</p>
-                          <p className="mt-0.5 text-xs text-ink-tertiary">{offer.providerName}</p>
-                        </div>
+          <SectionCard eyebrow="Trending" title="Gaining attention">
+            {trendingOffers.length > 0 ? (
+              <div className="grid gap-3">
+                {trendingOffers.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.offer.id}
+                    href={`/offers/${item.offer.slug}`}
+                    className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ProviderLogo providerName={item.offer.providerName} size="sm" />
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{item.offer.title}</p>
+                        <p className="mt-0.5 text-xs text-ink-tertiary">{item.offer.providerName}</p>
                       </div>
-                      <Tag tone="muted">{categoryLabels[offer.category]}</Tag>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-
-            {insights ? (
-              <RewardsBlock insights={insights} />
+                    </div>
+                    <Tag tone="blue">{item.activityScore.toFixed(1)}</Tag>
+                  </Link>
+                ))}
+              </div>
             ) : (
-              <SectionCard eyebrow="Rewards" title="Payn score">
-                <div className="rounded-[24px] bg-black px-6 py-6 text-white">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Your Payn score</p>
-                  <p className="mt-3 text-5xl font-bold tracking-tight">0</p>
-                  <p className="mt-3 text-sm leading-relaxed text-white/70">
-                    Save offers and click through to providers to earn points.
-                  </p>
-                </div>
-              </SectionCard>
+              <div className="grid gap-3">
+                {allOffers.slice(0, 3).map((offer) => (
+                  <Link
+                    key={offer.id}
+                    href={`/offers/${offer.slug}`}
+                    className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ProviderLogo providerName={offer.providerName} size="sm" />
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{offer.title}</p>
+                        <p className="mt-0.5 text-xs text-ink-tertiary">{offer.providerName}</p>
+                      </div>
+                    </div>
+                    <Tag tone="muted">{categoryLabels[offer.category]}</Tag>
+                  </Link>
+                ))}
+              </div>
             )}
-          </div>
+          </SectionCard>
         </div>
       </div>
     );
   };
 
+  // ─── Category view ───
+
   const renderCategoryView = (category: MarketplaceCategory) => {
     const offers = getCategoryOffers(dashboardMarket, category);
     const providers = getUniqueProviders(offers);
-    const savedInCategory = insights?.savedOffers.filter((o) => o.category === category) ?? [];
 
-    // If insights exist, try to get insight-enhanced offers
     const insightOffers = insights
       ? mergeInsights(
           insights.recommended.filter((i) => i.offer.category === category),
@@ -982,311 +595,68 @@ export default function DashboardPage() {
 
     return (
       <div className="grid gap-5">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Available</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{offers.length}</p>
+          </div>
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{providers.length}</p>
+          </div>
+          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
+            <p className="mt-1 text-2xl font-bold text-ink">
+              {insights?.savedOffers.filter((o) => o.category === category).length ?? 0}
+            </p>
+          </div>
+        </div>
+
         <SectionCard
-          eyebrow={categoryLabels[category]}
-          title={`${categoryLabels[category]} workspace`}
+          eyebrow="Recommended"
+          title={`Best ${categoryLabels[category].toLowerCase()} for your profile`}
           action={
-            <Link href={getDashboardHref("explore" as DashboardView)} className={buttonStyles({ variant: "secondary", size: "md" })}>
+            <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "secondary", size: "sm" })}>
               Open Explore
             </Link>
           }
         >
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Available offers</p>
-              <p className="mt-2 text-2xl font-bold text-ink">{offers.length}</p>
-            </div>
-            <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
-              <p className="mt-2 text-2xl font-bold text-ink">{providers.length}</p>
-            </div>
-            <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
-              <p className="mt-2 text-2xl font-bold text-ink">{savedInCategory.length}</p>
-            </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          eyebrow="Recommended"
-          title={`Best ${categoryLabels[category].toLowerCase()} products for your profile`}
-        >
-          <OfferTileGrid
-            items={displayOffers}
-            emptyTitle={`No ${categoryLabels[category].toLowerCase()} offers available`}
-            emptyDescription="Check back soon as more offers become available in this category."
-          />
-        </SectionCard>
-
-        <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-          <SectionCard
-            eyebrow="Tracking"
-            title={`Saved ${categoryLabels[category].toLowerCase()}`}
-          >
-            {savedInCategory.length > 0 ? (
-              <SavedOffersGrid offers={savedInCategory} insightMap={insightMap} />
-            ) : (
-              <EmptyState
-                title={`No saved ${categoryLabels[category].toLowerCase()} yet`}
-                description={`Save ${categoryLabels[category].toLowerCase()} products from Explore to track them here.`}
-                href={getDashboardHref("explore" as DashboardView)}
-                cta="Browse offers"
-              />
-            )}
-          </SectionCard>
-
-          <SectionCard
-            eyebrow="Providers"
-            title={`${categoryLabels[category]} providers`}
-          >
-            <div className="grid gap-3">
-              {providers.slice(0, 6).map((name) => (
-                <div key={name} className="flex items-center gap-3 rounded-[20px] bg-bg-surface px-4 py-3">
-                  <ProviderLogo providerName={name} size="sm" />
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{name}</p>
-                    <p className="mt-0.5 text-xs text-ink-tertiary">
-                      {offers.filter((o) => o.providerName === name).length} products
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {providers.length === 0 ? (
-                <p className="text-sm text-ink-secondary">No providers available in this category for your market.</p>
-              ) : null}
-            </div>
-          </SectionCard>
-        </div>
-      </div>
-    );
-  };
-
-  const renderSavedView = () => (
-    <div className="grid gap-5">
-      <SectionCard
-        eyebrow="Saved"
-        title="Your tracked products"
-      >
-        {insights && insights.savedOffers.length > 0 ? (
-          <SavedOffersGrid offers={insights.savedOffers} insightMap={insightMap} />
-        ) : (
-          <EmptyState
-            title="No saved offers yet"
-            description="Save products from Explore to build your shortlist here."
-            href={getDashboardHref("explore" as DashboardView)}
-            cta="Go to Explore"
-          />
-        )}
-      </SectionCard>
-
-      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <SectionCard eyebrow="Watched" title="Recently viewed">
-          {insights && insights.watchedOffers.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {insights.watchedOffers.map((offer) => (
-                <DashboardOfferTile key={offer.id} offer={offer} insight={insightMap.get(offer.id)} eyebrow="Viewed" />
+          {displayOffers.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {displayOffers.map((item) => (
+                <DashboardOfferTile key={item.offer.id} offer={item.offer} insight={item} />
               ))}
             </div>
           ) : (
             <EmptyState
-              title="No recently viewed offers"
-              description="Open an offer detail page while signed in and it will appear here."
-              href={getDashboardHref("explore" as DashboardView)}
-              cta="Browse offers"
+              title={`No ${categoryLabels[category].toLowerCase()} available`}
+              description="Check back soon."
+              href={getDashboardHref("explore")}
+              cta="Explore offers"
             />
           )}
         </SectionCard>
 
-        <SectionCard eyebrow="Alerts" title="What needs attention">
-          <AlertsList alerts={alerts} />
-        </SectionCard>
-      </div>
-    </div>
-  );
-
-  const renderTrendsView = () => (
-    <div className="grid gap-5">
-      {insights ? (
-        <MarketSnapshot insights={insights} />
-      ) : (
-        <SectionCard
-          eyebrow="Market snapshot"
-          title={`${marketLabel} marketplace`}
-          description={`${allOffers.length} products from ${getUniqueProviders(allOffers).length} providers.`}
-        >
-          <div className="grid gap-3 sm:grid-cols-3">
-            {(["loans", "cards", "transfers"] as MarketplaceCategory[]).map((cat) => (
-              <div key={cat} className="rounded-[24px] bg-bg-surface px-5 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{categoryLabels[cat]}</p>
-                <p className="mt-2 text-2xl font-bold text-ink">{getCategoryOffers(dashboardMarket, cat).length}</p>
+        <SectionCard eyebrow="Providers" title={`${categoryLabels[category]} providers`}>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {providers.slice(0, 9).map((name) => (
+              <div key={name} className="flex items-center gap-3 rounded-[18px] bg-bg-surface px-4 py-3">
+                <ProviderLogo providerName={name} size="sm" />
+                <div>
+                  <p className="text-sm font-semibold text-ink">{name}</p>
+                  <p className="mt-0.5 text-xs text-ink-tertiary">
+                    {offers.filter((o) => o.providerName === name).length} products
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </SectionCard>
-      )}
+      </div>
+    );
+  };
 
-      <SectionCard eyebrow="Trending products" title="Offers gaining attention">
-        {insights && insights.trendingInMarket.length > 0 ? (
-          <OfferTileGrid
-            items={insights.trendingInMarket}
-            emptyTitle="No trends yet"
-            emptyDescription="Trends appear as activity builds."
-          />
-        ) : (
-          <CatalogOfferGrid
-            offers={allOffers.slice(0, 6)}
-            emptyTitle="No offers available"
-            emptyDescription="Check back soon."
-          />
-        )}
-      </SectionCard>
-
-      <SectionCard eyebrow="Top providers" title="Most active providers in your market">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {getUniqueProviders(allOffers).slice(0, 8).map((name) => (
-            <div key={name} className="flex items-center gap-3 rounded-[20px] bg-bg-surface px-4 py-3">
-              <ProviderLogo providerName={name} size="sm" />
-              <div>
-                <p className="text-sm font-semibold text-ink">{name}</p>
-                <p className="mt-0.5 text-xs text-ink-tertiary">
-                  {allOffers.filter((o) => o.providerName === name).length} products
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
-    </div>
-  );
-
-  const renderRewardsView = () => (
-    <div className="grid gap-5">
-      {insights ? (
-        <RewardsBlock insights={insights} />
-      ) : (
-        <SectionCard eyebrow="Rewards" title="Payn score and engagement">
-          <div className="rounded-[24px] bg-black px-6 py-6 text-white">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Your Payn score</p>
-            <p className="mt-3 text-5xl font-bold tracking-tight">0</p>
-            <p className="mt-3 text-sm leading-relaxed text-white/70">
-              Save offers and click through to providers to start earning points.
-            </p>
-          </div>
-        </SectionCard>
-      )}
-
-      <SectionCard
-        eyebrow="How to earn"
-        title="A simple engagement system"
-      >
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-sm font-semibold text-ink">Save an offer</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Add products to your shortlist as you compare options across categories.
-            </p>
-            <Tag tone="success" className="mt-4">+1 point</Tag>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-sm font-semibold text-ink">Click through to provider</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Continue to a provider once you are ready to review full terms outside Payn.
-            </p>
-            <Tag tone="blue" className="mt-4">+2 points</Tag>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-sm font-semibold text-ink">Research your market</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Views improve recommendations but do not inflate loyalty points on their own.
-            </p>
-            <Tag tone="muted" className="mt-4">Recommendation signal</Tag>
-          </div>
-        </div>
-      </SectionCard>
-    </div>
-  );
-
-  const renderProfileView = () => (
-    <div className="grid gap-5">
-      <SectionCard
-        eyebrow="Profile"
-        title="Your dashboard setup"
-      >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Email</p>
-            <p className="mt-2 text-sm font-bold text-ink">{user.email ?? "Not set"}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">User type</p>
-            <p className="mt-2 text-lg font-bold text-ink">{userLabel ?? "Not set"}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Home market</p>
-            <p className="mt-2 text-lg font-bold text-ink">{marketLabel}</p>
-          </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Categories</p>
-            <p className="mt-2 text-lg font-bold text-ink">
-              {profile?.selected_categories?.length || dashboardCategories.length}
-            </p>
-          </div>
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        eyebrow="Preferences"
-        title="Your preferences"
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Country</p>
-            <p className="mt-2 text-sm font-bold text-ink">{marketLabel}</p>
-            <p className="mt-1 text-xs text-ink-tertiary">Affects which products and providers are shown</p>
-          </div>
-          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Profile type</p>
-            <p className="mt-2 text-sm font-bold text-ink">{userLabel ?? "Personal"}</p>
-            <p className="mt-1 text-xs text-ink-tertiary">Shapes recommendations and ranking logic</p>
-          </div>
-          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Interests</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {((profile?.selected_categories ?? []).length > 0
-                ? profile!.selected_categories
-                : dashboardCategories
-              ).map((cat) => (
-                <Tag key={cat} tone="blue">{normalizeDisplayText(cat)}</Tag>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-[24px] border border-line bg-bg-surface p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Use cases</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {(profile?.goals ?? []).length > 0 ? (
-                profile!.goals.map((goal) => (
-                  <Tag key={goal} tone="muted">{normalizeDisplayText(goal.replace(/_/g, " "))}</Tag>
-                ))
-              ) : (
-                <p className="text-xs text-ink-secondary">No use cases set yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        eyebrow="Account type"
-        title="Change how you use Payn"
-      >
-        <UserTypeOnboardingCard
-          title="Update your profile type"
-          description="Changing your type will adjust recommendations, trends, and category ranking."
-          completeLabel="Save changes"
-        />
-      </SectionCard>
-    </div>
-  );
+  // ─── Explore view ───
 
   const renderExploreView = () => (
     <MarketplaceExplorer
@@ -1297,19 +667,34 @@ export default function DashboardPage() {
     />
   );
 
-  // === VIEW ROUTING ===
+  // ─── Profile view ───
+
+  const renderProfileView = () => (
+    <ProfileEditor
+      email={user.email ?? ""}
+      userType={profile?.user_type ?? "personal"}
+      marketLabel={marketLabel}
+      selectedCategories={profile?.selected_categories ?? []}
+      goals={profile?.goals ?? []}
+      onSave={(data) => {
+        updateProfile({
+          user_type: data.user_type as "personal" | "freelancer" | "business",
+          selected_categories: data.selected_categories,
+          goals: data.goals,
+          onboarding_completed: true,
+        });
+      }}
+    />
+  );
+
+  // ─── View routing ───
+
   let body: React.ReactNode;
 
   if (activeView === "explore") {
     body = renderExploreView();
   } else if (activeCategory) {
     body = renderCategoryView(activeCategory);
-  } else if (activeView === "saved") {
-    body = renderSavedView();
-  } else if (activeView === "trends") {
-    body = renderTrendsView();
-  } else if (activeView === "rewards") {
-    body = renderRewardsView();
   } else if (activeView === "profile") {
     body = renderProfileView();
   } else {
