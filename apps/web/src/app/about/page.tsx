@@ -30,24 +30,27 @@ export default function AboutPage() {
               <ul className="mt-5 grid gap-3">
                 <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
-                  Founded and built CreditPay, a fintech product for consumer credit integration
+                  Founded and scaled CreditPay (2012), a consumer credit platform across Eastern Europe
                 </li>
                 <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
-                  Product architect across financial platforms, comparison engines, and enterprise tools
+                  Led the company as owner and CEO, building integrations between lenders and financial platforms
                 </li>
                 <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
-                  Focused on how people discover, compare, and access financial products online
+                  Designed comparison engines and financial decision products at scale
                 </li>
                 <li className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-tertiary" />
-                  Built Payn as the next step: transparent ranking, visible tradeoffs, real filters
+                  Identified key gaps in transparency and filtering in financial comparison
                 </li>
               </ul>
 
               <p className="mt-5 text-sm leading-relaxed text-ink-secondary">
-                Payn is the product that came from building CreditPay and understanding what financial comparison still gets wrong.
+                CreditPay revealed what traditional comparison still gets wrong.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
+                Payn is the next step — a scalable decision layer with transparent ranking, real filters, and seamless web-to-mobile experience.
               </p>
               <a
                 href="https://www.linkedin.com/in/petrovkyrylo/"
