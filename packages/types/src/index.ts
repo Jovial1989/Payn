@@ -35,6 +35,7 @@ export interface MarketplaceOfferAttributes {
   riskProfile?: "conservative" | "balanced" | "growth";
   availability?: "local" | "regional" | "eu_wide" | "international";
   searchTags?: string[];
+  isPartner?: boolean;
 }
 
 export interface MarketplaceOffer {
