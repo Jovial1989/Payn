@@ -264,11 +264,5 @@ export function detectPreferencesFromAcceptLanguage(headerValue?: string | null)
 }
 
 export function roundOfferCount(value: number) {
-  if (value <= 5) {
-    return `${value}`;
-  }
-  if (value < 15) {
-    return `${Math.floor(value / 5) * 5}+`;
-  }
-  return `${Math.floor(value / 10) * 10}+`;
+  return `${value}`;
 }

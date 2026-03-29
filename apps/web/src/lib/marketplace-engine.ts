@@ -8,6 +8,8 @@ import {
   marketplaceCategories,
 } from "@/lib/marketplace";
 
+export type SortKey = "relevance" | "apr" | "fees" | "provider" | "updated";
+
 export interface MarketplaceFilterState {
   query: string;
   provider: string;
@@ -15,6 +17,7 @@ export interface MarketplaceFilterState {
   subtype: string;
   amount: number;
   term: number;
+  sortBy: SortKey;
 }
 
 export const defaultMarketplaceFilters: MarketplaceFilterState = {
@@ -24,6 +27,7 @@ export const defaultMarketplaceFilters: MarketplaceFilterState = {
   subtype: "",
   amount: 25000,
   term: 60,
+  sortBy: "relevance",
 };
 
 export function getScopedOffers({
@@ -106,12 +110,33 @@ export function filterMarketplaceOffers({
     });
   }
 
-  return result.sort((left, right) => {
-    if (left.category !== right.category && category === "all") {
-      return marketplaceCategories.indexOf(left.category) - marketplaceCategories.indexOf(right.category);
-    }
+  return sortOffers(result, filters.sortBy, category);
+}
 
-    return right.affiliatePriorityScore - left.affiliatePriorityScore;
+function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: ExplorerCategory) {
+  return [...offers].sort((left, right) => {
+    switch (sortBy) {
+      case "apr": {
+        const leftApr = parseMetricRange(getMetricValue(left, ["APR"])).min ?? 999;
+        const rightApr = parseMetricRange(getMetricValue(right, ["APR"])).min ?? 999;
+        return leftApr - rightApr;
+      }
+      case "fees": {
+        const leftFee = parseMetricRange(getMetricValue(left, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
+        const rightFee = parseMetricRange(getMetricValue(right, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
+        return leftFee - rightFee;
+      }
+      case "provider":
+        return left.providerName.localeCompare(right.providerName);
+      case "updated":
+        return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+      default: {
+        if (left.category !== right.category && category === "all") {
+          return marketplaceCategories.indexOf(left.category) - marketplaceCategories.indexOf(right.category);
+        }
+        return right.affiliatePriorityScore - left.affiliatePriorityScore;
+      }
+    }
   });
 }
 

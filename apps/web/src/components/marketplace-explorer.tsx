@@ -3,9 +3,11 @@
 import type { MarketplaceLocale, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useCallback, useDeferredValue, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/components/button";
+import { ComparisonTable, ComparisonTray } from "@/components/comparison-table";
+import { InvestmentIntelligenceBlock } from "@/components/investment-intelligence-block";
 import { OfferCard } from "@/components/offer-card";
 import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
@@ -18,6 +20,7 @@ import {
   getFeatureOptions,
   getProviderOptions,
   getSubtypeOptions,
+  type SortKey,
 } from "@/lib/marketplace-engine";
 import {
   explorerCategories,
@@ -27,6 +30,17 @@ import {
   roundOfferCount,
   type ExplorerCategory,
 } from "@/lib/marketplace";
+import { getUiCopy } from "@/lib/ui-copy";
+
+const PAGE_SIZE = 12;
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "relevance", label: "Relevance" },
+  { value: "apr", label: "APR (low to high)" },
+  { value: "fees", label: "Fees (low to high)" },
+  { value: "provider", label: "Provider (A-Z)" },
+  { value: "updated", label: "Recently updated" },
+];
 
 function totalCategoryCount(counts: Record<(typeof marketplaceCategories)[number], number>) {
   return marketplaceCategories.reduce((sum, category) => sum + counts[category], 0);
@@ -57,16 +71,13 @@ export function MarketplaceExplorer({
   const preferences = useMarketplacePreferences();
   const [selectedCategory, setSelectedCategory] = useState<ExplorerCategory>(initialCategory);
   const [filters, setFilters] = useState(defaultMarketplaceFilters);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+  const [compareOpen, setCompareOpen] = useState(false);
   const deferredQuery = useDeferredValue(filters.query);
 
-  useEffect(() => {
-    if (preferences.market !== initialMarket) {
-      preferences.setMarket(initialMarket);
-    }
-    setSelectedCategory(initialCategory);
-  }, [initialCategory, initialMarket]);
-
   const dictionary = getDictionary(preferences.locale);
+  const uiCopy = getUiCopy(preferences.locale);
   const activeFilters = { ...filters, query: deferredQuery };
   const categoryCounts = countOffersByCategory(offers, preferences.market);
   const visibleOffers = filterMarketplaceOffers({
@@ -75,7 +86,9 @@ export function MarketplaceExplorer({
     category: selectedCategory,
     filters: activeFilters,
   });
-  const shownOffers = mode === "home" && selectedCategory === "all" ? visibleOffers.slice(0, 12) : visibleOffers;
+  const totalCount = visibleOffers.length;
+  const shownOffers = visibleOffers.slice(0, visibleCount);
+  const hasMore = visibleCount < totalCount;
   const providerOptions = getProviderOptions(offers, preferences.market, selectedCategory);
   const featureOptions = getFeatureOptions(offers, preferences.market, selectedCategory);
   const subtypeOptions = getSubtypeOptions(offers, preferences.market, selectedCategory);
@@ -87,6 +100,7 @@ export function MarketplaceExplorer({
   const updateCategory = (nextCategory: ExplorerCategory) => {
     setSelectedCategory(nextCategory);
     setFilters((current) => ({ ...defaultMarketplaceFilters, query: current.query }));
+    setVisibleCount(PAGE_SIZE);
 
     if (mode === "category" && nextCategory !== "all") {
       startTransition(() => {
@@ -97,6 +111,7 @@ export function MarketplaceExplorer({
 
   const updateMarket = (nextMarket: MarketplaceMarket) => {
     preferences.setMarket(nextMarket);
+    setVisibleCount(PAGE_SIZE);
 
     if (mode === "category" && selectedCategory !== "all") {
       startTransition(() => {
@@ -104,6 +119,20 @@ export function MarketplaceExplorer({
       });
     }
   };
+
+  const toggleCompare = useCallback((id: string) => {
+    setCompareIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 3) {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const compareOffers = offers.filter((o) => compareIds.has(o.id));
 
   return (
     <div className="grid gap-6">
@@ -131,7 +160,7 @@ export function MarketplaceExplorer({
 
           <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
             <label className="grid gap-2 rounded-[24px] border border-line bg-bg-surface p-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                 {dictionary.filters.countryLabel}
               </span>
               <select
@@ -148,7 +177,7 @@ export function MarketplaceExplorer({
             </label>
 
             <label className="grid gap-2 rounded-[24px] border border-line bg-bg-surface p-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                 {dictionary.filters.searchLabel}
               </span>
               <input
@@ -183,7 +212,7 @@ export function MarketplaceExplorer({
                     <span>{dictionary.categories[category]}</span>
                     <span
                       className={clsx(
-                        "rounded-full px-2 py-0.5 text-[11px]",
+                        "rounded-full px-2 py-0.5 text-xs",
                         selectedCategory === category ? "bg-white/15 text-white" : "bg-bg-surface text-ink-tertiary",
                       )}
                     >
@@ -285,7 +314,7 @@ export function MarketplaceExplorer({
                     >
                       {[12, 24, 36, 48, 60, 72, 84].map((term) => (
                         <option key={term} value={term}>
-                          {term} months
+                          {term} {uiCopy.common.months}
                         </option>
                       ))}
                     </select>
@@ -295,7 +324,10 @@ export function MarketplaceExplorer({
 
               <button
                 type="button"
-                onClick={() => setFilters(defaultMarketplaceFilters)}
+                onClick={() => {
+                  setFilters(defaultMarketplaceFilters);
+                  setVisibleCount(PAGE_SIZE);
+                }}
                 className={buttonStyles({ variant: "ghost", size: "md", fullWidth: true })}
               >
                 {dictionary.filters.reset}
@@ -305,42 +337,117 @@ export function MarketplaceExplorer({
         </div>
       </section>
 
-      <section className="grid gap-4">
-        <div className="rounded-[28px] border border-line bg-white p-5 shadow-card sm:p-6">
+      <section className="grid gap-5 rounded-[32px] bg-[#F5F5F7] p-4 sm:p-5">
+        {selectedCategory === "investments" ? (
+          <InvestmentIntelligenceBlock locale={preferences.locale} />
+        ) : null}
+
+        <div className="rounded-[28px] border border-[#E2E4E8] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] sm:p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-bold text-ink">
-                {shownOffers.length} {dictionary.explorer.resultsLabel}
+                Showing {shownOffers.length} of {totalCount} {dictionary.explorer.resultsLabel}
               </p>
               <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
                 {dictionary.explorer.filterSummary}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Tag tone="success">{dictionary.markets[preferences.market]}</Tag>
               <Tag tone="muted">
                 {providerOptions.length} {dictionary.explorer.providersLabel}
               </Tag>
-              <Tag tone="muted">
-                {dictionary.explorer.filteredFrom} {roundOfferCount(visibleOffers.length)}
-              </Tag>
+              <label className="inline-flex items-center gap-2 rounded-full bg-bg-surface px-3 py-1.5">
+                <span className="text-xs font-semibold text-ink-tertiary">Sort:</span>
+                <select
+                  value={filters.sortBy}
+                  onChange={(event) =>
+                    setFilters((current) => ({ ...current, sortBy: event.target.value as SortKey }))
+                  }
+                  className="bg-transparent text-xs font-semibold text-ink outline-none"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
         </div>
 
         {shownOffers.length === 0 && (
-          <div className="rounded-[28px] border border-line bg-white p-10 text-center shadow-card">
-            <p className="text-lg font-bold text-ink">{dictionary.explorer.emptyTitle}</p>
+          <div className="rounded-[28px] border border-[#E2E4E8] bg-white p-10 text-center shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-bg-surface">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-tertiary">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </div>
+            <p className="mt-4 text-lg font-bold text-ink">{dictionary.explorer.emptyTitle}</p>
             <p className="mt-2 max-w-xl justify-self-center text-sm leading-relaxed text-ink-secondary">
               {dictionary.explorer.emptyDescription}
             </p>
+            <button
+              type="button"
+              onClick={() => {
+                setFilters(defaultMarketplaceFilters);
+                setSelectedCategory("all");
+              }}
+              className={buttonStyles({ variant: "secondary", size: "md" }) + " mt-5"}
+            >
+              Reset all filters
+            </button>
           </div>
         )}
 
         {shownOffers.map((offer, index) => (
-          <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} />
+          <OfferCard
+            key={offer.id}
+            offer={offer}
+            rank={index + 1}
+            locale={preferences.locale}
+            compareSelected={compareIds.has(offer.id)}
+            onToggleCompare={toggleCompare}
+          />
         ))}
+
+        {hasMore && (
+          <div className="flex flex-col items-center gap-2 py-4">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+              className={buttonStyles({ variant: "secondary", size: "md" })}
+            >
+              Show more results
+            </button>
+            <p className="text-xs text-ink-tertiary">
+              Showing {shownOffers.length} of {totalCount}
+            </p>
+          </div>
+        )}
       </section>
+
+      <ComparisonTray
+        count={compareIds.size}
+        onOpen={() => setCompareOpen(true)}
+        onClear={() => setCompareIds(new Set())}
+      />
+
+      {compareOpen && compareOffers.length >= 2 && (
+        <ComparisonTable
+          offers={compareOffers}
+          locale={preferences.locale}
+          onRemove={(id) => {
+            toggleCompare(id);
+            if (compareIds.size <= 2) {
+              setCompareOpen(false);
+            }
+          }}
+          onClose={() => setCompareOpen(false)}
+        />
+      )}
     </div>
   );
 }
