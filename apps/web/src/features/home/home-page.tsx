@@ -17,6 +17,7 @@ import { localePath } from "@/lib/locale";
 import { getOfferDecisionBadge } from "@/lib/offer-badges";
 import {
   getOfferHref,
+  marketDefinitions,
   marketplaceCategories,
   matchesOfferMarket,
   normalizeDisplayText,
@@ -337,6 +338,10 @@ export function HomePage() {
         })(),
       } satisfies HeroMarketOffer & { title: string; category: string };
     });
+  const totalOffers = marketplaceOffers.filter((o) => matchesOfferMarket(o, market)).length;
+  const uniqueProviders = new Set(
+    marketplaceOffers.filter((o) => matchesOfferMarket(o, market)).map((o) => o.providerName),
+  ).size;
   const quickActionCategories: MarketplaceCategory[] = [
     "loans",
     "transfers",
@@ -379,6 +384,23 @@ export function HomePage() {
             offers={topResults}
           />
         </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { value: `${totalOffers}`, label: "Offers compared" },
+          { value: `${uniqueProviders}`, label: "Providers" },
+          { value: `${Object.keys(categoryCounts).length}`, label: "Categories" },
+          { value: `${Object.keys(marketDefinitions).length}`, label: "Markets" },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-[20px] border border-line bg-white px-4 py-4 text-center"
+          >
+            <p className="text-2xl font-bold tracking-tight text-ink">{stat.value}</p>
+            <p className="mt-1 text-xs font-medium text-ink-tertiary">{stat.label}</p>
+          </div>
+        ))}
       </section>
 
       <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
@@ -548,6 +570,12 @@ export function HomePage() {
               {dictionary.home.whyPaynEyebrow}
             </p>
             <h2 className="mt-3 text-h2 text-ink">{dictionary.home.whyPaynTitle}</h2>
+            <Link
+              href={localePath(locale, "/ranking")}
+              className="mt-4 inline-block text-sm font-semibold text-ink-tertiary transition-colors hover:text-ink"
+            >
+              How we rank offers &rarr;
+            </Link>
           </div>
           <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {whyPaynCards.map((point, index) => (

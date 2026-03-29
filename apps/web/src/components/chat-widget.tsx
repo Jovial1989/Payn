@@ -4,6 +4,8 @@ import type { ChatMessage } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
+export const PAYN_OPEN_CHAT_EVENT = "payn:open-chat";
+
 function detectPageCategory(): string | undefined {
   if (typeof window === "undefined") return undefined;
   const path = window.location.pathname;
@@ -27,6 +29,16 @@ export function ChatWidget() {
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
+
+  useEffect(() => {
+    const handleOpen = () => setOpen(true);
+
+    window.addEventListener(PAYN_OPEN_CHAT_EVENT, handleOpen);
+
+    return () => {
+      window.removeEventListener(PAYN_OPEN_CHAT_EVENT, handleOpen);
+    };
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -104,7 +116,7 @@ export function ChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-elevated transition-all hover:bg-gray-800 hover:shadow-card-hover"
+        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-subtle transition-all hover:bg-gray-800"
         aria-label="Open AI assistant"
       >
         {open ? (
@@ -120,7 +132,7 @@ export function ChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-[400px] flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-elevated">
+        <div className="fixed bottom-24 right-4 z-50 flex h-[min(520px,calc(100vh-8rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-elevated sm:right-6">
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-line px-5 py-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black">
@@ -221,6 +233,9 @@ export function ChatWidget() {
 
           {/* Input */}
           <div className="border-t border-line px-4 py-3">
+            <p className="mb-2 text-[10px] leading-snug text-ink-tertiary">
+              AI-generated guidance only — not financial advice. Always verify with the provider before making decisions.
+            </p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
