@@ -5,29 +5,12 @@ import { useState } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { localePath } from "@/lib/locale";
-
-const userTypes = [
-  {
-    id: "personal",
-    label: "Personal",
-    description: "Track everyday borrowing, cards, transfers, and exchange for yourself.",
-  },
-  {
-    id: "freelancer",
-    label: "Freelancer",
-    description: "Compare tools for irregular income, cross-border payments, and flexible banking.",
-  },
-  {
-    id: "business",
-    label: "Business",
-    description: "Find products for team spending, company transfers, and business finance decisions.",
-  },
-] as const;
+import { getUiCopy, getUserTypeOptions } from "@/lib/ui-copy";
 
 export function UserTypeOnboardingCard({
-  title = "How will you use Payn?",
-  description = "Choose the setup that best matches how you make financial decisions.",
-  completeLabel = "Continue to dashboard",
+  title,
+  description,
+  completeLabel,
 }: {
   title?: string;
   description?: string;
@@ -35,6 +18,8 @@ export function UserTypeOnboardingCard({
 }) {
   const router = useRouter();
   const { locale } = useMarketplacePreferences();
+  const uiCopy = getUiCopy(locale);
+  const userTypes = getUserTypeOptions(locale);
   const { profile, updateProfile } = useAuth();
   const [selectedType, setSelectedType] = useState<
     "personal" | "freelancer" | "business"
@@ -63,9 +48,11 @@ export function UserTypeOnboardingCard({
 
   return (
     <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
-      <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Onboarding</p>
-      <h2 className="mt-3 text-h2 text-ink">{title}</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">{description}</p>
+      <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{uiCopy.auth.onboardingEyebrow}</p>
+      <h2 className="mt-3 text-h2 text-ink">{title ?? uiCopy.auth.onboardingTitle}</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
+        {description ?? uiCopy.auth.onboardingDescription}
+      </p>
 
       <div className="mt-6 grid gap-3">
         {userTypes.map((option) => {
@@ -97,7 +84,7 @@ export function UserTypeOnboardingCard({
           disabled={saving}
           className="h-11 rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
         >
-          {saving ? "Saving..." : completeLabel}
+          {saving ? uiCopy.dashboard.savingPreferences : completeLabel ?? uiCopy.auth.onboardingCompleteLabel}
         </button>
       </div>
     </section>

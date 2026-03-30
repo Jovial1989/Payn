@@ -1,108 +1,316 @@
 import 'package:flutter/material.dart';
-import 'package:payn_mobile/shared/app_scaffold.dart';
+import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/constants/marketplace_constants.dart';
+import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/core/utils/formatters.dart';
+import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/app_scope.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      eyebrow: 'Payn',
-      title: 'Profile',
-      subtitle:
-          'Keep saved offers, alerts, and account preferences in one calm control panel.',
-      children: [
-        AppPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              AppPanelHeader(
-                icon: Icons.person_outline_rounded,
-                title: 'Account state',
-                subtitle:
-                    'The shell is ready for secure sign-in, saved offers, and synced preferences.',
-              ),
-              SizedBox(height: 18),
-              AppDetailRow(
-                label: 'Session',
-                value: 'Ready for secure sign-in on this device.',
-              ),
-              SizedBox(height: 14),
-              AppDetailRow(
-                label: 'Saved offers',
-                value:
-                    'Designed for one view across loans, cards, transfers, and exchange.',
-              ),
-              SizedBox(height: 14),
-              AppDetailRow(
-                label: 'Alerts',
-                value: 'Prepared for rate, fee, and provider-term changes.',
-              ),
-            ],
+    final controller = AppScope.of(context);
+    final theme = Theme.of(context);
+    final preferences = controller.preferences;
+
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        physics: const BouncingScrollPhysics(),
+        children: <Widget>[
+          // ── Account ──
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: PaynColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: PaynColors.outline),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            controller.isAuthenticated
+                                ? PaynColors.text
+                                : PaynColors.surfaceDim,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        controller.isAuthenticated
+                            ? Icons.person_rounded
+                            : Icons.person_outline_rounded,
+                        color:
+                            controller.isAuthenticated
+                                ? PaynColors.surface
+                                : PaynColors.textSecondary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            controller.isAuthenticated
+                                ? controller.session.email ?? 'Signed in'
+                                : 'Guest mode',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            controller.isAuthenticated
+                                ? '${preferences.profileType.label} · ${formatMarketLabel(preferences.market)}'
+                                : 'Browse freely, save locally, or log in to sync your shortlist.',
+                            style: theme.textTheme.labelMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (controller.isAuthenticated)
+                  OutlinedButton(
+                    onPressed: controller.signOut,
+                    child: const Text('Sign out'),
+                  )
+                else
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () => context.push('/auth?mode=signIn'),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                          ),
+                          child: const Text('Log in'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.push('/auth?mode=signUp'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                          ),
+                          child: const Text('Create account'),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
-        ),
-        AppPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              AppPanelHeader(
-                icon: Icons.tune_rounded,
-                title: 'Preference rails',
-                subtitle:
-                    'The profile area holds the controls that shape how Payn behaves for each user.',
-              ),
-              SizedBox(height: 18),
-              AppBulletRow(
-                icon: Icons.check_circle_outline_rounded,
-                label:
-                    'Choose notification cadence for the categories you actually track.',
-              ),
-              SizedBox(height: 12),
-              AppBulletRow(
-                icon: Icons.check_circle_outline_rounded,
-                label: 'Set market defaults and a preferred currency view.',
-              ),
-              SizedBox(height: 12),
-              AppBulletRow(
-                icon: Icons.check_circle_outline_rounded,
-                label:
-                    'Keep biometric unlock and device security options in one place.',
-              ),
-            ],
+          const SizedBox(height: 12),
+
+          // ── Market ──
+          _SettingsSection(
+            title: 'Preferences',
+            child: DropdownButtonFormField<PaynMarket>(
+              initialValue: preferences.market,
+              decoration: const InputDecoration(labelText: 'Home market'),
+              items:
+                  PaynMarket.values
+                      .map(
+                        (market) => DropdownMenuItem<PaynMarket>(
+                          value: market,
+                          child: Text(formatMarketLabel(market)),
+                        ),
+                      )
+                      .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                controller.updatePreferences(
+                  preferences.copyWith(market: value),
+                );
+              },
+            ),
           ),
-        ),
-        AppPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              AppPanelHeader(
-                icon: Icons.shield_outlined,
-                title: 'What this supports',
-                subtitle:
-                    'The mobile foundation is ready to carry authenticated comparison flows without changing the shell.',
-              ),
-              SizedBox(height: 18),
-              AppDetailRow(
-                label: 'Return path',
-                value:
-                    'Come back to shortlisted offers without restarting the search.',
-              ),
-              SizedBox(height: 14),
-              AppDetailRow(
-                label: 'Coverage',
-                value:
-                    'Keep a Europe-focused view across the core Payn categories.',
-              ),
-              SizedBox(height: 14),
-              AppDetailRow(
-                label: 'Next connection',
-                value:
-                    'Auth, persistence, and live marketplace data can plug into the existing tabs.',
-              ),
-            ],
+          const SizedBox(height: 12),
+
+          // ── Profile type ──
+          _SettingsSection(
+            title: 'Profile type',
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children:
+                  ProfileType.values.map((type) {
+                    return ChoiceChip(
+                      selected: preferences.profileType == type,
+                      label: Text(type.label),
+                      onSelected: (_) {
+                        controller.updatePreferences(
+                          preferences.copyWith(profileType: type),
+                        );
+                      },
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
+            ),
           ),
+          const SizedBox(height: 12),
+
+          // ── Categories ──
+          _SettingsSection(
+            title: 'Categories',
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children:
+                  PaynCategory.values.map((category) {
+                    final selected = preferences.selectedCategories.contains(
+                      category,
+                    );
+                    return FilterChip(
+                      selected: selected,
+                      label: Text(category.label),
+                      onSelected: (_) {
+                        final next = List<PaynCategory>.from(
+                          preferences.selectedCategories,
+                        );
+                        if (selected) {
+                          next.remove(category);
+                        } else {
+                          next.add(category);
+                        }
+                        controller.updatePreferences(
+                          preferences.copyWith(selectedCategories: next),
+                        );
+                      },
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ── Interests ──
+          _SettingsSection(
+            title: 'Interests',
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children:
+                  interestLabels.entries.map((entry) {
+                    final selected = preferences.interests.contains(entry.key);
+                    return FilterChip(
+                      selected: selected,
+                      label: Text(entry.value),
+                      onSelected: (_) {
+                        final next = List<String>.from(preferences.interests);
+                        if (selected) {
+                          next.remove(entry.key);
+                        } else {
+                          next.add(entry.key);
+                        }
+                        controller.updatePreferences(
+                          preferences.copyWith(interests: next),
+                        );
+                      },
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ── Stats ──
+          _SettingsSection(
+            title: 'Activity',
+            child: Row(
+              children: <Widget>[
+                _MiniStat(label: 'Saved', value: '${controller.savedCount}'),
+                const SizedBox(width: 8),
+                _MiniStat(
+                  label: 'Compare',
+                  value: '${controller.compareCount}',
+                ),
+                const SizedBox(width: 8),
+                _MiniStat(
+                  label: 'Viewed',
+                  value: '${controller.recentOffers.length}',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: PaynColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: PaynColors.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: PaynColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: PaynColors.surfaceDim,
+          borderRadius: BorderRadius.circular(10),
         ),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(value, style: theme.textTheme.titleMedium),
+            Text(label, style: theme.textTheme.labelMedium),
+          ],
+        ),
+      ),
     );
   }
 }

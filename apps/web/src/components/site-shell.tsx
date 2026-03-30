@@ -72,6 +72,9 @@ export function SiteShell({
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-secondary">
               {dictionary.footer.copy}
             </p>
+            <p className="mt-4 max-w-lg text-sm font-medium leading-relaxed text-ink">
+              {dictionary.footer.credibility}
+            </p>
             <p className="mt-4 max-w-lg text-xs leading-5 text-ink-tertiary">
               {dictionary.footer.disclaimer}
             </p>

@@ -1,7 +1,5 @@
-import 'app/payn_app.dart';
-import 'package:flutter/material.dart';
+import 'app/bootstrap.dart';
 
-void main() {
-  runApp(const PaynApp());
+Future<void> main() async {
+  await bootstrap();
 }
-

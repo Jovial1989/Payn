@@ -1,18 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { isSupabaseConfigured } from "@/lib/supabase-browser";
+import { formatUiCopy, getUiCopy } from "@/lib/ui-copy";
 
 type Mode = "sign-in" | "sign-up";
-
-const VALUE_POINTS = [
-  "Save and compare offers across categories",
-  "Get personalised rate recommendations",
-  "Track when better rates appear",
-  "Join the Payn mobile waitlist",
-  "Early access to new product features",
-];
 
 export function AuthModal({
   open,
@@ -25,6 +19,8 @@ export function AuthModal({
   initialMode?: Mode;
   onSuccess?: () => void;
 }) {
+  const { locale } = useMarketplacePreferences();
+  const uiCopy = getUiCopy(locale);
   const { signInWithEmail, signUpWithEmail } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
@@ -39,7 +35,7 @@ export function AuthModal({
       setError(null);
 
       if (!isSupabaseConfigured()) {
-        setError("Account system is being configured. Please try again shortly.");
+        setError(uiCopy.auth.notConfigured);
         return;
       }
 
@@ -54,18 +50,17 @@ export function AuthModal({
         setLoading(false);
 
         if (result.error) {
-          // Make Supabase errors more human-readable
           const msg = result.error;
           if (msg.includes("Invalid login credentials")) {
-            setError("Incorrect email or password. Please try again.");
+            setError(uiCopy.auth.invalidCredentials);
           } else if (msg.includes("already registered") || msg.includes("already been registered")) {
-            setError("This email is already registered. Try signing in instead.");
+            setError(uiCopy.auth.alreadyRegistered);
           } else if (msg.includes("Password should be")) {
-            setError("Password must be at least 6 characters.");
+            setError(uiCopy.auth.weakPassword);
           } else if (msg.includes("rate limit") || msg.includes("too many")) {
-            setError("Too many attempts. Please wait a moment and try again.");
+            setError(uiCopy.auth.genericError);
           } else if (msg.includes("not authorized") || msg.includes("Email not confirmed")) {
-            setError("Please check your email and confirm your account first.");
+            setError(uiCopy.auth.emailNotConfirmed);
           } else {
             setError(msg);
           }
@@ -81,10 +76,10 @@ export function AuthModal({
         onClose();
       } catch {
         setLoading(false);
-        setError("Could not connect to the server. Please check your connection and try again.");
+        setError(uiCopy.auth.failedToFetch);
       }
     },
-    [mode, email, password, signInWithEmail, signUpWithEmail, onClose, onSuccess],
+    [mode, email, onClose, onSuccess, password, signInWithEmail, signUpWithEmail, uiCopy],
   );
 
   if (!open) return null;
@@ -115,21 +110,15 @@ export function AuthModal({
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </div>
-            <h2 className="mt-5 text-h3 text-ink">Account created</h2>
+            <h2 className="mt-5 text-h3 text-ink">{uiCopy.auth.accountCreatedEyebrow}</h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-              Check your inbox at <strong className="text-ink">{email}</strong> for a confirmation link to activate your account.
+              {formatUiCopy(uiCopy.auth.confirmEmailDescription, { email })}
             </p>
 
-            {/* What's next */}
             <div className="mt-6 rounded-2xl border border-line bg-bg-surface p-5 text-left">
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">What you unlock</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">{uiCopy.auth.panelSignupTitle}</p>
               <div className="mt-3 grid gap-2.5">
-                {[
-                  "Saved offers and shortlists",
-                  "Personalised recommendations",
-                  "Rate change alerts",
-                  "Early access to Payn Rewards",
-                ].map((item) => (
+                {uiCopy.auth.benefits.map((item) => (
                   <div key={item} className="flex items-center gap-2.5">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 text-accent-green-text">
                       <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -142,15 +131,18 @@ export function AuthModal({
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                setMode("sign-in");
+                setSuccess(false);
+                setError(null);
+              }}
               className="mt-6 h-11 w-full rounded-full bg-black text-sm font-semibold text-white transition-colors hover:bg-gray-800"
             >
-              Got it
+              {uiCopy.auth.goToSignIn}
             </button>
           </div>
         ) : (
           <>
-            {/* Logo */}
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -161,18 +153,17 @@ export function AuthModal({
             </div>
 
             <h2 className="mt-6 text-h3 text-ink">
-              {mode === "sign-in" ? "Welcome back" : "Create your account"}
+              {mode === "sign-in" ? uiCopy.auth.loginTitle : uiCopy.auth.signupTitle}
             </h2>
             <p className="mt-2 text-sm text-ink-secondary">
               {mode === "sign-in"
-                ? "Sign in to access your saved offers and preferences."
-                : "Free account. No credit card required."}
+                ? uiCopy.auth.loginDescription
+                : uiCopy.auth.signupDescription}
             </p>
 
-            {/* Value props for signup */}
             {mode === "sign-up" && (
               <div className="mt-4 grid gap-2">
-                {VALUE_POINTS.map((point) => (
+                {uiCopy.auth.benefits.map((point) => (
                   <div key={point} className="flex items-center gap-2.5">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 text-accent-green-text">
                       <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -186,7 +177,7 @@ export function AuthModal({
             <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
               <div>
                 <label htmlFor="auth-email" className="text-xs font-semibold text-ink-secondary">
-                  Email
+                  {uiCopy.auth.emailLabel}
                 </label>
                 <input
                   id="auth-email"
@@ -195,14 +186,14 @@ export function AuthModal({
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={uiCopy.auth.emailPlaceholder}
                   disabled={loading}
                   className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-50"
                 />
               </div>
               <div>
                 <label htmlFor="auth-password" className="text-xs font-semibold text-ink-secondary">
-                  Password
+                  {uiCopy.auth.passwordLabel}
                 </label>
                 <input
                   id="auth-password"
@@ -212,7 +203,7 @@ export function AuthModal({
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === "sign-up" ? "Min 6 characters" : "Your password"}
+                  placeholder={mode === "sign-up" ? uiCopy.auth.signupPasswordPlaceholder : uiCopy.auth.loginPasswordPlaceholder}
                   disabled={loading}
                   className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-50"
                 />
@@ -235,12 +226,12 @@ export function AuthModal({
                       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" opacity="0.3" />
                       <path d="M14 8a6 6 0 00-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                     </svg>
-                    {mode === "sign-in" ? "Signing in..." : "Creating account..."}
+                    {mode === "sign-in" ? uiCopy.auth.signingIn : uiCopy.auth.creatingAccount}
                   </span>
                 ) : mode === "sign-in" ? (
-                  "Sign in"
+                  uiCopy.auth.signIn
                 ) : (
-                  "Create free account"
+                  uiCopy.auth.createAccount
                 )}
               </button>
             </form>
@@ -248,7 +239,7 @@ export function AuthModal({
             <p className="mt-6 text-center text-xs text-ink-tertiary">
               {mode === "sign-in" ? (
                 <>
-                  New to Payn?{" "}
+                  {uiCopy.auth.loginPrompt}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -257,12 +248,12 @@ export function AuthModal({
                     }}
                     className="font-semibold text-ink underline underline-offset-2"
                   >
-                    Create free account
+                    {uiCopy.auth.createAccount}
                   </button>
                 </>
               ) : (
                 <>
-                  Already have an account?{" "}
+                  {uiCopy.auth.signupPrompt}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -271,7 +262,7 @@ export function AuthModal({
                     }}
                     className="font-semibold text-ink underline underline-offset-2"
                   >
-                    Sign in
+                    {uiCopy.auth.signIn}
                   </button>
                 </>
               )}
@@ -279,7 +270,7 @@ export function AuthModal({
 
             {mode === "sign-up" && (
               <p className="mt-3 text-center text-[10px] text-ink-tertiary">
-                Create an account to save offers and stay informed about product updates.
+                {uiCopy.auth.signupDescription}
               </p>
             )}
           </>

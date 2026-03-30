@@ -1,20 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
-const platformLabels = {
-  ios: "iPhone / iPad",
-  android: "Android",
-  both: "Both",
-} as const;
-
-function getSubmitLabel(platform: keyof typeof platformLabels) {
-  if (platform === "both") {
-    return "Join the mobile waitlist";
-  }
-
-  return `Join ${platformLabels[platform]} waitlist`;
-}
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { formatUiCopy, getUiCopy } from "@/lib/ui-copy";
 
 export function WaitlistForm({
   initialPlatform = "both",
@@ -23,10 +11,42 @@ export function WaitlistForm({
   initialPlatform?: "ios" | "android" | "both";
   source?: string;
 }) {
+  const { locale } = useMarketplacePreferences();
+  const copy = getUiCopy(locale);
+  const platformLabels = copy.waitlist.platforms;
   const [email, setEmail] = useState("");
   const [platform, setPlatform] = useState<"ios" | "android" | "both">(initialPlatform);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  const submitLabel =
+    platform === "both"
+      ? copy.waitlist.joinBoth
+      : formatUiCopy(copy.waitlist.joinPlatform, {
+          platform: platformLabels[platform],
+        });
+
+  const mapApiMessage = (value?: string, kind: "error" | "success" = "success") => {
+    if (!value) {
+      return kind === "success" ? copy.waitlist.success : copy.waitlist.saveFailed;
+    }
+    if (value.includes("valid email")) {
+      return copy.waitlist.invalidEmail;
+    }
+    if (value.includes("being configured")) {
+      return copy.waitlist.configuring;
+    }
+    if (value.includes("already on the waitlist")) {
+      return copy.waitlist.alreadyOnWaitlist;
+    }
+    if (value.includes("Could not save")) {
+      return copy.waitlist.saveFailed;
+    }
+    if (value.includes("waitlist")) {
+      return copy.waitlist.success;
+    }
+    return value;
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,34 +68,32 @@ export function WaitlistForm({
 
       if (!response.ok) {
         setStatus("error");
-        setMessage(payload?.error ?? "Could not save your waitlist request. Please try again.");
+        setMessage(mapApiMessage(payload?.error, "error"));
         return;
       }
 
       setStatus("success");
-      setMessage(payload?.message ?? "You are on the waitlist.");
+      setMessage(mapApiMessage(payload?.message, "success"));
       setEmail("");
     } catch {
       setStatus("error");
-      setMessage("Could not save your waitlist request. Please try again.");
+      setMessage(copy.waitlist.saveFailed);
     }
   }
 
   return (
     <div className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-        Mobile access
+        {copy.waitlist.formEyebrow}
       </p>
-      <h2 className="mt-4 text-h2 text-ink">Register your interest</h2>
+      <h2 className="mt-4 text-h2 text-ink">{copy.waitlist.formTitle}</h2>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
-        Choose the platform you care about and we will email you when the first Payn mobile release is ready.
+        {copy.waitlist.formDescription}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 grid gap-4">
         <div>
-          <label htmlFor="waitlist-email" className="text-xs font-semibold text-ink-secondary">
-            Email
-          </label>
+          <label htmlFor="waitlist-email" className="text-xs font-semibold text-ink-secondary">{copy.waitlist.emailLabel}</label>
           <input
             id="waitlist-email"
             type="email"
@@ -83,14 +101,14 @@ export function WaitlistForm({
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
+            placeholder={copy.waitlist.emailPlaceholder}
             disabled={status === "loading"}
             className="mt-1.5 h-12 w-full rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-60"
           />
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-ink-secondary">Platform</p>
+          <p className="text-xs font-semibold text-ink-secondary">{copy.waitlist.platformLabel}</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
             {(Object.keys(platformLabels) as Array<keyof typeof platformLabels>).map((value) => {
               const active = platform === value;
@@ -129,7 +147,7 @@ export function WaitlistForm({
           disabled={status === "loading"}
           className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
         >
-          {status === "loading" ? "Joining waitlist..." : getSubmitLabel(platform)}
+          {status === "loading" ? copy.waitlist.joining : submitLabel}
         </button>
       </form>
     </div>

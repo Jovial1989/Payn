@@ -2,17 +2,17 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
-import { useAuth } from "@/hooks/use-auth";
 import {
-  dashboardNavItems,
+  getActiveDashboardView,
   getDashboardHref,
-  normalizeDashboardView,
+  getDashboardNavItems,
 } from "@/lib/dashboard-navigation";
 import { localePath } from "@/lib/locale";
+import { getUiCopy } from "@/lib/ui-copy";
 
 function SidebarItem({
   label,
@@ -44,13 +44,15 @@ function SidebarItem({
 }
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { locale } = useMarketplacePreferences();
-  const { user, profile, signOut } = useAuth();
+  const uiCopy = getUiCopy(locale);
+  const dashboardNavItems = useMemo(() => getDashboardNavItems(locale), [locale]);
 
   const activeView = useMemo(
-    () => normalizeDashboardView(searchParams.get("view")),
-    [searchParams],
+    () => getActiveDashboardView(pathname, searchParams.get("view")),
+    [pathname, searchParams],
   );
 
   const groupedItems = useMemo(
@@ -59,13 +61,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       products: dashboardNavItems.filter((item) => item.group === "products"),
       account: dashboardNavItems.filter((item) => item.group === "account"),
     }),
-    [],
+    [dashboardNavItems],
   );
 
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-5 lg:py-5">
-        <aside className="overflow-hidden rounded-[30px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[280px] lg:flex-col">
+        <aside className="overflow-hidden rounded-[30px] border border-line bg-white shadow-subtle lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[280px] lg:flex-col">
           <div className="flex items-center justify-between border-b border-line px-5 py-5">
             <Link href={localePath(locale, "/")} className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black">
@@ -81,11 +83,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </div>
               <div>
                 <p className="text-lg font-bold tracking-tight text-ink">Payn</p>
-                <p className="text-xs text-ink-tertiary">Financial control center</p>
+                <p className="text-xs text-ink-tertiary">{uiCopy.dashboard.shellTitle}</p>
               </div>
             </Link>
             <Tag tone="muted" className="hidden lg:inline-flex">
-              Product
+              {uiCopy.dashboard.shellTag}
             </Tag>
           </div>
 
@@ -94,7 +96,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               {dashboardNavItems.map((item) => (
                 <Link
                   key={item.id}
-                  href={getDashboardHref(item.id)}
+                  href={getDashboardHref(item.id, locale)}
                   className={clsx(
                     "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                     activeView === item.id
@@ -112,7 +114,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="grid gap-5">
               <div>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Core
+                  {uiCopy.dashboard.navGroups.core}
                 </p>
                 <div className="mt-2 grid gap-1">
                   {groupedItems.core.map((item) => (
@@ -120,7 +122,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       key={item.id}
                       label={item.label}
                       description={item.description}
-                      href={getDashboardHref(item.id)}
+                      href={getDashboardHref(item.id, locale)}
                       active={activeView === item.id}
                     />
                   ))}
@@ -129,7 +131,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
               <div>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Products
+                  {uiCopy.dashboard.navGroups.products}
                 </p>
                 <div className="mt-2 grid gap-1">
                   {groupedItems.products.map((item) => (
@@ -137,7 +139,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       key={item.id}
                       label={item.label}
                       description={item.description}
-                      href={getDashboardHref(item.id)}
+                      href={getDashboardHref(item.id, locale)}
                       active={activeView === item.id}
                     />
                   ))}
@@ -146,7 +148,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
               <div>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Account
+                  {uiCopy.dashboard.navGroups.account}
                 </p>
                 <div className="mt-2 grid gap-1">
                   {groupedItems.account.map((item) => (
@@ -154,7 +156,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       key={item.id}
                       label={item.label}
                       description={item.description}
-                      href={getDashboardHref(item.id)}
+                      href={getDashboardHref(item.id, locale)}
                       active={activeView === item.id}
                     />
                   ))}
@@ -163,52 +165,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="border-t border-line px-5 py-5">
-            <div className="rounded-[24px] bg-bg-surface px-4 py-4">
-              <div className="flex items-center gap-3">
-                {user?.email ? (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
-                    {user.email.split("@")[0].slice(0, 2).toUpperCase()}
-                  </div>
-                ) : null}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink">
-                    {user?.email ? user.email.split("@")[0] : "Guest"}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-ink-tertiary">
-                    {profile?.user_type
-                      ? `${profile.user_type.charAt(0).toUpperCase()}${profile.user_type.slice(1)} profile`
-                      : user ? "Account" : "Not signed in"}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link href={localePath(locale, "/")} className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
-                  Back to site
-                </Link>
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await signOut();
-                      window.location.href = localePath(locale, "/");
-                    }}
-                    className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink"
-                  >
-                    Sign out
-                  </button>
-                ) : (
-                  <Link href={localePath(locale, "/login")} className="text-xs font-semibold text-ink-secondary transition-colors hover:text-ink">
-                    Sign in
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
         </aside>
 
         <div className="min-w-0 flex-1">
-          <div className="min-h-[calc(100vh-2.5rem)] rounded-[30px] border border-line bg-[#FBFCFD] p-4 shadow-card sm:p-5 lg:p-6">
+          <div className="min-h-[calc(100vh-2.5rem)] rounded-[30px] border border-line bg-[#FBFCFD] p-4 shadow-subtle sm:p-5 lg:p-6">
             {children}
           </div>
         </div>

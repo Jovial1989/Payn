@@ -1,18 +1,18 @@
 "use client";
 
 import clsx from "clsx";
-import { useMemo, useState } from "react";
-import { getProviderBrand, getProviderLogoUrl } from "@/lib/provider-brands";
+import { useState } from "react";
+import { getProviderBrand, getProviderLogoPath } from "@/lib/provider-brands";
 
 const sizeClasses = {
-  sm: "h-8 w-8 rounded-xl",
-  md: "h-10 w-10 rounded-2xl",
-  lg: "h-12 w-12 rounded-2xl",
+  sm: "h-10 w-10 rounded-[14px] p-1.5",
+  md: "h-11 w-11 rounded-[16px] p-2",
+  lg: "h-14 w-14 rounded-[18px] p-2.5",
 } as const;
 
 export function ProviderLogo({
   providerName,
-  websiteUrl,
+  websiteUrl: _websiteUrl,
   size = "md",
   muted = true,
   className,
@@ -25,36 +25,44 @@ export function ProviderLogo({
 }) {
   const brand = getProviderBrand(providerName);
   const [broken, setBroken] = useState(false);
-  const logoUrl = useMemo(
-    () => getProviderLogoUrl(providerName, websiteUrl),
-    [providerName, websiteUrl],
-  );
+  const logoPath = getProviderLogoPath(providerName);
 
   return (
     <span
       className={clsx(
-        "relative flex shrink-0 items-center justify-center overflow-hidden border border-line bg-white shadow-subtle",
+        "relative flex shrink-0 items-center justify-center overflow-hidden border bg-[#F5F7F9] shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
         sizeClasses[size],
         className,
       )}
+      style={
+        !broken && logoPath
+          ? {
+              backgroundColor: brand.logoBackground ?? "#F5F7F9",
+              borderColor: brand.logoBorderColor ?? "rgba(0, 0, 0, 0.05)",
+            }
+          : undefined
+      }
       aria-hidden="true"
     >
-      {!broken && logoUrl ? (
+      {!broken && logoPath ? (
         <img
-          src={logoUrl}
+          src={logoPath}
           alt={`${providerName} logo`}
           loading="lazy"
-          referrerPolicy="no-referrer"
           onError={() => setBroken(true)}
           className={clsx(
-            "h-[72%] w-[72%] object-contain transition-opacity duration-200",
-            muted ? "grayscale opacity-85" : "opacity-100",
+            "h-full w-full object-contain transition-opacity duration-200",
+            muted ? "opacity-95" : "opacity-100",
+            brand.logoImageClassName,
           )}
         />
       ) : (
         <span
-          className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase"
-          style={{ backgroundColor: brand.bg, color: brand.text }}
+          className={clsx(
+            "flex h-full w-full items-center justify-center rounded-[inherit] font-bold uppercase tracking-[0.08em]",
+            brand.mark.length > 2 ? "text-[8px]" : "text-[11px]",
+          )}
+          style={{ color: brand.text, backgroundColor: brand.logoBackground ?? brand.bg }}
         >
           {brand.mark}
         </span>
@@ -79,12 +87,17 @@ export function ProviderBadge({
   return (
     <div
       className={clsx(
-        "inline-flex items-center border border-line bg-white/80 text-ink-secondary shadow-subtle backdrop-blur-sm",
+        "inline-flex items-center border border-line bg-white text-ink-secondary",
         compact ? "gap-2 rounded-full px-3 py-2" : "gap-2.5 rounded-full px-3.5 py-2.5",
         className,
       )}
     >
-      <ProviderLogo providerName={providerName} websiteUrl={websiteUrl} size={compact ? "sm" : "md"} muted={muted} />
+      <ProviderLogo
+        providerName={providerName}
+        websiteUrl={websiteUrl}
+        size={compact ? "sm" : "md"}
+        muted={muted}
+      />
       <span className={clsx("font-semibold", compact ? "text-xs" : "text-sm")}>
         {providerName}
       </span>

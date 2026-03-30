@@ -1,8 +1,5 @@
 class AppConfig {
-  const AppConfig({
-    required this.apiBaseUrl,
-  });
+  const AppConfig({required this.apiBaseUrl});
 
   final String apiBaseUrl;
 }
-

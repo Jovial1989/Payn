@@ -1,0 +1,375 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:payn_mobile/core/storage/local_store.dart';
+import 'package:payn_mobile/shared/models/analytics_models.dart';
+import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/dashboard_analytics_service.dart';
+import 'package:payn_mobile/shared/services/local_auth_repository.dart';
+import 'package:payn_mobile/shared/services/local_marketplace_repository.dart';
+import 'package:payn_mobile/shared/services/market_intelligence_service.dart';
+
+class AppController extends ChangeNotifier {
+  AppController({
+    required this.store,
+    required this.authRepository,
+    required this.marketplaceRepository,
+    required this.dashboardAnalyticsService,
+    required this.marketIntelligenceService,
+  });
+
+  static const String _preferencesKey = 'payn.mobile.preferences';
+  static const String _savedKey = 'payn.mobile.saved';
+  static const String _recentKey = 'payn.mobile.recent';
+  static const String _compareKey = 'payn.mobile.compare';
+
+  final LocalStore store;
+  final LocalAuthRepository authRepository;
+  final LocalMarketplaceRepository marketplaceRepository;
+  final DashboardAnalyticsService dashboardAnalyticsService;
+  final MarketIntelligenceService marketIntelligenceService;
+
+  UserSession _session = const UserSession.guest();
+  ProfilePreferences _preferences = ProfilePreferences.defaults();
+  ExploreFilters _exploreFilters = const ExploreFilters();
+  PaynCategory? _selectedExploreCategory;
+  List<String> _savedOfferIds = <String>[];
+  List<String> _recentOfferIds = <String>[];
+  List<String> _compareOfferIds = <String>[];
+
+  UserSession get session => _session;
+  ProfilePreferences get preferences => _preferences;
+  ExploreFilters get exploreFilters => _exploreFilters;
+  PaynCategory? get selectedExploreCategory => _selectedExploreCategory;
+  bool get isAuthenticated => _session.isAuthenticated;
+
+  Future<void> restore() async {
+    _session = await authRepository.restoreSession();
+
+    final rawPreferences = await store.readString(_preferencesKey);
+    if (rawPreferences != null && rawPreferences.isNotEmpty) {
+      try {
+        _preferences = ProfilePreferences.fromJson(
+          jsonDecode(rawPreferences) as Map<String, dynamic>,
+        );
+      } catch (_) {
+        _preferences = ProfilePreferences.defaults();
+      }
+    }
+
+    _savedOfferIds = await store.readStringList(_savedKey);
+    _recentOfferIds = await store.readStringList(_recentKey);
+    _compareOfferIds =
+        (await store.readStringList(
+          _compareKey,
+        )).where(_savedOfferIds.contains).take(3).toList();
+
+    notifyListeners();
+  }
+
+  Future<void> updatePreferences(ProfilePreferences next) async {
+    _preferences = next;
+    await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
+    notifyListeners();
+  }
+
+  void setExploreCategory(PaynCategory? category) {
+    _selectedExploreCategory = category;
+    notifyListeners();
+  }
+
+  void updateExploreFilters(ExploreFilters next) {
+    _exploreFilters = next;
+    notifyListeners();
+  }
+
+  void clearExploreFilters() {
+    _exploreFilters = const ExploreFilters();
+    notifyListeners();
+  }
+
+  Future<void> toggleSaved(String offerId) async {
+    if (_savedOfferIds.contains(offerId)) {
+      _savedOfferIds.remove(offerId);
+      _compareOfferIds.remove(offerId);
+    } else {
+      _savedOfferIds = <String>[offerId, ..._savedOfferIds];
+    }
+
+    await _persistSavedState();
+    notifyListeners();
+  }
+
+  Future<bool> toggleCompare(String offerId) async {
+    if (_compareOfferIds.contains(offerId)) {
+      _compareOfferIds.remove(offerId);
+      await store.saveStringList(_compareKey, _compareOfferIds);
+      notifyListeners();
+      return true;
+    }
+
+    if (!_savedOfferIds.contains(offerId) || _compareOfferIds.length >= 3) {
+      return false;
+    }
+
+    _compareOfferIds = <String>[..._compareOfferIds, offerId];
+    await store.saveStringList(_compareKey, _compareOfferIds);
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> recordOfferView(String offerId) async {
+    _recentOfferIds.remove(offerId);
+    _recentOfferIds = <String>[offerId, ..._recentOfferIds].take(8).toList();
+    await store.saveStringList(_recentKey, _recentOfferIds);
+    notifyListeners();
+  }
+
+  Future<String?> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim();
+    if (normalizedEmail.isEmpty || !normalizedEmail.contains('@')) {
+      return 'Enter a valid email address.';
+    }
+    if (password.trim().length < 6) {
+      return 'Password must be at least 6 characters.';
+    }
+
+    _session = await authRepository.signIn(
+      email: normalizedEmail,
+      password: password,
+    );
+    notifyListeners();
+    return null;
+  }
+
+  Future<String?> signUp({
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim();
+    if (normalizedEmail.isEmpty || !normalizedEmail.contains('@')) {
+      return 'Enter a valid email address.';
+    }
+    if (password.trim().length < 6) {
+      return 'Password must be at least 6 characters.';
+    }
+
+    _session = await authRepository.signUp(
+      email: normalizedEmail,
+      password: password,
+    );
+    notifyListeners();
+    return null;
+  }
+
+  Future<void> signOut() async {
+    await authRepository.signOut();
+    _session = const UserSession.guest();
+    notifyListeners();
+  }
+
+  bool isSaved(String offerId) => _savedOfferIds.contains(offerId);
+
+  bool isCompared(String offerId) => _compareOfferIds.contains(offerId);
+
+  PaynOffer? offerById(String offerId) =>
+      marketplaceRepository.offerById(offerId);
+
+  List<PaynOffer> get savedOffers =>
+      _savedOfferIds
+          .map(marketplaceRepository.offerById)
+          .whereType<PaynOffer>()
+          .toList();
+
+  List<PaynOffer> get compareOffers =>
+      _compareOfferIds
+          .map(marketplaceRepository.offerById)
+          .whereType<PaynOffer>()
+          .toList();
+
+  List<PaynOffer> get recentOffers =>
+      _recentOfferIds
+          .map(marketplaceRepository.offerById)
+          .whereType<PaynOffer>()
+          .toList();
+
+  List<RankedOffer> get exploreResults {
+    return _rankOffers(
+      filters: _exploreFilters,
+      category: _selectedExploreCategory,
+      excludeSaved: false,
+    );
+  }
+
+  bool get isUsingExploreFallback => exploreResults.isEmpty;
+
+  List<RankedOffer> get exploreVisibleResults {
+    final exact = exploreResults;
+    if (exact.isNotEmpty) {
+      return exact;
+    }
+
+    final categoryFallback = _rankOffers(
+      filters: const ExploreFilters(),
+      category: _selectedExploreCategory,
+      excludeSaved: false,
+    );
+
+    if (categoryFallback.isNotEmpty) {
+      return categoryFallback.take(8).toList();
+    }
+
+    return _rankOffers(
+      filters: const ExploreFilters(),
+      category: null,
+      excludeSaved: false,
+    ).take(8).toList();
+  }
+
+  List<RankedOffer> get homeRecommendations {
+    return _rankOffers(
+      filters: const ExploreFilters(),
+      category: null,
+      excludeSaved: isAuthenticated,
+    ).take(4).toList();
+  }
+
+  List<RankedOffer> get trendingOffers {
+    final ids = homeRecommendations.map((item) => item.offer.id).toSet();
+    return _rankOffers(
+      filters: const ExploreFilters(),
+      category: null,
+      personalize: false,
+      excludeSaved: false,
+    ).where((item) => !ids.contains(item.offer.id)).take(4).toList();
+  }
+
+  List<TrendSignal> get trendSignals {
+    return marketplaceRepository.buildTrendSignals(
+      market: _preferences.market,
+      savedOfferIds: _savedOfferIds,
+    );
+  }
+
+  Map<PaynCategory, int> get categoryCounts {
+    return marketplaceRepository.countOffersByCategory(_preferences.market);
+  }
+
+  List<String> get providerOptions {
+    return marketplaceRepository.providerOptions(
+      _preferences.market,
+      _selectedExploreCategory,
+    );
+  }
+
+  List<String> get featureOptions {
+    return marketplaceRepository.featureOptions(
+      _preferences.market,
+      _selectedExploreCategory,
+    );
+  }
+
+  List<String> get subtypeOptions {
+    return marketplaceRepository.subtypeOptions(
+      _preferences.market,
+      _selectedExploreCategory,
+    );
+  }
+
+  int get savedCount => _savedOfferIds.length;
+
+  int get compareCount => _compareOfferIds.length;
+
+  int get activeProviderCount =>
+      marketplaceRepository.providerOptions(_preferences.market, null).length;
+
+  int get marketOfferCount =>
+      marketplaceRepository.offersForMarket(_preferences.market).length;
+
+  int get activeFilterCount {
+    var count = 0;
+    if (_exploreFilters.provider.isNotEmpty) count += 1;
+    if (_exploreFilters.feature.isNotEmpty) count += 1;
+    if (_exploreFilters.subtype.isNotEmpty) count += 1;
+    if (_selectedExploreCategory == PaynCategory.loans) {
+      if (_exploreFilters.amount != 25000) count += 1;
+      if (_exploreFilters.term != 60) count += 1;
+    }
+    return count;
+  }
+
+  String tradeoffFor(PaynOffer offer) =>
+      marketplaceRepository.tradeoffFor(offer);
+
+  RankedOffer rankedOfferFor(PaynOffer offer, {bool? personalize}) {
+    return marketplaceRepository.rankOffer(
+      offer: offer,
+      market: _preferences.market,
+      preferences: _preferences,
+      personalize: personalize ?? isAuthenticated,
+      savedOfferIds: _savedOfferIds,
+      recentOfferIds: _recentOfferIds,
+    );
+  }
+
+  List<String> reasonsFor(PaynOffer offer) {
+    return rankedOfferFor(offer).reasons;
+  }
+
+  DashboardActivitySnapshot activitySnapshotFor(ChartTimeRange range) {
+    return dashboardAnalyticsService.buildSnapshot(
+      range: range,
+      savedCount: savedCount,
+      compareCount: compareCount,
+      recentCount: recentOffers.length,
+    );
+  }
+
+  Future<MarketIntelligenceSnapshot> marketSnapshotFor({
+    required MarketAsset asset,
+    required ChartTimeRange range,
+  }) {
+    return marketIntelligenceService.snapshotFor(asset: asset, range: range);
+  }
+
+  List<RankedOffer> _rankOffers({
+    required ExploreFilters filters,
+    required PaynCategory? category,
+    bool? personalize,
+    required bool excludeSaved,
+  }) {
+    final filtered = marketplaceRepository.filterOffers(
+      market: _preferences.market,
+      category: category,
+      filters: filters,
+    );
+
+    final ranked =
+        filtered
+            .where(
+              (offer) => !excludeSaved || !_savedOfferIds.contains(offer.id),
+            )
+            .map(
+              (offer) => marketplaceRepository.rankOffer(
+                offer: offer,
+                market: _preferences.market,
+                preferences: _preferences,
+                personalize: personalize ?? isAuthenticated,
+                savedOfferIds: _savedOfferIds,
+                recentOfferIds: _recentOfferIds,
+              ),
+            )
+            .toList()
+          ..sort((left, right) => right.score.compareTo(left.score));
+
+    return ranked;
+  }
+
+  Future<void> _persistSavedState() async {
+    await store.saveStringList(_savedKey, _savedOfferIds);
+    await store.saveStringList(_compareKey, _compareOfferIds);
+  }
+}

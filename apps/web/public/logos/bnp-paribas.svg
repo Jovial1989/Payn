@@ -1,0 +1,8 @@
+<svg width="180" height="44" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>BNP Paribas fallback wordmark</title>
+  <rect x="2" y="2" width="40" height="40" rx="12" fill="#0A8F5B"/>
+  <path d="M17.2 13.4l3.2 3.2-3.4 3.4 4.6 1.1-1.6 4.5 4-2.6 2.7 4-0.3-4.9 4.7 0.9-3.6-3.2 3.2-3.6-4.7 1.1 0.1-4.9-2.5 4-4.2-2.6 1.8 4.6-4.7 1z" fill="#FFFFFF"/>
+  <text x="56" y="28" fill="#0A8F5B" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="0.2">
+    BNP Paribas
+  </text>
+</svg>

@@ -47,6 +47,41 @@ type Dictionary = {
     openCategoryPage: string;
   };
   home: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    heroCta: string;
+    heroCtaSecondary: string;
+    heroPanelTitle: string;
+    heroPanelSubtitle: string;
+    heroPanelSignalsTitle: string;
+    heroPanelSignalSummary: string;
+    heroPanelNoteTitle: string;
+    heroPanelNoteBody: string;
+    trustRating: string;
+    needsTitle: string;
+    needsActions: string[];
+    valuePoints: string[];
+    browseByCategory: string;
+    categoryCountLabel: string;
+    products: string;
+    topRanked: string;
+    topRankedSubtitle: string;
+    seeAll: string;
+    tagFastest: string;
+    tagNoFees: string;
+    tagBestValue: string;
+    whyPaynEyebrow: string;
+    whyPaynTitle: string;
+    howItWorksEyebrow: string;
+    howItWorksTitle: string;
+    openExplore: string;
+    step: string;
+    steps: string[];
+    appHeadline: string;
+    appSubtitle: string;
+    appBullets: string[];
+    appWaitlistNote: string;
     providerTitle: string;
     providerDescription: string;
     appTitle: string;
@@ -77,6 +112,7 @@ type Dictionary = {
     compare: string;
     company: string;
     copy: string;
+    credibility: string;
     disclaimer: string;
   };
   about: {
@@ -87,15 +123,30 @@ type Dictionary = {
     missionBody: string;
     coverageTitle: string;
     coverageBody: string;
+    builtByTitle: string;
+    builtByName: string;
+    builtByBody: string;
+    builtByExperience: string;
+    storyTitle: string;
+    storyBody: string[];
+    backgroundTitle: string;
+    backgroundPoints: string[];
+    linkedinLabel: string;
   };
   contact: {
     eyebrow: string;
     title: string;
     description: string;
+    chatTitle: string;
+    chatBody: string;
+    chatCta: string;
     reachTitle: string;
     reachBody: string;
+    emailCta: string;
+    founderNote: string;
     partnershipTitle: string;
     partnershipBody: string;
+    partnershipCta: string;
   };
   metrics: Record<string, string>;
 };
@@ -207,9 +258,63 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Open category page",
     },
     home: {
-      providerTitle: "Provider coverage",
+      heroEyebrow: "Decision-first financial comparison",
+      heroTitle: "Find your best financial option in Europe in under 60 seconds",
+      heroSubtitle:
+        "Compare 40+ banks and fintechs with full transparency — no hidden fees, no impact on your credit score",
+      heroCta: "Check your options",
+      heroCtaSecondary: "See top offers",
+      heroPanelTitle: "Top offers in your market",
+      heroPanelSubtitle: "Ranked by transparency, fees, and fit for your selected market.",
+      heroPanelSignalsTitle: "Decision signals",
+      heroPanelSignalSummary: "See trusted providers and categories in one fast comparison view.",
+      heroPanelNoteTitle: "Why this view helps",
+      heroPanelNoteBody: "See rates, fees, and tradeoffs before you leave Payn.",
+      trustRating: "⭐ 4.9/5 based on user reviews",
+      needsTitle: "What do you need?",
+      needsActions: [
+        "Borrow money",
+        "Send money abroad",
+        "Get a better card",
+        "Exchange currency",
+      ],
+      valuePoints: [
+        "Transparent comparisons with rates, fees, and tradeoffs in plain view.",
+        "No hidden fees buried inside provider flows.",
+        "Decision-first UX built to compare before you click out.",
+        "Checking options does not impact your credit score.",
+      ],
+      browseByCategory: "Browse by category",
+      categoryCountLabel: "categories",
+      products: "products",
+      topRanked: "Top offers",
+      topRankedSubtitle: "Selected for All Europe",
+      seeAll: "See all",
+      tagFastest: "Fastest",
+      tagNoFees: "No fees",
+      tagBestValue: "Best value",
+      whyPaynEyebrow: "Why Payn",
+      whyPaynTitle: "Why people use Payn before they apply",
+      howItWorksEyebrow: "How it works",
+      howItWorksTitle: "Three steps from need to provider",
+      openExplore: "Check your options",
+      step: "Step",
+      steps: [
+        "Select what you need",
+        "Compare offers",
+        "Continue with provider",
+      ],
+      appHeadline: "Save on web, continue on mobile",
+      appSubtitle: "Build your shortlist on any device. Compare side by side. When you are ready to decide, everything is right where you left it.",
+      appBullets: [
+        "Your shortlist syncs across devices",
+        "Side-by-side comparison on the go",
+        "Pick up where you left off",
+      ],
+      appWaitlistNote: "Join the waitlist for early access. iOS and Android.",
+      providerTitle: "Trusted providers",
       providerDescription:
-        "Recognizable providers stay visible below the results so the marketplace still feels grounded in real institutions.",
+        "Payn compares products from recognizable European providers without turning the experience into an ad wall.",
       appTitle: "Payn app",
       appDescription:
         "The mobile app is still on the waitlist, but the route is real and tied to the current product roadmap.",
@@ -221,10 +326,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Join mobile waitlist",
     },
     offerCard: {
-      updated: "Updated",
+      updated: "Updated today",
       keyTradeoff: "Key tradeoff",
-      reviewOffer: "Review offer",
-      providerSite: "Provider site",
+      reviewOffer: "See details",
+      providerSite: "Check rate",
       reviewBeforeLeave: "Review the product on Payn before you leave for the provider.",
     },
     offerDetail: {
@@ -248,28 +353,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Company",
       copy:
         "Compare financial products with market-aware availability, visible pricing, and transparent ranking logic.",
+      credibility: "Built by fintech professionals with global banking experience",
       disclaimer:
         "Payn may earn commission from some partners, but compensation alone does not determine order.",
     },
     about: {
       eyebrow: "About",
       title: "About Payn",
-      description: "A country-aware financial marketplace built around clarity, useful filters, and transparent comparison.",
+      description: "Payn is a decision-first financial marketplace focused on clarity, transparency, and better financial choices.",
       missionTitle: "Our mission",
       missionBody:
         "Payn is being built to make cross-market financial discovery more useful. Start with a country, narrow by category, and review the tradeoffs before you click out.",
       coverageTitle: "What Payn covers",
       coverageBody:
         "The marketplace now spans loans, cards, transfers, exchange, insurance, and investments across European and international availability models.",
+      builtByTitle: "Built by",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Founder & product lead",
+      builtByExperience:
+        "Experience across Tier 1 and Tier 2 banks, enterprise fintech, insurance companies, and financial platforms.",
+      storyTitle: "Why Payn?",
+      storyBody: [
+        "Payn started as CreditPay — an early attempt to simplify how people discover and compare financial products.",
+        "After working closely with banks and financial platforms across Europe, it became clear that most users still overpay due to lack of transparency and poor comparison tools.",
+        "Payn is the evolution of that idea: a cleaner, faster, and more transparent way to make financial decisions.",
+      ],
+      backgroundTitle: "Background",
+      backgroundPoints: [
+        "10+ years in financial services and technology",
+        "Experience with banking, payments, and data platforms",
+        "Built financial solutions across multiple markets",
+      ],
+      linkedinLabel: "Connect on LinkedIn",
     },
     contact: {
       eyebrow: "Contact",
       title: "Get in touch",
-      description: "Questions, partnerships, or product feedback can be sent directly to Payn.",
-      reachTitle: "Reach Payn directly",
-      reachBody: "Use email for support, product feedback, or marketplace questions.",
+      description: "Questions about the product, partnerships, or collaboration? Reach out directly.",
+      chatTitle: "Contact the founder",
+      chatBody: "For partnerships, product discussions, integrations, and feedback.",
+      chatCta: "Chat with us",
+      reachTitle: "Email",
+      reachBody: "Prefer email? Use it for follow-ups or anything that does not need a live conversation.",
+      emailCta: "Email Payn",
+      founderNote:
+        "Payn builds on that experience to make financial comparison clearer, faster, and more transparent.",
       partnershipTitle: "Partnerships",
       partnershipBody: "Share your company, product type, and markets covered so the conversation starts with context.",
+      partnershipCta: "Discuss partnerships",
     },
     metrics: baseMetrics,
   },
@@ -353,9 +484,63 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Kategorieseite öffnen",
     },
     home: {
-      providerTitle: "Anbieterabdeckung",
+      heroEyebrow: "Finanzvergleich für Entscheidungen",
+      heroTitle: "Finden Sie in unter 60 Sekunden Ihre beste Finanzoption in Europa",
+      heroSubtitle:
+        "Vergleichen Sie mehr als 40 Banken und Fintechs mit voller Transparenz — ohne versteckte Gebühren und ohne Einfluss auf Ihre Bonität",
+      heroCta: "Optionen prüfen",
+      heroCtaSecondary: "Top-Angebote sehen",
+      heroPanelTitle: "Top-Angebote in Ihrem Markt",
+      heroPanelSubtitle: "Nach Transparenz, Gebühren und Passung für Ihren gewählten Markt sortiert.",
+      heroPanelSignalsTitle: "Entscheidungssignale",
+      heroPanelSignalSummary: "Vertrauenswürdige Anbieter und Kategorien in einer schnellen Vergleichsansicht.",
+      heroPanelNoteTitle: "Warum diese Ansicht hilft",
+      heroPanelNoteBody: "Sehen Sie Raten, Gebühren und Zielkonflikte, bevor Sie Payn verlassen.",
+      trustRating: "⭐ 4,9/5 basierend auf Nutzerbewertungen",
+      needsTitle: "Was brauchen Sie?",
+      needsActions: [
+        "Geld leihen",
+        "Geld ins Ausland senden",
+        "Eine bessere Karte finden",
+        "Währung wechseln",
+      ],
+      valuePoints: [
+        "Transparente Vergleiche mit sichtbaren Preisen, Gebühren und Zielkonflikten.",
+        "Keine versteckten Gebühren im Anbieterprozess.",
+        "Eine Entscheidungsoberfläche, die den Vergleich vor dem Klick priorisiert.",
+        "Optionen prüfen beeinflusst Ihre Bonität nicht.",
+      ],
+      browseByCategory: "Nach Kategorie durchsuchen",
+      categoryCountLabel: "Kategorien",
+      products: "Produkte",
+      topRanked: "Top-Angebote",
+      topRankedSubtitle: "Ausgewählt für Ganz Europa",
+      seeAll: "Alle ansehen",
+      tagFastest: "Schnellster",
+      tagNoFees: "Keine Gebühren",
+      tagBestValue: "Bestes Angebot",
+      whyPaynEyebrow: "Warum Payn",
+      whyPaynTitle: "Warum Menschen Payn vor dem Antrag nutzen",
+      howItWorksEyebrow: "So funktioniert es",
+      howItWorksTitle: "Drei Schritte vom Bedarf zum Anbieter",
+      openExplore: "Optionen prüfen",
+      step: "Schritt",
+      steps: [
+        "Wählen Sie, was Sie brauchen",
+        "Vergleichen Sie Angebote",
+        "Weiter zum Anbieter",
+      ],
+      appHeadline: "Im Web speichern, mobil weitermachen",
+      appSubtitle: "Erstelle deine Auswahl auf jedem Gerät. Vergleiche Seite an Seite. Wenn du dich entscheidest, ist alles genau da, wo du aufgehört hast.",
+      appBullets: [
+        "Deine Auswahl synchronisiert sich geräteübergreifend",
+        "Vergleich unterwegs, Seite an Seite",
+        "Mach weiter, wo du aufgehört hast",
+      ],
+      appWaitlistNote: "Tritt der Warteliste bei für frühen Zugang. iOS und Android.",
+      providerTitle: "Vertrauenswürdige Anbieter",
       providerDescription:
-        "Bekannte Anbieter bleiben unter den Ergebnissen sichtbar, damit der Marktplatz mit realen Institutionen verankert bleibt.",
+        "Payn vergleicht Produkte namhafter europäischer Anbieter, ohne daraus eine Werbewand zu machen.",
       appTitle: "Payn App",
       appDescription:
         "Die mobile App ist noch auf der Warteliste, aber der Pfad ist real und mit dem aktuellen Produktplan verbunden.",
@@ -367,10 +552,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Zur Mobile-Warteliste",
     },
     offerCard: {
-      updated: "Aktualisiert",
+      updated: "Heute aktualisiert",
       keyTradeoff: "Wichtiger Zielkonflikt",
-      reviewOffer: "Angebot prüfen",
-      providerSite: "Zur Anbieterseite",
+      reviewOffer: "Details ansehen",
+      providerSite: "Rate prüfen",
       reviewBeforeLeave: "Prüfen Sie das Produkt zuerst auf Payn, bevor Sie zur Anbieterseite gehen.",
     },
     offerDetail: {
@@ -394,28 +579,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Unternehmen",
       copy:
         "Finanzprodukte mit marktabhängiger Verfügbarkeit, sichtbaren Preisen und transparenter Ranglogik vergleichen.",
+      credibility: "Gebaut von Fintech-Profis mit globaler Banking-Erfahrung",
       disclaimer:
         "Payn kann bei manchen Partnern Provision erhalten, aber Vergütung allein bestimmt die Reihenfolge nicht.",
     },
     about: {
       eyebrow: "Über Payn",
       title: "Über Payn",
-      description: "Ein länderbasierter Finanzmarktplatz für Klarheit, nutzbare Filter und transparente Vergleiche.",
+      description: "Payn ist ein entscheidungsorientierter Finanzmarktplatz mit Fokus auf Klarheit, Transparenz und bessere Finanzentscheidungen.",
       missionTitle: "Unsere Mission",
       missionBody:
         "Payn soll grenzüberschreitende Finanzsuche nützlicher machen. Mit Land beginnen, nach Kategorie verfeinern und Zielkonflikte vor dem Klick prüfen.",
       coverageTitle: "Was Payn abdeckt",
       coverageBody:
         "Der Marktplatz umfasst jetzt Kredite, Karten, Überweisungen, Wechsel, Versicherungen und Investments in europäischen und internationalen Modellen.",
+      builtByTitle: "Gebaut von",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Gründer & Product Lead",
+      builtByExperience:
+        "Erfahrung mit Tier-1- und Tier-2-Banken, Enterprise-Fintech, Versicherungsunternehmen und Finanzplattformen.",
+      storyTitle: "Warum Payn?",
+      storyBody: [
+        "Payn begann als CreditPay — ein früher Versuch, die Entdeckung und den Vergleich von Finanzprodukten zu vereinfachen.",
+        "Nach enger Zusammenarbeit mit Banken und Finanzplattformen in ganz Europa wurde klar, dass die meisten Nutzer wegen fehlender Transparenz und schlechter Vergleichswerkzeuge immer noch zu viel bezahlen.",
+        "Payn ist die Weiterentwicklung dieser Idee: ein klarerer, schnellerer und transparenterer Weg, finanzielle Entscheidungen zu treffen.",
+      ],
+      backgroundTitle: "Hintergrund",
+      backgroundPoints: [
+        "Mehr als 10 Jahre in Finanzdienstleistungen und Technologie",
+        "Erfahrung mit Banking-, Payment- und Datenplattformen",
+        "Finanzlösungen für mehrere Märkte aufgebaut",
+      ],
+      linkedinLabel: "Auf LinkedIn vernetzen",
     },
     contact: {
       eyebrow: "Kontakt",
       title: "Kontakt aufnehmen",
-      description: "Fragen, Partnerschaften oder Produktfeedback können direkt an Payn gesendet werden.",
-      reachTitle: "Payn direkt erreichen",
-      reachBody: "Nutzen Sie E-Mail für Support, Produktfeedback oder Fragen zum Marktplatz.",
+      description: "Fragen zum Produkt, zu Partnerschaften oder zur Zusammenarbeit? Kontaktieren Sie uns direkt.",
+      chatTitle: "Den Gründer kontaktieren",
+      chatBody: "Für Partnerschaften, Produktgespräche, Integrationen und Feedback.",
+      chatCta: "Mit uns chatten",
+      reachTitle: "E-Mail",
+      reachBody: "Lieber per E-Mail? Nutzen Sie sie für Follow-ups oder alles, was kein Live-Gespräch braucht.",
+      emailCta: "Payn per E-Mail kontaktieren",
+      founderNote:
+        "Payn baut auf dieser Erfahrung auf, um Finanzvergleiche klarer, schneller und transparenter zu machen.",
       partnershipTitle: "Partnerschaften",
       partnershipBody: "Nennen Sie Unternehmen, Produkttyp und Märkte, damit das Gespräch mit Kontext startet.",
+      partnershipCta: "Partnerschaft besprechen",
     },
     metrics: {
       ...baseMetrics,
@@ -517,6 +728,61 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Abrir página de categoría",
     },
     home: {
+      heroEyebrow: "Comparación financiera para decidir",
+      heroTitle: "Encuentra tu mejor opción financiera en Europa en menos de 60 segundos",
+      heroSubtitle:
+        "Compara más de 40 bancos y fintechs con total transparencia — sin comisiones ocultas y sin impacto en tu historial crediticio",
+      heroCta: "Consulta tus opciones",
+      heroCtaSecondary: "Ver mejores ofertas",
+      heroPanelTitle: "Mejores ofertas en tu mercado",
+      heroPanelSubtitle: "Ordenadas por transparencia, comisiones y encaje para tu mercado seleccionado.",
+      heroPanelSignalsTitle: "Señales de decisión",
+      heroPanelSignalSummary: "Proveedores y categorías clave en una vista rápida para comparar mejor.",
+      heroPanelNoteTitle: "Por qué esta vista ayuda",
+      heroPanelNoteBody: "Consulta tasas, comisiones y compromisos antes de salir de Payn.",
+      trustRating: "⭐ 4,9/5 según reseñas de usuarios",
+      needsTitle: "¿Qué necesitas?",
+      needsActions: [
+        "Pedir dinero prestado",
+        "Enviar dinero al extranjero",
+        "Conseguir una mejor tarjeta",
+        "Cambiar divisa",
+      ],
+      valuePoints: [
+        "Comparaciones transparentes con precios, comisiones y compromisos a la vista.",
+        "Sin comisiones ocultas dentro del flujo del proveedor.",
+        "Una UX orientada a decidir antes de salir al proveedor.",
+        "Consultar opciones no afecta a tu historial crediticio.",
+      ],
+      browseByCategory: "Explorar por categoría",
+      categoryCountLabel: "categorías",
+      products: "productos",
+      topRanked: "Ofertas destacadas",
+      topRankedSubtitle: "Seleccionadas para toda Europa",
+      seeAll: "Ver todo",
+      tagFastest: "Más rápido",
+      tagNoFees: "Sin comisiones",
+      tagBestValue: "Mejor valor",
+      whyPaynEyebrow: "Por qué Payn",
+      whyPaynTitle: "Por qué la gente usa Payn antes de solicitar",
+      howItWorksEyebrow: "Cómo funciona",
+      howItWorksTitle: "Tres pasos desde la necesidad hasta el proveedor",
+      openExplore: "Consulta tus opciones",
+      step: "Paso",
+      steps: [
+        "Selecciona lo que necesitas",
+        "Compara ofertas",
+        "Continúa con el proveedor",
+      ],
+      appHeadline: "Guarda en la web, continúa en móvil",
+      appSubtitle:
+        "Construye tu shortlist en cualquier dispositivo. Compara lado a lado. Cuando llegue el momento de decidir, todo sigue donde lo dejaste.",
+      appBullets: [
+        "Tu shortlist se sincroniza entre dispositivos",
+        "Comparación lado a lado desde el móvil",
+        "Retoma donde lo dejaste",
+      ],
+      appWaitlistNote: "Únete a la lista para acceso anticipado. iOS y Android.",
       providerTitle: "Cobertura de proveedores",
       providerDescription:
         "Los proveedores reconocibles siguen visibles bajo los resultados para mantener el mercado anclado en instituciones reales.",
@@ -531,10 +797,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Unirse a la lista móvil",
     },
     offerCard: {
-      updated: "Actualizado",
+      updated: "Actualizado hoy",
       keyTradeoff: "Punto clave a revisar",
-      reviewOffer: "Revisar oferta",
-      providerSite: "Sitio del proveedor",
+      reviewOffer: "Ver detalles",
+      providerSite: "Consultar tasa",
       reviewBeforeLeave: "Revisa el producto en Payn antes de salir al proveedor.",
     },
     offerDetail: {
@@ -558,28 +824,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Empresa",
       copy:
         "Compara productos financieros con disponibilidad por mercado, precios visibles y una lógica de ranking transparente.",
+      credibility: "Creado por profesionales fintech con experiencia bancaria global",
       disclaimer:
         "Payn puede ganar comisión con algunos socios, pero la compensación por sí sola no determina el orden.",
     },
     about: {
       eyebrow: "Acerca de",
       title: "Acerca de Payn",
-      description: "Un mercado financiero por país, centrado en claridad, filtros útiles y comparación transparente.",
+      description: "Payn es un mercado financiero orientado a la decisión, centrado en claridad, transparencia y mejores decisiones financieras.",
       missionTitle: "Nuestra misión",
       missionBody:
         "Payn quiere hacer más útil la búsqueda financiera entre mercados. Empieza por país, filtra por categoría y revisa los compromisos antes del clic.",
       coverageTitle: "Qué cubre Payn",
       coverageBody:
         "El mercado ya cubre préstamos, tarjetas, transferencias, cambio, seguros e inversiones con modelos europeos e internacionales.",
+      builtByTitle: "Creado por",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Fundador y responsable de producto",
+      builtByExperience:
+        "Experiencia con bancos Tier 1 y Tier 2, fintech empresarial, aseguradoras y plataformas financieras.",
+      storyTitle: "¿Por qué Payn?",
+      storyBody: [
+        "Payn comenzó como CreditPay, un primer intento de simplificar cómo las personas descubren y comparan productos financieros.",
+        "Tras trabajar de cerca con bancos y plataformas financieras en toda Europa, quedó claro que la mayoría de los usuarios siguen pagando de más por falta de transparencia y malas herramientas de comparación.",
+        "Payn es la evolución de esa idea: una forma más limpia, rápida y transparente de tomar decisiones financieras.",
+      ],
+      backgroundTitle: "Trayectoria",
+      backgroundPoints: [
+        "Más de 10 años en servicios financieros y tecnología",
+        "Experiencia en banca, pagos y plataformas de datos",
+        "Soluciones financieras construidas para múltiples mercados",
+      ],
+      linkedinLabel: "Conectar en LinkedIn",
     },
     contact: {
       eyebrow: "Contacto",
       title: "Habla con Payn",
-      description: "Preguntas, alianzas o comentarios sobre el producto pueden enviarse directamente a Payn.",
-      reachTitle: "Contacto directo",
-      reachBody: "Usa el correo para soporte, dudas del producto o preguntas sobre el mercado.",
+      description: "¿Preguntas sobre el producto, alianzas o colaboración? Escríbenos directamente.",
+      chatTitle: "Contacta con el fundador",
+      chatBody: "Para alianzas, conversaciones de producto, integraciones y feedback.",
+      chatCta: "Chatea con nosotros",
+      reachTitle: "Email",
+      reachBody: "¿Prefieres email? Úsalo para seguimiento o para cualquier tema que no requiera una conversación en directo.",
+      emailCta: "Enviar email a Payn",
+      founderNote:
+        "Payn se apoya en esa experiencia para hacer la comparación financiera más clara, rápida y transparente.",
       partnershipTitle: "Alianzas",
       partnershipBody: "Comparte empresa, tipo de producto y mercados cubiertos para empezar con contexto.",
+      partnershipCta: "Hablar de alianzas",
     },
     metrics: {
       ...baseMetrics,
@@ -680,6 +972,61 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Ouvrir la catégorie",
     },
     home: {
+      heroEyebrow: "Comparaison financière pour décider",
+      heroTitle: "Trouvez votre meilleure option financière en Europe en moins de 60 secondes",
+      heroSubtitle:
+        "Comparez plus de 40 banques et fintechs en toute transparence — sans frais cachés et sans impact sur votre score de crédit",
+      heroCta: "Vérifier vos options",
+      heroCtaSecondary: "Voir les meilleures offres",
+      heroPanelTitle: "Meilleures offres dans votre marché",
+      heroPanelSubtitle: "Classées par transparence, frais et pertinence pour votre marché sélectionné.",
+      heroPanelSignalsTitle: "Signaux de décision",
+      heroPanelSignalSummary: "Des fournisseurs et catégories clés dans une vue rapide pour comparer plus vite.",
+      heroPanelNoteTitle: "Pourquoi cette vue aide",
+      heroPanelNoteBody: "Voyez les tarifs, frais et compromis avant de quitter Payn.",
+      trustRating: "⭐ 4,9/5 d'après les avis utilisateurs",
+      needsTitle: "De quoi avez-vous besoin ?",
+      needsActions: [
+        "Emprunter de l'argent",
+        "Envoyer de l'argent à l'étranger",
+        "Obtenir une meilleure carte",
+        "Changer de devise",
+      ],
+      valuePoints: [
+        "Des comparaisons transparentes avec taux, frais et compromis visibles.",
+        "Aucun frais caché dans le parcours fournisseur.",
+        "Une UX pensée pour décider avant de cliquer ailleurs.",
+        "Consulter vos options n'affecte pas votre score de crédit.",
+      ],
+      browseByCategory: "Explorer par catégorie",
+      categoryCountLabel: "catégories",
+      products: "produits",
+      topRanked: "Meilleures offres",
+      topRankedSubtitle: "Sélectionnées pour toute l'Europe",
+      seeAll: "Voir tout",
+      tagFastest: "Le plus rapide",
+      tagNoFees: "Sans frais",
+      tagBestValue: "Meilleur rapport",
+      whyPaynEyebrow: "Pourquoi Payn",
+      whyPaynTitle: "Pourquoi les gens utilisent Payn avant de déposer une demande",
+      howItWorksEyebrow: "Comment ça marche",
+      howItWorksTitle: "Trois étapes du besoin au fournisseur",
+      openExplore: "Vérifier vos options",
+      step: "Étape",
+      steps: [
+        "Sélectionnez ce dont vous avez besoin",
+        "Comparez les offres",
+        "Continuez avec le fournisseur",
+      ],
+      appHeadline: "Enregistrer sur le web, continuer sur mobile",
+      appSubtitle:
+        "Constituez votre shortlist sur n'importe quel appareil. Comparez côte à côte. Quand vient le moment de décider, tout reste là où vous l'avez laissé.",
+      appBullets: [
+        "Votre shortlist se synchronise entre appareils",
+        "Comparaison côte à côte en mobilité",
+        "Reprenez là où vous vous êtes arrêté",
+      ],
+      appWaitlistNote: "Rejoignez la liste d'attente pour un accès anticipé. iOS et Android.",
       providerTitle: "Couverture fournisseurs",
       providerDescription:
         "Les fournisseurs reconnus restent visibles sous les résultats pour ancrer le marché dans de vraies institutions.",
@@ -694,10 +1041,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Rejoindre la liste mobile",
     },
     offerCard: {
-      updated: "Mis à jour",
+      updated: "Mis à jour aujourd'hui",
       keyTradeoff: "Point d'attention",
-      reviewOffer: "Voir l'offre",
-      providerSite: "Site du fournisseur",
+      reviewOffer: "Voir les détails",
+      providerSite: "Vérifier le tarif",
       reviewBeforeLeave: "Vérifiez le produit sur Payn avant de quitter vers le fournisseur.",
     },
     offerDetail: {
@@ -721,28 +1068,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Société",
       copy:
         "Comparez des produits financiers avec disponibilité par marché, prix visibles et logique de classement transparente.",
+      credibility: "Créé par des professionnels de la fintech avec une expérience bancaire mondiale",
       disclaimer:
         "Payn peut percevoir une commission auprès de certains partenaires, mais la rémunération seule ne détermine pas l'ordre.",
     },
     about: {
       eyebrow: "À propos",
       title: "À propos de Payn",
-      description: "Un marché financier par pays, construit autour de la clarté, de filtres utiles et d'une comparaison transparente.",
+      description: "Payn est un marché financier pensé pour décider, centré sur la clarté, la transparence et de meilleurs choix financiers.",
       missionTitle: "Notre mission",
       missionBody:
         "Payn veut rendre la découverte financière entre marchés plus utile. Commencez par un pays, affinez par catégorie et examinez les compromis avant de cliquer.",
       coverageTitle: "Ce que couvre Payn",
       coverageBody:
         "Le marché couvre désormais prêts, cartes, transferts, change, assurance et investissements sur des modèles européens et internationaux.",
+      builtByTitle: "Créé par",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Fondateur & responsable produit",
+      builtByExperience:
+        "Expérience auprès de banques de rang 1 et 2, de fintechs d'entreprise, d'assureurs et de plateformes financières.",
+      storyTitle: "Pourquoi Payn ?",
+      storyBody: [
+        "Payn a commencé sous le nom de CreditPay, une première tentative pour simplifier la manière dont les gens découvrent et comparent les produits financiers.",
+        "Après avoir travaillé de près avec des banques et des plateformes financières dans toute l'Europe, il est devenu clair que la plupart des utilisateurs paient encore trop cher à cause d'un manque de transparence et de mauvais outils de comparaison.",
+        "Payn est l'évolution de cette idée : une manière plus claire, plus rapide et plus transparente de prendre des décisions financières.",
+      ],
+      backgroundTitle: "Parcours",
+      backgroundPoints: [
+        "Plus de 10 ans dans les services financiers et la technologie",
+        "Expérience en banque, paiements et plateformes de données",
+        "Solutions financières développées sur plusieurs marchés",
+      ],
+      linkedinLabel: "Se connecter sur LinkedIn",
     },
     contact: {
       eyebrow: "Contact",
       title: "Contacter Payn",
-      description: "Questions, partenariats ou retours produit peuvent être envoyés directement à Payn.",
-      reachTitle: "Contact direct",
-      reachBody: "Utilisez l'email pour le support, les retours produit ou les questions marché.",
+      description: "Questions sur le produit, les partenariats ou une collaboration ? Contactez-nous directement.",
+      chatTitle: "Contacter le fondateur",
+      chatBody: "Pour les partenariats, échanges produit, intégrations et retours.",
+      chatCta: "Discuter avec nous",
+      reachTitle: "Email",
+      reachBody: "Vous préférez l'email ? Utilisez-le pour un suivi ou pour tout sujet qui ne demande pas une conversation en direct.",
+      emailCta: "Envoyer un email à Payn",
+      founderNote:
+        "Payn s'appuie sur cette expérience pour rendre la comparaison financière plus claire, plus rapide et plus transparente.",
       partnershipTitle: "Partenariats",
       partnershipBody: "Partagez votre société, votre type de produit et vos marchés couverts pour démarrer avec du contexte.",
+      partnershipCta: "Parler partenariat",
     },
     metrics: {
       ...baseMetrics,
@@ -843,6 +1216,61 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Apri pagina categoria",
     },
     home: {
+      heroEyebrow: "Confronto finanziario per decidere",
+      heroTitle: "Trova la tua migliore opzione finanziaria in Europa in meno di 60 secondi",
+      heroSubtitle:
+        "Confronta più di 40 banche e fintech con piena trasparenza — senza costi nascosti e senza impatto sul tuo punteggio di credito",
+      heroCta: "Controlla le opzioni",
+      heroCtaSecondary: "Vedi le migliori offerte",
+      heroPanelTitle: "Migliori offerte nel tuo mercato",
+      heroPanelSubtitle: "Classificate per trasparenza, costi e aderenza al mercato selezionato.",
+      heroPanelSignalsTitle: "Segnali decisionali",
+      heroPanelSignalSummary: "Provider affidabili e categorie chiave in una vista rapida per confrontare meglio.",
+      heroPanelNoteTitle: "Perché questa vista aiuta",
+      heroPanelNoteBody: "Vedi tassi, costi e compromessi prima di uscire da Payn.",
+      trustRating: "⭐ 4,9/5 in base alle recensioni degli utenti",
+      needsTitle: "Di cosa hai bisogno?",
+      needsActions: [
+        "Prendere denaro in prestito",
+        "Inviare denaro all'estero",
+        "Trovare una carta migliore",
+        "Cambiare valuta",
+      ],
+      valuePoints: [
+        "Confronti trasparenti con prezzi, costi e compromessi ben visibili.",
+        "Nessun costo nascosto nei passaggi del provider.",
+        "Una UX pensata per decidere prima di uscire verso il provider.",
+        "Controllare le opzioni non influisce sul tuo punteggio di credito.",
+      ],
+      browseByCategory: "Esplora per categoria",
+      categoryCountLabel: "categorie",
+      products: "prodotti",
+      topRanked: "Offerte top",
+      topRankedSubtitle: "Selezionate per tutta Europa",
+      seeAll: "Vedi tutto",
+      tagFastest: "Più rapido",
+      tagNoFees: "Senza commissioni",
+      tagBestValue: "Miglior valore",
+      whyPaynEyebrow: "Perché Payn",
+      whyPaynTitle: "Perché le persone usano Payn prima di fare domanda",
+      howItWorksEyebrow: "Come funziona",
+      howItWorksTitle: "Tre passaggi dal bisogno al provider",
+      openExplore: "Controlla le opzioni",
+      step: "Passo",
+      steps: [
+        "Seleziona ciò di cui hai bisogno",
+        "Confronta le offerte",
+        "Continua con il provider",
+      ],
+      appHeadline: "Salva sul web, continua su mobile",
+      appSubtitle:
+        "Costruisci la tua shortlist da qualsiasi dispositivo. Confronta affiancando le opzioni. Quando sei pronto a decidere, tutto resta dove lo hai lasciato.",
+      appBullets: [
+        "La shortlist si sincronizza tra dispositivi",
+        "Confronto affiancato anche in movimento",
+        "Riprendi da dove avevi interrotto",
+      ],
+      appWaitlistNote: "Entra nella lista di attesa per l'accesso anticipato. iOS e Android.",
       providerTitle: "Copertura provider",
       providerDescription:
         "I provider riconoscibili restano visibili sotto i risultati per mantenere il marketplace ancorato a istituzioni reali.",
@@ -857,10 +1285,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Entra nella lista mobile",
     },
     offerCard: {
-      updated: "Aggiornato",
+      updated: "Aggiornato oggi",
       keyTradeoff: "Punto da valutare",
-      reviewOffer: "Vedi offerta",
-      providerSite: "Sito del provider",
+      reviewOffer: "Vedi dettagli",
+      providerSite: "Controlla il tasso",
       reviewBeforeLeave: "Controlla il prodotto su Payn prima di uscire verso il provider.",
     },
     offerDetail: {
@@ -884,28 +1312,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Azienda",
       copy:
         "Confronta prodotti finanziari con disponibilità per mercato, prezzi visibili e logica di ranking trasparente.",
+      credibility: "Creato da professionisti fintech con esperienza bancaria globale",
       disclaimer:
         "Payn può ricevere commissioni da alcuni partner, ma il compenso da solo non determina l'ordine.",
     },
     about: {
       eyebrow: "Chi siamo",
       title: "Chi è Payn",
-      description: "Un marketplace finanziario per paese costruito su chiarezza, filtri utili e confronto trasparente.",
+      description: "Payn è un marketplace finanziario orientato alla decisione, costruito su chiarezza, trasparenza e scelte finanziarie migliori.",
       missionTitle: "La nostra missione",
       missionBody:
         "Payn vuole rendere più utile la scoperta finanziaria tra mercati. Parti dal paese, restringi per categoria e valuta i compromessi prima del clic.",
       coverageTitle: "Cosa copre Payn",
       coverageBody:
         "Il marketplace copre ora prestiti, carte, trasferimenti, cambio, assicurazioni e investimenti con modelli europei e internazionali.",
+      builtByTitle: "Creato da",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Founder e product lead",
+      builtByExperience:
+        "Esperienza con banche Tier 1 e Tier 2, fintech enterprise, compagnie assicurative e piattaforme finanziarie.",
+      storyTitle: "Perché Payn?",
+      storyBody: [
+        "Payn è nato come CreditPay, un primo tentativo di semplificare il modo in cui le persone scoprono e confrontano i prodotti finanziari.",
+        "Dopo aver lavorato a stretto contatto con banche e piattaforme finanziarie in tutta Europa, è diventato chiaro che la maggior parte degli utenti continua a pagare troppo a causa della scarsa trasparenza e di strumenti di confronto poco efficaci.",
+        "Payn è l'evoluzione di quell'idea: un modo più pulito, veloce e trasparente di prendere decisioni finanziarie.",
+      ],
+      backgroundTitle: "Background",
+      backgroundPoints: [
+        "Oltre 10 anni nei servizi finanziari e nella tecnologia",
+        "Esperienza con banking, pagamenti e piattaforme dati",
+        "Soluzioni finanziarie costruite per mercati multipli",
+      ],
+      linkedinLabel: "Collegati su LinkedIn",
     },
     contact: {
       eyebrow: "Contatti",
       title: "Parla con Payn",
-      description: "Domande, partnership o feedback di prodotto possono essere inviati direttamente a Payn.",
-      reachTitle: "Contatto diretto",
-      reachBody: "Usa l'email per supporto, feedback o domande sul marketplace.",
+      description: "Domande sul prodotto, partnership o collaborazione? Contattaci direttamente.",
+      chatTitle: "Contatta il founder",
+      chatBody: "Per partnership, confronti di prodotto, integrazioni e feedback.",
+      chatCta: "Chatta con noi",
+      reachTitle: "Email",
+      reachBody: "Preferisci l'email? Usala per follow-up o per tutto cio che non richiede una conversazione live.",
+      emailCta: "Invia un'email a Payn",
+      founderNote:
+        "Payn nasce da questa esperienza per rendere il confronto finanziario più chiaro, veloce e trasparente.",
       partnershipTitle: "Partnership",
       partnershipBody: "Condividi azienda, tipo di prodotto e mercati coperti per iniziare con contesto.",
+      partnershipCta: "Parla di partnership",
     },
     metrics: {
       ...baseMetrics,
@@ -1006,6 +1460,61 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       openCategoryPage: "Abrir página da categoria",
     },
     home: {
+      heroEyebrow: "Comparação financeira para decidir",
+      heroTitle: "Encontre a sua melhor opção financeira na Europa em menos de 60 segundos",
+      heroSubtitle:
+        "Compare mais de 40 bancos e fintechs com total transparência — sem comissões ocultas e sem impacto no seu historial de crédito",
+      heroCta: "Ver as suas opções",
+      heroCtaSecondary: "Ver melhores ofertas",
+      heroPanelTitle: "Melhores ofertas no seu mercado",
+      heroPanelSubtitle: "Ordenadas por transparência, comissões e adequação ao mercado selecionado.",
+      heroPanelSignalsTitle: "Sinais de decisão",
+      heroPanelSignalSummary: "Fornecedores e categorias-chave numa vista rápida para comparar melhor.",
+      heroPanelNoteTitle: "Porque esta vista ajuda",
+      heroPanelNoteBody: "Veja taxas, comissões e trade-offs antes de sair da Payn.",
+      trustRating: "⭐ 4,9/5 com base nas avaliações dos utilizadores",
+      needsTitle: "Do que precisa?",
+      needsActions: [
+        "Pedir dinheiro emprestado",
+        "Enviar dinheiro para o estrangeiro",
+        "Conseguir um cartão melhor",
+        "Trocar moeda",
+      ],
+      valuePoints: [
+        "Comparações transparentes com taxas, comissões e compromissos visíveis.",
+        "Sem comissões ocultas no fluxo do fornecedor.",
+        "Uma experiência pensada para decidir antes de sair da Payn.",
+        "Ver opções não afeta o seu historial de crédito.",
+      ],
+      browseByCategory: "Explorar por categoria",
+      categoryCountLabel: "categorias",
+      products: "produtos",
+      topRanked: "Melhores ofertas",
+      topRankedSubtitle: "Selecionadas para toda a Europa",
+      seeAll: "Ver tudo",
+      tagFastest: "Mais rápido",
+      tagNoFees: "Sem comissões",
+      tagBestValue: "Melhor valor",
+      whyPaynEyebrow: "Porque a Payn",
+      whyPaynTitle: "Porque as pessoas usam a Payn antes de avançar",
+      howItWorksEyebrow: "Como funciona",
+      howItWorksTitle: "Três passos da necessidade ao fornecedor",
+      openExplore: "Ver as suas opções",
+      step: "Passo",
+      steps: [
+        "Escolha o que precisa",
+        "Compare ofertas",
+        "Continue com o fornecedor",
+      ],
+      appHeadline: "Guardar na web, continuar no móvel",
+      appSubtitle:
+        "Construa a sua shortlist em qualquer dispositivo. Compare lado a lado. Quando chegar a hora de decidir, tudo continua onde ficou.",
+      appBullets: [
+        "A shortlist sincroniza entre dispositivos",
+        "Comparação lado a lado em movimento",
+        "Retome onde ficou",
+      ],
+      appWaitlistNote: "Entre na lista de espera para acesso antecipado. iOS e Android.",
       providerTitle: "Cobertura de fornecedores",
       providerDescription:
         "Fornecedores reconhecíveis continuam visíveis abaixo dos resultados para manter o marketplace ligado a instituições reais.",
@@ -1020,10 +1529,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       waitlistCta: "Entrar na lista móvel",
     },
     offerCard: {
-      updated: "Atualizado",
+      updated: "Atualizado hoje",
       keyTradeoff: "Ponto principal a rever",
-      reviewOffer: "Ver oferta",
-      providerSite: "Site do fornecedor",
+      reviewOffer: "Ver detalhes",
+      providerSite: "Ver taxa",
       reviewBeforeLeave: "Veja o produto na Payn antes de sair para o fornecedor.",
     },
     offerDetail: {
@@ -1047,28 +1556,54 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       company: "Empresa",
       copy:
         "Compare produtos financeiros com disponibilidade por mercado, preços visíveis e lógica de ranking transparente.",
+      credibility: "Criado por profissionais de fintech com experiência bancária global",
       disclaimer:
         "A Payn pode receber comissão de alguns parceiros, mas a compensação por si só não determina a ordem.",
     },
     about: {
       eyebrow: "Sobre",
       title: "Sobre a Payn",
-      description: "Um marketplace financeiro por país, centrado em clareza, filtros úteis e comparação transparente.",
+      description: "A Payn é um marketplace financeiro orientado à decisão, focado em clareza, transparência e melhores escolhas financeiras.",
       missionTitle: "A nossa missão",
       missionBody:
         "A Payn quer tornar a descoberta financeira entre mercados mais útil. Comece pelo país, reduza por categoria e reveja os compromissos antes do clique.",
       coverageTitle: "O que a Payn cobre",
       coverageBody:
         "O marketplace cobre agora empréstimos, cartões, transferências, câmbio, seguros e investimentos com modelos europeus e internacionais.",
+      builtByTitle: "Criado por",
+      builtByName: "Kyrylo Petrov",
+      builtByBody: "Fundador & líder de produto",
+      builtByExperience:
+        "Experiência com bancos Tier 1 e Tier 2, fintech empresarial, seguradoras e plataformas financeiras.",
+      storyTitle: "Porque a Payn?",
+      storyBody: [
+        "A Payn começou como CreditPay, uma primeira tentativa de simplificar a forma como as pessoas descobrem e comparam produtos financeiros.",
+        "Depois de trabalhar de perto com bancos e plataformas financeiras em toda a Europa, ficou claro que a maioria dos utilizadores continua a pagar demasiado por falta de transparência e por ferramentas de comparação fracas.",
+        "A Payn é a evolução dessa ideia: uma forma mais limpa, rápida e transparente de tomar decisões financeiras.",
+      ],
+      backgroundTitle: "Percurso",
+      backgroundPoints: [
+        "Mais de 10 anos em serviços financeiros e tecnologia",
+        "Experiência com banca, pagamentos e plataformas de dados",
+        "Soluções financeiras construídas em vários mercados",
+      ],
+      linkedinLabel: "Ligar no LinkedIn",
     },
     contact: {
       eyebrow: "Contacto",
       title: "Fale com a Payn",
-      description: "Perguntas, parcerias ou feedback de produto podem ser enviados diretamente para a Payn.",
-      reachTitle: "Contacto direto",
-      reachBody: "Use o email para apoio, feedback ou questões sobre o marketplace.",
+      description: "Questões sobre o produto, parcerias ou colaboração? Fale connosco diretamente.",
+      chatTitle: "Contactar o fundador",
+      chatBody: "Para parcerias, conversas sobre produto, integrações e feedback.",
+      chatCta: "Abrir chat",
+      reachTitle: "Email",
+      reachBody: "Prefere email? Use-o para seguimento ou para tudo o que não exija uma conversa em direto.",
+      emailCta: "Enviar email à Payn",
+      founderNote:
+        "A Payn apoia-se nessa experiência para tornar a comparação financeira mais clara, rápida e transparente.",
       partnershipTitle: "Parcerias",
       partnershipBody: "Partilhe empresa, tipo de produto e mercados cobertos para começar com contexto.",
+      partnershipCta: "Falar sobre parcerias",
     },
     metrics: {
       ...baseMetrics,

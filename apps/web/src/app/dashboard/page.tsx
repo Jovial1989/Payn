@@ -2,101 +2,41 @@
 
 import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/button";
+import { DashboardInvestmentsWorkspace } from "@/components/dashboard-investments-workspace";
 import { DashboardOfferTile } from "@/components/dashboard-offer-tile";
+import {
+  DashboardEmptyState,
+  DashboardLoadingState,
+  DashboardSectionCard,
+} from "@/components/dashboard-primitives";
+import { DashboardOverviewWorkspace } from "@/components/dashboard-overview-workspace";
 import { ProviderLogo } from "@/components/provider-logo";
-import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
 import { resolveProfileMarket } from "@/lib/dashboard";
+import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import {
+  getActiveDashboardView,
   getDashboardHref,
-  normalizeDashboardView,
   type DashboardView,
 } from "@/lib/dashboard-navigation";
-import { MarketplaceExplorer } from "@/components/marketplace-explorer";
-import { marketDefinitions, matchesOfferMarket, normalizeDisplayText } from "@/lib/marketplace";
+import { matchesOfferMarket } from "@/lib/marketplace";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { getGoalLabel, getUiCopy, getUserTypeOptions } from "@/lib/ui-copy";
 
-const categoryLabels: Record<MarketplaceCategory, string> = {
-  loans: "Loans",
-  cards: "Cards",
-  transfers: "Transfers",
-  exchange: "Exchange",
-  insurance: "Insurance",
-  investments: "Investments",
-};
-
-const dashboardCategories = Object.keys(categoryLabels) as MarketplaceCategory[];
-
-// ─── Shared UI ───
-
-function EmptyState({
-  title,
-  description,
-  href,
-  cta,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <div className="rounded-[24px] border border-dashed border-line-strong bg-white p-5">
-      <p className="text-base font-bold text-ink">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{description}</p>
-      <Link href={href} className={buttonStyles({ variant: "secondary", size: "md" }) + " mt-4"}>
-        {cta}
-      </Link>
-    </div>
-  );
-}
-
-function LoadingState({ label = "Loading dashboard" }: { label?: string }) {
-  return (
-    <div className="rounded-[28px] border border-line bg-white p-10 shadow-subtle">
-      <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-tertiary border-t-black" />
-        <p className="text-sm text-ink-secondary">{label}</p>
-      </div>
-    </div>
-  );
-}
-
-function SectionCard({
-  eyebrow,
-  title,
-  description,
-  action,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  action?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>
-          <h2 className="mt-3 text-h3 text-ink">{title}</h2>
-          {description ? (
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">{description}</p>
-          ) : null}
-        </div>
-        {action}
-      </div>
-      <div className="mt-5">{children}</div>
-    </section>
-  );
-}
+const dashboardCategories: MarketplaceCategory[] = [
+  "loans",
+  "cards",
+  "transfers",
+  "exchange",
+  "insurance",
+  "investments",
+];
 
 // ─── Data helpers ───
 
@@ -133,13 +73,59 @@ function mergeInsights(...buckets: DashboardOfferInsight[][]) {
   return merged;
 }
 
-// ─── Profile editor ───
+function toOfferInsight(offer: MarketplaceOffer): DashboardOfferInsight {
+  return {
+    offer,
+    activityScore: 0,
+    saveCount: 0,
+    providerClickCount: 0,
+    offerViewCount: 0,
+  };
+}
 
-const userTypes = [
-  { id: "personal", label: "Personal" },
-  { id: "freelancer", label: "Freelancer" },
-  { id: "business", label: "Business" },
-] as const;
+function getCrossCategoryTopPicks(args: {
+  market: string;
+  insights: DashboardInsights | null;
+}) {
+  const scopedOffers = getMarketOffers(args.market);
+  const fallbackByCategory = new Map<MarketplaceCategory, MarketplaceOffer>();
+
+  for (const offer of scopedOffers) {
+    if (!fallbackByCategory.has(offer.category)) {
+      fallbackByCategory.set(offer.category, offer);
+    }
+  }
+
+  const ranked =
+    args.insights
+      ? mergeInsights(
+          args.insights.recommended,
+          args.insights.bestValueToday,
+          args.insights.popularWithUsersLikeYou,
+          args.insights.trendingInMarket,
+        )
+      : scopedOffers.map(toOfferInsight);
+
+  const picks: DashboardOfferInsight[] = [];
+  const usedIds = new Set<string>();
+
+  for (const category of dashboardCategories) {
+    const candidate =
+      ranked.find((item) => item.offer.category === category && !usedIds.has(item.offer.id)) ??
+      (fallbackByCategory.get(category) ? toOfferInsight(fallbackByCategory.get(category)!) : null);
+
+    if (!candidate || usedIds.has(candidate.offer.id)) {
+      continue;
+    }
+
+    usedIds.add(candidate.offer.id);
+    picks.push(candidate);
+  }
+
+  return picks;
+}
+
+// ─── Profile editor ───
 
 const interestOptions = dashboardCategories;
 
@@ -175,7 +161,13 @@ function ProfileEditor({
   const [editGoals, setEditGoals] = useState<string[]>(goals);
   const [saving, setSaving] = useState(false);
   const { locale } = useMarketplacePreferences();
+  const dictionary = getDictionary(locale);
+  const uiCopy = getUiCopy(locale);
+  const userTypes = getUserTypeOptions(locale);
   const { signOut } = useAuth();
+  const router = useRouter();
+  const username = email.split("@")[0];
+  const initials = username.slice(0, 2).toUpperCase();
 
   const toggleCategory = (cat: string) => {
     setEditCategories((prev) =>
@@ -202,32 +194,54 @@ function ProfileEditor({
 
   return (
     <div className="grid gap-5">
-      <SectionCard eyebrow="Account" title="Your account">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Email</p>
-            <p className="mt-2 text-sm font-bold text-ink">{email}</p>
+      <DashboardSectionCard eyebrow={uiCopy.dashboard.accountEyebrow} title={uiCopy.dashboard.accountTitle}>
+        <div className="grid gap-4">
+          <div className="flex flex-col gap-4 rounded-[24px] bg-bg-surface px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white">
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-base font-bold text-ink">{username}</p>
+                <p className="mt-1 truncate text-sm text-ink-secondary">{email}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href={localePath(locale, "/")} className={buttonStyles({ variant: "ghost", size: "sm" })}>
+                {uiCopy.common.backToSite}
+              </Link>
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  router.replace(localePath(locale, "/"));
+                  router.refresh();
+                }}
+                className={buttonStyles({ variant: "secondary", size: "sm" })}
+              >
+                {uiCopy.common.signOut}
+              </button>
+            </div>
           </div>
-          <div className="rounded-[24px] bg-bg-surface px-5 py-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Market</p>
-            <p className="mt-2 text-sm font-bold text-ink">{marketLabel}</p>
-          </div>
-        </div>
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={async () => {
-              await signOut();
-              window.location.href = localePath(locale, "/");
-            }}
-            className={buttonStyles({ variant: "ghost", size: "md" })}
-          >
-            Sign out
-          </button>
-        </div>
-      </SectionCard>
 
-      <SectionCard eyebrow="Profile type" title="How you use Payn">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                {uiCopy.dashboard.emailLabel}
+              </p>
+              <p className="mt-2 text-sm font-bold text-ink">{email}</p>
+            </div>
+            <div className="rounded-[24px] bg-bg-surface px-5 py-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                {uiCopy.dashboard.marketLabel}
+              </p>
+              <p className="mt-2 text-sm font-bold text-ink">{marketLabel}</p>
+            </div>
+          </div>
+        </div>
+      </DashboardSectionCard>
+
+      <DashboardSectionCard eyebrow={uiCopy.dashboard.profileTypeEyebrow} title={uiCopy.dashboard.profileTypeTitle}>
         <div className="grid gap-2 sm:grid-cols-3">
           {userTypes.map((option) => (
             <button
@@ -244,9 +258,9 @@ function ProfileEditor({
             </button>
           ))}
         </div>
-      </SectionCard>
+      </DashboardSectionCard>
 
-      <SectionCard eyebrow="Interests" title="Categories you care about">
+      <DashboardSectionCard eyebrow={uiCopy.dashboard.interestsEyebrow} title={uiCopy.dashboard.interestsTitle}>
         <div className="flex flex-wrap gap-2">
           {interestOptions.map((cat) => (
             <button
@@ -259,13 +273,13 @@ function ProfileEditor({
                   : "border-line text-ink-secondary hover:border-line-strong"
               }`}
             >
-              {categoryLabels[cat]}
+              {dictionary.categories[cat]}
             </button>
           ))}
         </div>
-      </SectionCard>
+      </DashboardSectionCard>
 
-      <SectionCard eyebrow="Use cases" title="What you use financial products for">
+      <DashboardSectionCard eyebrow={uiCopy.dashboard.useCasesEyebrow} title={uiCopy.dashboard.useCasesTitle}>
         <div className="flex flex-wrap gap-2">
           {useCaseOptions.map((goal) => (
             <button
@@ -278,11 +292,11 @@ function ProfileEditor({
                   : "border-line text-ink-secondary hover:border-line-strong"
               }`}
             >
-              {normalizeDisplayText(goal.replace(/_/g, " "))}
+              {getGoalLabel(locale, goal)}
             </button>
           ))}
         </div>
-      </SectionCard>
+      </DashboardSectionCard>
 
       <div className="flex justify-end">
         <button
@@ -291,7 +305,7 @@ function ProfileEditor({
           disabled={saving}
           className="h-11 rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
         >
-          {saving ? "Saving..." : "Save preferences"}
+          {saving ? uiCopy.dashboard.savingPreferences : uiCopy.dashboard.savePreferences}
         </button>
       </div>
     </div>
@@ -301,23 +315,33 @@ function ProfileEditor({
 // ─── Main page ───
 
 export default function DashboardPage() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeView = useMemo(
-    () => normalizeDashboardView(searchParams.get("view")),
-    [searchParams],
+    () => getActiveDashboardView(pathname, searchParams.get("view")),
+    [pathname, searchParams],
   );
 
   const { user, profile, loading, updateProfile } = useAuth();
   const preferences = useMarketplacePreferences();
+  const dictionary = getDictionary(preferences.locale);
+  const uiCopy = getUiCopy(preferences.locale);
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-  const [insightsLoading, setInsightsLoading] = useState(false);
 
   const dashboardMarket = profile ? resolveProfileMarket(profile.home_country) : preferences.market;
-  const marketLabel = marketDefinitions[dashboardMarket].label;
+  const marketLabel = dictionary.markets[dashboardMarket];
+  const exploreHref = localePath(preferences.locale, "/explore");
+  const userTypeLabels = useMemo(
+    () => Object.fromEntries(getUserTypeOptions(preferences.locale).map((option) => [option.id, option.label])),
+    [preferences.locale],
+  );
+  const dashboardHref = useCallback(
+    (view: DashboardView) => getDashboardHref(view, preferences.locale),
+    [preferences.locale],
+  );
 
   const loadInsights = useCallback(async () => {
     if (!user) return;
-    setInsightsLoading(true);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {
@@ -332,7 +356,6 @@ export default function DashboardPage() {
       // Insights are optional
     } finally {
       clearTimeout(timeout);
-      setInsightsLoading(false);
     }
   }, [user]);
 
@@ -342,234 +365,69 @@ export default function DashboardPage() {
 
   const userLabel = useMemo(() => {
     if (!profile?.user_type) return null;
-    return profile.user_type === "personal"
-      ? "Personal"
-      : profile.user_type === "freelancer"
-        ? "Freelancer"
-        : "Business";
-  }, [profile]);
+    return userTypeLabels[profile.user_type] ?? profile.user_type;
+  }, [profile, userTypeLabels]);
 
   const allOffers = useMemo(() => getMarketOffers(dashboardMarket), [dashboardMarket]);
 
-  const activeCategory = dashboardCategories.includes(activeView as MarketplaceCategory)
+  const activeCategory =
+    activeView !== "investments" && dashboardCategories.includes(activeView as MarketplaceCategory)
     ? (activeView as MarketplaceCategory)
     : null;
 
   // --- Auth loading ---
   if (loading) {
-    return <LoadingState label="Loading your workspace" />;
+    return <DashboardLoadingState label={uiCopy.dashboard.loadingWorkspace} />;
   }
 
   // --- Not signed in ---
   if (!user) {
     return (
       <div className="grid gap-6">
-        <SectionCard
-          eyebrow="Dashboard"
-          title="Sign in to access your Payn workspace"
-          description="Compare loans, cards, transfers, exchange, insurance, and investments in one place."
+        <DashboardSectionCard
+          eyebrow={uiCopy.dashboard.guestEyebrow}
+          title={uiCopy.dashboard.guestTitle}
+          description={uiCopy.dashboard.guestDescription}
         >
           <div className="flex flex-wrap gap-3">
             <Link href={localePath(preferences.locale, "/login")} className={buttonStyles({ variant: "primary", size: "lg" })}>
-              Sign in
+              {uiCopy.auth.signIn}
             </Link>
             <Link href={localePath(preferences.locale, "/signup")} className={buttonStyles({ variant: "secondary", size: "lg" })}>
-              Get started
+              {dictionary.nav.compareOptions}
             </Link>
           </div>
-        </SectionCard>
+        </DashboardSectionCard>
       </div>
     );
   }
 
-  // ─── Summary bar (always visible) ───
+  const username = user.email ? user.email.split("@")[0] : "Payn";
+  const savedOffers = insights?.savedOffers ?? [];
+  const watchedOffers = insights?.watchedOffers ?? [];
+  const providerCount = getUniqueProviders(allOffers).length;
+  const compareReadyCount = Math.min(insights?.loyalty.savedCount ?? 0, 3);
+  const topPicks = getCrossCategoryTopPicks({
+    market: dashboardMarket,
+    insights,
+  });
+  const categoryCounts = Object.fromEntries(
+    dashboardCategories.map((category) => [category, getCategoryOffers(dashboardMarket, category).length]),
+  ) as Record<MarketplaceCategory, number>;
+  const investmentInsights = insights
+    ? mergeInsights(
+        insights.recommended.filter((item) => item.offer.category === "investments"),
+        insights.bestValueToday.filter((item) => item.offer.category === "investments"),
+        insights.popularWithUsersLikeYou.filter((item) => item.offer.category === "investments"),
+        insights.trendingInMarket.filter((item) => item.offer.category === "investments"),
+      )
+    : [];
+  const investmentWorkspaceOffers =
+    investmentInsights.length > 0
+      ? investmentInsights.slice(0, 6)
+      : getCategoryOffers(dashboardMarket, "investments").slice(0, 6).map(toOfferInsight);
 
-  const preferencesLine = [
-    marketLabel,
-    userLabel,
-    ...(profile?.selected_categories ?? []).slice(0, 3).map((c) => normalizeDisplayText(c)),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const renderSummary = () => (
-    <section className="rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Summary</p>
-          <h1 className="mt-2 text-h3 text-ink">
-            Welcome back{user.email ? `, ${user.email.split("@")[0]}` : ""}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <p className="text-sm text-ink-secondary">{preferencesLine}</p>
-            <Link
-              href={getDashboardHref("profile")}
-              className="text-xs font-semibold text-ink-tertiary transition-colors hover:text-ink"
-            >
-              Edit
-            </Link>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "primary", size: "sm" })}>
-            Explore offers
-          </Link>
-          <Link href={getDashboardHref("profile")} className={buttonStyles({ variant: "ghost", size: "sm" })}>
-            Profile
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-
-  // ─── Dashboard overview ───
-
-  const renderOverview = () => {
-    const recommended = insights
-      ? insights.recommended.slice(0, 6)
-      : allOffers.slice(0, 6).map((offer) => ({
-          offer,
-          activityScore: 0,
-          saveCount: 0,
-          providerClickCount: 0,
-          offerViewCount: 0,
-        }));
-
-    const savedOffers = insights?.savedOffers ?? [];
-    const trendingOffers = insights?.trendingInMarket ?? [];
-
-    return (
-      <div className="grid gap-5">
-        {/* Stats row */}
-        <div className="grid gap-3 sm:grid-cols-4">
-          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Payn score</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{insights?.loyalty.score ?? 0}</p>
-          </div>
-          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Products</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{allOffers.length}</p>
-          </div>
-          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{savedOffers.length}</p>
-          </div>
-          <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{getUniqueProviders(allOffers).length}</p>
-          </div>
-        </div>
-
-        {/* Categories grid */}
-        <SectionCard eyebrow="Categories" title="Browse by category">
-          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {dashboardCategories.map((cat) => {
-              const count = getCategoryOffers(dashboardMarket, cat).length;
-              return (
-                <Link
-                  key={cat}
-                  href={getDashboardHref(cat)}
-                  className="rounded-[20px] bg-bg-surface px-4 py-4 text-center transition-colors hover:bg-bg-overlay"
-                >
-                  <p className="text-xl font-bold text-ink">{count}</p>
-                  <p className="mt-1 text-xs font-semibold text-ink-tertiary">{categoryLabels[cat]}</p>
-                </Link>
-              );
-            })}
-          </div>
-        </SectionCard>
-
-        {/* Recommended */}
-        <SectionCard
-          eyebrow="Recommended"
-          title="Top products in your market"
-          action={
-            <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-              See all
-            </Link>
-          }
-        >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {recommended.map((item) => (
-              <DashboardOfferTile key={item.offer.id} offer={item.offer} insight={item} />
-            ))}
-          </div>
-        </SectionCard>
-
-        {/* Saved preview + Trending side by side */}
-        <div className="grid gap-5 xl:grid-cols-2">
-          <SectionCard
-            eyebrow="Saved"
-            title="Your shortlist"
-            action={
-              savedOffers.length > 0 ? (
-                <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "ghost", size: "sm" })}>
-                  Browse more
-                </Link>
-              ) : null
-            }
-          >
-            {savedOffers.length > 0 ? (
-              <div className="grid gap-3">
-                {savedOffers.slice(0, 3).map((offer) => (
-                  <DashboardOfferTile key={offer.id} offer={offer} eyebrow="Saved" />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="No saved offers yet"
-                description="Save products from Explore to build your shortlist."
-                href={getDashboardHref("explore")}
-                cta="Explore offers"
-              />
-            )}
-          </SectionCard>
-
-          <SectionCard eyebrow="Trending" title="Gaining attention">
-            {trendingOffers.length > 0 ? (
-              <div className="grid gap-3">
-                {trendingOffers.slice(0, 3).map((item) => (
-                  <Link
-                    key={item.offer.id}
-                    href={localePath(preferences.locale, `/offers/${item.offer.slug}`)}
-                    className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ProviderLogo providerName={item.offer.providerName} size="sm" />
-                      <div>
-                        <p className="text-sm font-semibold text-ink">{item.offer.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-tertiary">{item.offer.providerName}</p>
-                      </div>
-                    </div>
-                    <Tag tone="blue">{item.activityScore.toFixed(1)}</Tag>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                {allOffers.slice(0, 3).map((offer) => (
-                  <Link
-                    key={offer.id}
-                    href={localePath(preferences.locale, `/offers/${offer.slug}`)}
-                    className="flex items-center justify-between rounded-[20px] bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-overlay"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ProviderLogo providerName={offer.providerName} size="sm" />
-                      <div>
-                        <p className="text-sm font-semibold text-ink">{offer.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-tertiary">{offer.providerName}</p>
-                      </div>
-                    </div>
-                    <Tag tone="muted">{categoryLabels[offer.category]}</Tag>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </SectionCard>
-        </div>
-      </div>
-    );
-  };
+  // --- Previous summary card has moved into the overview-only workspace ---
 
   // ─── Category view ───
 
@@ -585,41 +443,36 @@ export default function DashboardPage() {
         )
       : [];
 
-    const displayOffers = insightOffers.length > 0
-      ? insightOffers
-      : offers.slice(0, 6).map((offer) => ({
-          offer,
-          activityScore: 0,
-          saveCount: 0,
-          providerClickCount: 0,
-          offerViewCount: 0,
-        }));
+    const displayOffers =
+      insightOffers.length > 0
+        ? insightOffers
+        : offers.slice(0, 6).map(toOfferInsight);
 
     return (
       <div className="grid gap-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Available</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{uiCopy.dashboard.stats.available}</p>
             <p className="mt-1 text-2xl font-bold text-ink">{offers.length}</p>
           </div>
           <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Providers</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{uiCopy.dashboard.stats.providers}</p>
             <p className="mt-1 text-2xl font-bold text-ink">{providers.length}</p>
           </div>
           <div className="rounded-[22px] bg-bg-surface px-5 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{uiCopy.dashboard.stats.saved}</p>
             <p className="mt-1 text-2xl font-bold text-ink">
               {insights?.savedOffers.filter((o) => o.category === category).length ?? 0}
             </p>
           </div>
         </div>
 
-        <SectionCard
-          eyebrow="Recommended"
-          title={`Best ${categoryLabels[category].toLowerCase()} for your profile`}
+        <DashboardSectionCard
+          eyebrow={uiCopy.dashboard.categoriesEyebrow}
+          title={dictionary.categories[category]}
           action={
-            <Link href={getDashboardHref("explore")} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-              Open Explore
+            <Link href={exploreHref} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+              {uiCopy.dashboard.openExplore}
             </Link>
           }
         >
@@ -630,16 +483,16 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <EmptyState
-              title={`No ${categoryLabels[category].toLowerCase()} available`}
-              description="Check back soon."
-              href={getDashboardHref("explore")}
-              cta="Explore offers"
+            <DashboardEmptyState
+              title={uiCopy.dashboard.noCategoryTitle}
+              description={uiCopy.dashboard.noCategoryDescription}
+              href={exploreHref}
+              cta={uiCopy.dashboard.openExplore}
             />
           )}
-        </SectionCard>
+        </DashboardSectionCard>
 
-        <SectionCard eyebrow="Providers" title={`${categoryLabels[category]} providers`}>
+        <DashboardSectionCard eyebrow={uiCopy.dashboard.providersEyebrow} title={uiCopy.dashboard.providersTitle}>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {providers.slice(0, 9).map((name) => (
               <div key={name} className="flex items-center gap-3 rounded-[18px] bg-bg-surface px-4 py-3">
@@ -647,27 +500,16 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold text-ink">{name}</p>
                   <p className="mt-0.5 text-xs text-ink-tertiary">
-                    {offers.filter((o) => o.providerName === name).length} products
+                    {offers.filter((o) => o.providerName === name).length} {uiCopy.common.products}
                   </p>
                 </div>
               </div>
             ))}
           </div>
-        </SectionCard>
+        </DashboardSectionCard>
       </div>
     );
   };
-
-  // ─── Explore view ───
-
-  const renderExploreView = () => (
-    <MarketplaceExplorer
-      offers={marketplaceOffers}
-      initialMarket={dashboardMarket}
-      initialCategory="all"
-      mode="home"
-    />
-  );
 
   // ─── Profile view ───
 
@@ -693,20 +535,43 @@ export default function DashboardPage() {
 
   let body: React.ReactNode;
 
-  if (activeView === "explore") {
-    body = renderExploreView();
+  if (activeView === "investments") {
+    body = (
+      <DashboardInvestmentsWorkspace
+        locale={preferences.locale}
+        marketLabel={marketLabel}
+        userLabel={userLabel}
+        dashboardHref={dashboardHref("dashboard")}
+        exploreHref={exploreHref}
+        offers={investmentWorkspaceOffers}
+      />
+    );
   } else if (activeCategory) {
     body = renderCategoryView(activeCategory);
   } else if (activeView === "profile") {
     body = renderProfileView();
   } else {
-    body = renderOverview();
+    body = (
+      <DashboardOverviewWorkspace
+        locale={preferences.locale}
+        username={username}
+        userLabel={userLabel}
+        marketLabel={marketLabel}
+        allOfferCount={allOffers.length}
+        providerCount={providerCount}
+        savedCount={insights?.loyalty.savedCount ?? 0}
+        compareReadyCount={compareReadyCount}
+        topPicks={topPicks}
+        savedOffers={savedOffers}
+        watchedOffers={watchedOffers}
+        categoryCounts={categoryCounts}
+        profileHref={dashboardHref("profile")}
+        exploreHref={exploreHref}
+        investmentsHref={dashboardHref("investments")}
+        categoryHref={(category) => dashboardHref(category)}
+      />
+    );
   }
 
-  return (
-    <div className="grid gap-5">
-      {renderSummary()}
-      {body}
-    </div>
-  );
+  return <div className="grid gap-5">{body}</div>;
 }

@@ -1,57 +1,90 @@
+import Image from "next/image";
+import { buttonStyles } from "@/components/button";
+import { ChatLaunchButton } from "@/components/chat-launch-button";
 import { SiteShell } from "@/components/site-shell";
+import { getDictionary } from "@/lib/i18n";
+import { getRequestPreferences } from "@/lib/request-preferences";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const preferences = await getRequestPreferences();
+  const dictionary = getDictionary(preferences.locale);
+
   return (
     <SiteShell
       activePage="contact"
-      eyebrow="Contact"
-      title="Get in touch"
-      description="Questions, partnerships, or product feedback can be sent directly to Payn."
+      eyebrow={dictionary.contact.eyebrow}
+      title={dictionary.contact.title}
+      description={dictionary.contact.description}
     >
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Reach Payn directly</p>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-secondary">
-            Use email for support, product feedback, or marketplace questions.
-          </p>
-          <a
-            href="mailto:petrov.cpay@gmail.com"
-            className="mt-6 inline-flex items-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
-          >
-            petrov.cpay@gmail.com
-          </a>
-        </section>
-
-        <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Founder</p>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-secondary">
-            Connect directly with Kyrylo Petrov for founder conversations, product feedback, or partnership context.
-          </p>
-          <a
-            href="https://www.linkedin.com/in/petrovkyrylo/"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-6 inline-flex items-center rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface"
-          >
-            LinkedIn profile
-          </a>
-        </section>
-
-        <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8 lg:col-span-2">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Partnerships</p>
-              <h2 className="mt-3 text-h2 text-ink">Work with Payn</h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
-                Share your company, product type, and markets covered so the conversation starts with the right context.
-              </p>
+      <div className="grid gap-5">
+        <section className="grid gap-5 lg:grid-cols-2">
+          <div className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
+              {dictionary.contact.chatTitle}
+            </p>
+            <h2 className="mt-3 text-h2 text-ink">{dictionary.contact.chatCta}</h2>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-secondary">
+              {dictionary.contact.chatBody}
+            </p>
+            <div className="mt-6">
+              <ChatLaunchButton className={buttonStyles({ variant: "primary", size: "lg" })}>
+                {dictionary.contact.chatCta}
+              </ChatLaunchButton>
             </div>
+          </div>
+
+          <div className="rounded-[28px] border border-line bg-[#F7F8F9] p-6 sm:p-8">
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
+              {dictionary.contact.reachTitle}
+            </p>
+            <h2 className="mt-3 text-h2 text-ink">{dictionary.contact.emailCta}</h2>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-secondary">
+              {dictionary.contact.reachBody}
+            </p>
             <a
-              href="mailto:petrov.cpay@gmail.com?subject=Partnership%20enquiry%20-%20Payn"
-              className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+              href="mailto:petrov.cpay@gmail.com"
+              className={buttonStyles({ variant: "secondary", size: "lg" })}
             >
-              Email partnerships
+              {dictionary.contact.emailCta}
             </a>
+            <p className="mt-4 text-sm text-ink-tertiary">petrov.cpay@gmail.com</p>
+          </div>
+        </section>
+
+        <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
+          <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)] md:items-center">
+            <div className="overflow-hidden rounded-[22px] border border-line bg-bg-surface">
+              <Image
+                src="/founders/kyrylo.jpeg"
+                alt="Kyrylo Petrov"
+                width={720}
+                height={900}
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            <div className="max-w-3xl">
+              <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
+                {dictionary.about.builtByTitle}
+              </p>
+              <h2 className="mt-3 text-h2 text-ink">
+                {dictionary.about.builtByTitle} {dictionary.about.builtByName}
+              </h2>
+              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                {dictionary.about.builtByBody}
+              </p>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-secondary">
+                {dictionary.about.builtByExperience}
+              </p>
+              <a
+                href="https://www.linkedin.com/in/petrovkyrylo/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonStyles({ variant: "secondary", size: "lg" }) + " mt-6"}
+              >
+                {dictionary.about.linkedinLabel}
+              </a>
+            </div>
           </div>
         </section>
       </div>

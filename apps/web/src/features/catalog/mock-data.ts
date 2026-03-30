@@ -2,7 +2,7 @@ import type { MarketplaceOffer } from "@payn/types";
 
 export const featuredOffers: MarketplaceOffer[] = [
   // ═══════════════════════════════════════════════════
-  // LOANS (17 offers)
+  // LOANS (19 offers)
   // ═══════════════════════════════════════════════════
   {
     id: "loan-klarna-flex",
@@ -87,6 +87,48 @@ export const featuredOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://ing.com",
     affiliateLink: "https://ing.com",
     updatedAt: "2026-03-22T00:00:00Z",
+  },
+  {
+    id: "loan-auxmoney-flex",
+    slug: "auxmoney-flex-loan",
+    category: "loans",
+    countryCodes: ["DE"],
+    providerMark: "AM",
+    providerName: "Auxmoney",
+    title: "Auxmoney Flex Loan",
+    subtitle: "German marketplace lender focused on quick online checks, flexible borrowing ranges, and transparent monthly repayment planning.",
+    metrics: [
+      { label: "APR", value: "4.1% – 17.9%" },
+      { label: "Amount", value: "EUR 1,000 – 50,000" },
+      { label: "Term", value: "12 – 84 months" },
+    ],
+    bestFor: ["Germany", "Fast online check", "Flexible amounts"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.87,
+    providerWebsiteUrl: "https://www.auxmoney.com",
+    affiliateLink: "https://www.auxmoney.com",
+    updatedAt: "2026-03-25T00:00:00Z",
+  },
+  {
+    id: "loan-smava-personal",
+    slug: "smava-personal-loan",
+    category: "loans",
+    countryCodes: ["DE"],
+    providerMark: "SM",
+    providerName: "Smava",
+    title: "Smava Personal Loan",
+    subtitle: "German comparison platform that helps borrowers compare bank offers quickly with clear monthly repayment ranges and strong local lender coverage.",
+    metrics: [
+      { label: "APR", value: "3.8% – 15.5%" },
+      { label: "Amount", value: "EUR 1,000 – 120,000" },
+      { label: "Term", value: "12 – 120 months" },
+    ],
+    bestFor: ["Germany", "Compare lenders", "Broad loan range"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.89,
+    providerWebsiteUrl: "https://www.smava.de",
+    affiliateLink: "https://www.smava.de",
+    updatedAt: "2026-03-25T00:00:00Z",
   },
   {
     id: "loan-santander-consumer",

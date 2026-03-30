@@ -8,4 +8,3 @@ class CatalogScreen extends StatelessWidget {
     return const SizedBox.shrink();
   }
 }
-

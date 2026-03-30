@@ -6,4 +6,5 @@ export const serverEnv = {
   coinGeckoApiKey:
     process.env.COINGECKO_API_KEY ?? process.env.COINGECKO_DEMO_API_KEY ?? "",
   finnhubApiKey: process.env.FINNHUB_API_KEY ?? "",
+  alphaVantageApiKey: process.env.ALPHA_VANTAGE_API_KEY ?? "",
 };

@@ -7,8 +7,10 @@ import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
+import { getDictionary, getMetricLabel } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { getOfferHref, normalizeDisplayText } from "@/lib/marketplace";
+import { getUiCopy } from "@/lib/ui-copy";
 
 type OfferInsightLike = {
   activityScore?: number;
@@ -27,6 +29,8 @@ export function DashboardOfferTile({
   eyebrow?: string;
 }) {
   const { locale } = useMarketplacePreferences();
+  const dictionary = getDictionary(locale);
+  const uiCopy = getUiCopy(locale);
   const metrics = offer.metrics.slice(0, 2);
 
   return (
@@ -66,7 +70,7 @@ export function DashboardOfferTile({
         {metrics.map((metric) => (
           <div key={metric.label} className="rounded-2xl bg-bg-surface px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-tertiary">
-              {metric.label}
+              {normalizeDisplayText(getMetricLabel(locale, metric.label))}
             </p>
             <p className="mt-1 text-sm font-bold text-ink">{normalizeDisplayText(metric.value)}</p>
           </div>
@@ -83,16 +87,16 @@ export function DashboardOfferTile({
 
       {insight ? (
         <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
-          {typeof insight.offerViewCount === "number" ? <span>{insight.offerViewCount} views</span> : null}
-          {typeof insight.saveCount === "number" ? <span>{insight.saveCount} saves</span> : null}
-          {typeof insight.providerClickCount === "number" ? <span>{insight.providerClickCount} clicks</span> : null}
+          {typeof insight.offerViewCount === "number" ? <span>{insight.offerViewCount} {uiCopy.common.views}</span> : null}
+          {typeof insight.saveCount === "number" ? <span>{insight.saveCount} {uiCopy.common.saves}</span> : null}
+          {typeof insight.providerClickCount === "number" ? <span>{insight.providerClickCount} {uiCopy.common.clicks}</span> : null}
         </div>
       ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
         <SaveOfferButton offer={offer} variant="ghost" size="sm" />
         <Link href={localePath(locale, getOfferHref(offer))} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-          Review
+          {dictionary.offerCard.reviewOffer}
         </Link>
       </div>
     </article>

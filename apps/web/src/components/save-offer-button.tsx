@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { localePath } from "@/lib/locale";
 import { getOfferHref } from "@/lib/marketplace";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { getUiCopy } from "@/lib/ui-copy";
 
 export function SaveOfferButton({
   offer,
@@ -21,6 +22,7 @@ export function SaveOfferButton({
 }) {
   const router = useRouter();
   const { locale } = useMarketplacePreferences();
+  const uiCopy = getUiCopy(locale);
   const { user } = useAuth();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [saved, setSaved] = useState(false);
@@ -66,7 +68,7 @@ export function SaveOfferButton({
 
   const handleToggle = async () => {
     if (!user) {
-      router.push(`/login?next=${encodeURIComponent(getOfferHref(offer))}`);
+      router.push(localePath(locale, `/login?next=${encodeURIComponent(getOfferHref(offer))}`));
       return;
     }
 
@@ -106,7 +108,7 @@ export function SaveOfferButton({
       disabled={loading}
       className={buttonStyles({ variant, size })}
     >
-      {loading ? "Saving..." : saved ? "Saved" : "Save offer"}
+      {loading ? uiCopy.common.savingOffer : saved ? uiCopy.common.savedOffer : uiCopy.common.saveOffer}
     </button>
   );
 }
