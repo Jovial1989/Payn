@@ -1,0 +1,5 @@
+import { DashboardShell } from "@/components/dashboard-shell";
+
+export default function CardsLayout({ children }: { children: React.ReactNode }) {
+  return <DashboardShell>{children}</DashboardShell>;
+}

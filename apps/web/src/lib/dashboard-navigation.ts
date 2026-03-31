@@ -4,6 +4,7 @@ import { getUiCopy } from "@/lib/ui-copy";
 
 export type DashboardView =
   | "dashboard"
+  | "discover"
   | MarketplaceCategory
   | "profile";
 
@@ -24,18 +25,30 @@ export function getDashboardNavItems(locale: MarketplaceLocale): DashboardNavIte
       group: "core",
       description: navItems.dashboard.description,
     },
+    {
+      id: "discover",
+      label: navItems.discover.label,
+      group: "core",
+      description: navItems.discover.description,
+    },
     { id: "loans", label: navItems.loans.label, group: "products", description: navItems.loans.description },
     { id: "cards", label: navItems.cards.label, group: "products", description: navItems.cards.description },
     { id: "transfers", label: navItems.transfers.label, group: "products", description: navItems.transfers.description },
     { id: "exchange", label: navItems.exchange.label, group: "products", description: navItems.exchange.description },
     { id: "insurance", label: navItems.insurance.label, group: "products", description: navItems.insurance.description },
-    { id: "investments", label: navItems.investments.label, group: "products", description: navItems.investments.description },
+    {
+      id: "investments",
+      label: navItems.investments.label,
+      group: "products",
+      description: navItems.investments.description,
+    },
     { id: "profile", label: navItems.profile.label, group: "account", description: navItems.profile.description },
   ];
 }
 
 const dashboardViewSet = new Set<DashboardView>([
   "dashboard",
+  "discover",
   "loans",
   "cards",
   "transfers",
@@ -53,22 +66,64 @@ export function normalizeDashboardView(value?: string | null): DashboardView {
   return "dashboard";
 }
 
+const productCategories: MarketplaceCategory[] = [
+  "loans",
+  "cards",
+  "transfers",
+  "exchange",
+  "insurance",
+  "investments",
+];
+
 export function getActiveDashboardView(pathname: string | null, value?: string | null): DashboardView {
-  if (!pathname || !pathname.includes("/dashboard")) {
+  if (!pathname) {
     return "dashboard";
   }
 
-  const segments = pathname.split("/").filter(Boolean);
-  const lastSegment = segments[segments.length - 1];
-
-  if (lastSegment && dashboardViewSet.has(lastSegment as DashboardView) && lastSegment !== "dashboard") {
-    return lastSegment as DashboardView;
+  for (const category of productCategories) {
+    if (pathname.endsWith(`/${category}`) || pathname.includes(`/${category}/`)) {
+      return category;
+    }
   }
 
-  return normalizeDashboardView(value);
+  if (pathname.includes("/discover")) {
+    return "discover";
+  }
+
+  if (pathname.includes("/dashboard")) {
+    if (value === "profile") {
+      return "profile";
+    }
+    return "dashboard";
+  }
+
+  return "dashboard";
 }
 
 export function getDashboardHref(view: DashboardView, locale?: MarketplaceLocale) {
-  const path = view === "dashboard" ? "/dashboard" : `/dashboard?view=${view}`;
+  let path: string;
+
+  switch (view) {
+    case "dashboard":
+      path = "/dashboard";
+      break;
+    case "discover":
+      path = "/discover";
+      break;
+    case "profile":
+      path = "/dashboard?view=profile";
+      break;
+    case "loans":
+    case "cards":
+    case "transfers":
+    case "exchange":
+    case "insurance":
+    case "investments":
+      path = `/${view}`;
+      break;
+    default:
+      path = "/dashboard";
+  }
+
   return locale ? localePath(locale, path) : path;
 }

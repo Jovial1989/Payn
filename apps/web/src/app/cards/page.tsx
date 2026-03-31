@@ -1,9 +1,4 @@
-import { redirect } from "next/navigation";
-import { localePath } from "@/lib/locale";
-import { getMarketCategoryHref } from "@/lib/marketplace";
-import { getRequestPreferences } from "@/lib/request-preferences";
-
-export default async function CardsPage() {
-  const preferences = await getRequestPreferences();
-  redirect(localePath(preferences.locale, getMarketCategoryHref(preferences.market, "cards")));
+import { ProductCategoryView } from "@/components/product-category-view";
+export default function CardsPage() {
+  return <ProductCategoryView category="cards" />;
 }

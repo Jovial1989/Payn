@@ -3,10 +3,12 @@
 import type { MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { buttonStyles } from "@/components/button";
+import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { Tag } from "@/components/tag";
+import { getDashboardDecisionCopy } from "@/lib/dashboard-decision-copy";
 import { getDictionary, getMetricLabel } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { getOfferHref, normalizeDisplayText } from "@/lib/marketplace";
@@ -30,8 +32,11 @@ export function DashboardOfferTile({
 }) {
   const { locale } = useMarketplacePreferences();
   const dictionary = getDictionary(locale);
+  const decisionCopy = getDashboardDecisionCopy(locale);
   const uiCopy = getUiCopy(locale);
   const metrics = offer.metrics.slice(0, 2);
+  const bestForLead = offer.bestFor[0];
+  const secondaryTags = offer.bestFor.slice(1, 3);
 
   return (
     <article className="rounded-[26px] border border-line bg-white p-5 shadow-subtle">
@@ -78,8 +83,13 @@ export function DashboardOfferTile({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {offer.bestFor.slice(0, 3).map((item, index) => (
-          <Tag key={item} tone={index === 0 ? "blue" : index === 1 ? "success" : "purple"}>
+        {bestForLead ? (
+          <Tag tone="blue">
+            {`${decisionCopy.bestForPrefix}: ${normalizeDisplayText(bestForLead).toLowerCase()}`}
+          </Tag>
+        ) : null}
+        {secondaryTags.map((item, index) => (
+          <Tag key={item} tone={index === 0 ? "success" : "purple"}>
             {normalizeDisplayText(item)}
           </Tag>
         ))}
@@ -94,6 +104,7 @@ export function DashboardOfferTile({
       ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
+        <ProviderLinkButton offer={offer} label="Go to provider" variant="primary" size="sm" />
         <SaveOfferButton offer={offer} variant="ghost" size="sm" />
         <Link href={localePath(locale, getOfferHref(offer))} className={buttonStyles({ variant: "secondary", size: "sm" })}>
           {dictionary.offerCard.reviewOffer}
