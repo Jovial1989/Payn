@@ -2,23 +2,31 @@
 
 import { AuthProvider } from "@/hooks/use-auth";
 import { ChatWidget } from "@/components/chat-widget";
+import { LocaleGate } from "@/components/locale-gate";
 import { MarketplacePreferencesProvider } from "@/components/marketplace-preferences";
 import type { MarketplaceLocale, MarketplaceMarket } from "@payn/types";
 
 export function Providers({
   children,
   initialLocale,
+  initialCountry,
   initialMarket,
 }: {
   children: React.ReactNode;
   initialLocale: MarketplaceLocale;
-  initialMarket: MarketplaceMarket;
+  initialCountry?: string;
+  initialMarket?: MarketplaceMarket;
 }) {
   return (
     <AuthProvider>
-      <MarketplacePreferencesProvider initialLocale={initialLocale} initialMarket={initialMarket}>
+      <MarketplacePreferencesProvider
+        initialLocale={initialLocale}
+        initialCountry={initialCountry}
+        initialMarket={initialMarket}
+      >
         {children}
         <ChatWidget />
+        <LocaleGate />
       </MarketplacePreferencesProvider>
     </AuthProvider>
   );

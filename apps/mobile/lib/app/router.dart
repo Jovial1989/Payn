@@ -4,6 +4,7 @@ import 'package:payn_mobile/features/auth/presentation/auth_screen.dart';
 import 'package:payn_mobile/features/compare/presentation/compare_screen.dart';
 import 'package:payn_mobile/features/explore/presentation/explore_screen.dart';
 import 'package:payn_mobile/features/home/presentation/home_screen.dart';
+import 'package:payn_mobile/features/locale_gate/presentation/locale_gate_screen.dart';
 import 'package:payn_mobile/features/offers/presentation/offer_detail_screen.dart';
 import 'package:payn_mobile/features/profile/presentation/profile_screen.dart';
 import 'package:payn_mobile/features/saved/presentation/saved_screen.dart';
@@ -14,7 +15,19 @@ GoRouter createRouter(AppController controller) {
   return GoRouter(
     initialLocation: '/home',
     refreshListenable: controller,
+    redirect: (context, state) {
+      final isDone = controller.localeGateDone;
+      final onGate = state.matchedLocation == '/locale-gate';
+
+      if (!isDone && !onGate) return '/locale-gate';
+      if (isDone && onGate) return '/home';
+      return null;
+    },
     routes: <RouteBase>[
+      GoRoute(
+        path: '/locale-gate',
+        builder: (context, state) => const LocaleGateScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return PaynShell(navigationShell: navigationShell);

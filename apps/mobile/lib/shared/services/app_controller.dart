@@ -22,6 +22,7 @@ class AppController extends ChangeNotifier {
   static const String _savedKey = 'payn.mobile.saved';
   static const String _recentKey = 'payn.mobile.recent';
   static const String _compareKey = 'payn.mobile.compare';
+  static const String _localeGateKey = 'payn.mobile.locale_gate_done';
 
   final LocalStore store;
   final LocalAuthRepository authRepository;
@@ -36,12 +37,14 @@ class AppController extends ChangeNotifier {
   List<String> _savedOfferIds = <String>[];
   List<String> _recentOfferIds = <String>[];
   List<String> _compareOfferIds = <String>[];
+  bool _localeGateDone = false;
 
   UserSession get session => _session;
   ProfilePreferences get preferences => _preferences;
   ExploreFilters get exploreFilters => _exploreFilters;
   PaynCategory? get selectedExploreCategory => _selectedExploreCategory;
   bool get isAuthenticated => _session.isAuthenticated;
+  bool get localeGateDone => _localeGateDone;
 
   Future<void> restore() async {
     _session = await authRepository.restoreSession();
@@ -64,6 +67,20 @@ class AppController extends ChangeNotifier {
           _compareKey,
         )).where(_savedOfferIds.contains).take(3).toList();
 
+    final localeGateRaw = await store.readString(_localeGateKey);
+    _localeGateDone = localeGateRaw == '1';
+
+    notifyListeners();
+  }
+
+  Future<void> completeLocaleGate({
+    required PaynMarket market,
+    required String language,
+  }) async {
+    _preferences = _preferences.copyWith(market: market);
+    _localeGateDone = true;
+    await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
+    await store.saveString(_localeGateKey, '1');
     notifyListeners();
   }
 
