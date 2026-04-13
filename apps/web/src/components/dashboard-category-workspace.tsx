@@ -6,7 +6,7 @@ import type {
   MarketplaceOffer,
 } from "@payn/types";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import {
   DecisionResultRow,
@@ -15,12 +15,15 @@ import {
 } from "@/components/decision-result-row";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import { InsuranceCompareTable } from "@/components/insurance-compare-table";
-import { ProviderLogo } from "@/components/provider-logo";
+import {
+  ProductCompareTable,
+  type ProductCompareEntry,
+} from "@/components/product-compare-table";
 import { Tag } from "@/components/tag";
 import type { DashboardOfferInsight } from "@/lib/dashboard";
 import type { FxQuotePayload } from "@/lib/fx-quote";
 import { supportedFxCurrencies } from "@/lib/fx-quote";
-import { getDictionary, getMetricLabel } from "@/lib/i18n";
+import { getDictionary, getMetricLabel, translateTradeoff, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
   getOfferTradeoff,
@@ -33,15 +36,35 @@ import {
   getOfferCalculatorResult,
 } from "@/lib/offer-calculator";
 import {
-  getResidenceCountryCode,
-  residenceCountryOptions,
-} from "@/lib/residence-countries";
+  readPersistedProductWorkspaceState,
+  writePersistedProductWorkspaceState,
+} from "@/lib/product-workspace-state";
+import {
+  getCountryCode,
+  getCountrySelectorOptions,
+  matchesOfferCountrySelection,
+  normalizeCountrySelection,
+} from "@/lib/countries";
 import type { UserProfile } from "@/lib/types";
 
 type CountryValue = string;
 type InsuranceSelection = MarketplaceInsuranceType;
 type InsuranceRegionFilter = "all" | "eu" | "worldwide" | "regional";
 type InsuranceActivityFilter = "all" | "basic" | "extreme";
+type LoanPurpose = "general" | "personal" | "car" | "device";
+type LoanIncomeRange =
+  | "not_shared"
+  | "under_2000"
+  | "2000_3500"
+  | "3500_5000"
+  | "5000_plus";
+type LoanEmploymentStatus =
+  | "not_shared"
+  | "salaried"
+  | "self_employed"
+  | "part_time"
+  | "student"
+  | "retired";
 
 type RankedResult = {
   offer: MarketplaceOffer;
@@ -59,16 +82,53 @@ type RankedResult = {
 };
 
 const loanPurposeOptions = [
-  { value: "general", label: "General / personal" },
+  { value: "general", label: "General" },
+  { value: "personal", label: "Personal" },
   { value: "car", label: "Car" },
   { value: "device", label: "Device / electronics" },
-  { value: "home", label: "Home improvement" },
-  { value: "education", label: "Education" },
-  { value: "consolidation", label: "Debt consolidation" },
-  { value: "travel", label: "Travel" },
-] as const;
+ ] as const satisfies ReadonlyArray<{ value: LoanPurpose; label: string }>;
+
+const loanIncomeRangeOptions: Array<{ value: LoanIncomeRange; label: string }> = [
+  { value: "not_shared", label: "Not shared" },
+  { value: "under_2000", label: "Under €2,000" },
+  { value: "2000_3500", label: "€2,000 - €3,500" },
+  { value: "3500_5000", label: "€3,500 - €5,000" },
+  { value: "5000_plus", label: "€5,000+" },
+];
+
+const loanEmploymentOptions: Array<{ value: LoanEmploymentStatus; label: string }> = [
+  { value: "not_shared", label: "Not shared" },
+  { value: "salaried", label: "Salaried" },
+  { value: "self_employed", label: "Self-employed" },
+  { value: "part_time", label: "Part-time" },
+  { value: "student", label: "Student" },
+  { value: "retired", label: "Retired" },
+];
 
 const insuranceTypes: InsuranceSelection[] = ["travel", "health", "life", "auto", "nomad", "device"];
+
+type CategoryWorkspaceDraft = {
+  amount: string;
+  duration: string;
+  country: CountryValue;
+  purpose: LoanPurpose;
+  interestRate: string;
+  incomeRange: LoanIncomeRange;
+  employmentStatus: LoanEmploymentStatus;
+  fromCountry: CountryValue;
+  toCountry: CountryValue;
+  fromCurrency: string;
+  toCurrency: string;
+  insuranceType: InsuranceSelection;
+  coverageAmount: string;
+  maxPrice: string;
+  minMedicalCoverage: string;
+  maxDeductible: string;
+  regionFilter: InsuranceRegionFilter;
+  activityFilter: InsuranceActivityFilter;
+  visaCompliantOnly: boolean;
+  compareSelection: string[];
+};
 
 function clampPercent(value: number) {
   return Math.max(0, Math.min(100, value));
@@ -137,22 +197,28 @@ function getSimplicityScore(offer: MarketplaceOffer) {
 }
 
 function matchesCountry(offer: MarketplaceOffer, country: CountryValue) {
-  if (country === "eu") {
+  if (!country) {
     return true;
   }
 
-  const codes = new Set(offer.countryCodes.map((code) => code.toUpperCase()));
-  const selectedCode = getResidenceCountryCode(country);
-  return codes.has(selectedCode) || codes.has("EU") || offer.attributes?.availability === "international";
+  return matchesOfferCountrySelection(offer, country);
 }
 
 function getCountryFitScore(offer: MarketplaceOffer, country: CountryValue) {
-  if (country === "eu") {
+  if (!country) {
     return 72;
   }
 
+  if (country === "eu") {
+    return matchesOfferCountrySelection(offer, country) ? 78 : 0;
+  }
+
+  if (country === "international") {
+    return matchesOfferCountrySelection(offer, country) ? 70 : 0;
+  }
+
   const codes = new Set(offer.countryCodes.map((code) => code.toUpperCase()));
-  const selectedCode = getResidenceCountryCode(country);
+  const selectedCode = getCountryCode(country);
 
   if (codes.has(selectedCode)) {
     return 100;
@@ -201,6 +267,72 @@ function getLoanMonthlyPayment(amount: number, aprPercent: number, months: numbe
   return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
 }
 
+function getLoanApprovalLabel(offer: MarketplaceOffer, locale: MarketplaceLocale) {
+  const speed = inferSpeedValue(offer);
+  if (speed <= 1) return locale === "de" ? "Minuten" : "Minutes";
+  if (speed <= 24) return "24h";
+  return locale === "de" ? "1-2 Tage" : "1-2 days";
+}
+
+function getLoanPurposeBoost(text: string, purpose: LoanPurpose) {
+  if (purpose === "general") {
+    return 0;
+  }
+
+  return text.includes(purpose) ? 12 : 0;
+}
+
+function getLoanIncomeBoost(offer: MarketplaceOffer, incomeRange: LoanIncomeRange) {
+  const maxAmount = offer.attributes?.maxAmount ?? getAvailableAmountRange(offer).max;
+  const apr = getLoanApr(offer);
+
+  if (incomeRange === "under_2000") {
+    return apr <= 9 ? 8 : 0;
+  }
+
+  if (incomeRange === "5000_plus") {
+    return maxAmount >= 40000 ? 8 : 0;
+  }
+
+  if (incomeRange === "3500_5000") {
+    return maxAmount >= 25000 && apr <= 12 ? 6 : 0;
+  }
+
+  return 0;
+}
+
+function getLoanEmploymentBoost(offer: MarketplaceOffer, employmentStatus: LoanEmploymentStatus) {
+  const text = getOfferText(offer);
+
+  if (employmentStatus === "self_employed") {
+    return text.includes("digital") || text.includes("flexible") ? 6 : 0;
+  }
+
+  if (employmentStatus === "student") {
+    return offer.attributes?.maxAmount && offer.attributes.maxAmount <= 15000 ? 6 : 0;
+  }
+
+  if (employmentStatus === "retired") {
+    return getLoanApr(offer) <= 10 ? 4 : 0;
+  }
+
+  return 0;
+}
+
+function getCompareToggleClassName(selected: boolean) {
+  return selected
+    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-black bg-white px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface sm:w-auto"
+    : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:text-ink sm:w-auto";
+}
+
+function getMetricDisplayValue(
+  metrics: DecisionResultMetric[],
+  labels: string[],
+  fallback = "Check details",
+) {
+  return metrics.find((metric) => labels.includes(metric.label))?.value ?? fallback;
+}
+
 function getInsuranceType(offer: MarketplaceOffer): InsuranceSelection | null {
   const type = offer.attributes?.insuranceType ?? offer.attributes?.subtype;
 
@@ -218,20 +350,20 @@ function getInsuranceType(offer: MarketplaceOffer): InsuranceSelection | null {
   return null;
 }
 
-function getInsuranceTypeLabel(type: InsuranceSelection) {
+function getInsuranceTypeLabel(type: InsuranceSelection, locale: MarketplaceLocale) {
   switch (type) {
     case "travel":
-      return "Travel";
+      return locale === "de" ? "Reise" : "Travel";
     case "health":
-      return "Health";
+      return locale === "de" ? "Gesundheit" : "Health";
     case "life":
-      return "Life";
+      return locale === "de" ? "Leben" : "Life";
     case "auto":
       return "Auto";
     case "nomad":
-      return "Nomad";
+      return locale === "de" ? "Nomaden" : "Nomad";
     case "device":
-      return "Device";
+      return locale === "de" ? "Gerät" : "Device";
     default:
       return normalizeDisplayText(type);
   }
@@ -275,6 +407,30 @@ function getInsuranceTripDuration(offer: MarketplaceOffer) {
     parseMetricRange(getMetricValue(offer, ["Trip length"])).max ??
     999
   );
+}
+
+function getInsuranceDurationValue(offer: MarketplaceOffer, type: InsuranceSelection) {
+  if (type === "life") {
+    return parseMetricRange(getMetricValue(offer, ["Term"])).max ?? 999;
+  }
+
+  return getInsuranceTripDuration(offer);
+}
+
+function insuranceUsesDuration(type: InsuranceSelection) {
+  return type === "travel" || type === "nomad" || type === "life";
+}
+
+function insuranceUsesRegion(type: InsuranceSelection) {
+  return type === "travel" || type === "nomad" || type === "health" || type === "device";
+}
+
+function insuranceUsesActivity(type: InsuranceSelection) {
+  return type === "travel" || type === "nomad";
+}
+
+function insuranceUsesVisa(type: InsuranceSelection) {
+  return type === "travel" || type === "nomad";
 }
 
 function getInsuranceFlexibility(offer: MarketplaceOffer) {
@@ -335,11 +491,11 @@ function InputField({
 }
 
 function fieldClassName() {
-  return "h-14 rounded-[20px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px]";
 }
 
 function amountFieldClassName() {
-  return "h-14 rounded-[20px] border border-[#EAEAEA] bg-white px-4 text-[26px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-[22px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px] sm:text-[26px]";
 }
 
 function getCurrencyFlag(code: string) {
@@ -380,12 +536,45 @@ function CurrencySelect({
   );
 }
 
-function getCountryOptions() {
-  return residenceCountryOptions.map((option) => ({
+function getCountryOptions(locale: MarketplaceLocale) {
+  return getCountrySelectorOptions({ locale }).map((option) => ({
     value: option.value,
     label: option.label,
     flag: option.flag,
   }));
+}
+
+function getValidCountryValue(countryOptions: ReturnType<typeof getCountryOptions>, value?: string | null) {
+  const normalizedValue = normalizeCountrySelection(value ?? null);
+  return countryOptions.some((option) => option.value === normalizedValue) ? normalizedValue : "";
+}
+
+function getDefaultCategoryWorkspaceState(
+  category: MarketplaceCategory,
+  defaultCountry: CountryValue,
+): CategoryWorkspaceDraft {
+  return {
+    amount: category === "loans" ? "5000" : "1000",
+    duration: category === "insurance" ? "30" : "24",
+    country: defaultCountry,
+    purpose: "general",
+    interestRate: "",
+    incomeRange: "not_shared",
+    employmentStatus: "not_shared",
+    fromCountry: defaultCountry,
+    toCountry: defaultCountry,
+    fromCurrency: "EUR",
+    toCurrency: category === "exchange" ? "USD" : "GBP",
+    insuranceType: "travel",
+    coverageAmount: "500000",
+    maxPrice: "250",
+    minMedicalCoverage: "0",
+    maxDeductible: "1000",
+    regionFilter: "all",
+    activityFilter: "all",
+    visaCompliantOnly: false,
+    compareSelection: [],
+  };
 }
 
 function decorateTags(args: {
@@ -421,144 +610,406 @@ function decorateTags(args: {
   return tags.slice(0, 3);
 }
 
-function GenericCompareTable({
-  locale,
-  category,
-  offers,
-}: {
-  locale: MarketplaceLocale;
-  category: MarketplaceCategory;
-  offers: MarketplaceOffer[];
-}) {
-  const metricsByCategory: Partial<Record<MarketplaceCategory, string[]>> = {
-    loans: ["APR", "Amount", "Term", "Approval"],
-    transfers: ["Fee", "Speed", "Rate", "Market"],
-    exchange: ["Fee", "Speed", "Rate", "Market"],
-    cards: ["Annual fee", "FX fee", "Cashback", "ATM limit"],
-  };
-
-  const labels = metricsByCategory[category] ?? [];
-
-  return (
-    <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Compare selected</p>
-        <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">Side-by-side view</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-          Compare key metrics across selected providers to find the best fit for your needs.
-        </p>
-      </div>
-      <div className="mt-6 overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-0">
-          <thead>
-            <tr>
-              <th className="w-[180px] border-b border-[#ECEDEF] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Feature
-              </th>
-              {offers.map((offer) => (
-                <th
-                  key={offer.id}
-                  className="min-w-[180px] border-b border-[#ECEDEF] px-4 py-3 text-left text-sm font-semibold text-ink"
-                >
-                  <div className="flex items-center gap-2">
-                    <ProviderLogo providerName={offer.providerName} size="sm" />
-                    <span>{offer.providerName}</span>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Provider</td>
-              {offers.map((offer) => (
-                <td key={offer.id} className="border-b border-[#ECEDEF] px-4 py-3 text-sm font-semibold text-ink">
-                  {offer.providerName}
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Best for</td>
-              {offers.map((offer) => (
-                <td key={offer.id} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink-secondary">
-                  {offer.bestFor.slice(0, 2).join(", ")}
-                </td>
-              ))}
-            </tr>
-            {labels.map((label) => (
-              <tr key={label}>
-                <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
-                  {label}
-                </td>
-                {offers.map((offer) => {
-                  const value = normalizeDisplayText(getMetricValue(offer, [label]) ?? "—");
-                  return (
-                    <td key={offer.id} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink">
-                      {value}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
 export function DashboardCategoryWorkspace({
   locale,
+  userId,
   category,
   marketLabel,
   profile,
+  preferredCountry,
+  onCountryChange,
   offers,
   insights,
   discoverHref,
 }: {
   locale: MarketplaceLocale;
+  userId?: string | null;
   category: MarketplaceCategory;
   marketLabel: string;
   profile: UserProfile | null;
+  preferredCountry?: string | null;
+  onCountryChange?: (country: string) => void;
   offers: MarketplaceOffer[];
   insights: DashboardOfferInsight[];
-  savedCount: number;
   discoverHref: string;
 }) {
   const dictionary = getDictionary(locale);
-  const countryOptions = useMemo(() => getCountryOptions(), []);
+  const countryOptions = useMemo(() => getCountryOptions(locale), [locale]);
+  const copy =
+    locale === "de"
+      ? {
+          loansTitle: "Konsumenten- und Privatkredite live vergleichen",
+          transfersTitle: "Überweisung eingeben und vergleichen, was beim Empfänger ankommt",
+          exchangeTitle: "Wechsel eingeben und den effektiven Kurs vergleichen",
+          insuranceTitle: "Zuerst die Schutzart wählen",
+          loansDescription:
+            `Digitale Kreditgeber, Banken und Fintechs mit Konsumenten- und Privatkrediten für ${marketLabel.toLowerCase()} — nach realer Monatsrate sortiert. Betrag, Laufzeit, Zinsannahme, Einkommen, Beschäftigung oder Zweck ändern sich sofort im Ranking.`,
+          transfersDescription:
+            `Ändere Korridor, Betrag oder Währungspaar und das Ranking für ${marketLabel.toLowerCase()} aktualisiert sich mit Live-Kurs und jedem Gebührenmodell.`,
+          exchangeDescription:
+            `Payn nutzt den Live-Marktkurs plus Aufschläge und Gebühren der Anbieter, damit eine sortierte Wechsel-Liste für ${marketLabel.toLowerCase()} sichtbar bleibt.`,
+          insuranceDescription:
+            `Wähle zuerst die echte Schutzart und filtere dann nach Deckung, Region, Selbstbehalt, Laufzeit und Visa-Fit, bevor du Anbieter in ${marketLabel.toLowerCase()} vergleichst.`,
+          backToDiscover: "Zurück zu Discover",
+          amount: "Betrag",
+          durationMonths: "Laufzeit (Monate)",
+          country: "Land",
+          purpose: "Zweck",
+          interestRateOptional: "Zinssatz (optional)",
+          useTopProviderEstimate: "Top-Anbieter-Schätzung verwenden",
+          incomeRangeOptional: "Einkommensbereich (optional)",
+          employmentStatusOptional: "Beschäftigungsstatus (optional)",
+          fromCountry: "Von Land",
+          toCountry: "Nach Land",
+          currency: "Währung",
+          fromCurrency: "Von Währung",
+          toCurrency: "Nach Währung",
+          chooseCountry: "Land wählen",
+          protectionType: "Schutzart",
+          termLength: "Laufzeit",
+          duration: "Dauer",
+          sumInsured: "Versicherungssumme",
+          liabilityTarget: "Haftungsziel",
+          deviceValue: "Gerätewert",
+          coverageAmount: "Deckungsbetrag",
+          maxTripPrice: "Max. Reisepreis",
+          maxMonthlyPremium: "Max. Monatsbeitrag",
+          monthlyPremium: "Monatlicher Beitrag",
+          medicalCoverLevel: "Leistungsniveau medizinisch",
+          medicalCoverage: "Medizinische Deckung",
+          deductibleTier: "Selbstbehalt-Stufe",
+          deductible: "Selbstbehalt",
+          coverageRegion: "Deckungsregion",
+          region: "Region",
+          tripStyle: "Reisestil",
+          activity: "Aktivität",
+          visaCompliant: "Visa-konform",
+          anyRegion: "Beliebige Region",
+          any: "Beliebig",
+          yes: "Ja",
+          required: "Erforderlich",
+          off: "Aus",
+          rankedResults: "Sortierte Ergebnisse",
+          providersRanked: (count: number) =>
+            `${count} ${count === 1 ? "Anbieter" : "Anbieter"} sortiert`,
+          rankingDescription:
+            "Sortiert nach Relevanz, realem Ergebnis, Tempo, Einfachheit und Beliebtheit.",
+          topLead: "#1",
+          monthly: "Monatlich",
+          totalRepayable: "Gesamt zurückzuzahlen",
+          interestPaid: "Gezahlte Zinsen",
+          usingYourRate: "Mit deiner Zinsannahme",
+          estimatedFrom: "Geschätzt von",
+          updatingLiveComparison: "Live-Vergleich wird aktualisiert…",
+          marketDataUnavailable: "Marktdaten vorübergehend nicht verfügbar",
+          marketDataDescription:
+            "Versuche ein anderes Währungspaar oder lade gleich neu. Payn zeigt nur eine sortierte Liste, wenn ein echter Marktkurs vorliegt.",
+          noProvidersTitle: "Noch keine passenden Anbieter für diese Eingaben",
+          noProvidersDescription:
+            "Passe die Eingaben an und Payn berechnet die Anbieterliste sofort neu.",
+          checkDetails: "Details ansehen",
+          goToProvider: "Zum Anbieter",
+          compare: "Vergleichen",
+          sideBySideTitle: "Anbieter direkt nebeneinander",
+          sideBySideDescription:
+            "Vergleiche Anbieter innerhalb derselben Kategorie, ohne aktuelle Eingaben, Filter oder Merkliste zu verlieren.",
+          howRankingWorks: "So funktioniert das Ranking",
+          whatChangesTitle: "Was das Ranking verändert",
+          whatChangesBody:
+            "Eingabeänderungen berechnen Ergebnis, Tempo und Passung sofort neu. Betrag, Laufzeit, Land, Korridor, Währungspaar, Versicherungsart, Deckung, Selbstbehalt und Region beeinflussen die Liste.",
+          nextStepTitle: "Was du als Nächstes tun solltest",
+          nextStepBody:
+            "Öffne erst die Details in Payn, um die Abwägungen zu verstehen. Nutze den Anbieter-Link erst, wenn du außerhalb des Produkts weitermachen willst.",
+          currentLeadTradeoff: "Aktuelle Führungs-Abwägung",
+          estimatedResult:
+            "Geschätztes Ergebnis. Endbetrag kann abweichen. Exakten Kurs bitte beim Anbieter prüfen.",
+          insuranceDisclaimer:
+            "Nur geschätzter Preis und Deckung. Endgültige Preise, Ausschlüsse und Eignung bleiben beim Anbieter.",
+          generalDisclaimer:
+            "Payn vergleicht veröffentlichte Anbieter-Konditionen und geschätzte Kosten. Endgültige Eignung und Preise bleiben beim Anbieter.",
+        }
+      : {
+          loansTitle: "Compare consumer & personal loans — live",
+          transfersTitle: "Enter the transfer and compare what the recipient gets",
+          exchangeTitle: "Enter the exchange and compare the delivered rate",
+          insuranceTitle: "Choose the protection type first",
+          loansDescription:
+            `Digital lenders, banks, and fintechs offering consumer loans, personal loans, and small-ticket financing for ${marketLabel.toLowerCase()} — ranked by real monthly cost. Change amount, duration, rate assumption, income, employment, or purpose and results update instantly.`,
+          transfersDescription:
+            `Change the corridor, amount, or currency pair and the provider ranking updates for ${marketLabel.toLowerCase()} from the live quote and each fee model.`,
+          exchangeDescription:
+            `Payn uses the live market quote plus provider markups and fees to keep one ranked exchange list for ${marketLabel.toLowerCase()}.`,
+          insuranceDescription:
+            `Choose the protection type you actually need, then filter by coverage, region, deductible, trip duration, and visa fit before comparing providers in ${marketLabel.toLowerCase()}.`,
+          backToDiscover: "Back to Discover",
+          amount: "Amount",
+          durationMonths: "Duration (months)",
+          country: "Country",
+          purpose: "Purpose",
+          interestRateOptional: "Interest rate (optional)",
+          useTopProviderEstimate: "Use top-provider estimate",
+          incomeRangeOptional: "Income range (optional)",
+          employmentStatusOptional: "Employment status (optional)",
+          fromCountry: "From country",
+          toCountry: "To country",
+          currency: "Currency",
+          fromCurrency: "From currency",
+          toCurrency: "To currency",
+          chooseCountry: "Choose country",
+          protectionType: "Protection type",
+          termLength: "Term length",
+          duration: "Duration",
+          sumInsured: "Sum insured",
+          liabilityTarget: "Liability target",
+          deviceValue: "Device value",
+          coverageAmount: "Coverage amount",
+          maxTripPrice: "Max trip price",
+          maxMonthlyPremium: "Max monthly premium",
+          monthlyPremium: "Monthly premium",
+          medicalCoverLevel: "Medical cover level",
+          medicalCoverage: "Medical coverage",
+          deductibleTier: "Deductible tier",
+          deductible: "Deductible",
+          coverageRegion: "Coverage region",
+          region: "Region",
+          tripStyle: "Trip style",
+          activity: "Activity",
+          visaCompliant: "Visa compliant",
+          anyRegion: "Any region",
+          any: "Any",
+          yes: "Yes",
+          required: "Required",
+          off: "Off",
+          rankedResults: "Ranked results",
+          providersRanked: (count: number) =>
+            `${count} ${count === 1 ? "provider" : "providers"} ranked`,
+          rankingDescription:
+            "Sorted by relevance, real outcome, speed, simplicity, and popularity.",
+          topLead: "#1",
+          monthly: "Monthly",
+          totalRepayable: "Total repayable",
+          interestPaid: "Interest paid",
+          usingYourRate: "Using your rate assumption",
+          estimatedFrom: "Estimated from",
+          updatingLiveComparison: "Updating live comparison…",
+          marketDataUnavailable: "Market data temporarily unavailable",
+          marketDataDescription:
+            "Try another currency pair or refresh shortly. Payn will only show a ranked list when it has a real market quote.",
+          noProvidersTitle: "No providers match these inputs yet",
+          noProvidersDescription:
+            "Adjust the inputs and Payn will recalculate the provider list immediately.",
+          checkDetails: "Check details",
+          goToProvider: "Go to provider",
+          compare: "Compare",
+          sideBySideTitle: "Side-by-side provider view",
+          sideBySideDescription:
+            "Compare providers inside the same category without losing the current inputs, filters, or shortlist.",
+          howRankingWorks: "How ranking works",
+          whatChangesTitle: "What changes the ranking",
+          whatChangesBody:
+            "Input changes immediately recalculate outcome, speed, and fit. Amount, term, country, corridor, currency pair, insurance type, coverage, deductible, and region all affect the list.",
+          nextStepTitle: "What to do next",
+          nextStepBody:
+            "Open details to understand tradeoffs inside Payn, then use the provider link when you are ready to continue outside the product.",
+          currentLeadTradeoff: "Current lead tradeoff",
+          estimatedResult:
+            "Estimated result. Final amount may vary. Check provider for exact rate.",
+          insuranceDisclaimer:
+            "Estimated price and cover only. Final pricing, exclusions, and eligibility stay with the provider.",
+          generalDisclaimer:
+            "Payn compares published provider terms and estimated costs. Final eligibility and pricing stay with the provider.",
+        };
+  const localizedLoanPurposeOptions = loanPurposeOptions.map((option) => ({
+    ...option,
+    label:
+      locale === "de"
+        ? {
+            general: "Allgemein",
+            personal: "Persönlich",
+            car: "Auto",
+            device: "Gerät / Elektronik",
+          }[option.value]
+        : option.label,
+  }));
+  const localizedLoanIncomeRangeOptions = loanIncomeRangeOptions.map((option) => ({
+    ...option,
+    label:
+      locale === "de"
+        ? {
+            not_shared: "Nicht angegeben",
+            under_2000: "Unter 2.000 €",
+            "2000_3500": "2.000 € - 3.500 €",
+            "3500_5000": "3.500 € - 5.000 €",
+            "5000_plus": "5.000 €+",
+          }[option.value]
+        : option.label,
+  }));
+  const localizedLoanEmploymentOptions = loanEmploymentOptions.map((option) => ({
+    ...option,
+    label:
+      locale === "de"
+        ? {
+            not_shared: "Nicht angegeben",
+            salaried: "Angestellt",
+            self_employed: "Selbstständig",
+            part_time: "Teilzeit",
+            student: "Student",
+            retired: "Rentner",
+          }[option.value]
+        : option.label,
+  }));
   const defaultCountry = useMemo<CountryValue>(() => {
-    const profileCountry = (profile?.home_country ?? "other_eu").toLowerCase();
-    if (countryOptions.some((option) => option.value === profileCountry)) {
-      return profileCountry;
-    }
-    return "other_eu";
-  }, [countryOptions, profile?.home_country]);
+    return (
+      getValidCountryValue(countryOptions, preferredCountry) ||
+      getValidCountryValue(countryOptions, profile?.home_country)
+    );
+  }, [countryOptions, preferredCountry, profile?.home_country]);
+  const workspaceStateKey = useMemo(() => `product-category:${category}`, [category]);
+  const defaultWorkspaceState = useMemo(
+    () => getDefaultCategoryWorkspaceState(category, defaultCountry),
+    [category, defaultCountry],
+  );
+  const [workspaceStateLoaded, setWorkspaceStateLoaded] = useState(false);
+  const lastPreferredCountryRef = useRef(defaultCountry);
 
-  const [amount, setAmount] = useState(category === "loans" ? "5000" : "1000");
-  const [duration, setDuration] = useState(category === "insurance" ? "30" : "24");
-  const [country, setCountry] = useState<CountryValue>(defaultCountry);
-  const [purpose, setPurpose] = useState<(typeof loanPurposeOptions)[number]["value"]>("general");
-  const [fromCountry, setFromCountry] = useState<CountryValue>(defaultCountry);
-  const [toCountry, setToCountry] = useState<CountryValue>(defaultCountry);
-  const [fromCurrency, setFromCurrency] = useState("EUR");
-  const [toCurrency, setToCurrency] = useState(category === "exchange" ? "USD" : "GBP");
-  const [insuranceType, setInsuranceType] = useState<InsuranceSelection>("travel");
-  const [coverageAmount, setCoverageAmount] = useState("500000");
-  const [maxPrice, setMaxPrice] = useState("250");
-  const [minMedicalCoverage, setMinMedicalCoverage] = useState("0");
-  const [maxDeductible, setMaxDeductible] = useState("1000");
-  const [regionFilter, setRegionFilter] = useState<InsuranceRegionFilter>("all");
-  const [activityFilter, setActivityFilter] = useState<InsuranceActivityFilter>("all");
-  const [visaCompliantOnly, setVisaCompliantOnly] = useState(false);
-  const [compareSelection, setCompareSelection] = useState<string[]>([]);
+  const [amount, setAmount] = useState(defaultWorkspaceState.amount);
+  const [duration, setDuration] = useState(defaultWorkspaceState.duration);
+  const [country, setCountry] = useState<CountryValue>(defaultWorkspaceState.country);
+  const [purpose, setPurpose] = useState<LoanPurpose>(defaultWorkspaceState.purpose);
+  const [interestRate, setInterestRate] = useState(defaultWorkspaceState.interestRate);
+  const [incomeRange, setIncomeRange] = useState<LoanIncomeRange>(defaultWorkspaceState.incomeRange);
+  const [employmentStatus, setEmploymentStatus] = useState<LoanEmploymentStatus>(
+    defaultWorkspaceState.employmentStatus,
+  );
+  const [fromCountry, setFromCountry] = useState<CountryValue>(defaultWorkspaceState.fromCountry);
+  const [toCountry, setToCountry] = useState<CountryValue>(defaultWorkspaceState.toCountry);
+  const [fromCurrency, setFromCurrency] = useState(defaultWorkspaceState.fromCurrency);
+  const [toCurrency, setToCurrency] = useState(defaultWorkspaceState.toCurrency);
+  const [insuranceType, setInsuranceType] = useState<InsuranceSelection>(defaultWorkspaceState.insuranceType);
+  const [coverageAmount, setCoverageAmount] = useState(defaultWorkspaceState.coverageAmount);
+  const [maxPrice, setMaxPrice] = useState(defaultWorkspaceState.maxPrice);
+  const [minMedicalCoverage, setMinMedicalCoverage] = useState(defaultWorkspaceState.minMedicalCoverage);
+  const [maxDeductible, setMaxDeductible] = useState(defaultWorkspaceState.maxDeductible);
+  const [regionFilter, setRegionFilter] = useState<InsuranceRegionFilter>(defaultWorkspaceState.regionFilter);
+  const [activityFilter, setActivityFilter] = useState<InsuranceActivityFilter>(defaultWorkspaceState.activityFilter);
+  const [visaCompliantOnly, setVisaCompliantOnly] = useState(defaultWorkspaceState.visaCompliantOnly);
+  const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
   const [quote, setQuote] = useState<FxQuotePayload | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const updateCountry = (nextCountry: CountryValue) => {
+    setCountry(nextCountry);
+    onCountryChange?.(nextCountry);
+  };
+  const updateFromCountry = (nextCountry: CountryValue) => {
+    setFromCountry(nextCountry);
+    onCountryChange?.(nextCountry);
+  };
 
   const availableInsuranceTypes = useMemo(
     () => insuranceTypes.filter((type) => offers.some((offer) => getInsuranceType(offer) === type)),
     [offers],
   );
+
+  useEffect(() => {
+    const persistedState = readPersistedProductWorkspaceState(
+      workspaceStateKey,
+      defaultWorkspaceState,
+      userId,
+    );
+
+    setAmount(persistedState.amount);
+    setDuration(persistedState.duration);
+    setCountry(persistedState.country);
+    setPurpose(persistedState.purpose);
+    setInterestRate(persistedState.interestRate);
+    setIncomeRange(persistedState.incomeRange);
+    setEmploymentStatus(persistedState.employmentStatus);
+    setFromCountry(persistedState.fromCountry);
+    setToCountry(persistedState.toCountry);
+    setFromCurrency(persistedState.fromCurrency);
+    setToCurrency(persistedState.toCurrency);
+    setInsuranceType(persistedState.insuranceType);
+    setCoverageAmount(persistedState.coverageAmount);
+    setMaxPrice(persistedState.maxPrice);
+    setMinMedicalCoverage(persistedState.minMedicalCoverage);
+    setMaxDeductible(persistedState.maxDeductible);
+    setRegionFilter(persistedState.regionFilter);
+    setActivityFilter(persistedState.activityFilter);
+    setVisaCompliantOnly(persistedState.visaCompliantOnly);
+    setCompareSelection(persistedState.compareSelection);
+    setWorkspaceStateLoaded(true);
+  }, [defaultWorkspaceState, userId, workspaceStateKey]);
+
+  useEffect(() => {
+    if (!workspaceStateLoaded || !defaultCountry) {
+      return;
+    }
+
+    if (lastPreferredCountryRef.current === defaultCountry) {
+      return;
+    }
+
+    lastPreferredCountryRef.current = defaultCountry;
+    setCountry(defaultCountry);
+    setFromCountry(defaultCountry);
+  }, [defaultCountry, workspaceStateLoaded]);
+
+  useEffect(() => {
+    if (!workspaceStateLoaded) {
+      return;
+    }
+
+    writePersistedProductWorkspaceState(
+      workspaceStateKey,
+      {
+        amount,
+        duration,
+        country,
+        purpose,
+        interestRate,
+        incomeRange,
+        employmentStatus,
+        fromCountry,
+        toCountry,
+        fromCurrency,
+        toCurrency,
+        insuranceType,
+        coverageAmount,
+        maxPrice,
+        minMedicalCoverage,
+        maxDeductible,
+        regionFilter,
+        activityFilter,
+        visaCompliantOnly,
+        compareSelection,
+      },
+      userId,
+    );
+  }, [
+    activityFilter,
+    amount,
+    compareSelection,
+    country,
+    coverageAmount,
+    duration,
+    employmentStatus,
+    fromCountry,
+    fromCurrency,
+    incomeRange,
+    insuranceType,
+    interestRate,
+    maxDeductible,
+    maxPrice,
+    minMedicalCoverage,
+    purpose,
+    regionFilter,
+    toCountry,
+    toCurrency,
+    userId,
+    visaCompliantOnly,
+    workspaceStateKey,
+    workspaceStateLoaded,
+  ]);
 
   useEffect(() => {
     if (category !== "insurance") {
@@ -616,6 +1067,7 @@ export function DashboardCategoryWorkspace({
   const insightMap = useMemo(() => new Map(insights.map((item) => [item.offer.id, item])), [insights]);
   const amountValue = Number.parseFloat(amount) || 0;
   const durationValue = Number.parseInt(duration, 10) || 0;
+  const interestRateValue = Number.parseFloat(interestRate);
   const coverageAmountValue = Number.parseFloat(coverageAmount) || 0;
   const maxPriceValue = Number.parseFloat(maxPrice) || Number.POSITIVE_INFINITY;
   const minMedicalCoverageValue = Number.parseFloat(minMedicalCoverage) || 0;
@@ -649,19 +1101,19 @@ export function DashboardCategoryWorkspace({
           return false;
         }
 
-        if (durationValue > 0 && getInsuranceTripDuration(offer) < durationValue) {
+        if (insuranceUsesDuration(type) && durationValue > 0 && getInsuranceDurationValue(offer, type) < durationValue) {
           return false;
         }
 
-        if (regionFilter !== "all" && offer.attributes?.regionCoverage !== regionFilter) {
+        if (insuranceUsesRegion(type) && regionFilter !== "all" && offer.attributes?.regionCoverage !== regionFilter) {
           return false;
         }
 
-        if (activityFilter !== "all" && offer.attributes?.activityLevel !== activityFilter) {
+        if (insuranceUsesActivity(type) && activityFilter !== "all" && offer.attributes?.activityLevel !== activityFilter) {
           return false;
         }
 
-        if (visaCompliantOnly && !offer.attributes?.visaCompliant) {
+        if (insuranceUsesVisa(type) && visaCompliantOnly && !offer.attributes?.visaCompliant) {
           return false;
         }
 
@@ -729,22 +1181,30 @@ export function DashboardCategoryWorkspace({
 
         baseRows.push({
           offer,
-          primaryLabel: category === "transfers" ? "User gets" : "You get",
+          primaryLabel: category === "transfers" ? (locale === "de" ? "Empfänger erhält" : "User gets") : locale === "de" ? "Du erhältst" : "You get",
           primaryValue: formatCurrency(locale, result.finalAmount, toCurrency),
           summary:
             category === "transfers"
-              ? "Calculated from the current market quote, provider fee profile, and payout speed."
-              : "Calculated from the current market quote, provider markup, and conversion fee profile.",
+              ? locale === "de"
+                ? "Berechnet aus dem aktuellen Marktkurs, dem Gebührenprofil des Anbieters und der Auszahlungsgeschwindigkeit."
+                : "Calculated from the current market quote, provider fee profile, and payout speed."
+              : locale === "de"
+                ? "Berechnet aus dem aktuellen Marktkurs, dem Aufschlag des Anbieters und dem Umtausch-Gebührenprofil."
+                : "Calculated from the current market quote, provider markup, and conversion fee profile.",
           metrics: [
             { label: "Fee", value: formatCurrency(locale, result.totalFeeSource, fromCurrency) },
-            { label: "Speed", value: getCalculatorSpeedLabel(result.speedHours) },
+            { label: "Speed", value: getCalculatorSpeedLabel(result.speedHours, locale) },
             { label: "Rate", value: result.providerRate.toFixed(4) },
             { label: "Market", value: quote.rate.toFixed(4) },
           ],
           why:
             category === "transfers"
-              ? `It gives the strongest recipient outcome for ${fromCurrency} to ${toCurrency} after fees.`
-              : `It keeps the delivered conversion result strongest for ${fromCurrency} to ${toCurrency} after markups and fees.`,
+              ? locale === "de"
+                ? `Es liefert nach Gebühren das stärkste Empfänger-Ergebnis für ${fromCurrency} nach ${toCurrency}.`
+                : `It gives the strongest recipient outcome for ${fromCurrency} to ${toCurrency} after fees.`
+              : locale === "de"
+                ? `Es hält das effektive Umtausch-Ergebnis für ${fromCurrency} nach ${toCurrency} nach Aufschlägen und Gebühren am stärksten.`
+                : `It keeps the delivered conversion result strongest for ${fromCurrency} to ${toCurrency} after markups and fees.`,
           rawOutcomeValue: outcomeScore,
           outcomeDirection: "higher",
           popularityValue: popularity,
@@ -764,23 +1224,28 @@ export function DashboardCategoryWorkspace({
         const monthlyPayment = getLoanMonthlyPayment(amountValue, apr, durationValue);
         const text = getOfferText(offer);
         const popularity = getPopularityScore(offer, insightMap.get(offer.id));
-        const purposeBoost = purpose !== "general" && text.includes(purpose) ? 12 : 0;
+        const purposeBoost = getLoanPurposeBoost(text, purpose);
+        const incomeBoost = getLoanIncomeBoost(offer, incomeRange);
+        const employmentBoost = getLoanEmploymentBoost(offer, employmentStatus);
 
         baseRows.push({
           offer,
-          primaryLabel: "Monthly",
+          primaryLabel: copy.monthly,
           primaryValue: formatCurrency(locale, monthlyPayment),
           summary: normalizeDisplayText(offer.subtitle),
           metrics: [
             { label: "APR", value: normalizeDisplayText(getMetricValue(offer, ["APR"]) ?? "—") },
             { label: "Amount", value: normalizeDisplayText(getMetricValue(offer, ["Amount"]) ?? "—") },
-            { label: "Approval", value: inferSpeedValue(offer) <= 1 ? "Minutes" : inferSpeedValue(offer) <= 24 ? "24h" : "1-2 days" },
-            { label: "Term", value: `${durationValue} months` },
+            { label: "Approval", value: getLoanApprovalLabel(offer, locale) },
+            { label: "Term", value: `${durationValue} ${locale === "de" ? "Monate" : "months"}` },
           ],
-          why: "It balances lower monthly cost with a cleaner approval path for the amount and term you entered.",
+          why:
+            locale === "de"
+              ? "Es verbindet niedrigere Monatskosten mit einem klareren Zusagepfad für den eingegebenen Betrag und die Laufzeit."
+              : "It balances lower monthly cost with a cleaner approval path for the amount and term you entered.",
           rawOutcomeValue: monthlyPayment,
           outcomeDirection: "lower",
-          popularityValue: popularity + purposeBoost,
+          popularityValue: popularity + purposeBoost + incomeBoost + employmentBoost,
           feeValue: apr,
           speedValue: inferSpeedValue(offer),
           flexibilityValue: getSimplicityScore(offer),
@@ -794,23 +1259,35 @@ export function DashboardCategoryWorkspace({
         const priceValue = getInsurancePriceValue(offer);
         const popularity = getPopularityScore(offer, insightMap.get(offer.id));
         const flexibility = getInsuranceFlexibility(offer);
-        const regionCoverage = normalizeDisplayText(getMetricValue(offer, ["Region coverage", "Countries covered", "Worldwide protection"]) ?? "Check details");
+        const regionCoverage = normalizeDisplayText(
+          getMetricValue(offer, ["Region coverage", "Countries covered", "Worldwide protection"]) ??
+            copy.checkDetails,
+        );
         const currency = offer.metrics.some((metric) => metric.value.includes("USD")) ? "USD" : "EUR";
 
         baseRows.push({
           offer,
           primaryLabel:
             type === "travel" || type === "nomad"
-              ? "Estimated price"
+              ? locale === "de"
+                ? "Geschätzter Preis"
+                : "Estimated price"
               : type === "device"
-                ? "Monthly cover"
-                : "Monthly premium",
+                ? locale === "de"
+                  ? "Monatlicher Schutz"
+                  : "Monthly cover"
+                : copy.monthlyPremium,
           primaryValue: Number.isFinite(priceValue)
             ? formatCurrency(locale, priceValue, currency)
-            : normalizeDisplayText(getMetricValue(offer, ["Price", "Monthly premium"]) ?? "Check details"),
+            : normalizeDisplayText(
+                getMetricValue(offer, ["Price", "Monthly premium"]) ?? copy.checkDetails,
+              ),
           summary: normalizeDisplayText(offer.subtitle),
           metrics: getInsuranceMetrics(offer, type, locale),
-          why: `It stays inside ${getInsuranceTypeLabel(type).toLowerCase()} only, with a stronger balance of cover, price, and flexibility for ${regionCoverage.toLowerCase()}.`,
+          why:
+            locale === "de"
+              ? `Es bleibt nur innerhalb von ${getInsuranceTypeLabel(type, locale).toLowerCase()} und bringt für ${regionCoverage.toLowerCase()} die stärkere Balance aus Schutz, Preis und Flexibilität.`
+              : `It stays inside ${getInsuranceTypeLabel(type, locale).toLowerCase()} only, with a stronger balance of cover, price, and flexibility for ${regionCoverage.toLowerCase()}.`,
           rawOutcomeValue: Number.isFinite(priceValue) ? priceValue : 999,
           outcomeDirection: "lower",
           popularityValue: popularity,
@@ -847,7 +1324,11 @@ export function DashboardCategoryWorkspace({
           countryFitScore * 0.52 +
             speedScore * 0.22 +
             simplicityScore * 0.14 +
-            (category === "loans" && purpose !== "general" && getOfferText(row.offer).includes(purpose) ? 12 : 0),
+            (category === "loans"
+              ? getLoanPurposeBoost(getOfferText(row.offer), purpose) +
+                getLoanIncomeBoost(row.offer, incomeRange) +
+                getLoanEmploymentBoost(row.offer, employmentStatus)
+              : 0),
         );
         const diversityBoost = clampPercent(
           86 -
@@ -923,6 +1404,8 @@ export function DashboardCategoryWorkspace({
     locale,
     maxDeductibleValue,
     minMedicalCoverageValue,
+    employmentStatus,
+    incomeRange,
     purpose,
     quote,
     scopedOffers,
@@ -933,28 +1416,100 @@ export function DashboardCategoryWorkspace({
     setCompareSelection((current) => current.filter((id) => rankedResults.some((row) => row.offer.id === id)));
   }, [rankedResults]);
 
-  const selectedCompareOffers = rankedResults
+  const selectedCompareRows = rankedResults
     .filter((row) => compareSelection.includes(row.offer.id))
-    .slice(0, 3)
-    .map((row) => row.offer);
+    .slice(0, 3);
+  const selectedCompareOffers = selectedCompareRows.map((row) => row.offer);
 
   const disclaimer =
     category === "transfers" || category === "exchange"
-      ? "Estimated result. Final amount may vary. Check provider for exact rate."
+      ? copy.estimatedResult
       : category === "insurance"
-        ? "Estimated price and cover only. Final pricing, exclusions, and eligibility stay with the provider."
-        : "Payn compares published provider terms and estimated costs. Final eligibility and pricing stay with the provider.";
+        ? copy.insuranceDisclaimer
+        : copy.generalDisclaimer;
 
   const topResult = rankedResults[0] ?? null;
   const loanSummary = (() => {
     if (category !== "loans" || !topResult || amountValue <= 0 || durationValue <= 0) return null;
-    const apr = getLoanApr(topResult.offer);
+    const apr =
+      Number.isFinite(interestRateValue) && interestRateValue > 0
+        ? interestRateValue
+        : getLoanApr(topResult.offer);
     const monthly = getLoanMonthlyPayment(amountValue, apr, durationValue);
     const total = monthly * durationValue;
     const interest = total - amountValue;
-    return { monthly, total, interest, apr };
+    return {
+      monthly,
+      total,
+      interest,
+      apr,
+      source:
+        Number.isFinite(interestRateValue) && interestRateValue > 0
+          ? copy.usingYourRate
+          : `${copy.estimatedFrom} ${topResult.offer.providerName}`,
+    };
   })();
-  const resultCountLabel = `${rankedResults.length} ${rankedResults.length === 1 ? "provider" : "providers"} ranked`;
+  const comparePrimaryMetricLabel = category === "insurance" ? undefined : selectedCompareRows[0]?.primaryLabel;
+  const compareEntries = useMemo<ProductCompareEntry[]>(
+    () =>
+      selectedCompareRows.map((row) => {
+        if (category === "loans") {
+          const apr = getLoanApr(row.offer);
+          const monthly = getLoanMonthlyPayment(amountValue, apr, durationValue);
+          const total = monthly * durationValue;
+          const interest = total - amountValue;
+
+          return {
+            offer: row.offer,
+            primaryMetricValue: row.primaryValue,
+            fees: formatCurrency(locale, interest),
+            speed: getMetricDisplayValue(row.metrics, ["Approval"]),
+            rateOrApr: getMetricDisplayValue(row.metrics, ["APR"]),
+            keyBenefits:
+              row.tags.map((tag) => translateUiToken(locale, tag.label)).join(" · ") ||
+              row.offer.bestFor.slice(0, 2).map((item) => translateUiToken(locale, item)).join(" · "),
+            bestFor: row.offer.bestFor.slice(0, 3).map((item) => translateUiToken(locale, item)).join(" · "),
+          };
+        }
+
+        if (category === "transfers" || category === "exchange") {
+          return {
+            offer: row.offer,
+            primaryMetricValue: row.primaryValue,
+            fees: getMetricDisplayValue(row.metrics, ["Fee"]),
+            speed: getMetricDisplayValue(row.metrics, ["Speed"]),
+            rateOrApr: getMetricDisplayValue(row.metrics, ["Rate"]),
+            keyBenefits:
+              row.tags.map((tag) => translateUiToken(locale, tag.label)).join(" · ") ||
+              row.offer.bestFor.slice(0, 2).map((item) => translateUiToken(locale, item)).join(" · "),
+            bestFor: row.offer.bestFor.slice(0, 3).map((item) => translateUiToken(locale, item)).join(" · "),
+          };
+        }
+
+        return {
+          offer: row.offer,
+          primaryMetricValue: row.primaryValue,
+          fees: getMetricDisplayValue(row.metrics, ["Price", "Monthly premium", "Monthly cover"]),
+          speed: row.offer.attributes?.instantActivation
+            ? locale === "de"
+              ? "Sofort aktiv"
+              : "Instant activation"
+            : translateUiToken(locale, "Check provider"),
+          rateOrApr: getMetricDisplayValue(
+            row.metrics,
+            ["Medical cover", "Coverage", "Insured amount"],
+            copy.checkDetails,
+          ),
+          keyBenefits:
+            row.offer.attributes?.comparisonHighlights?.slice(0, 2).join(" · ") ||
+            row.tags.map((tag) => translateUiToken(locale, tag.label)).join(" · ") ||
+            row.offer.bestFor.slice(0, 2).map((item) => translateUiToken(locale, item)).join(" · "),
+          bestFor: row.offer.bestFor.slice(0, 3).map((item) => translateUiToken(locale, item)).join(" · "),
+        };
+      }),
+    [amountValue, category, durationValue, locale, selectedCompareRows],
+  );
+  const resultCountLabel = copy.providersRanked(rankedResults.length);
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
       <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
@@ -964,48 +1519,94 @@ export function DashboardCategoryWorkspace({
                   {dictionary.categories[category]}
                 </p>
                 <h1 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">
-                  {category === "loans" && "Compare consumer & personal loans — live"}
-                  {category === "transfers" && "Enter the transfer and compare what the recipient gets"}
-                  {category === "exchange" && "Enter the exchange and compare the delivered rate"}
-                  {category === "insurance" && "Choose the protection type first"}
+                  {category === "loans" && copy.loansTitle}
+                  {category === "transfers" && copy.transfersTitle}
+                  {category === "exchange" && copy.exchangeTitle}
+                  {category === "insurance" && copy.insuranceTitle}
                 </h1>
                 <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-                  {category === "loans" &&
-                    "Digital lenders, banks, and fintechs offering personal credit — ranked by real monthly cost. Change amount, duration, country, or purpose and results update instantly."}
-                  {category === "transfers" &&
-                    "Change the corridor, amount, or currency pair and the provider ranking updates from the live quote and each fee model."}
-                  {category === "exchange" &&
-                    "Payn uses the live market quote plus provider markups and fees to keep one ranked exchange list."}
-                  {category === "insurance" &&
-                    "Choose the protection type you actually need, then filter by coverage, region, deductible, trip duration, and visa fit before comparing providers."}
+                  {category === "loans" && copy.loansDescription}
+                  {category === "transfers" && copy.transfersDescription}
+                  {category === "exchange" && copy.exchangeDescription}
+                  {category === "insurance" && copy.insuranceDescription}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link href={discoverHref} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-                  Back to Discover
+                  {copy.backToDiscover}
                 </Link>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {category === "loans" ? (
             <>
-              <InputField label="Amount">
-                <input value={amount} onChange={(event) => setAmount(event.target.value)} className={amountFieldClassName()} inputMode="decimal" />
+              <InputField label={copy.amount}>
+                <input
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  className={amountFieldClassName()}
+                  inputMode="decimal"
+                />
               </InputField>
-              <InputField label="Duration">
-                <input value={duration} onChange={(event) => setDuration(event.target.value)} className={fieldClassName()} inputMode="numeric" />
+              <InputField label={copy.durationMonths}>
+                <input
+                  value={duration}
+                  onChange={(event) => setDuration(event.target.value)}
+                  className={fieldClassName()}
+                  inputMode="numeric"
+                />
               </InputField>
-              <InputField label="Country">
-                <select value={country} onChange={(event) => setCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
                   {countryOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </InputField>
-              <InputField label="Purpose">
-                <select value={purpose} onChange={(event) => setPurpose(event.target.value as (typeof loanPurposeOptions)[number]["value"])} className={fieldClassName()}>
-                  {loanPurposeOptions.map((option) => (
+              <InputField label={copy.purpose}>
+                <select
+                  value={purpose}
+                  onChange={(event) => setPurpose(event.target.value as LoanPurpose)}
+                  className={fieldClassName()}
+                >
+                  {localizedLoanPurposeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={copy.interestRateOptional}>
+                <input
+                  value={interestRate}
+                  onChange={(event) => setInterestRate(event.target.value)}
+                  className={fieldClassName()}
+                  inputMode="decimal"
+                  placeholder={copy.useTopProviderEstimate}
+                />
+              </InputField>
+              <InputField label={copy.incomeRangeOptional}>
+                <select
+                  value={incomeRange}
+                  onChange={(event) => setIncomeRange(event.target.value as LoanIncomeRange)}
+                  className={fieldClassName()}
+                >
+                  {localizedLoanIncomeRangeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={copy.employmentStatusOptional}>
+                <select
+                  value={employmentStatus}
+                  onChange={(event) => setEmploymentStatus(event.target.value as LoanEmploymentStatus)}
+                  className={fieldClassName()}
+                >
+                  {localizedLoanEmploymentOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
@@ -1015,25 +1616,27 @@ export function DashboardCategoryWorkspace({
 
           {category === "transfers" ? (
             <>
-              <InputField label="From country">
-                <select value={fromCountry} onChange={(event) => setFromCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+              <InputField label={copy.fromCountry}>
+                <select value={fromCountry} onChange={(event) => updateFromCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+                  <option value="">{copy.chooseCountry}</option>
                   {countryOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </InputField>
-              <InputField label="To country">
+              <InputField label={copy.toCountry}>
                 <select value={toCountry} onChange={(event) => setToCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+                  <option value="">{copy.chooseCountry}</option>
                   {countryOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </InputField>
-              <InputField label="Amount">
+              <InputField label={copy.amount}>
                 <input value={amount} onChange={(event) => setAmount(event.target.value)} className={amountFieldClassName()} inputMode="decimal" />
               </InputField>
-              <InputField label="Currency">
-                <div className="grid grid-cols-2 gap-2">
+              <InputField label={copy.currency}>
+                <div className="grid gap-2 sm:grid-cols-2">
                   <CurrencySelect value={fromCurrency} onChange={setFromCurrency} />
                   <CurrencySelect value={toCurrency} onChange={setToCurrency} />
                 </div>
@@ -1043,17 +1646,18 @@ export function DashboardCategoryWorkspace({
 
           {category === "exchange" ? (
             <>
-              <InputField label="Amount">
+              <InputField label={copy.amount}>
                 <input value={amount} onChange={(event) => setAmount(event.target.value)} className={amountFieldClassName()} inputMode="decimal" />
               </InputField>
-              <InputField label="From currency">
+              <InputField label={copy.fromCurrency}>
                 <CurrencySelect value={fromCurrency} onChange={setFromCurrency} />
               </InputField>
-              <InputField label="To currency">
+              <InputField label={copy.toCurrency}>
                 <CurrencySelect value={toCurrency} onChange={setToCurrency} />
               </InputField>
-              <InputField label="Market">
-                <select value={country} onChange={(event) => setCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+              <InputField label={copy.country}>
+                <select value={country} onChange={(event) => updateCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+                  <option value="">{copy.chooseCountry}</option>
                   {countryOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
@@ -1065,7 +1669,7 @@ export function DashboardCategoryWorkspace({
           {category === "insurance" ? (
             <>
               <div className="md:col-span-2 xl:col-span-4">
-                <InputField label="Protection type">
+                <InputField label={copy.protectionType}>
                   <div className="flex flex-wrap gap-2">
                     {availableInsuranceTypes.map((type) => (
                       <button
@@ -1076,85 +1680,108 @@ export function DashboardCategoryWorkspace({
                           insuranceType === type ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
                         }`}
                       >
-                        {getInsuranceTypeLabel(type)}
+                        {getInsuranceTypeLabel(type, locale)}
                       </button>
                     ))}
                   </div>
                 </InputField>
               </div>
-              <InputField label="Country">
-                <select value={country} onChange={(event) => setCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+              <InputField label={copy.country}>
+                <select value={country} onChange={(event) => updateCountry(event.target.value as CountryValue)} className={fieldClassName()}>
+                  <option value="">{copy.chooseCountry}</option>
                   {countryOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </InputField>
-              <InputField label="Duration">
-                <input value={duration} onChange={(event) => setDuration(event.target.value)} className={fieldClassName()} inputMode="numeric" />
+              {insuranceUsesDuration(insuranceType) ? (
+                <InputField label={insuranceType === "life" ? copy.termLength : copy.duration}>
+                  <input value={duration} onChange={(event) => setDuration(event.target.value)} className={fieldClassName()} inputMode="numeric" />
+                </InputField>
+              ) : null}
+              <InputField
+                label={
+                  insuranceType === "life"
+                    ? copy.sumInsured
+                    : insuranceType === "auto"
+                      ? copy.liabilityTarget
+                      : insuranceType === "device"
+                        ? copy.deviceValue
+                        : copy.coverageAmount
+                }
+              >
+                <input
+                  value={coverageAmount}
+                  onChange={(event) => setCoverageAmount(event.target.value)}
+                  className={fieldClassName()}
+                  inputMode="numeric"
+                />
               </InputField>
-              <InputField label="Coverage amount">
-                <div className="grid gap-2 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3">
-                  <input type="range" min="50000" max="5000000" step="50000" value={coverageAmount} onChange={(event) => setCoverageAmount(event.target.value)} />
-                  <span className="text-sm font-semibold text-ink">{formatCurrency(locale, coverageAmountValue)}</span>
-                </div>
-              </InputField>
-              <InputField label="Price range">
+              <InputField label={insuranceType === "travel" || insuranceType === "nomad" ? copy.maxTripPrice : copy.maxMonthlyPremium}>
                 <select value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} className={fieldClassName()}>
-                  <option value="40">Up to €40</option>
-                  <option value="80">Up to €80</option>
-                  <option value="150">Up to €150</option>
-                  <option value="250">Up to €250</option>
-                  <option value="9999">Any price</option>
+                  <option value="40">{locale === "de" ? "Bis 40 €" : "Up to €40"}</option>
+                  <option value="80">{locale === "de" ? "Bis 80 €" : "Up to €80"}</option>
+                  <option value="150">{locale === "de" ? "Bis 150 €" : "Up to €150"}</option>
+                  <option value="250">{locale === "de" ? "Bis 250 €" : "Up to €250"}</option>
+                  <option value="9999">{locale === "de" ? "Jeder Preis" : "Any price"}</option>
                 </select>
               </InputField>
-              <InputField label="Medical coverage">
-                <select value={minMedicalCoverage} onChange={(event) => setMinMedicalCoverage(event.target.value)} className={fieldClassName()}>
-                  <option value="0">Any</option>
-                  <option value="100000">€100k+</option>
-                  <option value="500000">€500k+</option>
-                  <option value="1000000">€1M+</option>
-                  <option value="5000000">€5M+</option>
-                </select>
-              </InputField>
-              <InputField label="Deductible">
+              {insuranceType === "travel" || insuranceType === "nomad" || insuranceType === "health" ? (
+                <InputField label={insuranceType === "health" ? copy.medicalCoverLevel : copy.medicalCoverage}>
+                  <select value={minMedicalCoverage} onChange={(event) => setMinMedicalCoverage(event.target.value)} className={fieldClassName()}>
+                    <option value="0">{copy.any}</option>
+                    <option value="100000">€100k+</option>
+                    <option value="500000">€500k+</option>
+                    <option value="1000000">€1M+</option>
+                    <option value="5000000">€5M+</option>
+                  </select>
+                </InputField>
+              ) : null}
+              <InputField label={insuranceType === "auto" ? copy.deductibleTier : copy.deductible}>
                 <select value={maxDeductible} onChange={(event) => setMaxDeductible(event.target.value)} className={fieldClassName()}>
-                  <option value="0">No deductible</option>
-                  <option value="250">Up to €250</option>
-                  <option value="500">Up to €500</option>
-                  <option value="1000">Up to €1,000</option>
-                  <option value="99999">Any deductible</option>
+                  <option value="0">{locale === "de" ? "Kein Selbstbehalt" : "No deductible"}</option>
+                  <option value="250">{locale === "de" ? "Bis 250 €" : "Up to €250"}</option>
+                  <option value="500">{locale === "de" ? "Bis 500 €" : "Up to €500"}</option>
+                  <option value="1000">{locale === "de" ? "Bis 1.000 €" : "Up to €1,000"}</option>
+                  <option value="99999">{locale === "de" ? "Jeder Selbstbehalt" : "Any deductible"}</option>
                 </select>
               </InputField>
-              <InputField label="Region">
-                <select value={regionFilter} onChange={(event) => setRegionFilter(event.target.value as InsuranceRegionFilter)} className={fieldClassName()}>
-                  <option value="all">Any region</option>
-                  <option value="eu">EU</option>
-                  <option value="regional">Regional</option>
-                  <option value="worldwide">Worldwide</option>
-                </select>
-              </InputField>
-              <InputField label="Activity">
-                <div className="flex gap-2">
-                  {(["all", "basic", "extreme"] as InsuranceActivityFilter[]).map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setActivityFilter(item)}
-                      className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                        activityFilter === item ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
-                      }`}
-                    >
-                      {item === "all" ? "Any" : normalizeDisplayText(item)}
-                    </button>
-                  ))}
-                </div>
-              </InputField>
-              <InputField label="Visa compliant">
-                <button type="button" onClick={() => setVisaCompliantOnly((current) => !current)} className={`${fieldClassName()} flex items-center justify-between`}>
-                  <span>{visaCompliantOnly ? "Yes" : "Any"}</span>
-                  <Tag tone={visaCompliantOnly ? "success" : "muted"}>{visaCompliantOnly ? "Required" : "Off"}</Tag>
-                </button>
-              </InputField>
+              {insuranceUsesRegion(insuranceType) ? (
+                <InputField label={insuranceType === "health" ? copy.coverageRegion : copy.region}>
+                  <select value={regionFilter} onChange={(event) => setRegionFilter(event.target.value as InsuranceRegionFilter)} className={fieldClassName()}>
+                    <option value="all">{copy.anyRegion}</option>
+                    <option value="eu">EU</option>
+                    <option value="regional">{locale === "de" ? "Regional" : "Regional"}</option>
+                    <option value="worldwide">{locale === "de" ? "Weltweit" : "Worldwide"}</option>
+                  </select>
+                </InputField>
+              ) : null}
+              {insuranceUsesActivity(insuranceType) ? (
+                <InputField label={insuranceType === "nomad" ? copy.tripStyle : copy.activity}>
+                  <div className="flex flex-wrap gap-2">
+                    {(["all", "basic", "extreme"] as InsuranceActivityFilter[]).map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setActivityFilter(item)}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                          activityFilter === item ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
+                        }`}
+                      >
+                        {item === "all" ? copy.any : normalizeDisplayText(item)}
+                      </button>
+                    ))}
+                  </div>
+                </InputField>
+              ) : null}
+              {insuranceUsesVisa(insuranceType) ? (
+                <InputField label={copy.visaCompliant}>
+                  <button type="button" onClick={() => setVisaCompliantOnly((current) => !current)} className={`${fieldClassName()} flex items-center justify-between`}>
+                    <span>{visaCompliantOnly ? copy.yes : copy.any}</span>
+                    <Tag tone={visaCompliantOnly ? "success" : "muted"}>{visaCompliantOnly ? copy.required : copy.off}</Tag>
+                  </button>
+                </InputField>
+              ) : null}
             </>
           ) : null}
             </div>
@@ -1163,16 +1790,21 @@ export function DashboardCategoryWorkspace({
       <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">Ranked results</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.rankedResults}</p>
             <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">{resultCountLabel}</h2>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-              Sorted by relevance, real outcome, speed, simplicity, and popularity. {disclaimer}
+              {copy.rankingDescription} {disclaimer}
             </p>
+            {quote?.delayed && quote.sourceName === "Cached estimate" ? (
+              <p className="mt-2 text-[11px] text-amber-600">
+                Using indicative rates — live market data temporarily unavailable.
+              </p>
+            ) : null}
           </div>
 
           {topResult ? (
             <div className="rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3 text-sm text-ink-secondary">
-              <span className="font-semibold text-ink">#1 {topResult.offer.providerName}</span>
+              <span className="font-semibold text-ink">{copy.topLead} {topResult.offer.providerName}</span>
               {" · "}
               {topResult.primaryLabel}: {topResult.primaryValue}
             </div>
@@ -1180,41 +1812,44 @@ export function DashboardCategoryWorkspace({
         </div>
 
         {loanSummary ? (
-          <div className="mt-5 grid grid-cols-2 gap-3 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] p-4 sm:grid-cols-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Monthly</p>
-              <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.monthly)}</p>
+          <div className="mt-5 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] p-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{copy.monthly}</p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.monthly)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{copy.totalRepayable}</p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.total)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{copy.interestPaid}</p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.interest)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">APR</p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{loanSummary.apr.toFixed(1)}%</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Total cost</p>
-              <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.total)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Interest paid</p>
-              <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, loanSummary.interest)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Est. APR</p>
-              <p className="mt-1 text-xl font-bold tracking-tight text-ink">{loanSummary.apr.toFixed(1)}%</p>
-            </div>
+            <p className="mt-3 text-sm text-ink-secondary">{loanSummary.source}</p>
           </div>
         ) : null}
 
         {quoteLoading ? (
           <div className="mt-6 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-10 text-center text-sm text-ink-secondary">
-            Updating live comparison…
+            {copy.updatingLiveComparison}
           </div>
         ) : rankedResults.length === 0 ? (
           <div className="mt-6">
             <DashboardEmptyState
-              title={category === "transfers" || category === "exchange" ? "Market data temporarily unavailable" : "No providers match these inputs yet"}
-              description={category === "transfers" || category === "exchange" ? "Try another currency pair or refresh shortly. Payn will only show a ranked list when it has a real market quote." : "Adjust the inputs and Payn will recalculate the provider list immediately."}
+              title={category === "transfers" || category === "exchange" ? copy.marketDataUnavailable : copy.noProvidersTitle}
+              description={category === "transfers" || category === "exchange" ? copy.marketDataDescription : copy.noProvidersDescription}
               href={discoverHref}
-              cta="Back to Discover"
+              cta={copy.backToDiscover}
             />
           </div>
         ) : (
-          <div className="mt-6 divide-y divide-[#ECEDEF]">
+          <div className="mt-6 grid gap-3">
             {rankedResults.map((row, index) => (
               <DecisionResultRow
                 key={row.offer.id}
@@ -1227,8 +1862,8 @@ export function DashboardCategoryWorkspace({
                 metrics={row.metrics}
                 tags={row.tags}
                 why={index === 0 ? row.why : undefined}
-                detailsLabel="Check details"
-                providerLabel="Go to provider"
+                detailsLabel={copy.checkDetails}
+                providerLabel={copy.goToProvider}
                 highlighted={index < 3}
                 extraActions={
                   (
@@ -1241,12 +1876,10 @@ export function DashboardCategoryWorkspace({
                             : [...current, row.offer.id].slice(0, 3),
                         )
                       }
-                      className={buttonStyles({
-                        variant: compareSelection.includes(row.offer.id) ? "primary" : "ghost",
-                        size: "sm",
-                      })}
+                      className={getCompareToggleClassName(compareSelection.includes(row.offer.id))}
                     >
-                      {compareSelection.includes(row.offer.id) ? "Comparing" : "Compare"}
+                      <span>{compareSelection.includes(row.offer.id) ? "[x]" : "[ ]"}</span>
+                      <span>{copy.compare}</span>
                     </button>
                   )
                 }
@@ -1264,33 +1897,38 @@ export function DashboardCategoryWorkspace({
             offers={selectedCompareOffers}
           />
         ) : (
-          <GenericCompareTable
+          <ProductCompareTable
             locale={locale}
-            category={category}
-            offers={selectedCompareOffers}
+            entries={compareEntries}
+            primaryMetricLabel={comparePrimaryMetricLabel}
+            title={copy.sideBySideTitle}
+            description={copy.sideBySideDescription}
+            onRemove={(offerId) =>
+              setCompareSelection((current) => current.filter((id) => id !== offerId))
+            }
           />
         )
       ) : null}
 
       <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">How ranking works</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.howRankingWorks}</p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
-            <p className="text-sm font-semibold text-ink">What changes the ranking</p>
+            <p className="text-sm font-semibold text-ink">{copy.whatChangesTitle}</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Input changes immediately recalculate outcome, speed, and fit. Amount, term, country, corridor, currency pair, insurance type, coverage, deductible, and region all affect the list.
+              {copy.whatChangesBody}
             </p>
           </div>
           <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
-            <p className="text-sm font-semibold text-ink">What to do next</p>
+            <p className="text-sm font-semibold text-ink">{copy.nextStepTitle}</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Open details to understand tradeoffs inside Payn, then use the provider link when you are ready to continue outside the product.
+              {copy.nextStepBody}
             </p>
           </div>
         </div>
         {topResult ? (
           <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
-            Current lead tradeoff: {getOfferTradeoff(topResult.offer)}
+            {copy.currentLeadTradeoff}: {translateTradeoff(locale, getOfferTradeoff(topResult.offer))}
           </p>
         ) : null}
       </section>
