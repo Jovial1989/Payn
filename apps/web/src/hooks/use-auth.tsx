@@ -10,6 +10,12 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  clearPersistedProfileDraft,
+  mergeProfileWithPersistedDraft,
+  readPersistedProfileDraft,
+  writePersistedProfileDraft,
+} from "@/lib/profile-persistence";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 
 interface AuthState {
@@ -25,6 +31,7 @@ interface AuthState {
     password: string,
   ) => Promise<{ error: string | null; hasSession: boolean; requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
   refreshProfile: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
@@ -42,8 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (userId: string) => {
       const nextProfile = {
         user_id: userId,
+        first_name: null,
+        last_name: null,
         selected_categories: [],
         home_country: null,
+        market_scope: "eu_fallback" as const,
         target_countries: [],
         goals: [],
         user_type: "personal" as const,
@@ -73,13 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (data) {
-        setProfile(data as UserProfile | null);
+        setProfile(mergeProfileWithPersistedDraft(userId, data as UserProfile));
         return;
       }
 
       if (!error || error.code === "PGRST116") {
         const fallbackProfile = await createDefaultProfile(userId);
-        setProfile(fallbackProfile as UserProfile);
+        setProfile(mergeProfileWithPersistedDraft(userId, fallbackProfile as UserProfile));
         return;
       }
 
@@ -100,6 +110,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
         if (session?.user) {
+          const cachedDraft = readPersistedProfileDraft(session.user.id);
+          if (cachedDraft) {
+            setProfile(
+              mergeProfileWithPersistedDraft(session.user.id, {
+                user_id: session.user.id,
+                first_name: null,
+                last_name: null,
+                selected_categories: [],
+                home_country: null,
+                market_scope: cachedDraft.market_scope,
+                target_countries: [],
+                goals: [],
+                user_type: "personal",
+                spending_range: null,
+                transfer_range: null,
+                loan_range: null,
+                onboarding_completed: false,
+                created_at: new Date().toISOString(),
+                updated_at: cachedDraft.updated_at,
+              } satisfies UserProfile),
+            );
+            setLoading(false);
+            void fetchProfile(session.user.id);
+            return;
+          }
+
           await fetchProfile(session.user.id);
         }
       } catch {
@@ -119,6 +155,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+        const cachedDraft = readPersistedProfileDraft(session.user.id);
+        if (cachedDraft) {
+          setProfile(
+            mergeProfileWithPersistedDraft(session.user.id, {
+              user_id: session.user.id,
+              first_name: null,
+              last_name: null,
+              selected_categories: [],
+              home_country: null,
+              market_scope: cachedDraft.market_scope,
+              target_countries: [],
+              goals: [],
+              user_type: "personal",
+              spending_range: null,
+              transfer_range: null,
+              loan_range: null,
+              onboarding_completed: false,
+              created_at: new Date().toISOString(),
+              updated_at: cachedDraft.updated_at,
+            } satisfies UserProfile),
+          );
+        }
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
@@ -164,6 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    const currentUserId = user?.id ?? null;
     await Promise.allSettled([
       supabase.auth.signOut({ scope: "local" }),
       fetch("/api/v1/auth/signout", {
@@ -173,9 +232,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }),
     ]);
 
+    clearPersistedProfileDraft(currentUserId);
     setUser(null);
     setProfile(null);
-  }, [supabase]);
+  }, [supabase, user?.id]);
+
+  const requestPasswordReset = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+
+      return { error: error?.message ?? null };
+    },
+    [supabase],
+  );
 
   const refreshProfile = useCallback(async () => {
     if (user) await fetchProfile(user.id);
@@ -185,8 +256,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (data: Partial<UserProfile>) => {
       if (!user) return;
 
+      writePersistedProfileDraft(user.id, {
+        first_name: data.first_name ?? undefined,
+        last_name: data.last_name ?? undefined,
+        selected_categories: data.selected_categories ?? undefined,
+        goals: data.goals ?? undefined,
+        home_country: data.home_country ?? undefined,
+        user_type: data.user_type ?? undefined,
+        market_scope: data.market_scope ?? undefined,
+      });
+
       // Optimistic local update
-      setProfile((prev) => (prev ? { ...prev, ...data } : prev));
+      setProfile((prev) =>
+        mergeProfileWithPersistedDraft(user.id, {
+          user_id: user.id,
+          first_name: prev?.first_name ?? null,
+          last_name: prev?.last_name ?? null,
+          selected_categories: prev?.selected_categories ?? [],
+          home_country: prev?.home_country ?? null,
+          market_scope: prev?.market_scope ?? "eu_fallback",
+          target_countries: prev?.target_countries ?? [],
+          goals: prev?.goals ?? [],
+          user_type: prev?.user_type ?? "personal",
+          spending_range: prev?.spending_range ?? null,
+          transfer_range: prev?.transfer_range ?? null,
+          loan_range: prev?.loan_range ?? null,
+          onboarding_completed: prev?.onboarding_completed ?? false,
+          created_at: prev?.created_at ?? new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...data,
+        }),
+      );
 
       const { error } = await supabase.from("user_profiles").upsert(
         {
@@ -198,11 +298,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (error) {
-        // Revert optimistic update on failure
-        await fetchProfile(user.id);
+        throw error;
       }
     },
-    [supabase, user, fetchProfile],
+    [supabase, user],
   );
 
   const value = useMemo(
@@ -213,10 +312,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signInWithEmail,
       signUpWithEmail,
       signOut,
+      requestPasswordReset,
       refreshProfile,
       updateProfile,
     }),
-    [user, profile, loading, signInWithEmail, signUpWithEmail, signOut, refreshProfile, updateProfile],
+    [
+      user,
+      profile,
+      loading,
+      signInWithEmail,
+      signUpWithEmail,
+      signOut,
+      requestPasswordReset,
+      refreshProfile,
+      updateProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

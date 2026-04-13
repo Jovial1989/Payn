@@ -1,29 +1,52 @@
 "use client";
 
 import type { MarketplaceOffer } from "@payn/types";
+import clsx from "clsx";
 import { useMemo } from "react";
-import { buttonStyles } from "@/components/button";
+import { providerCtaStyles } from "@/components/button";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 
 export function ProviderLinkButton({
   offer,
   label,
-  variant = "secondary",
-  size = "md",
   source = "offer_card",
+  fullWidth = false,
+  className,
 }: {
   offer: MarketplaceOffer;
   label: string;
-  variant?: "primary" | "secondary" | "ghost";
-  size?: "sm" | "md" | "lg";
   source?: "offer_card" | "offer_detail";
+  fullWidth?: boolean;
+  className?: string;
 }) {
   const { user } = useAuth();
+  const { country } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-  const targetUrl = offer.affiliateLink || offer.providerWebsiteUrl;
+
+  // Country-aware URL resolution: per-country deep link → affiliateLink → brand homepage
+  const targetUrl =
+    offer.providerUrls?.[country] ??
+    offer.affiliateLink ??
+    offer.providerWebsiteUrl;
 
   const handleClick = () => {
+    // Fire client-side event for any analytics listener (all users)
+    window.dispatchEvent(
+      new CustomEvent("payn:provider-click", {
+        detail: {
+          offerId: offer.id,
+          slug: offer.slug,
+          providerName: offer.providerName,
+          country,
+          source,
+          href: targetUrl,
+        },
+      }),
+    );
+
+    // Persist to Supabase for authenticated users
     if (user && isSupabaseConfigured()) {
       void (async () => {
         try {
@@ -35,18 +58,12 @@ export function ProviderLinkButton({
             metadata: {
               href: targetUrl,
               source,
+              slug: offer.slug,
               providerName: offer.providerName,
+              country,
               subtype: offer.attributes?.subtype ?? null,
             },
           });
-
-          window.dispatchEvent(
-            new CustomEvent("payn:provider-click", {
-              detail: {
-                offerId: offer.id,
-              },
-            }),
-          );
         } catch {
           // Tracking should never block the provider handoff.
         }
@@ -58,9 +75,9 @@ export function ProviderLinkButton({
     <a
       href={targetUrl}
       target="_blank"
-      rel="noopener noreferrer"
+      rel="noopener noreferrer sponsored"
       onClick={handleClick}
-      className={buttonStyles({ variant, size })}
+      className={clsx(providerCtaStyles({ fullWidth }), className)}
     >
       {label}
     </a>

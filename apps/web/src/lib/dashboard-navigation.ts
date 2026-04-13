@@ -6,7 +6,7 @@ export type DashboardView =
   | "dashboard"
   | "discover"
   | MarketplaceCategory
-  | "profile";
+  | "settings";
 
 export interface DashboardNavItem {
   id: DashboardView;
@@ -25,24 +25,7 @@ export function getDashboardNavItems(locale: MarketplaceLocale): DashboardNavIte
       group: "core",
       description: navItems.dashboard.description,
     },
-    {
-      id: "discover",
-      label: navItems.discover.label,
-      group: "core",
-      description: navItems.discover.description,
-    },
-    { id: "loans", label: navItems.loans.label, group: "products", description: navItems.loans.description },
-    { id: "cards", label: navItems.cards.label, group: "products", description: navItems.cards.description },
-    { id: "transfers", label: navItems.transfers.label, group: "products", description: navItems.transfers.description },
-    { id: "exchange", label: navItems.exchange.label, group: "products", description: navItems.exchange.description },
-    { id: "insurance", label: navItems.insurance.label, group: "products", description: navItems.insurance.description },
-    {
-      id: "investments",
-      label: navItems.investments.label,
-      group: "products",
-      description: navItems.investments.description,
-    },
-    { id: "profile", label: navItems.profile.label, group: "account", description: navItems.profile.description },
+    { id: "settings", label: navItems.profile.label, group: "account", description: navItems.profile.description },
   ];
 }
 
@@ -55,7 +38,7 @@ const dashboardViewSet = new Set<DashboardView>([
   "exchange",
   "insurance",
   "investments",
-  "profile",
+  "settings",
 ]);
 
 export function normalizeDashboardView(value?: string | null): DashboardView {
@@ -66,34 +49,16 @@ export function normalizeDashboardView(value?: string | null): DashboardView {
   return "dashboard";
 }
 
-const productCategories: MarketplaceCategory[] = [
-  "loans",
-  "cards",
-  "transfers",
-  "exchange",
-  "insurance",
-  "investments",
-];
-
-export function getActiveDashboardView(pathname: string | null, value?: string | null): DashboardView {
+export function getActiveDashboardView(pathname: string | null): DashboardView {
   if (!pathname) {
     return "dashboard";
   }
 
-  for (const category of productCategories) {
-    if (pathname.endsWith(`/${category}`) || pathname.includes(`/${category}/`)) {
-      return category;
-    }
-  }
-
-  if (pathname.includes("/discover")) {
-    return "discover";
+  if (pathname.includes("/settings")) {
+    return "settings";
   }
 
   if (pathname.includes("/dashboard")) {
-    if (value === "profile") {
-      return "profile";
-    }
     return "dashboard";
   }
 
@@ -110,8 +75,8 @@ export function getDashboardHref(view: DashboardView, locale?: MarketplaceLocale
     case "discover":
       path = "/discover";
       break;
-    case "profile":
-      path = "/dashboard?view=profile";
+    case "settings":
+      path = "/settings";
       break;
     case "loans":
     case "cards":

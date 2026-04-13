@@ -2,26 +2,22 @@
 
 import type { MarketplaceCategory } from "@payn/types";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/button";
-import { DashboardDiscoverWorkspace } from "@/components/dashboard-discover-workspace";
 import { DashboardLoadingState, DashboardSectionCard } from "@/components/dashboard-primitives";
 import { DashboardOverviewWorkspace } from "@/components/dashboard-overview-workspace";
 import { DashboardProfileWorkspace } from "@/components/dashboard-profile-workspace";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { useAuth } from "@/hooks/use-auth";
-import type { DashboardInsights } from "@/lib/dashboard";
-import { resolveProfileMarket } from "@/lib/dashboard";
-import { getDictionary } from "@/lib/i18n";
-import { localePath } from "@/lib/locale";
 import {
-  getActiveDashboardView,
-  getDashboardHref,
-  type DashboardView,
-} from "@/lib/dashboard-navigation";
-import { matchesOfferMarketWithScope } from "@/lib/marketplace";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+  getCategoryOffersForCountrySelection,
+  getOffersForCountrySelection,
+} from "@/lib/countries";
+import type { DashboardInsights } from "@/lib/dashboard";
+import { localePath } from "@/lib/locale";
+import { getDashboardHref, type DashboardView } from "@/lib/dashboard-navigation";
 import { getUiCopy } from "@/lib/ui-copy";
 
 const dashboardCategories: MarketplaceCategory[] = [
@@ -33,25 +29,9 @@ const dashboardCategories: MarketplaceCategory[] = [
   "investments",
 ];
 
-function getMarketOffers(market: string, marketScope: "local_only" | "eu_fallback" | "all_europe") {
-  return marketplaceOffers.filter((offer) =>
-    matchesOfferMarketWithScope(
-      offer,
-      market as import("@payn/types").MarketplaceMarket,
-      marketScope,
-    ),
-  );
-}
-
-function getCategoryOffers(
-  market: string,
-  category: MarketplaceCategory,
-  marketScope: "local_only" | "eu_fallback" | "all_europe",
-) {
-  return getMarketOffers(market, marketScope).filter((offer) => offer.category === category);
-}
-
-type DashboardPreferenceSavePayload = {
+type SettingsSavePayload = {
+  first_name: string | null;
+  last_name: string | null;
   user_type: "personal" | "freelancer" | "business";
   selected_categories: string[];
   goals: string[];
@@ -59,38 +39,28 @@ type DashboardPreferenceSavePayload = {
   market_scope: "local_only" | "eu_fallback" | "all_europe";
 };
 
-type SettingsSavePayload = {
-  first_name: string | null;
-  last_name: string | null;
+type DashboardAppViewProps = {
+  view?: Extract<DashboardView, "dashboard" | "settings">;
 };
 
-export function DashboardAppView() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const routeView = useMemo(
-    () => getActiveDashboardView(pathname, searchParams.get("view")),
-    [pathname, searchParams],
-  );
-
+export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) {
   const router = useRouter();
   const { user, profile, loading, updateProfile, signOut, requestPasswordReset } = useAuth();
   const preferences = useMarketplacePreferences();
-  const dictionary = getDictionary(preferences.locale);
   const uiCopy = getUiCopy(preferences.locale);
+  const productEntryActionLabel = getProductEntryActionLabel(preferences.locale);
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-
-  const dashboardMarketScope = profile?.market_scope ?? "eu_fallback";
-  const resolvedProfileMarket = profile ? resolveProfileMarket(profile.home_country) : preferences.market;
-  const dashboardMarket = dashboardMarketScope === "all_europe" ? "eu" : resolvedProfileMarket;
-  const marketLabel = dictionary.markets[dashboardMarket];
+  const productMarketScope = "eu_fallback";
   const discoverHref = localePath(preferences.locale, "/discover");
   const dashboardHref = useCallback(
     (view: DashboardView) => getDashboardHref(view, preferences.locale),
     [preferences.locale],
   );
-  const handleDashboardPreferenceSave = useCallback(
-    async (data: DashboardPreferenceSavePayload) => {
+  const handleSettingsSave = useCallback(
+    async (data: SettingsSavePayload) => {
       await updateProfile({
+        first_name: data.first_name,
+        last_name: data.last_name,
         user_type: data.user_type,
         selected_categories: data.selected_categories,
         goals: data.goals,
@@ -98,24 +68,21 @@ export function DashboardAppView() {
         market_scope: data.market_scope,
         onboarding_completed: true,
       });
+      if (data.home_country) {
+        preferences.setCountry(data.home_country);
+      }
     },
-    [updateProfile],
-  );
-  const handleSettingsSave = useCallback(
-    async (data: SettingsSavePayload) => {
-      await updateProfile({
-        first_name: data.first_name,
-        last_name: data.last_name,
-      });
-    },
-    [updateProfile],
+    [preferences, updateProfile],
   );
   const handleSignOut = useCallback(async () => {
     await signOut();
-    router.replace(localePath(preferences.locale, "/login"));
-  }, [preferences.locale, router, signOut]);
+    router.replace(discoverHref);
+  }, [discoverHref, router, signOut]);
   const loadInsights = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setInsights(null);
+      return;
+    }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -141,8 +108,8 @@ export function DashboardAppView() {
   }, [loadInsights]);
 
   const allOffers = useMemo(
-    () => getMarketOffers(dashboardMarket, dashboardMarketScope),
-    [dashboardMarket, dashboardMarketScope],
+    () => getOffersForCountrySelection(preferences.country, productMarketScope),
+    [preferences.country],
   );
 
   if (loading) {
@@ -155,7 +122,11 @@ export function DashboardAppView() {
         <DashboardSectionCard
           eyebrow={uiCopy.dashboard.guestEyebrow}
           title={uiCopy.dashboard.guestTitle}
-          description="Stay inside the logged-in product shell to compare offers, save decisions, and move between categories without jumping back to the public homepage."
+          description={
+            preferences.locale === "de"
+              ? "Das Dashboard ist jetzt das Kontrollzentrum für angemeldete Nutzer. Discover und alle Produktseiten bleiben für Gäste offen, während dein Konto Entscheidungspfad, Einstellungen und Empfehlungen speichert."
+              : "Dashboard is now the signed-in control center. Discover and every product page stay open to guests, while your account keeps the decision trail, settings, and recommendations."
+          }
         >
           <div className="flex flex-wrap gap-3">
             <Link
@@ -165,10 +136,10 @@ export function DashboardAppView() {
               {uiCopy.auth.signIn}
             </Link>
             <Link
-              href={localePath(preferences.locale, "/signup")}
+              href={discoverHref}
               className={buttonStyles({ variant: "secondary", size: "lg" })}
             >
-              {dictionary.nav.compareOptions}
+              {productEntryActionLabel}
             </Link>
           </div>
         </DashboardSectionCard>
@@ -182,25 +153,20 @@ export function DashboardAppView() {
   const categoryCounts = Object.fromEntries(
     dashboardCategories.map((category) => [
       category,
-      getCategoryOffers(dashboardMarket, category, dashboardMarketScope).length,
+      getCategoryOffersForCountrySelection(
+        preferences.country,
+        category,
+        productMarketScope,
+      ).length,
     ]),
   ) as Record<MarketplaceCategory, number>;
 
   let body: React.ReactNode;
 
-  if (routeView === "discover") {
-    body = (
-      <DashboardDiscoverWorkspace
-        key="discover"
-        locale={preferences.locale}
-        marketLabel={marketLabel}
-        offers={allOffers}
-      />
-    );
-  } else if (routeView === "profile") {
+  if (view === "settings") {
     body = (
       <DashboardProfileWorkspace
-        key="profile"
+        key="settings"
         locale={preferences.locale}
         userId={user.id}
         email={user.email ?? ""}
@@ -215,19 +181,17 @@ export function DashboardAppView() {
       <DashboardOverviewWorkspace
         key="dashboard"
         locale={preferences.locale}
-        userId={user.id}
         username={username}
         profile={profile ?? null}
-        marketLabel={marketLabel}
+        marketLabel={preferences.countryLabel}
         marketOffers={allOffers}
         savedOffers={savedOffers}
         watchedOffers={watchedOffers}
         categoryCounts={categoryCounts}
-        settingsHref={dashboardHref("profile")}
+        settingsHref={dashboardHref("settings")}
         discoverHref={discoverHref}
         categoryHref={(category) => dashboardHref(category)}
         investmentsHref={dashboardHref("investments")}
-        onSavePreferences={handleDashboardPreferenceSave}
       />
     );
   }

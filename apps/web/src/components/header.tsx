@@ -1,6 +1,6 @@
 "use client";
 
-import type { MarketplaceCategory, MarketplaceLocale, MarketplaceMarket } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceLocale } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,12 +9,11 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
-import { getMarketCategoryHref } from "@/lib/marketplace";
 import { getUiCopy } from "@/lib/ui-copy";
 
 const navKeys = ["marketplace", "about", "contact"] as const;
 const navPaths: Record<(typeof navKeys)[number], string> = {
-  marketplace: "/explore",
+  marketplace: "/discover",
   about: "/about",
   contact: "/contact",
 };
@@ -47,12 +46,12 @@ export function Header({
     });
   };
 
-  const handleMarketChange = (nextMarket: MarketplaceMarket) => {
-    preferences.setMarket(nextMarket);
+  const handleCountryChange = (nextCountry: string) => {
+    preferences.setCountry(nextCountry);
 
     if (activePage === "marketplace" && activeCategory) {
       startTransition(() => {
-        router.push(localePath(locale, getMarketCategoryHref(nextMarket, activeCategory)));
+        router.push(localePath(locale, `/${activeCategory}`));
       });
       return;
     }
@@ -64,8 +63,8 @@ export function Header({
 
   return (
     <header className="glass sticky top-0 z-50">
-      <div className="mx-auto flex min-h-[72px] max-w-[1240px] items-center justify-between gap-4 px-5 py-3 lg:px-8">
-        <div className="flex min-w-0 items-center gap-6 lg:gap-8">
+      <div className="mx-auto flex min-h-[64px] max-w-[1240px] items-center justify-between gap-3 px-4 py-3 sm:px-5 lg:min-h-[72px] lg:gap-4 lg:px-8">
+        <div className="flex min-w-0 items-center gap-4 lg:gap-8">
           <Link href={localePath(locale, "/")} className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
             <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-black">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -78,18 +77,20 @@ export function Header({
           <nav className="hidden items-center gap-6 lg:flex">
             {navKeys.map((key) => {
               const label =
-                key === "marketplace"
-                  ? dictionary.nav.marketplace
-                  : key === "about"
-                    ? dictionary.nav.about
-                    : dictionary.nav.contact;
+                key === "marketplace" ? (
+                  dictionary.nav.marketplace
+                ) : key === "about" ? (
+                  dictionary.nav.about
+                ) : (
+                  dictionary.nav.contact
+                );
 
               return (
                 <Link
                   key={key}
                   href={localePath(locale, navPaths[key])}
                   className={clsx(
-                    "relative pb-1 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:rounded-full after:transition-opacity",
+                    "relative inline-flex items-center gap-2 pb-1 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:rounded-full after:transition-opacity",
                     activePage === key
                       ? "text-ink after:bg-black/85 after:opacity-100"
                       : "text-ink-secondary after:opacity-0 hover:text-ink",
@@ -102,21 +103,21 @@ export function Header({
           </nav>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div className="hidden items-center rounded-full border border-black/6 bg-white/88 px-2 py-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)] lg:flex">
             <label className="relative flex items-center gap-2 pl-2 pr-6">
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                 {dictionary.nav.country}
               </span>
               <select
-                value={preferences.market}
-                onChange={(event) => handleMarketChange(event.target.value as MarketplaceMarket)}
+                value={preferences.country}
+                onChange={(event) => handleCountryChange(event.target.value)}
                 className="appearance-none bg-transparent text-sm font-medium text-ink outline-none"
                 aria-label={dictionary.nav.country}
               >
-                {Object.entries(dictionary.markets).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
+                {preferences.availableCountries.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -198,15 +199,17 @@ export function Header({
       </div>
 
       {mobileMenuOpen && (
-        <div className="border-t border-black/5 bg-white/95 px-5 pb-5 pt-4 lg:hidden">
+        <div className="border-t border-black/5 bg-white/95 px-4 pb-4 pt-3 sm:px-5 lg:hidden">
           <nav className="grid gap-1">
             {navKeys.map((key) => {
               const label =
-                key === "marketplace"
-                  ? dictionary.nav.marketplace
-                  : key === "about"
-                    ? dictionary.nav.about
-                    : dictionary.nav.contact;
+                key === "marketplace" ? (
+                  dictionary.nav.marketplace
+                ) : key === "about" ? (
+                  dictionary.nav.about
+                ) : (
+                  dictionary.nav.contact
+                );
 
               return (
                 <Link
@@ -214,7 +217,7 @@ export function Header({
                   href={localePath(locale, navPaths[key])}
                   onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
-                    "rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                    "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     activePage === key
                       ? "bg-bg-surface text-ink"
                       : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
@@ -233,7 +236,7 @@ export function Header({
                   {authStateLabel}
                 </p>
                 <p className="mt-1 text-sm text-ink-secondary">
-                  {dictionary.markets[preferences.market]}
+                  {preferences.countryLabel}
                 </p>
               </div>
               <Link
@@ -256,13 +259,13 @@ export function Header({
                   {dictionary.nav.country}
                 </span>
                 <select
-                  value={preferences.market}
-                  onChange={(event) => handleMarketChange(event.target.value as MarketplaceMarket)}
+                  value={preferences.country}
+                  onChange={(event) => handleCountryChange(event.target.value)}
                   className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none"
                 >
-                  {Object.entries(dictionary.markets).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
+                  {preferences.availableCountries.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>

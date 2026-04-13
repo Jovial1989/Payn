@@ -27,7 +27,7 @@ export default async function ContactPage() {
               {dictionary.contact.chatBody}
             </p>
             <div className="mt-6">
-              <ChatLaunchButton className={buttonStyles({ variant: "primary", size: "lg" })}>
+              <ChatLaunchButton className={buttonStyles({ variant: "primary", size: "lg" }) + " w-full justify-center sm:w-auto"}>
                 {dictionary.contact.chatCta}
               </ChatLaunchButton>
             </div>
@@ -43,7 +43,7 @@ export default async function ContactPage() {
             </p>
             <a
               href="mailto:petrov.cpay@gmail.com"
-              className={buttonStyles({ variant: "secondary", size: "lg" })}
+              className={buttonStyles({ variant: "secondary", size: "lg" }) + " w-full justify-center sm:w-auto"}
             >
               {dictionary.contact.emailCta}
             </a>
@@ -80,7 +80,7 @@ export default async function ContactPage() {
                 href="https://www.linkedin.com/in/petrovkyrylo/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={buttonStyles({ variant: "secondary", size: "lg" }) + " mt-6"}
+                className={buttonStyles({ variant: "secondary", size: "lg" }) + " mt-6 w-full justify-center sm:w-auto"}
               >
                 {dictionary.about.linkedinLabel}
               </a>

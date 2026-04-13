@@ -7,13 +7,12 @@ import { OfferCard } from "@/components/offer-card";
 import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
-import { SiteShell } from "@/components/site-shell";
 import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { matchesOfferCountrySelection } from "@/lib/countries";
 import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import {
-  getMarketCategoryHref,
   getOfferTradeoff,
   matchesOfferMarket,
   normalizeDisplayText,
@@ -96,18 +95,18 @@ export default async function OfferDetailPage({
   }
 
   const resolvedMarket = resolveOfferMarket(preferences.market, offer.slug);
-  const categoryHref = localePath(preferences.locale, getMarketCategoryHref(resolvedMarket, offer.category));
+  const categoryHref = localePath(preferences.locale, `/${offer.category}`);
   const categoryLabel = dictionary.categories[offer.category];
   const categoryOffers = await listCategoryOffers(offer.category);
   const offerRank = Math.max(categoryOffers.findIndex((item) => item.slug === offer.slug) + 1, 1);
   const reasons = getMatchReasons(offer, offerRank);
   const relatedOffers = (await listRelatedOffers(offer, 4))
-    .filter((candidate) => matchesOfferMarket(candidate, resolvedMarket))
+    .filter((candidate) => matchesOfferCountrySelection(candidate, preferences.country))
     .slice(0, 2);
   const tradeoff = getOfferTradeoff(offer);
 
   return (
-    <SiteShell activePage="marketplace" activeCategory={offer.category}>
+    <>
       <OfferViewTracker offer={offer} market={resolvedMarket} />
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -129,11 +128,11 @@ export default async function OfferDetailPage({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <SaveOfferButton offer={offer} variant="secondary" size="md" />
+            <ProviderLinkButton offer={offer} label={dictionary.offerDetail.visitProvider} source="offer_detail" />
             <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
               {dictionary.offerDetail.backToCategory}
             </Link>
-            <ProviderLinkButton offer={offer} label={dictionary.offerDetail.visitProvider} variant="primary" size="md" source="offer_detail" />
+            <SaveOfferButton offer={offer} variant="ghost" size="md" />
           </div>
         </div>
 
@@ -222,6 +221,6 @@ export default async function OfferDetailPage({
           </div>
         </section>
       )}
-    </SiteShell>
+    </>
   );
 }

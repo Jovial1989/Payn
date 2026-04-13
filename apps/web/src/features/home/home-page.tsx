@@ -1,123 +1,16 @@
 "use client";
 
-import type { MarketplaceCategory, MarketplaceLocale } from "@payn/types";
+import type { MarketplaceLocale } from "@payn/types";
 import Link from "next/link";
+import { useState } from "react";
 import { buttonStyles } from "@/components/button";
-import { ProviderLogo } from "@/components/provider-logo";
-import {
-  AppStoreButton,
-  GooglePlayButton,
-  HeroPhoneMockup,
-  WaitlistBadge,
-} from "@/components/hero-phone-mockup";
+import { ProductEntryActionLabel } from "@/components/product-entry-action";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
-import { countOffersByCategory } from "@/lib/marketplace-engine";
+import { HeroPhoneMockup, WaitlistBadge } from "@/components/hero-phone-mockup";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
-import { getOfferDecisionBadge } from "@/lib/offer-badges";
-import {
-  getOfferHref,
-  marketDefinitions,
-  marketplaceCategories,
-  matchesOfferMarket,
-  normalizeDisplayText,
-  roundOfferCount,
-} from "@/lib/marketplace";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
-import { HeroMarketPanel, type HeroMarketOffer } from "@/features/home/hero-market-panel";
-
-const categoryIcons: Record<MarketplaceCategory, React.ReactNode> = {
-  loans: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-      <path d="M2 10h20" />
-    </svg>
-  ),
-  cards: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <line x1="2" y1="10" x2="22" y2="10" />
-    </svg>
-  ),
-  transfers: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 1l4 4-4 4" />
-      <path d="M3 11V9a4 4 0 014-4h14" />
-      <path d="M7 23l-4-4 4-4" />
-      <path d="M21 13v2a4 4 0 01-4 4H3" />
-    </svg>
-  ),
-  exchange: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 12h8M12 8v8" />
-    </svg>
-  ),
-  insurance: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  ),
-  investments: (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-    </svg>
-  ),
-};
+import { HeroProductShowcase } from "@/features/home/hero-product-showcase";
+import { TrustedProviderGrid } from "@/features/home/trusted-provider-grid";
 
 const whyPaynIcons = [
   (
@@ -299,58 +192,120 @@ const whyPaynCardsByLocale: Record<
   ],
 };
 
-export function HomePage() {
-  const preferences = useMarketplacePreferences();
-  const { locale, market } = preferences;
-  const dictionary = getDictionary(locale);
-  const whyPaynCards = whyPaynCardsByLocale[locale] ?? whyPaynCardsByLocale.en;
-  const categoryCounts = countOffersByCategory(marketplaceOffers, market);
-  const topResults = marketplaceOffers
-    .filter((offer) => matchesOfferMarket(offer, market))
-    .sort((left, right) => right.affiliatePriorityScore - left.affiliatePriorityScore)
-    .slice(0, 3)
-    .map((offer, index) => {
-      const decisionBadge = getOfferDecisionBadge(offer, index + 1);
+function AppWaitlistModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
 
-      return {
-        offer,
-        rank: index + 1,
-        provider: offer.providerName,
-        title: normalizeDisplayText(offer.title),
-        category: dictionary.categories[offer.category],
-        metric: normalizeDisplayText(offer.metrics[0]?.value ?? ""),
-        badgeTone:
-          decisionBadge === "noFees"
-            ? "noFees"
-            : decisionBadge === "fastest"
-              ? "flexible"
-              : "bestValue",
-        tag: (() => {
-          if (decisionBadge === "fastest") {
-            return dictionary.home.tagFastest;
-          }
-
-          if (decisionBadge === "noFees") {
-            return dictionary.home.tagNoFees;
-          }
-
-          return dictionary.home.tagBestValue;
-        })(),
-      } satisfies HeroMarketOffer & { title: string; category: string };
-    });
-  const totalOffers = marketplaceOffers.filter((o) => matchesOfferMarket(o, market)).length;
-  const uniqueProviders = new Set(
-    marketplaceOffers.filter((o) => matchesOfferMarket(o, market)).map((o) => o.providerName),
-  ).size;
-  const quickActionCategories: MarketplaceCategory[] = [
-    "loans",
-    "transfers",
-    "cards",
-    "exchange",
-  ];
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/v1/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, platform: "both", source: "homepage-promo" }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null) as { error?: string } | null;
+        setStatus("error");
+        setMessage(payload?.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      setStatus("success");
+      setMessage("You're on the list! We'll notify you when the app launches.");
+      setEmail("");
+    } catch {
+      setStatus("error");
+      setMessage("Something went wrong. Please try again.");
+    }
+  }
 
   return (
+    <div
+      className="fixed inset-0 z-[9998] flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="relative w-full max-w-sm rounded-[28px] border border-[#EAEAEA] bg-white p-7 shadow-[0_24px_64px_rgba(0,0,0,0.18)]">
+        {/* Close */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F4F5] text-ink-tertiary transition-colors hover:bg-[#E8E8EA] hover:text-ink"
+          aria-label="Close"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Early access badge */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black px-3 py-1 text-[11px] font-semibold text-white">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Early access
+        </span>
+
+        <h3 className="mt-4 text-[1.2rem] font-bold tracking-[-0.025em] text-[#0D0D0D]">
+          Get notified at launch
+        </h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-[#5F6368]">
+          Enter your email and we'll reach out as soon as Payn is live on iOS and Android.
+        </p>
+
+        {status === "success" ? (
+          <div className="mt-6 rounded-[16px] bg-emerald-50 px-4 py-4 text-sm font-medium text-emerald-800">
+            {message}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-6 grid gap-3">
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={status === "loading"}
+              className="h-[52px] w-full rounded-[16px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 placeholder:text-[#9AA0A6] focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] disabled:opacity-60"
+            />
+            {message && status === "error" && (
+              <p className="text-xs text-red-600">{message}</p>
+            )}
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="h-[52px] w-full rounded-[16px] bg-black text-sm font-semibold text-white transition-all hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {status === "loading" ? "Saving…" : "Notify me"}
+            </button>
+          </form>
+        )}
+
+        <p className="mt-4 text-center text-xs text-[#9AA0A6]">
+          No spam. Unsubscribe anytime.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const impactSiteVerificationText =
+  "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
+
+export function HomePage() {
+  const preferences = useMarketplacePreferences();
+  const { locale } = preferences;
+  const [appPromoOpen, setAppPromoOpen] = useState(false);
+  const dictionary = getDictionary(locale);
+  const whyPaynCards = whyPaynCardsByLocale[locale] ?? whyPaynCardsByLocale.en;
+  const discoverHref = localePath(locale, "/discover");
+  return (
     <div className="grid gap-8 lg:gap-10">
+      <p className="sr-only" lang="en">
+        {impactSiteVerificationText}
+      </p>
+
       <section className="overflow-hidden rounded-[32px] border border-line bg-white">
         <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-9 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-8 lg:px-10 lg:py-10">
           <div className="flex flex-col justify-center">
@@ -364,13 +319,13 @@ export function HomePage() {
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                href={localePath(locale, "/explore")}
+                href={discoverHref}
                 className={buttonStyles({ variant: "primary", size: "lg" })}
               >
-                {dictionary.home.heroCta}
+                <ProductEntryActionLabel locale={locale} />
               </Link>
               <Link
-                href="#top-offers"
+                href={discoverHref}
                 className={buttonStyles({ variant: "secondary", size: "lg" })}
               >
                 {dictionary.home.heroCtaSecondary}
@@ -378,226 +333,19 @@ export function HomePage() {
             </div>
           </div>
 
-          <HeroMarketPanel
+          <HeroProductShowcase
             locale={locale}
-            marketLabel={dictionary.markets[market]}
-            offers={topResults}
+            countryName={preferences.countryLabel}
           />
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { value: `${totalOffers}`, label: "Offers compared" },
-          { value: `${uniqueProviders}`, label: "Providers" },
-          { value: `${Object.keys(categoryCounts).length}`, label: "Categories" },
-          { value: `${Object.keys(marketDefinitions).length}`, label: "Markets" },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-[20px] border border-line bg-white px-4 py-4 text-center"
-          >
-            <p className="text-2xl font-bold tracking-tight text-ink">{stat.value}</p>
-            <p className="mt-1 text-xs font-medium text-ink-tertiary">{stat.label}</p>
-          </div>
-        ))}
-      </section>
+      <TrustedProviderGrid locale={locale} />
 
-      <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 className="text-h3 text-ink">{dictionary.home.needsTitle}</h2>
-          </div>
-          <Link
-            href={localePath(locale, "/explore")}
-            className="text-sm font-semibold text-ink-tertiary transition-colors hover:text-ink"
-          >
-            {dictionary.home.seeAll}
-          </Link>
-        </div>
-
-        <div className="mt-5 grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
-          {dictionary.home.needsActions.map((label, index) => {
-            const category = quickActionCategories[index] ?? "loans";
-
-            return (
-              <Link
-                key={label}
-                href={localePath(locale, `/${market}/${category}`)}
-                className="group flex items-center justify-between rounded-[22px] border border-line bg-bg-surface px-4 py-4 text-left transition-colors hover:border-black/10 hover:bg-white"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-ink">
-                    {categoryIcons[category]}
-                  </span>
-                  <span className="text-sm font-semibold text-ink">{label}</span>
-                </div>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="text-ink-tertiary transition-transform group-hover:translate-x-0.5"
-                >
-                  <path
-                    d="M3.5 8h9m0 0L9 4.5M12.5 8L9 11.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section id="top-offers" className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                {dictionary.home.topRanked}
-              </p>
-              <h2 className="mt-2 text-h3 text-ink">{dictionary.home.topRankedSubtitle}</h2>
-            </div>
-            <Link
-              href={localePath(locale, "/explore")}
-              className="text-xs font-semibold text-ink-tertiary transition-colors hover:text-ink"
-            >
-              {dictionary.home.seeAll}
-            </Link>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {topResults.map((item) => (
-              <Link
-                key={item.offer.id}
-                href={localePath(locale, getOfferHref(item.offer))}
-                className="group rounded-[20px] border border-black/5 bg-bg-surface px-4 py-4 transition-colors hover:border-line-strong hover:bg-white"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex items-start gap-3">
-                    <ProviderLogo
-                      providerName={item.provider}
-                      websiteUrl={item.offer.providerWebsiteUrl}
-                      size="sm"
-                      muted={false}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold text-white">
-                          #{item.rank}
-                        </span>
-                        <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-ink-tertiary">
-                          {dictionary.offerCard.updated}
-                        </span>
-                        <span className="rounded-full bg-accent-green px-2.5 py-1 text-[10px] font-semibold text-accent-green-text">
-                          {item.tag}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-sm font-semibold text-ink">{item.provider}</p>
-                      <p className="mt-1 text-base font-bold tracking-tight text-ink">
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-[12px] text-ink-secondary">{item.category}</p>
-                    </div>
-                  </div>
-
-                    <span className="rounded-[14px] bg-white px-3 py-2 text-sm font-bold tabular-nums text-ink">
-                      {item.metric}
-                    </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex h-full flex-col rounded-[28px] border border-line bg-white p-6 sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-            {dictionary.home.browseByCategory}
-          </p>
-          <div className="mt-5 flex flex-1 flex-col gap-3">
-            {marketplaceCategories.map((category) => {
-              const count = categoryCounts[category];
-
-              return (
-                <Link
-                  key={category}
-                  href={localePath(locale, `/${market}/${category}`)}
-                  className="group flex w-full items-center justify-between rounded-[20px] border border-transparent bg-bg-surface px-4 py-4 text-left text-ink-secondary transition-colors hover:border-black/10 hover:bg-white hover:text-ink"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-white text-ink">
-                      {categoryIcons[category]}
-                    </span>
-                    <p className="min-w-0 text-sm font-semibold text-ink">
-                      {dictionary.categories[category]}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-ink-tertiary transition-colors group-hover:text-ink">
-                      {roundOfferCount(count)} {dictionary.home.products}
-                    </span>
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className="shrink-0 text-ink-tertiary transition-all group-hover:translate-x-0.5 group-hover:text-ink"
-                    >
-                      <path
-                        d="M3.5 8h9m0 0L9 4.5M12.5 8L9 11.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
-        <div className="grid gap-6 lg:grid-cols-[0.84fr_1.16fr] lg:items-start">
-          <div>
-            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
-              {dictionary.home.whyPaynEyebrow}
-            </p>
-            <h2 className="mt-3 text-h2 text-ink">{dictionary.home.whyPaynTitle}</h2>
-            <Link
-              href={localePath(locale, "/ranking")}
-              className="mt-4 inline-block text-sm font-semibold text-ink-tertiary transition-colors hover:text-ink"
-            >
-              How we rank offers &rarr;
-            </Link>
-          </div>
-          <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {whyPaynCards.map((point, index) => (
-              <div
-                key={point.title}
-                className="flex h-full flex-col rounded-[18px] border border-line bg-[#F6F7F8] px-4 py-4"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white text-ink">
-                  {whyPaynIcons[index] ?? whyPaynIcons[0]}
-                </div>
-                <p className="mt-4 text-sm font-semibold text-ink">{point.title}</p>
-                <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-ink-secondary">
-                  {point.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      {/* ── How it works + Why Payn — merged into one section ── */}
+      <section className="rounded-[28px] border border-line bg-white p-5 sm:p-6 lg:p-8">
+        {/* How it works */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.home.howItWorksEyebrow}
@@ -605,81 +353,122 @@ export function HomePage() {
             <h2 className="mt-3 text-h2 text-ink">{dictionary.home.howItWorksTitle}</h2>
           </div>
           <Link
-            href={localePath(locale, "/explore")}
+            href={localePath(locale, "/discover")}
             className={buttonStyles({ variant: "secondary", size: "md" })}
           >
             {dictionary.home.openExplore}
           </Link>
         </div>
 
-        <div className="mt-8 grid gap-3 md:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           {dictionary.home.steps.map((step, index) => (
-            <div key={step} className="rounded-[18px] border border-line bg-bg-surface px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                {dictionary.home.step} {index + 1}
+            <div key={step} className="rounded-[18px] border border-line bg-[#F7F8F9] px-5 py-5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-[11px] font-bold text-white">
+                {index + 1}
+              </span>
+              <p className="mt-3 text-[14px] font-semibold leading-relaxed text-ink">{step}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="my-8 border-t border-line" />
+
+        {/* Why Payn */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
+              {dictionary.home.whyPaynEyebrow}
+            </p>
+            <h2 className="mt-3 text-h2 text-ink">{dictionary.home.whyPaynTitle}</h2>
+          </div>
+          <Link
+            href={localePath(locale, "/ranking")}
+            className="shrink-0 text-sm font-semibold text-ink-tertiary transition-colors hover:text-ink"
+          >
+            {dictionary.home.howWeRankOffers} &rarr;
+          </Link>
+        </div>
+
+        <div className="mt-6 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {whyPaynCards.slice(0, 3).map((point, index) => (
+            <div
+              key={point.title}
+              className="flex h-full flex-col rounded-[18px] border border-line bg-[#F7F8F9] px-4 py-4"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white text-ink">
+                {whyPaynIcons[index] ?? whyPaynIcons[0]}
+              </div>
+              <p className="mt-4 text-[14px] font-semibold text-ink">{point.title}</p>
+              <p className="mt-2 text-[13px] leading-5 text-ink-secondary">
+                {point.description}
               </p>
-              <p className="mt-3 text-base font-semibold leading-relaxed text-ink">{step}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[28px] border border-line bg-white">
-        <div className="grid gap-0 lg:grid-cols-[1fr_0.85fr]">
-          <div className="flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-14 lg:py-16">
-            <WaitlistBadge locale={locale} />
-
-            <h2 className="mt-5 max-w-lg text-h2 text-ink lg:text-h1">
-              {dictionary.home.appHeadline}
+      {/* ── Mobile app promo — bottom of page ── */}
+      <section className="overflow-hidden rounded-[32px] bg-[#0A0D0C]">
+        <div className="grid lg:grid-cols-[1fr_auto] lg:items-center">
+          {/* Text side */}
+          <div className="flex flex-col justify-center px-6 py-10 sm:px-8 lg:px-12 lg:py-14">
+            <WaitlistBadge badge={dictionary.home.mobile.badge} />
+            <h2 className="mt-5 text-[1.65rem] font-bold leading-tight tracking-[-0.03em] text-white sm:text-[2rem]">
+              {dictionary.home.mobile.heading}
             </h2>
-            <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-secondary sm:text-base">
-              {dictionary.home.appSubtitle}
+            <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-white/50">
+              {dictionary.home.mobile.subtitle}
             </p>
 
-            <div className="mt-5 grid gap-3">
-              {dictionary.home.appBullets.map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-green text-accent-green-text">
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M3 8l4 4 6-6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-ink-secondary">{item}</span>
-                </div>
-              ))}
+            <div className="mt-5 flex items-center gap-2.5">
+              <span className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold text-white/40">
+                <svg width="10" height="12" viewBox="0 0 22 26" fill="white" className="opacity-60">
+                  <path d="M18.128 13.784c-.029-3.223 2.639-4.791 2.761-4.864-1.511-2.203-3.853-2.504-4.676-2.528-1.967-.207-3.875 1.177-4.877 1.177-1.016 0-2.543-1.157-4.199-1.123-2.121.034-4.112 1.263-5.199 3.188-2.255 3.886-.576 9.6 1.584 12.757 1.086 1.553 2.355 3.287 4.012 3.226 1.625-.067 2.232-1.036 4.193-1.036 1.943 0 2.513 1.036 4.207.997 1.744-.028 2.842-1.56 3.89-3.127 1.255-1.78 1.759-3.533 1.779-3.623-.041-.014-3.387-1.291-3.424-5.149zM14.928 3.306C15.819 2.207 16.424.756 16.26-.001c-1.244.052-2.79.852-3.684 1.907-.793.935-1.505 2.468-1.319 3.907 1.403.108 2.849-.7 3.671-2.507z" />
+                </svg>
+                iOS
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold text-white/40">
+                <svg width="10" height="11" viewBox="0 0 20 22" fill="none" className="opacity-60">
+                  <path d="M1.22.345C.96.625.81 1.065.81 1.635v18.73c0 .57.15 1.01.41 1.29l.07.065 10.5-10.5v-.24L1.29.28l-.07.065z" fill="white" />
+                  <path d="M15.3 14.72l-3.51-3.5v-.24l3.51-3.5.08.045 4.16 2.36c1.19.675 1.19 1.78 0 2.46l-4.16 2.36-.08.02z" fill="white" />
+                  <path d="M15.38 14.7L11.79 11.11 1.22 21.655c.39.415 1.04.465 1.77.05l12.39-7.005z" fill="white" />
+                  <path d="M15.38 7.52L2.99.515C2.26.1 1.61.145 1.22.56L11.79 11.11l3.59-3.59z" fill="white" />
+                </svg>
+                Android
+              </span>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <div className="rounded-[18px] bg-[#0d1110] p-1">
-                <AppStoreButton locale={locale} />
-              </div>
-              <div className="rounded-[18px] bg-[#0d1110] p-1">
-                <GooglePlayButton locale={locale} />
-              </div>
-            </div>
-
-            <p className="mt-4 text-[12px] text-ink-tertiary">{dictionary.home.appWaitlistNote}</p>
-          </div>
-
-          <div className="relative hidden bg-[radial-gradient(circle_at_50%_40%,_rgba(15,23,42,0.06),_transparent_62%)] lg:flex lg:items-center lg:justify-center">
-            <div className="relative py-10">
-              <HeroPhoneMockup locale={locale} />
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setAppPromoOpen(true)}
+                className="inline-flex h-11 items-center rounded-full bg-white px-6 text-[13px] font-semibold text-black transition-all hover:bg-white/90 active:scale-[0.98]"
+              >
+                {dictionary.home.mobile.joinWishlist}
+              </button>
+              <Link
+                href={localePath(locale, "/waitlist")}
+                className="inline-flex h-11 items-center rounded-full border border-white/[0.14] px-6 text-[13px] font-semibold text-white/60 transition-all hover:border-white/25 hover:text-white/90"
+              >
+                {dictionary.home.mobile.learnMore}
+              </Link>
             </div>
           </div>
 
-          <div className="flex items-center justify-center bg-[radial-gradient(circle_at_50%_40%,_rgba(15,23,42,0.06),_transparent_62%)] px-6 pb-10 lg:hidden">
-            <div className="scale-90">
+          {/* Phone mockup */}
+          <div className="flex items-end justify-center overflow-hidden px-6 pb-0 pt-8 lg:items-center lg:py-6 lg:pr-12">
+            <div className="w-[240px] lg:w-[260px]">
               <HeroPhoneMockup locale={locale} />
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── Waitlist modal ── */}
+      {appPromoOpen && (
+        <AppWaitlistModal onClose={() => setAppPromoOpen(false)} />
+      )}
     </div>
   );
 }

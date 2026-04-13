@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import { CategoryPageContent } from "@/components/category-page-content";
-import { SiteShell } from "@/components/site-shell";
+import { ProductCategoryView } from "@/components/product-category-view";
+import { ProductShell } from "@/components/product-shell";
 import { isMarketplaceCategory, isSupportedMarket } from "@/lib/marketplace";
-import { listCategoryOffers } from "@/server/catalog/catalog-service";
 
 export default async function CountryCategoryPage({
   params,
@@ -15,19 +14,9 @@ export default async function CountryCategoryPage({
     notFound();
   }
 
-  const offers = await listCategoryOffers(category);
-
   return (
-    <SiteShell
-      activePage="marketplace"
-      activeCategory={category}
-      hideHero
-    >
-      <CategoryPageContent
-        category={category}
-        offers={offers}
-        market={country}
-      />
-    </SiteShell>
+    <ProductShell>
+      <ProductCategoryView category={category} />
+    </ProductShell>
   );
 }

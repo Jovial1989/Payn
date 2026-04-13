@@ -4,10 +4,11 @@ import type { MarketplaceCategory } from "@payn/types";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { Tag } from "@/components/tag";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
-import { getMarketCategoryHref, marketplaceCategories } from "@/lib/marketplace";
+import { marketplaceCategories } from "@/lib/marketplace";
 
 export function SiteShell({
   children,
@@ -31,13 +32,14 @@ export function SiteShell({
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const { locale } = preferences;
+  const productEntryActionLabel = getProductEntryActionLabel(locale);
 
   return (
     <div className="min-h-screen bg-bg-deep">
       <Header activePage={activePage} activeCategory={activeCategory} />
-      <main className="mx-auto flex max-w-[1240px] flex-col gap-8 px-5 py-8 lg:px-8 lg:py-10">
+      <main className="mx-auto flex max-w-[1240px] flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-5 sm:py-7 lg:px-8 lg:py-10">
         {!hideHero && title && description && (
-          <section className="rounded-[32px] border border-line bg-white p-6 shadow-card lg:p-8">
+          <section className="rounded-[28px] border border-line bg-white p-5 shadow-card sm:p-6 lg:rounded-[32px] lg:p-8">
             {eyebrow ? (
               <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>
             ) : null}
@@ -58,7 +60,7 @@ export function SiteShell({
       </main>
 
       <footer className="border-t border-line bg-white/95">
-        <div className="mx-auto grid max-w-[1240px] gap-8 px-5 py-10 lg:grid-cols-[1.1fr_0.9fr_0.9fr] lg:px-8">
+        <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-8 sm:px-5 lg:grid-cols-[1.1fr_0.9fr_0.9fr] lg:px-8 lg:py-10">
           <div>
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black">
@@ -67,7 +69,7 @@ export function SiteShell({
                 </svg>
               </div>
               <span className="text-sm font-semibold text-ink">Payn</span>
-              <span className="text-xs text-ink-tertiary">{dictionary.markets[preferences.market]}</span>
+              <span className="text-xs text-ink-tertiary">{preferences.countryLabel}</span>
             </div>
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-secondary">
               {dictionary.footer.copy}
@@ -88,7 +90,7 @@ export function SiteShell({
               {marketplaceCategories.map((category) => (
                 <Link
                   key={category}
-                  href={localePath(locale, getMarketCategoryHref(preferences.market, category))}
+                  href={localePath(locale, `/${category}`)}
                   className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
                 >
                   {dictionary.categories[category]}
@@ -102,8 +104,8 @@ export function SiteShell({
               {dictionary.footer.company}
             </p>
             <div className="mt-4 grid gap-3">
-              <Link href={localePath(locale, "/explore")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
-                {dictionary.nav.marketplace}
+              <Link href={localePath(locale, "/discover")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
+                {productEntryActionLabel}
               </Link>
               <Link href={localePath(locale, "/about")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-ink">
                 {dictionary.nav.about}

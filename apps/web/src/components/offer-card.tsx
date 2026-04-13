@@ -5,7 +5,7 @@ import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { Tag } from "@/components/tag";
-import { getDictionary, getMetricLabel, translateMatchReason } from "@/lib/i18n";
+import { getDictionary, getMetricLabel, translateMatchReason, translateUiToken } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { getMatchReasons } from "@/lib/match-reasons";
 import { getOfferDecisionBadge } from "@/lib/offer-badges";
@@ -88,7 +88,7 @@ export function OfferCard({
         <Tag tone="accent">{decisionTag}</Tag>
         {offer.bestFor.slice(0, 2).map((item) => (
           <Tag key={item} tone="muted">
-            {normalizeDisplayText(item)}
+            {normalizeDisplayText(translateUiToken(locale, item))}
           </Tag>
         ))}
         {reasons[0] ? (
@@ -102,31 +102,31 @@ export function OfferCard({
         <div className="flex flex-wrap items-center gap-2 border-t border-[#F0F0F2] pt-4">
           <ProviderLinkButton
             offer={offer}
-            label={dictionary.offerCard.reviewOffer}
-            variant="primary"
-            size="sm"
+            label={dictionary.offerCard.providerSite}
+            fullWidth
+            className="sm:w-auto"
           />
           <Link
             href={localePath(locale, getOfferHref(offer))}
-            className={buttonStyles({ variant: "secondary", size: "sm" })}
+            className={`${buttonStyles({ variant: "secondary", size: "sm" })} w-full justify-center sm:w-auto`}
           >
-            Details
+            {dictionary.offerCard.reviewOffer}
           </Link>
-          <SaveOfferButton offer={offer} variant="ghost" size="sm" />
+          <SaveOfferButton offer={offer} variant="ghost" size="sm" className="w-full justify-center sm:w-auto" />
           {onToggleCompare && (
             <button
               type="button"
               onClick={() => onToggleCompare(offer.id)}
-              className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors sm:ml-auto sm:w-auto ${
                 compareSelected
-                  ? "bg-black text-white"
-                  : "bg-bg-surface text-ink-secondary hover:bg-bg-overlay hover:text-ink"
+                  ? "border-black bg-white text-ink"
+                  : "border-transparent bg-bg-surface text-ink-secondary hover:bg-bg-overlay hover:text-ink"
               }`}
             >
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 8h8M8 4v8" />
               </svg>
-              {compareSelected ? "Added" : "Compare"}
+              {compareSelected ? (locale === "de" ? "Hinzugefügt" : "Added") : translateUiToken(locale, "Compare")}
             </button>
           )}
         </div>

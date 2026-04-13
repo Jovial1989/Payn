@@ -1,5 +1,5 @@
-import { DashboardShell } from "@/components/dashboard-shell";
+import { ProductShell } from "@/components/product-shell";
 
 export default function CardsLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return <ProductShell>{children}</ProductShell>;
 }

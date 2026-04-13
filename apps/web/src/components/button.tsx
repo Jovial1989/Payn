@@ -28,6 +28,13 @@ export function buttonStyles({
   );
 }
 
+export function providerCtaStyles({ fullWidth = false }: { fullWidth?: boolean } = {}) {
+  return clsx(
+    "inline-flex min-h-11 min-w-[132px] items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-gray-800 active:bg-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 sm:min-w-[148px]",
+    fullWidth && "w-full",
+  );
+}
+
 export function Button({
   className,
   variant = "primary",

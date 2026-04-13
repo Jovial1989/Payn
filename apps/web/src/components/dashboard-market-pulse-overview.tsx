@@ -7,10 +7,11 @@ import { useEffect, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import { DashboardSectionCard } from "@/components/dashboard-primitives";
 import { Tag } from "@/components/tag";
+import { getDashboardDecisionCopy } from "@/lib/dashboard-decision-copy";
 import type { MarketIntelligencePayload } from "@/lib/market-intelligence";
 import { getDashboardWorkspaceCopy } from "@/lib/dashboard-workspace-copy";
 
-const pulseAssets = ["btc", "eurusd", "spy", "gold"] as const;
+const pulseAssets = ["btc", "eth", "spy", "eustocks", "gold"] as const;
 
 function formatValue(locale: MarketplaceLocale, value: number, currency: string) {
   if (currency === "USD") {
@@ -35,6 +36,43 @@ function formatChange(locale: MarketplaceLocale, value: number) {
   return `${value >= 0 ? "+" : "-"}${formatted}%`;
 }
 
+function Sparkline({
+  points,
+  direction,
+}: {
+  points: MarketIntelligencePayload["points"];
+  direction: MarketIntelligencePayload["direction"];
+}) {
+  if (points.length === 0) {
+    return <div className="h-10 w-20 rounded-full bg-white/70" />;
+  }
+
+  const values = points.map((point) => point.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const spread = max - min || 1;
+
+  const path = points
+    .map((point, index) => {
+      const x = (index / Math.max(points.length - 1, 1)) * 80;
+      const y = 32 - ((point.value - min) / spread) * 24;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  return (
+    <svg viewBox="0 0 80 32" className="h-10 w-20" aria-hidden="true">
+      <path
+        d={path}
+        fill="none"
+        stroke={direction === "down" ? "#C2410C" : "#067647"}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function DashboardMarketPulseOverview({
   locale,
   investmentsHref,
@@ -45,6 +83,11 @@ export function DashboardMarketPulseOverview({
   const [items, setItems] = useState<MarketIntelligencePayload[]>([]);
   const [loading, setLoading] = useState(true);
   const copy = getDashboardWorkspaceCopy(locale);
+  const decisionCopy = getDashboardDecisionCopy(locale);
+  const investmentsAssetHref = (assetId: string) =>
+    investmentsHref.includes("?")
+      ? `${investmentsHref}&asset=${assetId}`
+      : `${investmentsHref}?asset=${assetId}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +117,11 @@ export function DashboardMarketPulseOverview({
         );
 
         if (!cancelled) {
-          setItems(responses.filter((item): item is MarketIntelligencePayload => item !== null));
+          setItems(
+            responses.filter(
+              (item): item is MarketIntelligencePayload => item !== null && !item.unavailable,
+            ),
+          );
         }
       } catch {
         if (!cancelled) {
@@ -114,19 +161,25 @@ export function DashboardMarketPulseOverview({
       ) : items.length > 0 ? (
         <div className="grid gap-3">
           {items.map((item) => (
-            <div
+            <Link
               key={item.assetId}
-              className="flex items-center justify-between rounded-[20px] border border-line bg-bg-surface px-4 py-3"
+              href={investmentsAssetHref(item.assetId)}
+              className="flex flex-col gap-3 rounded-[20px] border border-line bg-bg-surface px-4 py-3 transition-all hover:border-line-strong hover:bg-white sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">{item.assetLabel}</p>
-                <p className="mt-1 text-xs text-ink-tertiary">{item.sourceLabel}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <Sparkline points={item.points.slice(-14)} direction={item.direction} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink">{item.assetLabel}</p>
+                  <p className="mt-1 text-xs text-ink-tertiary">
+                    {item.sourceLabel} · {decisionCopy.expandAsset}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
+              <div className="sm:text-right">
                 <p className="text-sm font-bold text-ink">
                   {formatValue(locale, item.latestPrice, item.currency)}
                 </p>
-                <div className="mt-1 flex items-center justify-end gap-2">
+                <div className="mt-1 flex items-center gap-2 sm:justify-end">
                   <span
                     className={clsx(
                       "text-xs font-semibold",
@@ -138,7 +191,7 @@ export function DashboardMarketPulseOverview({
                   <Tag tone={item.stale ? "muted" : "blue"}>{item.statusLabel}</Tag>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (
@@ -149,4 +202,3 @@ export function DashboardMarketPulseOverview({
     </DashboardSectionCard>
   );
 }
-

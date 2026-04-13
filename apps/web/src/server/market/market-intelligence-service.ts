@@ -1,15 +1,15 @@
 import "server-only";
 
-import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
+import type { MarketplaceLocale } from "@payn/types";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import {
   getLocalizedInsightValue,
   getLocalizedRecommendations,
   getLocalizedSummary,
   getMarketIntelligenceCopy,
-  getProviderSuitabilityNote,
 } from "@/lib/market-intelligence-copy";
 import {
+  getInvestmentAccessMatches,
   marketIntelligenceAssets,
   marketIntelligenceTimeframes,
   type MarketDataPoint,
@@ -17,10 +17,9 @@ import {
   type MarketIntelligenceAssetId,
   type MarketIntelligenceDirection,
   type MarketIntelligencePayload,
+  type MarketIntelligenceSourceAttempt,
   type MarketIntelligenceTimeframe,
 } from "@/lib/market-intelligence";
-import { getOfferHref } from "@/lib/marketplace";
-import { localePath } from "@/lib/locale";
 import { serverEnv } from "@/lib/server-env";
 
 type FinnhubCandleResponse = {
@@ -30,6 +29,48 @@ type FinnhubCandleResponse = {
 };
 
 type AlphaVantageResponse = Record<string, Record<string, Record<string, string>>>;
+
+type TwelveDataResponse = {
+  status?: string;
+  values?: Array<{
+    datetime?: string;
+    close?: string;
+  }>;
+  code?: number;
+  message?: string;
+};
+
+type YahooFinanceResponse = {
+  chart?: {
+    result?: Array<{
+      timestamp?: number[];
+      indicators?: {
+        quote?: Array<{
+          close?: Array<number | null>;
+        }>;
+      };
+    }>;
+    error?: {
+      code?: string;
+      description?: string;
+    } | null;
+  };
+};
+
+type MarketSeries = {
+  provider: string;
+  sourceName: string;
+  delayed: boolean;
+  symbol: string;
+  interval: string;
+  requestLabel: string;
+  points: MarketDataPoint[];
+};
+
+type MarketSeriesAttempt = {
+  attempt: MarketIntelligenceSourceAttempt;
+  series: MarketSeries | null;
+};
 
 function average(values: number[]) {
   if (values.length === 0) {
@@ -60,6 +101,44 @@ function getDirection(changePct: number): MarketIntelligenceDirection {
   return changePct > 0 ? "up" : "down";
 }
 
+function formatError(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
+function buildAttempt(args: {
+  provider: string;
+  symbol: string;
+  timeframe: MarketIntelligenceTimeframe;
+  interval: string;
+  requestLabel: string;
+  status: MarketIntelligenceSourceAttempt["status"];
+  points?: MarketDataPoint[];
+  error?: string;
+}): MarketIntelligenceSourceAttempt {
+  const points = args.points ?? [];
+
+  return {
+    provider: args.provider,
+    symbol: args.symbol,
+    timeframe: args.timeframe,
+    interval: args.interval,
+    requestLabel: args.requestLabel,
+    status: args.status,
+    pointCount: points.length,
+    firstPoint: points[0],
+    lastPoint: points[points.length - 1],
+    error: args.error,
+  };
+}
+
+function maybeLogDebug(enabled: boolean, label: string, value: unknown) {
+  if (!enabled) {
+    return;
+  }
+
+  console.info(`[payn-market] ${label}`, value);
+}
+
 async function fetchJsonWithTimeout<T>(
   input: string,
   init: RequestInit = {},
@@ -87,55 +166,255 @@ async function fetchJsonWithTimeout<T>(
 async function fetchFinnhubSeries(
   assetId: MarketIntelligenceAssetId,
   timeframe: MarketIntelligenceTimeframe,
-) {
+): Promise<MarketSeriesAttempt> {
   const asset = marketIntelligenceAssets[assetId];
   const timeframeConfig = marketIntelligenceTimeframes[timeframe];
+  const interval = timeframeConfig.finnhubResolution[asset.kind];
+  const symbol = asset.finnhub.symbol;
+  const requestLabel = `symbol=${symbol}&resolution=${interval}&days=${timeframeConfig.days}`;
 
   if (!serverEnv.finnhubApiKey) {
-    return null;
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Finnhub",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "disabled",
+        error: "FINNHUB_API_KEY is not configured",
+      }),
+    };
   }
 
-  const to = Math.floor(Date.now() / 1000);
-  const from = to - timeframeConfig.days * 24 * 60 * 60;
-  const url = new URL(`https://finnhub.io/api/v1/${asset.finnhub.endpoint}/candle`);
-  url.searchParams.set("symbol", asset.finnhub.symbol);
-  url.searchParams.set("resolution", timeframeConfig.resolution);
-  url.searchParams.set("from", String(from));
-  url.searchParams.set("to", String(to));
-  url.searchParams.set("token", serverEnv.finnhubApiKey);
+  try {
+    const to = Math.floor(Date.now() / 1000);
+    const from = to - timeframeConfig.days * 24 * 60 * 60;
+    const url = new URL(`https://finnhub.io/api/v1/${asset.finnhub.endpoint}/candle`);
+    url.searchParams.set("symbol", symbol);
+    url.searchParams.set("resolution", interval);
+    url.searchParams.set("from", String(from));
+    url.searchParams.set("to", String(to));
+    url.searchParams.set("token", serverEnv.finnhubApiKey);
 
-  const response = await fetchJsonWithTimeout<FinnhubCandleResponse>(url.toString(), {
-    next: { revalidate: 300 },
-  });
+    const response = await fetchJsonWithTimeout<FinnhubCandleResponse>(url.toString(), {
+      next: {
+        revalidate: timeframe === "1D" ? 120 : 300,
+        tags: [`market-intelligence:finnhub:${assetId}:${timeframe}`],
+      },
+    });
 
-  if (response.s !== "ok" || !response.c?.length || !response.t?.length) {
-    return null;
-  }
-
-  const rawPoints = response.c
-    .map((value, index) => {
-      const timestamp = response.t?.[index];
-
-      if (!Number.isFinite(value) || !timestamp) {
-        return null;
-      }
-
+    if (response.s !== "ok" || !response.c?.length || !response.t?.length) {
       return {
-        time: new Date(timestamp * 1000).toISOString(),
-        value,
-      } satisfies MarketDataPoint;
-    })
-    .filter((point): point is MarketDataPoint => point !== null);
+        series: null,
+        attempt: buildAttempt({
+          provider: "Finnhub",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          error: `Finnhub status: ${response.s ?? "unknown"}`,
+        }),
+      };
+    }
 
-  if (rawPoints.length < 2) {
-    return null;
+    const rawPoints = response.c
+      .map((value, index) => {
+        const timestamp = response.t?.[index];
+
+        if (!Number.isFinite(value) || !timestamp) {
+          return null;
+        }
+
+        return {
+          time: new Date(timestamp * 1000).toISOString(),
+          value,
+        } satisfies MarketDataPoint;
+      })
+      .filter((point): point is MarketDataPoint => point !== null);
+
+    if (rawPoints.length < 2) {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Finnhub",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          points: rawPoints,
+          error: "Not enough candle points returned",
+        }),
+      };
+    }
+
+    const points = clampPoints(rawPoints, timeframeConfig.points);
+
+    return {
+      series: {
+        provider: "Finnhub",
+        sourceName: "Finnhub",
+        delayed: false,
+        symbol,
+        interval,
+        requestLabel,
+        points,
+      },
+      attempt: buildAttempt({
+        provider: "Finnhub",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "success",
+        points,
+      }),
+    };
+  } catch (error) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Finnhub",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "failed",
+        error: formatError(error),
+      }),
+    };
+  }
+}
+
+async function fetchTwelveDataSeries(
+  assetId: MarketIntelligenceAssetId,
+  timeframe: MarketIntelligenceTimeframe,
+): Promise<MarketSeriesAttempt> {
+  const asset = marketIntelligenceAssets[assetId];
+  const timeframeConfig = marketIntelligenceTimeframes[timeframe];
+  const symbol = asset.twelveData?.symbol ?? asset.label;
+  const interval = timeframeConfig.twelvedataInterval;
+  const requestLabel = `symbol=${symbol}&interval=${interval}&outputsize=${Math.max(
+    timeframeConfig.points,
+    40,
+  )}`;
+
+  if (!serverEnv.twelveDataApiKey || !asset.twelveData) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Twelve Data",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "disabled",
+        error: "TWELVE_DATA_API_KEY is not configured",
+      }),
+    };
   }
 
-  return {
-    points: clampPoints(rawPoints, timeframeConfig.points),
-    sourceName: "Finnhub",
-    delayed: false,
-  };
+  try {
+    const url = new URL("https://api.twelvedata.com/time_series");
+    url.searchParams.set("symbol", symbol);
+    url.searchParams.set("interval", interval);
+    url.searchParams.set("outputsize", String(Math.max(timeframeConfig.points, 40)));
+    url.searchParams.set("order", "ASC");
+    url.searchParams.set("timezone", "UTC");
+    url.searchParams.set("apikey", serverEnv.twelveDataApiKey);
+
+    const response = await fetchJsonWithTimeout<TwelveDataResponse>(url.toString(), {
+      next: {
+        revalidate: timeframe === "1D" ? 180 : 420,
+        tags: [`market-intelligence:twelvedata:${assetId}:${timeframe}`],
+      },
+    });
+
+    if (!response.values?.length || response.status === "error") {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Twelve Data",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          error: response.message ?? "No values returned",
+        }),
+      };
+    }
+
+    const rawPoints = response.values
+      .map((entry) => {
+        const value = Number(entry.close);
+        if (!Number.isFinite(value) || !entry.datetime) {
+          return null;
+        }
+
+        return {
+          time: new Date(entry.datetime.replace(" ", "T") + "Z").toISOString(),
+          value,
+        } satisfies MarketDataPoint;
+      })
+      .filter((point): point is MarketDataPoint => point !== null)
+      .sort((left, right) => new Date(left.time).getTime() - new Date(right.time).getTime());
+
+    if (rawPoints.length < 2) {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Twelve Data",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          points: rawPoints,
+          error: "Not enough time series points returned",
+        }),
+      };
+    }
+
+    const points = clampPoints(rawPoints.slice(-Math.max(timeframeConfig.points, 20)), timeframeConfig.points);
+
+    return {
+      series: {
+        provider: "Twelve Data",
+        sourceName: "Twelve Data",
+        delayed: true,
+        symbol,
+        interval,
+        requestLabel,
+        points,
+      },
+      attempt: buildAttempt({
+        provider: "Twelve Data",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "success",
+        points,
+      }),
+    };
+  } catch (error) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Twelve Data",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "failed",
+        error: formatError(error),
+      }),
+    };
+  }
 }
 
 function extractAlphaSeries(response: AlphaVantageResponse, keys: string[]) {
@@ -152,118 +431,282 @@ function extractAlphaSeries(response: AlphaVantageResponse, keys: string[]) {
 async function fetchAlphaVantageSeries(
   assetId: MarketIntelligenceAssetId,
   timeframe: MarketIntelligenceTimeframe,
-) {
+): Promise<MarketSeriesAttempt> {
   const asset = marketIntelligenceAssets[assetId];
   const timeframeConfig = marketIntelligenceTimeframes[timeframe];
+  const interval = timeframe === "1D" ? "n/a" : timeframeConfig.twelvedataInterval;
+  const symbol =
+    asset.alphaVantage?.kind === "fx"
+      ? `${asset.alphaVantage.fromSymbol}/${asset.alphaVantage.toSymbol}`
+      : asset.alphaVantage?.symbol ?? asset.label;
+  const requestLabel = `asset=${symbol}&timeframe=${timeframe}`;
 
-  if (!serverEnv.alphaVantageApiKey || !asset.alphaVantage || timeframe === "1D") {
-    return null;
+  if (!serverEnv.alphaVantageApiKey || !asset.alphaVantage) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Alpha Vantage",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "disabled",
+        error: "ALPHA_VANTAGE_API_KEY is not configured",
+      }),
+    };
   }
 
-  const url = new URL("https://www.alphavantage.co/query");
-
-  if (asset.alphaVantage.kind === "digital") {
-    url.searchParams.set("function", "DIGITAL_CURRENCY_DAILY");
-    url.searchParams.set("symbol", asset.alphaVantage.symbol ?? "");
-    url.searchParams.set("market", asset.alphaVantage.market ?? "USD");
-  } else if (asset.alphaVantage.kind === "fx") {
-    url.searchParams.set("function", "FX_DAILY");
-    url.searchParams.set("from_symbol", asset.alphaVantage.fromSymbol ?? "EUR");
-    url.searchParams.set("to_symbol", asset.alphaVantage.toSymbol ?? "USD");
-  } else {
-    url.searchParams.set("function", "TIME_SERIES_DAILY");
-    url.searchParams.set("symbol", asset.alphaVantage.symbol ?? "");
-    url.searchParams.set("outputsize", "compact");
+  if (timeframe === "1D") {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Alpha Vantage",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "disabled",
+        error: "Daily-only endpoint is not used for 1D intraday charts",
+      }),
+    };
   }
 
-  url.searchParams.set("apikey", serverEnv.alphaVantageApiKey);
+  try {
+    const url = new URL("https://www.alphavantage.co/query");
 
-  const response = await fetchJsonWithTimeout<AlphaVantageResponse>(url.toString(), {
-    next: { revalidate: 900 },
-  });
+    if (asset.alphaVantage.kind === "digital") {
+      url.searchParams.set("function", "DIGITAL_CURRENCY_DAILY");
+      url.searchParams.set("symbol", asset.alphaVantage.symbol ?? "");
+      url.searchParams.set("market", asset.alphaVantage.market ?? "USD");
+    } else if (asset.alphaVantage.kind === "fx") {
+      url.searchParams.set("function", "FX_DAILY");
+      url.searchParams.set("from_symbol", asset.alphaVantage.fromSymbol ?? "EUR");
+      url.searchParams.set("to_symbol", asset.alphaVantage.toSymbol ?? "USD");
+    } else {
+      url.searchParams.set("function", "TIME_SERIES_DAILY");
+      url.searchParams.set("symbol", asset.alphaVantage.symbol ?? "");
+      url.searchParams.set("outputsize", timeframe === "3M" ? "full" : "compact");
+    }
 
-  const series = extractAlphaSeries(response, [
-    "Time Series (Digital Currency Daily)",
-    "Time Series FX (Daily)",
-    "Time Series (Daily)",
-  ]);
+    url.searchParams.set("apikey", serverEnv.alphaVantageApiKey);
 
-  if (!series) {
-    return null;
-  }
+    const response = await fetchJsonWithTimeout<AlphaVantageResponse>(url.toString(), {
+      next: {
+        revalidate: 900,
+        tags: [`market-intelligence:alphavantage:${assetId}:${timeframe}`],
+      },
+    });
 
-  const rawPoints = Object.entries(series)
-    .map(([date, values]) => {
-      const candidates = [
-        values["4a. close (USD)"],
-        values["4b. close (USD)"],
-        values["4. close"],
-      ];
-      const close = Number(candidates.find((value) => value !== undefined));
+    const series = extractAlphaSeries(response, [
+      "Time Series (Digital Currency Daily)",
+      "Time Series FX (Daily)",
+      "Time Series (Daily)",
+    ]);
 
-      if (!Number.isFinite(close)) {
-        return null;
-      }
-
+    if (!series) {
       return {
-        time: new Date(`${date}T00:00:00.000Z`).toISOString(),
-        value: close,
-      } satisfies MarketDataPoint;
-    })
-    .filter((point): point is MarketDataPoint => point !== null)
-    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        series: null,
+        attempt: buildAttempt({
+          provider: "Alpha Vantage",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          error: "No time series block returned",
+        }),
+      };
+    }
 
-  if (rawPoints.length < 2) {
-    return null;
-  }
+    const rawPoints = Object.entries(series)
+      .map(([date, values]) => {
+        const candidates = [
+          values["4a. close (USD)"],
+          values["4b. close (USD)"],
+          values["4. close"],
+        ];
+        const close = Number(candidates.find((value) => value !== undefined));
 
-  const limited = rawPoints.slice(-Math.max(timeframeConfig.points, 14));
+        if (!Number.isFinite(close)) {
+          return null;
+        }
 
-  return {
-    points: clampPoints(limited, timeframeConfig.points),
-    sourceName: "Alpha Vantage",
-    delayed: true,
-  };
-}
+        return {
+          time: new Date(`${date}T00:00:00.000Z`).toISOString(),
+          value: close,
+        } satisfies MarketDataPoint;
+      })
+      .filter((point): point is MarketDataPoint => point !== null)
+      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
-function buildFallbackSeries(
-  assetId: MarketIntelligenceAssetId,
-  timeframe: MarketIntelligenceTimeframe,
-) {
-  const asset = marketIntelligenceAssets[assetId];
-  const timeframeConfig = marketIntelligenceTimeframes[timeframe];
-  const intervalMs =
-    (timeframeConfig.days * 24 * 60 * 60 * 1000) / Math.max(timeframeConfig.points - 1, 1);
-  const now = Date.now();
-  const seed =
-    assetId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0) / 100;
+    if (rawPoints.length < 2) {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Alpha Vantage",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          points: rawPoints,
+          error: "Not enough daily points returned",
+        }),
+      };
+    }
 
-  const points = Array.from({ length: timeframeConfig.points }, (_, index) => {
-    const progress = index / Math.max(timeframeConfig.points - 1, 1);
-    const wave = Math.sin(progress * 10 + seed) * asset.baseValue * 0.012;
-    const secondaryWave = Math.cos(progress * 17 + seed) * asset.baseValue * 0.006;
-    const drift = asset.baseValue * asset.defaultDrift * (progress - 0.5);
-    const value = Math.max(asset.baseValue * 0.2, asset.baseValue + drift + wave + secondaryWave);
+    const limited = rawPoints.slice(-Math.max(timeframeConfig.points, 14));
+    const points = clampPoints(limited, timeframeConfig.points);
 
     return {
-      time: new Date(now - intervalMs * (timeframeConfig.points - index - 1)).toISOString(),
-      value: Number(value.toFixed(asset.kind === "fx" ? 4 : 2)),
-    } satisfies MarketDataPoint;
-  });
-
-  return {
-    points,
-    sourceName: "Payn snapshot",
-    delayed: true,
-  };
+      series: {
+        provider: "Alpha Vantage",
+        sourceName: "Alpha Vantage",
+        delayed: true,
+        symbol,
+        interval,
+        requestLabel,
+        points,
+      },
+      attempt: buildAttempt({
+        provider: "Alpha Vantage",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "success",
+        points,
+      }),
+    };
+  } catch (error) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Alpha Vantage",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "failed",
+        error: formatError(error),
+      }),
+    };
+  }
 }
 
-function getInvestmentOfferMap() {
-  return new Map(
-    marketplaceOffers
-      .filter((offer) => offer.category === "investments")
-      .map((offer) => [offer.providerName, offer] satisfies [string, MarketplaceOffer]),
-  );
+async function fetchYahooFinanceSeries(
+  assetId: MarketIntelligenceAssetId,
+  timeframe: MarketIntelligenceTimeframe,
+): Promise<MarketSeriesAttempt> {
+  const asset = marketIntelligenceAssets[assetId];
+  const timeframeConfig = marketIntelligenceTimeframes[timeframe];
+  const symbol = asset.yahooFinance.symbol;
+  const interval = timeframeConfig.yahooInterval;
+  const now = Math.floor(Date.now() / 1000);
+  const from = now - timeframeConfig.days * 24 * 60 * 60;
+  const requestLabel = `symbol=${symbol}&interval=${interval}&period1=${from}&period2=${now}`;
+
+  try {
+    const url = new URL(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`);
+    url.searchParams.set("interval", interval);
+    url.searchParams.set("period1", String(from));
+    url.searchParams.set("period2", String(now));
+    url.searchParams.set("includePrePost", "false");
+    url.searchParams.set("events", "div,splits");
+
+    const response = await fetchJsonWithTimeout<YahooFinanceResponse>(url.toString(), {
+      next: {
+        revalidate: timeframe === "1D" ? 240 : 600,
+        tags: [`market-intelligence:yahoo:${assetId}:${timeframe}`],
+      },
+    });
+
+    const result = response.chart?.result?.[0];
+    const timestamps = result?.timestamp ?? [];
+    const closes = result?.indicators?.quote?.[0]?.close ?? [];
+
+    if (!result || timestamps.length === 0 || closes.length === 0) {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Yahoo Finance",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          error: response.chart?.error?.description ?? "No chart data returned",
+        }),
+      };
+    }
+
+    const rawPoints = timestamps
+      .map((timestamp, index) => {
+        const close = closes[index];
+
+        if (!timestamp || close == null || !Number.isFinite(close)) {
+          return null;
+        }
+
+        return {
+          time: new Date(timestamp * 1000).toISOString(),
+          value: close,
+        } satisfies MarketDataPoint;
+      })
+      .filter((point): point is MarketDataPoint => point !== null);
+
+    if (rawPoints.length < 2) {
+      return {
+        series: null,
+        attempt: buildAttempt({
+          provider: "Yahoo Finance",
+          symbol,
+          timeframe,
+          interval,
+          requestLabel,
+          status: "empty",
+          points: rawPoints,
+          error: "Not enough chart points returned",
+        }),
+      };
+    }
+
+    const points = clampPoints(rawPoints, timeframeConfig.points);
+
+    return {
+      series: {
+        provider: "Yahoo Finance",
+        sourceName: "Yahoo Finance",
+        delayed: true,
+        symbol,
+        interval,
+        requestLabel,
+        points,
+      },
+      attempt: buildAttempt({
+        provider: "Yahoo Finance",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "success",
+        points,
+      }),
+    };
+  } catch (error) {
+    return {
+      series: null,
+      attempt: buildAttempt({
+        provider: "Yahoo Finance",
+        symbol,
+        timeframe,
+        interval,
+        requestLabel,
+        status: "failed",
+        error: formatError(error),
+      }),
+    };
+  }
 }
 
 function buildSignals(
@@ -341,54 +784,111 @@ function buildSignals(
   };
 }
 
+async function resolveSeries(
+  assetId: MarketIntelligenceAssetId,
+  timeframe: MarketIntelligenceTimeframe,
+  debug: boolean,
+) {
+  const attempts: MarketIntelligenceSourceAttempt[] = [];
+  const chain = [
+    () => fetchFinnhubSeries(assetId, timeframe),
+    () => fetchTwelveDataSeries(assetId, timeframe),
+    () => fetchAlphaVantageSeries(assetId, timeframe),
+    () => fetchYahooFinanceSeries(assetId, timeframe),
+  ] as const;
+
+  for (const load of chain) {
+    const result = await load();
+    attempts.push(result.attempt);
+    maybeLogDebug(debug, "source-attempt", result.attempt);
+
+    if (result.series && result.series.points.length >= 2) {
+      return { series: result.series, attempts };
+    }
+  }
+
+  return { series: null, attempts };
+}
+
 export async function getMarketIntelligence({
   assetId,
   timeframe,
   locale,
+  debug = false,
 }: {
   assetId: MarketIntelligenceAssetId;
   timeframe: MarketIntelligenceTimeframe;
   locale: MarketplaceLocale;
+  debug?: boolean;
 }): Promise<MarketIntelligencePayload> {
   const asset = marketIntelligenceAssets[assetId];
   const dictionary = getMarketIntelligenceCopy(locale);
-  const offersByProvider = getInvestmentOfferMap();
+  const { series, attempts } = await resolveSeries(assetId, timeframe, debug);
 
-  const series =
-    (await fetchFinnhubSeries(assetId, timeframe).catch(() => null)) ??
-    (await fetchAlphaVantageSeries(assetId, timeframe).catch(() => null)) ??
-    buildFallbackSeries(assetId, timeframe);
+  const availableOn = getInvestmentAccessMatches(
+    marketplaceOffers.filter((offer) => offer.category === "investments"),
+    assetId,
+  ).map((match) => ({
+    providerName: match.offer.providerName,
+    offerTitle: match.offer.title,
+    providerUrl: match.offer.providerWebsiteUrl,
+    offerHref: match.offer.providerWebsiteUrl,
+    accessType: match.accessType,
+    estimatedCostLabel: match.estimatedCostLabel,
+    feeModel: match.feeModel,
+    estimatedSpreadRange: match.estimatedSpreadRange,
+    recurringSupported: match.recurringSupported,
+    minimumOrder: match.minimumOrder,
+    bestFor: match.bestFor,
+    notes: match.notes,
+    estimatedCostScore: match.estimatedCostScore,
+  }));
+
+  if (!series) {
+    const payload: MarketIntelligencePayload = {
+      assetId,
+      assetLabel: asset.label,
+      timeframe,
+      latestPrice: 0,
+      currency: asset.currency,
+      changePct: 0,
+      direction: "flat",
+      points: [],
+      signals: [],
+      summary: dictionary.unavailableBody,
+      recommendations: [],
+      availableOn,
+      sourceLabel: dictionary.unavailableBody,
+      sourceName: "Unavailable",
+      stale: true,
+      delayed: true,
+      unavailable: true,
+      updatedAt: new Date().toISOString(),
+      statusLabel: dictionary.unavailable,
+      attributionNotice: "Market charts use Lightweight Charts™ by TradingView.",
+      attributionLink: "https://www.tradingview.com/",
+      attributionLabel: "TradingView",
+      debug: debug
+        ? {
+            assetId,
+            timeframe,
+            attempts,
+          }
+        : undefined,
+    };
+
+    maybeLogDebug(debug, "resolved-unavailable", payload.debug);
+    return payload;
+  }
 
   const values = series.points.map((point) => point.value);
-  const latestPrice = values[values.length - 1] ?? asset.baseValue;
+  const latestPrice = values[values.length - 1] ?? 0;
   const initialPrice = values[0] ?? latestPrice;
   const changePct = initialPrice > 0 ? ((latestPrice - initialPrice) / initialPrice) * 100 : 0;
   const direction = getDirection(changePct);
-  const { signals, volatilityTone, summaryTone } = buildSignals(
-    locale,
-    asset.label,
-    direction,
-    values,
-  );
+  const { signals, volatilityTone, summaryTone } = buildSignals(locale, asset.label, direction, values);
 
-  const availableOn = asset.providerNames
-    .map((providerName) => {
-      const offer = offersByProvider.get(providerName);
-
-      if (!offer) {
-        return null;
-      }
-
-      return {
-        providerName,
-        offerTitle: offer.title,
-        href: localePath(locale, getOfferHref(offer)),
-        note: getProviderSuitabilityNote(locale, providerName, asset.kind),
-      };
-    })
-    .filter((item): item is NonNullable<typeof item> => item !== null);
-
-  return {
+  const payload: MarketIntelligencePayload = {
     assetId,
     assetLabel: asset.label,
     timeframe,
@@ -407,11 +907,31 @@ export async function getMarketIntelligence({
     sourceName: series.sourceName,
     stale: series.delayed,
     delayed: series.delayed,
+    unavailable: false,
     updatedAt: series.points[series.points.length - 1]?.time ?? new Date().toISOString(),
     statusLabel: series.delayed ? dictionary.delayed : dictionary.live,
     attributionNotice: "Market charts use Lightweight Charts™ by TradingView.",
     attributionLink: "https://www.tradingview.com/",
     attributionLabel: "TradingView",
+    debug: debug
+      ? {
+          assetId,
+          timeframe,
+          attempts,
+        }
+      : undefined,
   };
-}
 
+  maybeLogDebug(debug, "resolved-series", {
+    assetId,
+    timeframe,
+    source: series.sourceName,
+    symbol: series.symbol,
+    interval: series.interval,
+    points: series.points.length,
+    firstPoint: series.points[0],
+    lastPoint: series.points[series.points.length - 1],
+  });
+
+  return payload;
+}

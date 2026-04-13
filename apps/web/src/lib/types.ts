@@ -1,7 +1,10 @@
 export interface UserProfile {
   user_id: string;
+  first_name: string | null;
+  last_name: string | null;
   selected_categories: string[];
   home_country: string | null;
+  market_scope?: "local_only" | "eu_fallback" | "all_europe" | null;
   target_countries: string[];
   goals: string[];
   user_type: "personal" | "freelancer" | "business";

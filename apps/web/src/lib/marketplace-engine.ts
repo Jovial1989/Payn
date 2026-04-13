@@ -1,8 +1,8 @@
-import type { MarketplaceCategory, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
+import { matchesOfferCountrySelection } from "@/lib/countries";
 import type { ExplorerCategory } from "@/lib/marketplace";
 import {
   getOfferSearchText,
-  matchesOfferMarket,
   parseMetricRange,
   getMetricValue,
   marketplaceCategories,
@@ -32,15 +32,15 @@ export const defaultMarketplaceFilters: MarketplaceFilterState = {
 
 export function getScopedOffers({
   offers,
-  market,
+  country,
   category,
 }: {
   offers: MarketplaceOffer[];
-  market: MarketplaceMarket;
+  country: string;
   category: ExplorerCategory;
 }) {
   return offers.filter((offer) => {
-    if (!matchesOfferMarket(offer, market)) {
+    if (!matchesOfferCountrySelection(offer, country)) {
       return false;
     }
 
@@ -54,16 +54,16 @@ export function getScopedOffers({
 
 export function filterMarketplaceOffers({
   offers,
-  market,
+  country,
   category,
   filters,
 }: {
   offers: MarketplaceOffer[];
-  market: MarketplaceMarket;
+  country: string;
   category: ExplorerCategory;
   filters: MarketplaceFilterState;
 }) {
-  let result = getScopedOffers({ offers, market, category });
+  let result = getScopedOffers({ offers, country, category });
   const query = filters.query.trim().toLowerCase();
 
   if (query) {
@@ -142,20 +142,20 @@ function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: Explo
 
 export function getProviderOptions(
   offers: MarketplaceOffer[],
-  market: MarketplaceMarket,
+  country: string,
   category: ExplorerCategory,
 ) {
   return Array.from(
-    new Set(getScopedOffers({ offers, market, category }).map((offer) => offer.providerName)),
+    new Set(getScopedOffers({ offers, country, category }).map((offer) => offer.providerName)),
   ).sort();
 }
 
 export function getFeatureOptions(
   offers: MarketplaceOffer[],
-  market: MarketplaceMarket,
+  country: string,
   category: ExplorerCategory,
 ) {
-  const scope = getScopedOffers({ offers, market, category });
+  const scope = getScopedOffers({ offers, country, category });
   return Array.from(
     new Set(
       scope.flatMap((offer) => [...offer.bestFor, ...(offer.attributes?.searchTags ?? [])]),
@@ -168,7 +168,7 @@ export function getFeatureOptions(
 
 export function getSubtypeOptions(
   offers: MarketplaceOffer[],
-  market: MarketplaceMarket,
+  country: string,
   category: ExplorerCategory,
 ) {
   if (category !== "insurance" && category !== "investments") {
@@ -177,7 +177,7 @@ export function getSubtypeOptions(
 
   return Array.from(
     new Set(
-      getScopedOffers({ offers, market, category })
+      getScopedOffers({ offers, country, category })
         .map((offer) => offer.attributes?.subtype)
         .filter(Boolean),
     ),
@@ -185,8 +185,8 @@ export function getSubtypeOptions(
     .sort() as string[];
 }
 
-export function countOffersByCategory(offers: MarketplaceOffer[], market: MarketplaceMarket) {
-  const scoped = getScopedOffers({ offers, market, category: "all" });
+export function countOffersByCategory(offers: MarketplaceOffer[], country: string) {
+  const scoped = getScopedOffers({ offers, country, category: "all" });
 
   return marketplaceCategories.reduce(
     (acc, category) => {

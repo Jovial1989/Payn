@@ -1,29 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { getCountrySelectorOptions } from "@/lib/countries";
 
 const CATEGORIES = [
   { id: "loans", label: "Loans", icon: "$" },
   { id: "cards", label: "Credit Cards", icon: "C" },
   { id: "transfers", label: "Money Transfers", icon: "T" },
   { id: "exchange", label: "Currency Exchange", icon: "X" },
-];
-
-const COUNTRIES = [
-  { code: "DE", name: "Germany" },
-  { code: "NL", name: "Netherlands" },
-  { code: "FR", name: "France" },
-  { code: "ES", name: "Spain" },
-  { code: "IT", name: "Italy" },
-  { code: "BE", name: "Belgium" },
-  { code: "AT", name: "Austria" },
-  { code: "PT", name: "Portugal" },
-  { code: "IE", name: "Ireland" },
-  { code: "FI", name: "Finland" },
-  { code: "LU", name: "Luxembourg" },
-  { code: "GR", name: "Greece" },
-  { code: "GB", name: "United Kingdom" },
 ];
 
 const GOALS = [
@@ -60,6 +46,42 @@ export function OnboardingFlow({
   onComplete: () => void;
 }) {
   const { user, updateProfile } = useAuth();
+  const { locale } = useMarketplacePreferences();
+  const countryOptions = getCountrySelectorOptions({ includeGroups: false, locale });
+  const copy =
+    locale === "de"
+      ? {
+          step: "Schritt",
+          skip: "Jetzt überspringen",
+          categoriesTitle: "Wonach suchst du?",
+          categoriesDescription: "Wähle die Finanzprodukte aus, die du vergleichen möchtest.",
+          countryTitle: "Wo bist du ansässig?",
+          countryDescription: "Wir zeigen zuerst Angebote, die in deinem Land verfügbar sind.",
+          goalsTitle: "Was ist dir am wichtigsten?",
+          goalsDescription: "Wähle deine Prioritäten für bessere Empfehlungen.",
+          userTypeTitle: "Wie wirst du Payn nutzen?",
+          userTypeDescription: "Das hilft uns, Empfehlungen besser auf dich zuzuschneiden.",
+          back: "Zurück",
+          continue: "Weiter",
+          saving: "Speichert...",
+          recommendations: "Meine Empfehlungen ansehen",
+        }
+      : {
+          step: "Step",
+          skip: "Skip for now",
+          categoriesTitle: "What are you looking for?",
+          categoriesDescription: "Select the financial products you want to compare.",
+          countryTitle: "Where are you based?",
+          countryDescription: "We will show offers available in your country first.",
+          goalsTitle: "What matters most to you?",
+          goalsDescription: "Select your priorities to get better recommendations.",
+          userTypeTitle: "How will you use Payn?",
+          userTypeDescription: "This helps us tailor recommendations to your needs.",
+          back: "Back",
+          continue: "Continue",
+          saving: "Saving...",
+          recommendations: "See my recommendations",
+        };
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<OnboardingData>({
@@ -141,14 +163,14 @@ export function OnboardingFlow({
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-ink-tertiary">
-              Step {step + 1} of {totalSteps}
+              {copy.step} {step + 1} / {totalSteps}
             </p>
             <button
               type="button"
               onClick={onClose}
               className="text-xs font-medium text-ink-tertiary hover:text-ink"
             >
-              Skip for now
+              {copy.skip}
             </button>
           </div>
           <div className="mt-3 h-1 w-full rounded-full bg-bg-surface">
@@ -162,9 +184,9 @@ export function OnboardingFlow({
         {/* Step 0: Categories */}
         {step === 0 && (
           <div>
-            <h2 className="text-h3 text-ink">What are you looking for?</h2>
+            <h2 className="text-h3 text-ink">{copy.categoriesTitle}</h2>
             <p className="mt-2 text-sm text-ink-secondary">
-              Select the financial products you want to compare.
+              {copy.categoriesDescription}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {CATEGORIES.map((cat) => {
@@ -189,7 +211,16 @@ export function OnboardingFlow({
                     >
                       {cat.icon}
                     </div>
-                    <span className="text-sm font-semibold text-ink">{cat.label}</span>
+                    <span className="text-sm font-semibold text-ink">
+                      {locale === "de"
+                        ? {
+                            loans: "Kredite",
+                            cards: "Karten",
+                            transfers: "Überweisungen",
+                            exchange: "Wechsel",
+                          }[cat.id]
+                        : cat.label}
+                    </span>
                   </button>
                 );
               })}
@@ -200,18 +231,18 @@ export function OnboardingFlow({
         {/* Step 1: Country */}
         {step === 1 && (
           <div>
-            <h2 className="text-h3 text-ink">Where are you based?</h2>
+            <h2 className="text-h3 text-ink">{copy.countryTitle}</h2>
             <p className="mt-2 text-sm text-ink-secondary">
-              We will show offers available in your country first.
+              {copy.countryDescription}
             </p>
             <div className="mt-6 grid max-h-[320px] gap-2 overflow-y-auto">
-              {COUNTRIES.map((country) => {
-                const selected = data.homeCountry === country.code;
+              {countryOptions.map((country) => {
+                const selected = data.homeCountry === country.value;
                 return (
                   <button
-                    key={country.code}
+                    key={country.value}
                     type="button"
-                    onClick={() => setData((prev) => ({ ...prev, homeCountry: country.code }))}
+                    onClick={() => setData((prev) => ({ ...prev, homeCountry: country.value }))}
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
                       selected
                         ? "border-black bg-black/[0.03]"
@@ -227,7 +258,7 @@ export function OnboardingFlow({
                     >
                       {country.code}
                     </div>
-                    <span className="text-sm font-medium text-ink">{country.name}</span>
+                    <span className="text-sm font-medium text-ink">{country.label}</span>
                     {selected && (
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="ml-auto text-black">
                         <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -243,9 +274,9 @@ export function OnboardingFlow({
         {/* Step 2: Goals */}
         {step === 2 && (
           <div>
-            <h2 className="text-h3 text-ink">What matters most to you?</h2>
+            <h2 className="text-h3 text-ink">{copy.goalsTitle}</h2>
             <p className="mt-2 text-sm text-ink-secondary">
-              Select your priorities to get better recommendations.
+              {copy.goalsDescription}
             </p>
             <div className="mt-6 grid gap-2">
               {GOALS.map((goal) => {
@@ -272,7 +303,19 @@ export function OnboardingFlow({
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-ink">{goal.label}</span>
+                    <span className="text-sm font-medium text-ink">
+                      {locale === "de"
+                        ? {
+                            lowest_fees: "Niedrigste Gebühren",
+                            best_rates: "Beste Kurse",
+                            fast_approval: "Schnelle Zusage",
+                            premium: "Premium-Erlebnis",
+                            cashback: "Cashback / Rewards",
+                            business: "Geschäftlich",
+                            no_hidden_fees: "Keine versteckten Gebühren",
+                          }[goal.id]
+                        : goal.label}
+                    </span>
                   </button>
                 );
               })}
@@ -283,9 +326,9 @@ export function OnboardingFlow({
         {/* Step 3: User type */}
         {step === 3 && (
           <div>
-            <h2 className="text-h3 text-ink">How will you use Payn?</h2>
+            <h2 className="text-h3 text-ink">{copy.userTypeTitle}</h2>
             <p className="mt-2 text-sm text-ink-secondary">
-              This helps us tailor recommendations to your needs.
+              {copy.userTypeDescription}
             </p>
             <div className="mt-6 grid gap-3">
               {USER_TYPES.map((type) => {
@@ -301,8 +344,24 @@ export function OnboardingFlow({
                         : "border-line hover:border-line-strong"
                     }`}
                   >
-                    <p className="text-sm font-bold text-ink">{type.label}</p>
-                    <p className="mt-1 text-xs text-ink-secondary">{type.description}</p>
+                    <p className="text-sm font-bold text-ink">
+                      {locale === "de"
+                        ? {
+                            personal: "Privatnutzer",
+                            freelancer: "Freelancer",
+                            business: "Unternehmer",
+                          }[type.id]
+                        : type.label}
+                    </p>
+                    <p className="mt-1 text-xs text-ink-secondary">
+                      {locale === "de"
+                        ? {
+                            personal: "Verwaltet private Finanzen",
+                            freelancer: "Selbstständig oder Auftragnehmer",
+                            business: "Führt ein Unternehmen",
+                          }[type.id]
+                        : type.description}
+                    </p>
                   </button>
                 );
               })}
@@ -318,7 +377,7 @@ export function OnboardingFlow({
               onClick={() => setStep((s) => s - 1)}
               className="rounded-full px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
             >
-              Back
+              {copy.back}
             </button>
           ) : (
             <div />
@@ -331,7 +390,7 @@ export function OnboardingFlow({
               onClick={() => setStep((s) => s + 1)}
               className="h-11 rounded-full bg-black px-7 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-30"
             >
-              Continue
+              {copy.continue}
             </button>
           ) : (
             <button
@@ -340,7 +399,7 @@ export function OnboardingFlow({
               onClick={handleFinish}
               className="h-11 rounded-full bg-black px-7 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-30"
             >
-              {saving ? "Saving..." : "See my recommendations"}
+              {saving ? copy.saving : copy.recommendations}
             </button>
           )}
         </div>

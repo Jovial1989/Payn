@@ -12,6 +12,7 @@ type Dictionary = {
     mobileWaitlist: string;
     country: string;
     language: string;
+    currency: string;
   };
   categories: Record<MarketplaceCategory | "all", string>;
   categoryDescriptions: Record<MarketplaceCategory, string>;
@@ -88,6 +89,25 @@ type Dictionary = {
     appDescription: string;
     appPoints: string[];
     waitlistCta: string;
+    howWeRankOffers: string;
+    mobile: {
+      badge: string;
+      heading: string;
+      subtitle: string;
+      joinWishlist: string;
+      learnMore: string;
+    };
+    mockup: {
+      yourShortlist: string;
+      productsSaved: string;
+      compare: string;
+      bestOptionFound: string;
+      continue: string;
+      navHome: string;
+      navExplore: string;
+      navSaved: string;
+      navSettings: string;
+    };
   };
   offerCard: {
     updated: string;
@@ -163,6 +183,31 @@ const baseMetrics = {
   Fee: "Fee",
   "Transfer fee": "Transfer fee",
   Cover: "Cover",
+  Price: "Price",
+  Coverage: "Coverage",
+  Cashback: "Cashback",
+  ATM: "ATM",
+  Approval: "Approval",
+  Market: "Market",
+  "FX fee": "FX fee",
+  "Monthly cover": "Monthly cover",
+  "Medical cover": "Medical cover",
+  "Insured amount": "Insured amount",
+  Deductible: "Deductible",
+  "Region coverage": "Region coverage",
+  "Baggage / delay": "Baggage / delay",
+  Outpatient: "Outpatient",
+  Inpatient: "Inpatient",
+  "Digital claims": "Digital claims",
+  "Family cover": "Family cover",
+  "Collision / theft": "Collision / theft",
+  "Rolling monthly": "Rolling monthly",
+  "Countries covered": "Countries covered",
+  "Medical emergencies": "Medical emergencies",
+  "Remote work suitability": "Remote work suitability",
+  "Device cover": "Device cover",
+  "Theft / liquid": "Theft / liquid",
+  "Worldwide protection": "Worldwide protection",
   "Monthly premium": "Monthly premium",
   "Waiting period": "Waiting period",
   "Trip length": "Trip length",
@@ -190,6 +235,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Mobile waitlist",
       country: "Country",
       language: "Language",
+      currency: "Currency",
     },
     categories: {
       all: "All categories",
@@ -262,7 +308,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       heroTitle: "Find your best financial option in Europe in under 60 seconds",
       heroSubtitle:
         "Compare 40+ banks and fintechs with full transparency — no hidden fees, no impact on your credit score",
-      heroCta: "Check your options",
+      heroCta: "Find best option",
       heroCtaSecondary: "See top offers",
       heroPanelTitle: "Top offers in your market",
       heroPanelSubtitle: "Ranked by transparency, fees, and fit for your selected market.",
@@ -284,7 +330,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Decision-first UX built to compare before you click out.",
         "Checking options does not impact your credit score.",
       ],
-      browseByCategory: "Browse by category",
+      browseByCategory: "Explore financial products",
       categoryCountLabel: "categories",
       products: "products",
       topRanked: "Top offers",
@@ -297,7 +343,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       whyPaynTitle: "Why people use Payn before they apply",
       howItWorksEyebrow: "How it works",
       howItWorksTitle: "Three steps from need to provider",
-      openExplore: "Check your options",
+      openExplore: "Start comparing",
       step: "Step",
       steps: [
         "Select what you need",
@@ -324,12 +370,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Move from web comparison into a logged-in mobile workspace",
       ],
       waitlistCta: "Join mobile waitlist",
+      howWeRankOffers: "How we rank offers",
+      mobile: {
+        badge: "Early access open",
+        heading: "Payn on mobile — coming soon",
+        subtitle: "Your shortlist, comparisons, and saved offers — all in your pocket. iOS and Android.",
+        joinWishlist: "Join wishlist",
+        learnMore: "Learn more",
+      },
+      mockup: {
+        yourShortlist: "Your shortlist",
+        productsSaved: "{count} products saved",
+        compare: "Compare",
+        bestOptionFound: "Best option found",
+        continue: "Continue",
+        navHome: "Home",
+        navExplore: "Explore",
+        navSaved: "Saved",
+        navSettings: "Settings",
+      },
     },
     offerCard: {
       updated: "Updated today",
       keyTradeoff: "Key tradeoff",
-      reviewOffer: "See details",
-      providerSite: "Check rate",
+      reviewOffer: "Check details",
+      providerSite: "Go to provider",
       reviewBeforeLeave: "Review the product on Payn before you leave for the provider.",
     },
     offerDetail: {
@@ -416,6 +481,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Mobile-Warteliste",
       country: "Land",
       language: "Sprache",
+      currency: "Währung",
     },
     categories: {
       all: "Alle Kategorien",
@@ -488,7 +554,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       heroTitle: "Finden Sie in unter 60 Sekunden Ihre beste Finanzoption in Europa",
       heroSubtitle:
         "Vergleichen Sie mehr als 40 Banken und Fintechs mit voller Transparenz — ohne versteckte Gebühren und ohne Einfluss auf Ihre Bonität",
-      heroCta: "Optionen prüfen",
+      heroCta: "Beste Option finden",
       heroCtaSecondary: "Top-Angebote sehen",
       heroPanelTitle: "Top-Angebote in Ihrem Markt",
       heroPanelSubtitle: "Nach Transparenz, Gebühren und Passung für Ihren gewählten Markt sortiert.",
@@ -510,20 +576,20 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Eine Entscheidungsoberfläche, die den Vergleich vor dem Klick priorisiert.",
         "Optionen prüfen beeinflusst Ihre Bonität nicht.",
       ],
-      browseByCategory: "Nach Kategorie durchsuchen",
+      browseByCategory: "Finanzprodukte erkunden",
       categoryCountLabel: "Kategorien",
       products: "Produkte",
       topRanked: "Top-Angebote",
       topRankedSubtitle: "Ausgewählt für Ganz Europa",
       seeAll: "Alle ansehen",
-      tagFastest: "Schnellster",
+      tagFastest: "Schnellste Option",
       tagNoFees: "Keine Gebühren",
-      tagBestValue: "Bestes Angebot",
+      tagBestValue: "Beste Wahl",
       whyPaynEyebrow: "Warum Payn",
       whyPaynTitle: "Warum Menschen Payn vor dem Antrag nutzen",
       howItWorksEyebrow: "So funktioniert es",
       howItWorksTitle: "Drei Schritte vom Bedarf zum Anbieter",
-      openExplore: "Optionen prüfen",
+      openExplore: "Jetzt vergleichen",
       step: "Schritt",
       steps: [
         "Wählen Sie, was Sie brauchen",
@@ -550,12 +616,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Vom Webvergleich in einen mobilen Workspace wechseln",
       ],
       waitlistCta: "Zur Mobile-Warteliste",
+      howWeRankOffers: "Wie wir Angebote bewerten",
+      mobile: {
+        badge: "Frühzugang geöffnet",
+        heading: "Payn auf dem Handy — bald verfügbar",
+        subtitle: "Ihre Merkliste, Vergleiche und gespeicherte Angebote — in Ihrer Tasche. iOS und Android.",
+        joinWishlist: "Auf die Warteliste",
+        learnMore: "Mehr erfahren",
+      },
+      mockup: {
+        yourShortlist: "Ihre Merkliste",
+        productsSaved: "{count} Produkte gespeichert",
+        compare: "Vergleichen",
+        bestOptionFound: "Beste Option gefunden",
+        continue: "Weiter",
+        navHome: "Startseite",
+        navExplore: "Entdecken",
+        navSaved: "Gespeichert",
+        navSettings: "Einstellungen",
+      },
     },
     offerCard: {
       updated: "Heute aktualisiert",
       keyTradeoff: "Wichtiger Zielkonflikt",
       reviewOffer: "Details ansehen",
-      providerSite: "Rate prüfen",
+      providerSite: "Zum Anbieter",
       reviewBeforeLeave: "Prüfen Sie das Produkt zuerst auf Payn, bevor Sie zur Anbieterseite gehen.",
     },
     offerDetail: {
@@ -634,6 +719,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       Term: "Laufzeit",
       "Annual fee": "Jahresgebühr",
       "Monthly fee": "Monatsgebühr",
+      Price: "Preis",
+      Coverage: "Deckung",
+      Cashback: "Rückvergütung",
+      ATM: "Bargeldbezug",
+      Approval: "Zusage",
+      Market: "Markt",
+      "FX fee": "FX-Gebühr",
+      "Monthly cover": "Monatliche Deckung",
+      "Medical cover": "Medizinische Deckung",
+      "Insured amount": "Versicherungssumme",
+      Deductible: "Selbstbeteiligung",
+      "Region coverage": "Regionale Deckung",
+      "Baggage / delay": "Gepäck / Verspätung",
+      Outpatient: "Ambulant",
+      Inpatient: "Stationär",
+      "Digital claims": "Digitale Schadenmeldung",
+      "Family cover": "Familienschutz",
+      "Collision / theft": "Unfall / Diebstahl",
+      "Rolling monthly": "Monatlich kündbar",
+      "Countries covered": "Abgedeckte Länder",
+      "Medical emergencies": "Medizinische Notfälle",
+      "Remote work suitability": "Für Remote-Arbeit geeignet",
+      "Device cover": "Geräteschutz",
+      "Theft / liquid": "Diebstahl / Flüssigkeit",
+      "Worldwide protection": "Weltweiter Schutz",
       Spread: "Spread",
       Speed: "Tempo",
       Fee: "Gebühr",
@@ -660,6 +770,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Lista de espera móvil",
       country: "País",
       language: "Idioma",
+      currency: "Moneda",
     },
     categories: {
       all: "Todas las categorías",
@@ -754,7 +865,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Una UX orientada a decidir antes de salir al proveedor.",
         "Consultar opciones no afecta a tu historial crediticio.",
       ],
-      browseByCategory: "Explorar por categoría",
+      browseByCategory: "Explorar productos financieros",
       categoryCountLabel: "categorías",
       products: "productos",
       topRanked: "Ofertas destacadas",
@@ -767,7 +878,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       whyPaynTitle: "Por qué la gente usa Payn antes de solicitar",
       howItWorksEyebrow: "Cómo funciona",
       howItWorksTitle: "Tres pasos desde la necesidad hasta el proveedor",
-      openExplore: "Consulta tus opciones",
+      openExplore: "Empezar a comparar",
       step: "Paso",
       steps: [
         "Selecciona lo que necesitas",
@@ -795,12 +906,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Pasar de la comparación web a un espacio móvil con sesión",
       ],
       waitlistCta: "Unirse a la lista móvil",
+      howWeRankOffers: "Cómo clasificamos las ofertas",
+      mobile: {
+        badge: "Acceso anticipado abierto",
+        heading: "Payn en el móvil — próximamente",
+        subtitle: "Tu selección, comparaciones y ofertas guardadas — en tu bolsillo. iOS y Android.",
+        joinWishlist: "Unirse a la lista de espera",
+        learnMore: "Saber más",
+      },
+      mockup: {
+        yourShortlist: "Tu selección",
+        productsSaved: "{count} productos guardados",
+        compare: "Comparar",
+        bestOptionFound: "Mejor opción encontrada",
+        continue: "Continuar",
+        navHome: "Inicio",
+        navExplore: "Explorar",
+        navSaved: "Guardado",
+        navSettings: "Ajustes",
+      },
     },
     offerCard: {
       updated: "Actualizado hoy",
       keyTradeoff: "Punto clave a revisar",
-      reviewOffer: "Ver detalles",
-      providerSite: "Consultar tasa",
+      reviewOffer: "Revisar detalles",
+      providerSite: "Ir al proveedor",
       reviewBeforeLeave: "Revisa el producto en Payn antes de salir al proveedor.",
     },
     offerDetail: {
@@ -904,6 +1034,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Liste mobile",
       country: "Pays",
       language: "Langue",
+      currency: "Devise",
     },
     categories: {
       all: "Toutes les catégories",
@@ -998,7 +1129,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Une UX pensée pour décider avant de cliquer ailleurs.",
         "Consulter vos options n'affecte pas votre score de crédit.",
       ],
-      browseByCategory: "Explorer par catégorie",
+      browseByCategory: "Explorer les produits financiers",
       categoryCountLabel: "catégories",
       products: "produits",
       topRanked: "Meilleures offres",
@@ -1011,7 +1142,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       whyPaynTitle: "Pourquoi les gens utilisent Payn avant de déposer une demande",
       howItWorksEyebrow: "Comment ça marche",
       howItWorksTitle: "Trois étapes du besoin au fournisseur",
-      openExplore: "Vérifier vos options",
+      openExplore: "Commencer à comparer",
       step: "Étape",
       steps: [
         "Sélectionnez ce dont vous avez besoin",
@@ -1039,12 +1170,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Passer de la comparaison web à un espace mobile connecté",
       ],
       waitlistCta: "Rejoindre la liste mobile",
+      howWeRankOffers: "Comment nous classons les offres",
+      mobile: {
+        badge: "Accès anticipé ouvert",
+        heading: "Payn sur mobile — bientôt disponible",
+        subtitle: "Votre sélection, comparaisons et offres sauvegardées — dans votre poche. iOS et Android.",
+        joinWishlist: "Rejoindre la liste d'attente",
+        learnMore: "En savoir plus",
+      },
+      mockup: {
+        yourShortlist: "Votre sélection",
+        productsSaved: "{count} produits sauvegardés",
+        compare: "Comparer",
+        bestOptionFound: "Meilleure option trouvée",
+        continue: "Continuer",
+        navHome: "Accueil",
+        navExplore: "Explorer",
+        navSaved: "Sauvegardé",
+        navSettings: "Paramètres",
+      },
     },
     offerCard: {
       updated: "Mis à jour aujourd'hui",
       keyTradeoff: "Point d'attention",
       reviewOffer: "Voir les détails",
-      providerSite: "Vérifier le tarif",
+      providerSite: "Aller au fournisseur",
       reviewBeforeLeave: "Vérifiez le produit sur Payn avant de quitter vers le fournisseur.",
     },
     offerDetail: {
@@ -1148,6 +1298,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Lista app",
       country: "Paese",
       language: "Lingua",
+      currency: "Valuta",
     },
     categories: {
       all: "Tutte le categorie",
@@ -1242,7 +1393,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Una UX pensata per decidere prima di uscire verso il provider.",
         "Controllare le opzioni non influisce sul tuo punteggio di credito.",
       ],
-      browseByCategory: "Esplora per categoria",
+      browseByCategory: "Esplora i prodotti finanziari",
       categoryCountLabel: "categorie",
       products: "prodotti",
       topRanked: "Offerte top",
@@ -1255,7 +1406,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       whyPaynTitle: "Perché le persone usano Payn prima di fare domanda",
       howItWorksEyebrow: "Come funziona",
       howItWorksTitle: "Tre passaggi dal bisogno al provider",
-      openExplore: "Controlla le opzioni",
+      openExplore: "Inizia a confrontare",
       step: "Passo",
       steps: [
         "Seleziona ciò di cui hai bisogno",
@@ -1283,12 +1434,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Passare dal confronto web a uno spazio mobile autenticato",
       ],
       waitlistCta: "Entra nella lista mobile",
+      howWeRankOffers: "Come classifichiamo le offerte",
+      mobile: {
+        badge: "Accesso anticipato aperto",
+        heading: "Payn su mobile — in arrivo",
+        subtitle: "La tua selezione, confronti e offerte salvate — in tasca. iOS e Android.",
+        joinWishlist: "Iscriviti alla lista d'attesa",
+        learnMore: "Scopri di più",
+      },
+      mockup: {
+        yourShortlist: "La tua selezione",
+        productsSaved: "{count} prodotti salvati",
+        compare: "Confronta",
+        bestOptionFound: "Migliore opzione trovata",
+        continue: "Continua",
+        navHome: "Home",
+        navExplore: "Esplora",
+        navSaved: "Salvati",
+        navSettings: "Impostazioni",
+      },
     },
     offerCard: {
       updated: "Aggiornato oggi",
       keyTradeoff: "Punto da valutare",
-      reviewOffer: "Vedi dettagli",
-      providerSite: "Controlla il tasso",
+      reviewOffer: "Controlla i dettagli",
+      providerSite: "Vai al provider",
       reviewBeforeLeave: "Controlla il prodotto su Payn prima di uscire verso il provider.",
     },
     offerDetail: {
@@ -1392,6 +1562,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobileWaitlist: "Lista móvel",
       country: "País",
       language: "Idioma",
+      currency: "Moeda",
     },
     categories: {
       all: "Todas as categorias",
@@ -1486,7 +1657,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Uma experiência pensada para decidir antes de sair da Payn.",
         "Ver opções não afeta o seu historial de crédito.",
       ],
-      browseByCategory: "Explorar por categoria",
+      browseByCategory: "Explorar produtos financeiros",
       categoryCountLabel: "categorias",
       products: "produtos",
       topRanked: "Melhores ofertas",
@@ -1499,7 +1670,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       whyPaynTitle: "Porque as pessoas usam a Payn antes de avançar",
       howItWorksEyebrow: "Como funciona",
       howItWorksTitle: "Três passos da necessidade ao fornecedor",
-      openExplore: "Ver as suas opções",
+      openExplore: "Começar a comparar",
       step: "Passo",
       steps: [
         "Escolha o que precisa",
@@ -1527,12 +1698,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Passar da comparação web para um espaço móvel autenticado",
       ],
       waitlistCta: "Entrar na lista móvel",
+      howWeRankOffers: "Como classificamos as ofertas",
+      mobile: {
+        badge: "Acesso antecipado aberto",
+        heading: "Payn no telemóvel — em breve",
+        subtitle: "A sua seleção, comparações e ofertas guardadas — no seu bolso. iOS e Android.",
+        joinWishlist: "Entrar na lista de espera",
+        learnMore: "Saber mais",
+      },
+      mockup: {
+        yourShortlist: "A sua seleção",
+        productsSaved: "{count} produtos guardados",
+        compare: "Comparar",
+        bestOptionFound: "Melhor opção encontrada",
+        continue: "Continuar",
+        navHome: "Início",
+        navExplore: "Explorar",
+        navSaved: "Guardado",
+        navSettings: "Definições",
+      },
     },
     offerCard: {
       updated: "Atualizado hoje",
       keyTradeoff: "Ponto principal a rever",
       reviewOffer: "Ver detalhes",
-      providerSite: "Ver taxa",
+      providerSite: "Ir ao fornecedor",
       reviewBeforeLeave: "Veja o produto na Payn antes de sair para o fornecedor.",
     },
     offerDetail: {
@@ -1694,6 +1884,56 @@ const localizedReasons: Record<MarketplaceLocale, Record<string, string>> = {
   },
 };
 
+const localizedUiTokens: Record<MarketplaceLocale, Record<string, string>> = {
+  en: {},
+  de: {
+    "Best match": "Beste Wahl",
+    Cheapest: "Günstigste Option",
+    Fastest: "Schnellste Option",
+    "Best rated": "Bestbewertet",
+    "Most flexible": "Flexibelste Option",
+    "Lowest fees": "Niedrigste Gebühren",
+    Easiest: "Am einfachsten",
+    "Pro tools": "Profi-Tools",
+    "Savings plan": "Sparplan",
+    "Travel-friendly": "Reisefreundlich",
+    "Best cashback": "Stärkstes Cashback",
+    "Crypto support": "Krypto-Support",
+    "No annual fee": "Keine Jahresgebühr",
+    "Country fit": "Passend für dieses Land",
+    "Live quote": "Live-Kurs",
+    "Consumer credit": "Konsumentenkredit",
+    "Travel-first": "Reisefokus",
+    "Cashback-first": "Cashback-Fokus",
+    "FX-first": "FX-Fokus",
+    "ATM focus": "Bargeld-Fokus",
+    "Stronger ATM": "Höherer Bargeldrahmen",
+    "Instant setup": "Sofort startklar",
+    "Check provider": "Beim Anbieter prüfen",
+    "Best overall": "Beste Gesamtwahl",
+    "Best travel fit": "Beste Reiseoption",
+    "Best cashback angle": "Bestes Cashback-Profil",
+    Viewed: "Angesehen",
+    Saved: "Gespeichert",
+    Resume: "Fortsetzen",
+    Name: "Name",
+    Country: "Land",
+    "Profile type": "Profiltyp",
+    "Market scope": "Marktabdeckung",
+    "Saved categories": "Gespeicherte Kategorien",
+    "Not set yet": "Noch nicht festgelegt",
+    Dashboard: "Dashboard",
+    Settings: "Einstellungen",
+    Compare: "Vergleichen",
+    Added: "Hinzugefügt",
+    Open: "Öffnen",
+  },
+  es: {},
+  fr: {},
+  it: {},
+  pt: {},
+};
+
 const localizedTradeoffs: Record<MarketplaceLocale, Record<string, string>> = {
   en: {},
   de: {
@@ -1824,4 +2064,8 @@ export function translateMatchReason(locale: MarketplaceLocale, reason: string) 
 
 export function translateTradeoff(locale: MarketplaceLocale, tradeoff: string) {
   return localizedTradeoffs[locale][tradeoff] ?? tradeoff;
+}
+
+export function translateUiToken(locale: MarketplaceLocale, label: string) {
+  return localizedUiTokens[locale][label] ?? label;
 }

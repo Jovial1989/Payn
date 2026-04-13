@@ -152,7 +152,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
             {uiCopy.auth.goToSignIn}
           </Link>
           <Link
-            href={localePath(locale, "/explore")}
+            href={localePath(locale, "/discover")}
             className="inline-flex h-11 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface"
           >
             {uiCopy.dashboard.openExplore}

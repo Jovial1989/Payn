@@ -1,4 +1,5 @@
 import type { MarketplaceCategory, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
+import { resolveResidenceCountryMarket } from "@/lib/residence-countries";
 import type { UserProfile } from "@/lib/types";
 import {
   getMetricValue,
@@ -114,6 +115,10 @@ function clampScore(value: number, max = 18) {
   return Math.min(value, max);
 }
 
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
 function normalizeRollups(rollups: OfferActivityRollup[]) {
   return new Map(rollups.map((rollup) => [rollup.offerId, rollup]));
 }
@@ -124,6 +129,49 @@ function getFreshnessBoost(offer: MarketplaceOffer) {
     (Date.now() - new Date(offer.updatedAt).getTime()) / (1000 * 60 * 60 * 24),
   );
   return Math.max(0, 4 - ageDays * 0.15);
+}
+
+export function getOfferPayoutScore(offer: MarketplaceOffer) {
+  return clampPercent(offer.affiliatePriorityScore * 100);
+}
+
+export function getOfferConversionLikelihoodScore(offer: MarketplaceOffer) {
+  const metricText = offer.metrics
+    .map((metric) => `${metric.label} ${metric.value}`)
+    .join(" ")
+    .toLowerCase();
+  const bestForText = offer.bestFor.join(" ").toLowerCase();
+
+  let score = 45;
+
+  if (offer.attributes?.feeProfile === "low") score += 18;
+  if (offer.attributes?.feeProfile === "medium") score += 8;
+  if (metricText.includes("instant")) score += 12;
+  if (metricText.includes("same day")) score += 10;
+  if (metricText.includes("from eur 0") || metricText.includes("eur 0")) score += 8;
+  if (metricText.includes("0%")) score += 6;
+  if (bestForText.includes("digital")) score += 4;
+  if (bestForText.includes("transparent")) score += 4;
+  if (bestForText.includes("travel")) score += 3;
+  if (bestForText.includes("crypto")) score += 3;
+  if (offer.category === "insurance") score -= 4;
+  if (offer.category === "investments") score -= 6;
+
+  return clampPercent(score);
+}
+
+export function combineOfferDecisionScore(args: {
+  relevance: number;
+  payout: number;
+  conversionProbability: number;
+  diversityBoost?: number;
+}) {
+  return (
+    clampPercent(args.relevance) * 0.5 +
+    clampPercent(args.payout) * 0.2 +
+    clampPercent(args.conversionProbability) * 0.2 +
+    clampPercent(args.diversityBoost ?? 65) * 0.1
+  );
 }
 
 function getBehaviorCategories(args: {
@@ -247,7 +295,10 @@ function scoreRecommendedOffer(args: {
         ? 2
         : 0;
   const marketActivity = clampScore(marketRollupMap.get(offer.id)?.activityScore ?? 0);
-  const similarUserActivity = clampScore(similarUserRollupMap.get(offer.id)?.activityScore ?? 0, 20);
+  const similarUserActivity = clampScore(
+    similarUserRollupMap.get(offer.id)?.activityScore ?? 0,
+    20,
+  );
   const valueBoost = scoreBestValueOffer(offer) / 12;
   const recencyBoost = getFreshnessBoost(offer);
   const fxBoost =
@@ -261,53 +312,36 @@ function scoreRecommendedOffer(args: {
       ? 3
       : 0;
 
-  return (
-    offer.affiliatePriorityScore * 16 +
-    categoryBoost +
-    subtypeBoost +
-    behaviorBoost +
-    providerBoost +
-    goalBoost +
-    valueBoost +
-    recencyBoost +
-    marketActivity +
-    similarUserActivity +
-    fxBoost +
-    cryptoBoost
+  const relevanceScore = clampPercent(
+    34 +
+      categoryBoost * 2.8 +
+      subtypeBoost * 3 +
+      behaviorBoost * 2.4 +
+      providerBoost * 2 +
+      goalBoost * 2.6 +
+      valueBoost * 2.2 +
+      recencyBoost * 3 +
+      marketActivity * 2 +
+      similarUserActivity * 1.4 +
+      fxBoost * 4 +
+      cryptoBoost * 4,
   );
+  const diversityBoost = clampPercent(
+    (behaviorProviders.has(offer.providerName) ? 42 : 74) +
+      (behaviorCategories.includes(offer.category) ? -8 : 6) +
+      ((offer.providerName.charCodeAt(0) + offer.id.length) % 9),
+  );
+
+  return combineOfferDecisionScore({
+    relevance: relevanceScore,
+    payout: getOfferPayoutScore(offer),
+    conversionProbability: getOfferConversionLikelihoodScore(offer),
+    diversityBoost,
+  });
 }
 
 export function resolveProfileMarket(homeCountry: string | null | undefined): MarketplaceMarket {
-  const value = homeCountry?.toLowerCase();
-
-  switch (value) {
-    case "de":
-    case "germany":
-      return "de";
-    case "es":
-    case "spain":
-      return "es";
-    case "uk":
-    case "gb":
-    case "united kingdom":
-      return "uk";
-    case "fr":
-    case "france":
-      return "fr";
-    case "it":
-    case "italy":
-      return "it";
-    case "pt":
-    case "portugal":
-      return "pt";
-    case "nl":
-    case "netherlands":
-      return "nl";
-    case "international":
-      return "international";
-    default:
-      return "eu";
-  }
+  return resolveResidenceCountryMarket(homeCountry?.toLowerCase());
 }
 
 export function getBestValueToday(args: {

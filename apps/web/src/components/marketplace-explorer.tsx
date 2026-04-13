@@ -11,6 +11,7 @@ import { InvestmentIntelligenceBlock } from "@/components/investment-intelligenc
 import { OfferCard } from "@/components/offer-card";
 import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { getCountryCurrency } from "@/lib/countries";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import {
@@ -24,9 +25,7 @@ import {
 } from "@/lib/marketplace-engine";
 import {
   explorerCategories,
-  getMarketCategoryHref,
   marketplaceCategories,
-  marketDefinitions,
   roundOfferCount,
   type ExplorerCategory,
 } from "@/lib/marketplace";
@@ -79,19 +78,19 @@ export function MarketplaceExplorer({
   const dictionary = getDictionary(preferences.locale);
   const uiCopy = getUiCopy(preferences.locale);
   const activeFilters = { ...filters, query: deferredQuery };
-  const categoryCounts = countOffersByCategory(offers, preferences.market);
+  const categoryCounts = countOffersByCategory(offers, preferences.country);
   const visibleOffers = filterMarketplaceOffers({
     offers,
-    market: preferences.market,
+    country: preferences.country,
     category: selectedCategory,
     filters: activeFilters,
   });
   const totalCount = visibleOffers.length;
   const shownOffers = visibleOffers.slice(0, visibleCount);
   const hasMore = visibleCount < totalCount;
-  const providerOptions = getProviderOptions(offers, preferences.market, selectedCategory);
-  const featureOptions = getFeatureOptions(offers, preferences.market, selectedCategory);
-  const subtypeOptions = getSubtypeOptions(offers, preferences.market, selectedCategory);
+  const providerOptions = getProviderOptions(offers, preferences.country, selectedCategory);
+  const featureOptions = getFeatureOptions(offers, preferences.country, selectedCategory);
+  const subtypeOptions = getSubtypeOptions(offers, preferences.country, selectedCategory);
   const activeCategoryDescription =
     selectedCategory === "all"
       ? dictionary.explorer.description
@@ -104,18 +103,18 @@ export function MarketplaceExplorer({
 
     if (mode === "category" && nextCategory !== "all") {
       startTransition(() => {
-        router.push(getMarketCategoryHref(preferences.market, nextCategory));
+        router.push(localePath(preferences.locale, `/${nextCategory}`));
       });
     }
   };
 
-  const updateMarket = (nextMarket: MarketplaceMarket) => {
-    preferences.setMarket(nextMarket);
+  const updateCountry = (nextCountry: string) => {
+    preferences.setCountry(nextCountry);
     setVisibleCount(PAGE_SIZE);
 
     if (mode === "category" && selectedCategory !== "all") {
       startTransition(() => {
-        router.push(getMarketCategoryHref(nextMarket, selectedCategory));
+        router.push(localePath(preferences.locale, `/${selectedCategory}`));
       });
     }
   };
@@ -150,7 +149,7 @@ export function MarketplaceExplorer({
             </div>
             {selectedCategory !== "all" && (
               <Link
-                href={localePath(preferences.locale, getMarketCategoryHref(preferences.market, selectedCategory))}
+                href={localePath(preferences.locale, `/${selectedCategory}`)}
                 className={buttonStyles({ variant: "secondary", size: "md" })}
               >
                 {dictionary.explorer.openCategoryPage}
@@ -164,13 +163,13 @@ export function MarketplaceExplorer({
                 {dictionary.filters.countryLabel}
               </span>
               <select
-                value={preferences.market}
-                onChange={(event) => updateMarket(event.target.value as MarketplaceMarket)}
+                value={preferences.country}
+                onChange={(event) => updateCountry(event.target.value)}
                 className="h-11 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink outline-none transition-colors focus:border-black"
               >
-                {Object.entries(dictionary.markets).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
+                {preferences.availableCountries.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -284,11 +283,11 @@ export function MarketplaceExplorer({
                           {formatAmountLabel(
                             filters.amount,
                             preferences.locale,
-                            marketDefinitions[preferences.market].currency,
+                            getCountryCurrency(preferences.country),
                           )}
                         </span>
                         <span className="text-xs font-medium text-ink-tertiary">
-                          {marketDefinitions[preferences.market].currency}
+                          {getCountryCurrency(preferences.country)}
                         </span>
                       </div>
                       <input
@@ -353,7 +352,7 @@ export function MarketplaceExplorer({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Tag tone="success">{dictionary.markets[preferences.market]}</Tag>
+              <Tag tone="success">{preferences.countryLabel}</Tag>
               <Tag tone="muted">
                 {providerOptions.length} {dictionary.explorer.providersLabel}
               </Tag>
@@ -431,6 +430,7 @@ export function MarketplaceExplorer({
 
       <ComparisonTray
         count={compareIds.size}
+        locale={preferences.locale}
         onOpen={() => setCompareOpen(true)}
         onClear={() => setCompareIds(new Set())}
       />

@@ -16,7 +16,7 @@ export function DashboardSectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] border border-line bg-white p-5 shadow-subtle sm:p-6">
+    <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>
@@ -25,7 +25,7 @@ export function DashboardSectionCard({
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">{description}</p>
           ) : null}
         </div>
-        {action}
+        {action ? <div className="flex flex-wrap gap-2">{action}</div> : null}
       </div>
       <div className="mt-5">{children}</div>
     </section>
@@ -44,10 +44,10 @@ export function DashboardEmptyState({
   cta: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-dashed border-line-strong bg-white p-5">
+    <div className="rounded-[20px] border border-dashed border-line-strong bg-white p-5">
       <p className="text-base font-bold text-ink">{title}</p>
       <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{description}</p>
-      <Link href={href} className={buttonStyles({ variant: "secondary", size: "md" }) + " mt-4"}>
+      <Link href={href} className={buttonStyles({ variant: "secondary", size: "md" }) + " mt-4 w-full justify-center sm:w-auto"}>
         {cta}
       </Link>
     </div>
@@ -56,9 +56,16 @@ export function DashboardEmptyState({
 
 export function DashboardLoadingState({ label }: { label: string }) {
   return (
-    <div className="rounded-[28px] border border-line bg-white p-10 shadow-subtle">
-      <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-tertiary border-t-black" />
+    <div className="rounded-[24px] border border-[#EAEAEA] bg-white p-10 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <div className="grid gap-4 py-4">
+        <div className="h-5 w-32 animate-pulse rounded-full bg-[#ECEEF2]" />
+        <div className="grid gap-3 rounded-[24px] border border-[#EAEAEA] bg-[#FCFCFD] p-5">
+          <div className="h-10 w-full animate-pulse rounded-[18px] bg-[#ECEEF2]" />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="h-24 animate-pulse rounded-[20px] bg-[#F1F2F4]" />
+            <div className="h-24 animate-pulse rounded-[20px] bg-[#F1F2F4]" />
+          </div>
+        </div>
         <p className="text-sm text-ink-secondary">{label}</p>
       </div>
     </div>
@@ -75,7 +82,7 @@ export function DashboardMetricCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-line bg-white px-5 py-4 shadow-subtle">
+    <div className="rounded-[20px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
         {label}
       </p>
@@ -87,7 +94,7 @@ export function DashboardMetricCard({
 
 export function DashboardContextPill({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-line bg-bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
+    <span className="rounded-full border border-[#EAEAEA] bg-[#F7F7F8] px-3 py-1.5 text-xs font-semibold text-ink">
       {children}
     </span>
   );

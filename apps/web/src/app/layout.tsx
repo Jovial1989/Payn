@@ -26,7 +26,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="font-sans antialiased">
-        <Providers initialLocale={preferences.locale} initialMarket={preferences.market}>
+        <Providers
+          initialLocale={preferences.locale}
+          initialCountry={preferences.country}
+          initialMarket={preferences.market}
+        >
           {children}
         </Providers>
       </body>

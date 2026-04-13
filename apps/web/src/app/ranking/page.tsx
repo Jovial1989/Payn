@@ -102,7 +102,7 @@ export default async function RankingPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href={localePath(preferences.locale, "/explore")}
+              href={localePath(preferences.locale, "/discover")}
               className={buttonStyles({ variant: "primary", size: "md" })}
             >
               {dictionary.home.heroCta}

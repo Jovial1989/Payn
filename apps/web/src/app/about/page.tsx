@@ -47,7 +47,7 @@ export default async function AboutPage() {
                   href="https://www.linkedin.com/in/petrovkyrylo/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={buttonStyles({ variant: "secondary", size: "lg" }) + " mt-6"}
+                  className={buttonStyles({ variant: "secondary", size: "lg" }) + " mt-6 w-full justify-center sm:w-auto"}
                 >
                   {dictionary.about.linkedinLabel}
                 </a>

@@ -6,6 +6,31 @@ export type MarketplaceCategory =
   | "insurance"
   | "investments";
 
+export type MarketplaceInsuranceType =
+  | "travel"
+  | "health"
+  | "life"
+  | "auto"
+  | "nomad"
+  | "device";
+
+export type MarketplaceInvestmentAssetId =
+  | "btc"
+  | "eth"
+  | "spy"
+  | "qqq"
+  | "eustocks"
+  | "gold"
+  | "eurusd";
+
+export type MarketplaceInvestmentAccessType =
+  | "spot_crypto"
+  | "etf_dealing"
+  | "commodity_exposure"
+  | "multi_asset_brokerage"
+  | "recurring_buy"
+  | "multi_currency_fx";
+
 export type MarketplaceMarket =
   | "eu"
   | "international"
@@ -26,6 +51,7 @@ export interface MarketplaceMetric {
 
 export interface MarketplaceOfferAttributes {
   subtype?: string;
+  insuranceType?: MarketplaceInsuranceType;
   minAmount?: number;
   maxAmount?: number;
   minTermMonths?: number;
@@ -36,6 +62,34 @@ export interface MarketplaceOfferAttributes {
   availability?: "local" | "regional" | "eu_wide" | "international";
   searchTags?: string[];
   isPartner?: boolean;
+  supportedAssets?: MarketplaceInvestmentAssetId[];
+  accessType?: MarketplaceInvestmentAccessType;
+  estimatedCostLabel?: string;
+  feeModel?: string;
+  estimatedSpreadRange?: string;
+  recurringSupported?: boolean;
+  minimumOrder?: string;
+  notes?: string;
+  priceAmount?: number;
+  coverageAmount?: number;
+  medicalCoverage?: number;
+  deductibleAmount?: number;
+  maxTripDays?: number;
+  regionCoverage?: "eu" | "worldwide" | "regional";
+  activityLevel?: "basic" | "extreme";
+  visaCompliant?: boolean;
+  instantActivation?: boolean;
+  comparisonHighlights?: string[];
+  cardType?: "credit" | "debit" | "charge";
+  annualFeeAmount?: number;
+  fxFeePercent?: number;
+  atmFreeLimit?: number;
+  cashbackPercent?: number;
+  cryptoSupport?: boolean;
+  beginnerFriendly?: boolean;
+  platformUxLevel?: "beginner" | "intermediate" | "advanced" | "pro";
+  minDeposit?: string;
+  assetsAvailableLabel?: string;
 }
 
 export interface MarketplaceOffer {
@@ -51,6 +105,7 @@ export interface MarketplaceOffer {
   bestFor: string[];
   providerWebsiteUrl: string;
   affiliateLink: string;
+  providerUrls?: Record<string, string>;
   linkType: "affiliate_redirect" | "lead_capture" | "embedded_partner";
   affiliatePriorityScore: number;
   updatedAt: string;

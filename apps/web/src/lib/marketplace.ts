@@ -4,6 +4,10 @@ import type {
   MarketplaceMarket,
   MarketplaceOffer,
 } from "@payn/types";
+import {
+  matchesOfferCountrySelection,
+  resolveCountryLegacyMarket,
+} from "@/lib/countries";
 
 export type ExplorerCategory = MarketplaceCategory | "all";
 
@@ -72,9 +76,15 @@ export const categoryMeta: Record<
 const globalProviderNames = new Set([
   "Wise",
   "Revolut",
+  "Paysera",
   "Payoneer",
   "Remitly",
   "XE",
+  "Skrill",
+  "Neteller",
+  "CurrencyFair",
+  "OFX",
+  "N26",
   "SafetyWing",
   "eToro",
   "Coinbase",
@@ -214,14 +224,18 @@ export function getOfferSearchText(offer: MarketplaceOffer) {
 export function matchesOfferMarket(offer: MarketplaceOffer, market: MarketplaceMarket) {
   const codes = new Set(offer.countryCodes.map((code) => code.toUpperCase()));
   const directCode = marketDefinitions[market].marketCode;
+  const euWideMatch =
+    codes.has("EU") ||
+    codes.has("ALL_EU") ||
+    offer.attributes?.availability === "eu_wide";
 
   if (market === "eu") {
-    return codes.has("EU") || codes.size >= 4;
+    return euWideMatch || codes.size >= 4;
   }
 
   if (market === "international") {
     return (
-      codes.has("EU") ||
+      euWideMatch ||
       codes.size >= 4 ||
       offer.attributes?.availability === "international" ||
       globalProviderNames.has(offer.providerName)
@@ -230,9 +244,25 @@ export function matchesOfferMarket(offer: MarketplaceOffer, market: MarketplaceM
 
   return (
     codes.has(directCode) ||
-    codes.has("EU") ||
+    euWideMatch ||
     offer.attributes?.availability === "international"
   );
+}
+
+export function matchesOfferMarketWithScope(
+  offer: MarketplaceOffer,
+  market: MarketplaceMarket,
+  scope: "local_only" | "eu_fallback" | "all_europe" = "eu_fallback",
+) {
+  return matchesOfferCountrySelection(offer, resolveCountryFromMarket(market), scope);
+}
+
+function resolveCountryFromMarket(market: MarketplaceMarket) {
+  if (market === "eu" || market === "international") {
+    return market;
+  }
+
+  return resolveCountryLegacyMarket(market);
 }
 
 export function detectPreferencesFromAcceptLanguage(headerValue?: string | null) {

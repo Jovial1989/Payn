@@ -104,11 +104,11 @@ export function DashboardOfferTile({
       ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <ProviderLinkButton offer={offer} label="Go to provider" variant="primary" size="sm" />
-        <SaveOfferButton offer={offer} variant="ghost" size="sm" />
+        <ProviderLinkButton offer={offer} label={dictionary.offerCard.providerSite} />
         <Link href={localePath(locale, getOfferHref(offer))} className={buttonStyles({ variant: "secondary", size: "sm" })}>
           {dictionary.offerCard.reviewOffer}
         </Link>
+        <SaveOfferButton offer={offer} variant="ghost" size="sm" />
       </div>
     </article>
   );

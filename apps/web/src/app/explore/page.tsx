@@ -1,15 +1,15 @@
-import { SiteShell } from "@/components/site-shell";
-import { ExplorePageContent } from "@/features/explore/explore-page";
+import { redirect } from "next/navigation";
 import { getRequestPreferences } from "@/lib/request-preferences";
-import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+import { localePath } from "@/lib/locale";
 
-export default async function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ intent?: string }>;
+}) {
   const preferences = await getRequestPreferences();
-  const offers = await listMarketplaceOffers();
+  const { intent } = await searchParams;
+  const discoverHref = localePath(preferences.locale, "/discover");
 
-  return (
-    <SiteShell activePage="marketplace" hideHero>
-      <ExplorePageContent offers={offers} locale={preferences.locale} market={preferences.market} />
-    </SiteShell>
-  );
+  redirect(intent ? `${discoverHref}?intent=${encodeURIComponent(intent)}` : discoverHref);
 }

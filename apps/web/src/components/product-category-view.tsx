@@ -1,40 +1,19 @@
 "use client";
 
 import type { MarketplaceCategory } from "@payn/types";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { buttonStyles } from "@/components/button";
 import { DashboardCardsWorkspace } from "@/components/dashboard-cards-workspace";
 import { DashboardCategoryWorkspace } from "@/components/dashboard-category-workspace";
 import { DashboardInvestmentsWorkspace } from "@/components/dashboard-investments-workspace";
-import { DashboardLoadingState, DashboardSectionCard } from "@/components/dashboard-primitives";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  getCategoryOffersForCountrySelection,
+} from "@/lib/countries";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
-import { resolveProfileMarket } from "@/lib/dashboard";
-import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import type { MarketIntelligenceAssetId } from "@/lib/market-intelligence";
-import { matchesOfferMarketWithScope } from "@/lib/marketplace";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
-import { getUiCopy } from "@/lib/ui-copy";
-
-function getCategoryOffers(
-  market: string,
-  category: MarketplaceCategory,
-  marketScope: "local_only" | "eu_fallback" | "all_europe",
-) {
-  return marketplaceOffers
-    .filter((offer) =>
-      matchesOfferMarketWithScope(
-        offer,
-        market as import("@payn/types").MarketplaceMarket,
-        marketScope,
-      ),
-    )
-    .filter((offer) => offer.category === category);
-}
 
 function mergeInsights(...buckets: DashboardOfferInsight[][]) {
   const seen = new Set<string>();
@@ -52,21 +31,18 @@ function mergeInsights(...buckets: DashboardOfferInsight[][]) {
 
 export function ProductCategoryView({ category }: { category: MarketplaceCategory }) {
   const searchParams = useSearchParams();
-  const { user, profile, loading } = useAuth();
+  const { user, profile } = useAuth();
   const preferences = useMarketplacePreferences();
-  const dictionary = getDictionary(preferences.locale);
-  const uiCopy = getUiCopy(preferences.locale);
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-
-  const dashboardMarketScope = profile?.market_scope ?? "eu_fallback";
-  const resolvedProfileMarket = profile ? resolveProfileMarket(profile.home_country) : preferences.market;
-  const dashboardMarket = dashboardMarketScope === "all_europe" ? "eu" : resolvedProfileMarket;
-  const marketLabel = dictionary.markets[dashboardMarket];
+  const productMarketScope = "eu_fallback";
   const discoverHref = localePath(preferences.locale, "/discover");
   const dashboardHref = localePath(preferences.locale, "/dashboard");
 
   const loadInsights = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setInsights(null);
+      return;
+    }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {
@@ -88,38 +64,11 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
     void loadInsights();
   }, [loadInsights]);
 
-  if (loading) {
-    return <DashboardLoadingState label={uiCopy.dashboard.loadingWorkspace} />;
-  }
-
-  if (!user) {
-    return (
-      <div className="grid gap-6">
-        <DashboardSectionCard
-          eyebrow={uiCopy.dashboard.guestEyebrow}
-          title={uiCopy.dashboard.guestTitle}
-          description="Sign in to compare offers, save decisions, and move between categories without losing your context."
-        >
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={localePath(preferences.locale, "/login")}
-              className={buttonStyles({ variant: "primary", size: "lg" })}
-            >
-              {uiCopy.auth.signIn}
-            </Link>
-            <Link
-              href={localePath(preferences.locale, "/signup")}
-              className={buttonStyles({ variant: "secondary", size: "lg" })}
-            >
-              {dictionary.nav.compareOptions}
-            </Link>
-          </div>
-        </DashboardSectionCard>
-      </div>
-    );
-  }
-
-  const categoryOffers = getCategoryOffers(dashboardMarket, category, dashboardMarketScope);
+  const categoryOffers = getCategoryOffersForCountrySelection(
+    preferences.country,
+    category,
+    productMarketScope,
+  );
   const categoryInsights = insights
     ? mergeInsights(
         insights.recommended.filter((item) => item.offer.category === category),
@@ -135,8 +84,9 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
         <DashboardInvestmentsWorkspace
           key={`investments:${searchParams.get("asset") ?? "btc"}`}
           locale={preferences.locale}
-          marketLabel={marketLabel}
-          dashboardHref={dashboardHref}
+          userId={user?.id ?? null}
+          marketLabel={preferences.countryLabel}
+          dashboardHref={user ? dashboardHref : undefined}
           discoverHref={discoverHref}
           initialAssetId={(searchParams.get("asset") as MarketIntelligenceAssetId | null) ?? undefined}
           offers={categoryOffers}
@@ -151,7 +101,8 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
         <DashboardCardsWorkspace
           key="cards"
           locale={preferences.locale}
-          marketLabel={marketLabel}
+          userId={user?.id ?? null}
+          marketLabel={preferences.countryLabel}
           offers={categoryOffers}
           discoverHref={discoverHref}
         />
@@ -164,12 +115,14 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
       <DashboardCategoryWorkspace
         key={category}
         locale={preferences.locale}
+        userId={user?.id ?? null}
         category={category}
-        marketLabel={marketLabel}
+        marketLabel={preferences.countryLabel}
         profile={profile ?? null}
+        preferredCountry={preferences.country}
+        onCountryChange={preferences.setCountry}
         offers={categoryOffers}
         insights={categoryInsights}
-        savedCount={insights?.savedOffers.filter((offer) => offer.category === category).length ?? 0}
         discoverHref={discoverHref}
       />
     </div>

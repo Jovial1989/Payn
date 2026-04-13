@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import type { MarketplaceOffer } from "@payn/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -13,12 +14,14 @@ import { getUiCopy } from "@/lib/ui-copy";
 
 export function SaveOfferButton({
   offer,
-  variant = "secondary",
+  variant = "ghost",
   size = "md",
+  className,
 }: {
   offer: MarketplaceOffer;
   variant?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
+  className?: string;
 }) {
   const router = useRouter();
   const { locale } = useMarketplacePreferences();
@@ -106,7 +109,7 @@ export function SaveOfferButton({
       type="button"
       onClick={handleToggle}
       disabled={loading}
-      className={buttonStyles({ variant, size })}
+      className={clsx(buttonStyles({ variant, size }), className)}
     >
       {loading ? uiCopy.common.savingOffer : saved ? uiCopy.common.savedOffer : uiCopy.common.saveOffer}
     </button>

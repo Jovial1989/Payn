@@ -11,6 +11,7 @@ type MarketCopy = {
   subtitle: string;
   pulseTitle: string;
   pulseBody: string;
+  fearGreedTitle: string;
   trendTitle: string;
   trendBody: string;
   availableTitle: string;
@@ -22,6 +23,8 @@ type MarketCopy = {
   retrying: string;
   delayed: string;
   live: string;
+  unavailable: string;
+  unavailableBody: string;
   insightLabels: {
     momentum: string;
     volatility: string;
@@ -53,17 +56,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Track market pulse, recent momentum, and which Payn providers can help you access the theme.",
     pulseTitle: "Market pulse",
     pulseBody: "A live or delayed snapshot depending on market-data availability.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Trend insight",
     trendBody: "Short signals generated from recent price movement.",
     availableTitle: "Available through",
     availableBody: "Providers in Payn that can be used to access this market or theme.",
     recommendationTitle: "Useful context",
     recommendationBody: "Soft guidance only. Not financial advice.",
-    providerDetails: "Provider details",
+    providerDetails: "View provider",
     loading: "Loading market pulse…",
     retrying: "Refreshing with a delayed snapshot.",
     delayed: "Delayed snapshot",
     live: "Live market data",
+    unavailable: "Data unavailable",
+    unavailableBody: "Market data temporarily unavailable. Try again shortly.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatility",
@@ -93,17 +99,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Beobachte Marktpuls, Momentum und welche Payn-Anbieter Zugang zu diesem Thema bieten.",
     pulseTitle: "Marktpuls",
     pulseBody: "Live oder verzögert, je nach Verfügbarkeit der Marktdaten.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Trend-Signale",
     trendBody: "Kurze Hinweise auf Basis der jüngsten Preisbewegung.",
     availableTitle: "Verfügbar über",
     availableBody: "Anbieter in Payn, über die du dieses Marktsegment erreichen kannst.",
     recommendationTitle: "Nützlicher Kontext",
     recommendationBody: "Nur weiche Orientierung. Keine Anlageberatung.",
-    providerDetails: "Anbieterdetails",
+    providerDetails: "Anbieter öffnen",
     loading: "Marktpuls wird geladen…",
     retrying: "Es wird eine verzögerte Momentaufnahme geladen.",
     delayed: "Verzögerte Momentaufnahme",
     live: "Live-Marktdaten",
+    unavailable: "Daten nicht verfügbar",
+    unavailableBody: "Marktdaten sind vorübergehend nicht verfügbar. Bitte versuche es in Kürze erneut.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatilität",
@@ -133,17 +142,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Sigue el pulso del mercado, el momentum reciente y qué proveedores de Payn ofrecen acceso a este tema.",
     pulseTitle: "Pulso del mercado",
     pulseBody: "Instantánea en vivo o con retraso según la disponibilidad de datos.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Señales de tendencia",
     trendBody: "Señales breves generadas a partir del movimiento reciente del precio.",
     availableTitle: "Disponible a través de",
     availableBody: "Proveedores en Payn que pueden darte acceso a este mercado o temática.",
     recommendationTitle: "Contexto útil",
     recommendationBody: "Orientación suave únicamente. No es asesoramiento financiero.",
-    providerDetails: "Detalles del proveedor",
+    providerDetails: "Ver proveedor",
     loading: "Cargando pulso del mercado…",
     retrying: "Actualizando con una instantánea retrasada.",
     delayed: "Instantánea retrasada",
     live: "Datos en vivo",
+    unavailable: "Datos no disponibles",
+    unavailableBody: "Los datos de mercado no están disponibles temporalmente. Vuelve a intentarlo en breve.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatilidad",
@@ -173,17 +185,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Suivez le pouls du marché, le momentum récent et les fournisseurs Payn permettant d’y accéder.",
     pulseTitle: "Pouls du marché",
     pulseBody: "Instantané en direct ou différé selon la disponibilité des données.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Signaux de tendance",
     trendBody: "Signaux courts générés à partir des récents mouvements de prix.",
     availableTitle: "Disponible via",
     availableBody: "Fournisseurs présents sur Payn permettant d’accéder à ce marché ou thème.",
     recommendationTitle: "Contexte utile",
     recommendationBody: "Orientation légère uniquement. Pas un conseil financier.",
-    providerDetails: "Détails du fournisseur",
+    providerDetails: "Voir le fournisseur",
     loading: "Chargement du pouls du marché…",
     retrying: "Actualisation avec un instantané différé.",
     delayed: "Instantané différé",
     live: "Données en direct",
+    unavailable: "Données indisponibles",
+    unavailableBody: "Les données de marché sont temporairement indisponibles. Réessayez dans un instant.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatilité",
@@ -213,17 +228,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Monitora market pulse, momentum recente e quali provider Payn possono dare accesso a questo tema.",
     pulseTitle: "Market pulse",
     pulseBody: "Snapshot live o ritardata in base alla disponibilità dei dati di mercato.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Segnali di trend",
     trendBody: "Indicazioni brevi generate dal recente movimento dei prezzi.",
     availableTitle: "Disponibile tramite",
     availableBody: "Provider presenti su Payn che possono dare accesso a questo mercato o tema.",
     recommendationTitle: "Contesto utile",
     recommendationBody: "Indicazioni leggere soltanto. Non è consulenza finanziaria.",
-    providerDetails: "Dettagli provider",
+    providerDetails: "Apri provider",
     loading: "Caricamento del market pulse…",
     retrying: "Aggiornamento con snapshot ritardata.",
     delayed: "Snapshot ritardata",
     live: "Dati live",
+    unavailable: "Dati non disponibili",
+    unavailableBody: "I dati di mercato non sono temporaneamente disponibili. Riprova tra poco.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatilità",
@@ -253,17 +271,20 @@ const copy: Record<MarketplaceLocale, MarketCopy> = {
       "Acompanhe o pulso do mercado, o momentum recente e quais provedores Payn dão acesso a este tema.",
     pulseTitle: "Pulso do mercado",
     pulseBody: "Snapshot em tempo real ou atrasado conforme a disponibilidade dos dados.",
+    fearGreedTitle: "Fear & Greed",
     trendTitle: "Sinais de tendência",
     trendBody: "Sinais curtos gerados a partir do movimento recente de preços.",
     availableTitle: "Disponível através de",
     availableBody: "Provedores na Payn que podem dar acesso a este mercado ou tema.",
     recommendationTitle: "Contexto útil",
     recommendationBody: "Orientação leve apenas. Não é aconselhamento financeiro.",
-    providerDetails: "Detalhes do provedor",
+    providerDetails: "Ver provedor",
     loading: "A carregar o pulso do mercado…",
     retrying: "A atualizar com snapshot atrasado.",
     delayed: "Snapshot atrasado",
     live: "Dados em tempo real",
+    unavailable: "Dados indisponíveis",
+    unavailableBody: "Os dados de mercado estão temporariamente indisponíveis. Tente novamente daqui a pouco.",
     insightLabels: {
       momentum: "Momentum",
       volatility: "Volatilidade",
@@ -720,4 +741,3 @@ export function getProviderSuitabilityNote(
       return "Compare fees, access, and product breadth before you continue.";
   }
 }
-

@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "next typegen && tsc --project tsconfig.json --noEmit"
+    "typecheck": "next typegen && mkdir -p .next/types && touch .next/types/cache-life.d.ts && tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@payn/config": "workspace:*",

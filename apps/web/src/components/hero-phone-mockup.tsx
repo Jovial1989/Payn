@@ -1,4 +1,5 @@
 import type { MarketplaceLocale } from "@payn/types";
+import { getDictionary } from "@/lib/i18n";
 import { getUiCopy } from "@/lib/ui-copy";
 
 function StatusBar() {
@@ -56,10 +57,10 @@ function BottomNav({
   active?: number;
   locale: MarketplaceLocale;
 }) {
-  const copy = getUiCopy(locale);
+  const dictionary = getDictionary(locale);
   const items = [
     {
-      label: copy.common.home,
+      label: dictionary.home.mockup.navHome,
       icon: (
         <svg
           width="20"
@@ -77,7 +78,7 @@ function BottomNav({
       ),
     },
     {
-      label: copy.common.explore,
+      label: dictionary.home.mockup.navExplore,
       icon: (
         <svg
           width="20"
@@ -95,7 +96,7 @@ function BottomNav({
       ),
     },
     {
-      label: copy.common.saved,
+      label: dictionary.home.mockup.navSaved,
       icon: (
         <svg
           width="20"
@@ -112,7 +113,7 @@ function BottomNav({
       ),
     },
     {
-      label: copy.common.profile,
+      label: dictionary.home.mockup.navSettings,
       icon: (
         <svg
           width="20"
@@ -151,26 +152,27 @@ function BottomNav({
 
 function ShortlistScreen({ locale }: { locale: MarketplaceLocale }) {
   const copy = getUiCopy(locale);
+  const dictionary = getDictionary(locale);
   const saved = [
     {
       provider: "Wise",
       badge: copy.homeMockup.badges[0],
       badgeBg: "bg-emerald-900/30 text-emerald-400",
-      fee: "EUR 2.10",
+      fee: new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(2.1),
       speed: copy.homeMockup.speeds[0],
     },
     {
       provider: "Revolut",
       badge: copy.homeMockup.badges[1],
       badgeBg: "bg-blue-900/30 text-blue-400",
-      fee: "EUR 0.00",
+      fee: new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(0),
       speed: copy.homeMockup.speeds[1],
     },
     {
       provider: "N26",
       badge: copy.homeMockup.badges[2],
       badgeBg: "bg-amber-900/30 text-amber-400",
-      fee: "EUR 1.50",
+      fee: new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(1.5),
       speed: copy.homeMockup.speeds[2],
     },
   ];
@@ -183,8 +185,8 @@ function ShortlistScreen({ locale }: { locale: MarketplaceLocale }) {
       <div className="flex-1 overflow-hidden px-4 pt-5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[17px] font-bold text-white">{copy.homeMockup.shortlistTitle}</h3>
-            <p className="mt-0.5 text-[11px] text-white/45">{copy.homeMockup.savedProductsLabel}</p>
+            <h3 className="text-[17px] font-bold text-white">{dictionary.home.mockup.yourShortlist}</h3>
+            <p className="mt-0.5 text-[11px] text-white/45">{dictionary.home.mockup.productsSaved.replace("{count}", String(saved.length))}</p>
           </div>
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.08]">
             <svg
@@ -246,7 +248,7 @@ function ShortlistScreen({ locale }: { locale: MarketplaceLocale }) {
               <p className="text-[11px] text-white/50">{copy.homeMockup.compareAll}</p>
             </div>
             <div className="rounded-lg bg-white px-3 py-1.5 text-[11px] font-semibold text-black">
-              {copy.common.compare}
+              {dictionary.home.mockup.compare}
             </div>
           </div>
         </div>
@@ -254,11 +256,11 @@ function ShortlistScreen({ locale }: { locale: MarketplaceLocale }) {
         <div className="mt-2.5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[12px] font-semibold text-emerald-400">{copy.homeMockup.bestOption}</p>
+              <p className="text-[12px] font-semibold text-emerald-400">{dictionary.home.mockup.bestOptionFound}</p>
               <p className="text-[10px] text-white/40">{copy.homeMockup.readyToApply}</p>
             </div>
             <div className="rounded-lg bg-emerald-500 px-3 py-1.5 text-[11px] font-semibold text-white">
-              {copy.common.apply}
+              {dictionary.home.mockup.continue}
             </div>
           </div>
         </div>
@@ -375,13 +377,11 @@ export function GooglePlayButton({
   );
 }
 
-export function WaitlistBadge({ locale }: { locale: MarketplaceLocale }) {
-  const copy = getUiCopy(locale);
-
+export function WaitlistBadge({ badge }: { badge: string }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-4 py-2">
       <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-      <span className="text-[12px] font-semibold text-emerald-400">{copy.common.earlyAccessOpen}</span>
+      <span className="text-[12px] font-semibold text-emerald-400">{badge}</span>
     </div>
   );
 }
