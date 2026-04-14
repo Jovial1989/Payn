@@ -139,6 +139,7 @@ class ExploreFilters {
 
 class ProfilePreferences {
   const ProfilePreferences({
+    required this.languageCode,
     required this.market,
     required this.profileType,
     required this.selectedCategories,
@@ -147,6 +148,7 @@ class ProfilePreferences {
 
   factory ProfilePreferences.defaults() {
     return ProfilePreferences(
+      languageCode: 'en',
       market: PaynMarket.eu,
       profileType: ProfileType.personal,
       selectedCategories: List<PaynCategory>.from(PaynCategory.values),
@@ -156,6 +158,7 @@ class ProfilePreferences {
 
   factory ProfilePreferences.fromJson(Map<String, dynamic> json) {
     return ProfilePreferences(
+      languageCode: (json['languageCode'] as String?) ?? 'en',
       market: _marketFromName(json['market'] as String?) ?? PaynMarket.eu,
       profileType:
           _profileTypeFromName(json['profileType'] as String?) ??
@@ -172,18 +175,21 @@ class ProfilePreferences {
     );
   }
 
+  final String languageCode;
   final PaynMarket market;
   final ProfileType profileType;
   final List<PaynCategory> selectedCategories;
   final List<String> interests;
 
   ProfilePreferences copyWith({
+    String? languageCode,
     PaynMarket? market,
     ProfileType? profileType,
     List<PaynCategory>? selectedCategories,
     List<String>? interests,
   }) {
     return ProfilePreferences(
+      languageCode: languageCode ?? this.languageCode,
       market: market ?? this.market,
       profileType: profileType ?? this.profileType,
       selectedCategories:
@@ -195,6 +201,7 @@ class ProfilePreferences {
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
+      'languageCode': languageCode,
       'market': market.name,
       'profileType': profileType.name,
       'selectedCategories':

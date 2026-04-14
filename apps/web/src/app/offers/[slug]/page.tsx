@@ -107,7 +107,12 @@ export default async function OfferDetailPage({
 
   return (
     <>
-      <OfferViewTracker offer={offer} market={resolvedMarket} />
+      <OfferViewTracker
+        offer={offer}
+        country={preferences.country}
+        language={preferences.locale}
+        market={resolvedMarket}
+      />
       <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">

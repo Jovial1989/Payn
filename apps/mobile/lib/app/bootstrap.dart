@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:payn_mobile/app/app.dart';
 import 'package:payn_mobile/core/storage/local_store.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/dashboard_analytics_service.dart';
 import 'package:payn_mobile/shared/services/local_auth_repository.dart';
@@ -10,15 +11,25 @@ import 'package:payn_mobile/shared/services/market_intelligence_service.dart';
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final analytics = AnalyticsService();
+  await analytics.initialize();
   final store = LocalStore();
   final controller = AppController(
     store: store,
     authRepository: LocalAuthRepository(store),
     marketplaceRepository: LocalMarketplaceRepository(),
+    analytics: analytics,
     dashboardAnalyticsService: DashboardAnalyticsService(),
     marketIntelligenceService: MarketIntelligenceService(),
   );
 
   await controller.restore();
+  await analytics.track(
+    AnalyticsEvents.appOpened,
+    properties: analytics.buildDefaultProperties(
+      preferences: controller.preferences,
+      loggedIn: controller.isAuthenticated,
+    ),
+  );
   runApp(PaynApp(controller: controller));
 }

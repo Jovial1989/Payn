@@ -4,6 +4,7 @@ import type { MarketplaceCategory } from "@payn/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { DashboardLoadingState, DashboardSectionCard } from "@/components/dashboard-primitives";
 import { DashboardOverviewWorkspace } from "@/components/dashboard-overview-workspace";
@@ -11,6 +12,11 @@ import { DashboardProfileWorkspace } from "@/components/dashboard-profile-worksp
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AnalyticsEvent,
+  buildWebAnalyticsProperties,
+  trackSignInClicked,
+} from "@/lib/analytics";
 import {
   getCategoryOffersForCountrySelection,
   getOffersForCountrySelection,
@@ -111,6 +117,18 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
     () => getOffersForCountrySelection(preferences.country, productMarketScope),
     [preferences.country],
   );
+  const pageView = (
+    <AnalyticsPageView
+      eventName={view === "settings" ? AnalyticsEvent.SettingsViewed : AnalyticsEvent.DashboardViewed}
+      dedupeKey={`dashboard:${view}`}
+      properties={buildWebAnalyticsProperties({
+        country: preferences.country,
+        language: preferences.locale,
+        loggedIn: Boolean(user),
+      })}
+      ready={!loading}
+    />
+  );
 
   if (loading) {
     return <DashboardLoadingState label={uiCopy.dashboard.loadingWorkspace} />;
@@ -119,6 +137,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   if (!user) {
     return (
       <div className="grid gap-6">
+        {pageView}
         <DashboardSectionCard
           eyebrow={uiCopy.dashboard.guestEyebrow}
           title={uiCopy.dashboard.guestTitle}
@@ -131,6 +150,13 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
           <div className="flex flex-wrap gap-3">
             <Link
               href={localePath(preferences.locale, "/login")}
+              onClick={() =>
+                trackSignInClicked({
+                  country: preferences.country,
+                  language: preferences.locale,
+                  loggedIn: false,
+                })
+              }
               className={buttonStyles({ variant: "primary", size: "lg" })}
             >
               {uiCopy.auth.signIn}
@@ -196,5 +222,10 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
     );
   }
 
-  return <div className="grid gap-5">{body}</div>;
+  return (
+    <div className="grid gap-5">
+      {pageView}
+      {body}
+    </div>
+  );
 }

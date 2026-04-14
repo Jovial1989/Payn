@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/app/router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
@@ -49,6 +50,15 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
     _splashOpacity = CurvedAnimation(
       parent: _splashController,
       curve: Curves.easeIn,
+    );
+    unawaited(
+      widget.controller.analytics.track(
+        AnalyticsEvents.splashViewed,
+        properties: widget.controller.analytics.buildDefaultProperties(
+          preferences: widget.controller.preferences,
+          loggedIn: widget.controller.isAuthenticated,
+        ),
+      ),
     );
 
     // Brief branded moment (250ms) then fade out.

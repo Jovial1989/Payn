@@ -6,6 +6,11 @@ import { useMemo } from "react";
 import { providerCtaStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AnalyticsEvent,
+  buildWebAnalyticsProperties,
+  trackAnalyticsEvent,
+} from "@/lib/analytics";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 
 export function ProviderLinkButton({
@@ -22,7 +27,7 @@ export function ProviderLinkButton({
   className?: string;
 }) {
   const { user } = useAuth();
-  const { country } = useMarketplacePreferences();
+  const { country, language } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   // Country-aware URL resolution: per-country deep link → affiliateLink → brand homepage
@@ -32,6 +37,18 @@ export function ProviderLinkButton({
     offer.providerWebsiteUrl;
 
   const handleClick = () => {
+    trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
+      ...buildWebAnalyticsProperties({
+        category: offer.category,
+        country,
+        language,
+        loggedIn: Boolean(user),
+        offerId: offer.id,
+        provider: offer.providerName,
+      }),
+      source,
+    });
+
     // Fire client-side event for any analytics listener (all users)
     window.dispatchEvent(
       new CustomEvent("payn:provider-click", {

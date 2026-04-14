@@ -3,9 +3,12 @@
 import type { MarketplaceLocale } from "@payn/types";
 import Link from "next/link";
 import { useState } from "react";
+import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { ProductEntryActionLabel } from "@/components/product-entry-action";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { useAuth } from "@/hooks/use-auth";
+import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import { HeroPhoneMockup, WaitlistBadge } from "@/components/hero-phone-mockup";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
@@ -295,13 +298,25 @@ const impactSiteVerificationText =
 
 export function HomePage() {
   const preferences = useMarketplacePreferences();
+  const { user, loading } = useAuth();
   const { locale } = preferences;
   const [appPromoOpen, setAppPromoOpen] = useState(false);
   const dictionary = getDictionary(locale);
   const whyPaynCards = whyPaynCardsByLocale[locale] ?? whyPaynCardsByLocale.en;
   const discoverHref = localePath(locale, "/discover");
+
   return (
     <div className="grid gap-8 lg:gap-10">
+      <AnalyticsPageView
+        eventName={AnalyticsEvent.LandingViewed}
+        dedupeKey="landing"
+        properties={buildWebAnalyticsProperties({
+          country: preferences.country,
+          language: locale,
+          loggedIn: Boolean(user),
+        })}
+        ready={!loading}
+      />
       <p className="sr-only" lang="en">
         {impactSiteVerificationText}
       </p>

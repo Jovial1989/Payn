@@ -1,0 +1,599 @@
+{
+  "verified_at": "2026-04-11T13:46:02.660Z",
+  "total": 74,
+  "passed": 31,
+  "links": [
+    {
+      "provider": "Wise",
+      "category": "Transfers",
+      "url": "https://wise.com/gb/send-money/",
+      "finalUrl": "https://wise.com/gb/send-money/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Wise",
+      "category": "Cards",
+      "url": "https://wise.com/us/card/",
+      "finalUrl": "https://wise.com/us/card/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Wise",
+      "category": "Cards (Business)",
+      "url": "https://wise.com/us/business/card",
+      "finalUrl": "https://wise.com/us/business/card",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Wise",
+      "category": "Exchange",
+      "url": "https://wise.com/us/currency-converter/",
+      "finalUrl": "https://wise.com/us/currency-converter/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Wise",
+      "category": "Investments",
+      "url": "https://wise.com/gb/assets/",
+      "finalUrl": "https://wise.com/gb/interest/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Revolut",
+      "category": "Cards",
+      "url": "https://www.revolut.com/cards/",
+      "finalUrl": "https://www.revolut.com/cards/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Transfers",
+      "url": "https://www.revolut.com/send-and-receive/",
+      "finalUrl": "https://www.revolut.com/send-and-receive/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Transfers (online)",
+      "url": "https://www.revolut.com/money-transfer/send-money-online/",
+      "finalUrl": "https://www.revolut.com/money-transfer/send-money-online/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Exchange",
+      "url": "https://www.revolut.com/currency-converter/",
+      "finalUrl": "https://www.revolut.com/currency-converter/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Investments",
+      "url": "https://www.revolut.com/investing/",
+      "finalUrl": "https://www.revolut.com/investing/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Insurance",
+      "url": "https://www.revolut.com/travel-insurance/",
+      "finalUrl": "https://www.revolut.com/travel-insurance/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "Revolut",
+      "category": "Loans",
+      "url": "https://www.revolut.com/loans/",
+      "finalUrl": "https://www.revolut.com/loans/",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "N26",
+      "category": "Loans (DE)",
+      "url": "https://n26.com/en-de/credit",
+      "finalUrl": "https://n26.com/en-de/credit",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "N26",
+      "category": "Loans (ES)",
+      "url": "https://n26.com/en-es/credit-and-loans",
+      "finalUrl": "https://n26.com/en-es/credit-and-loans",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "N26",
+      "category": "Loans (FR)",
+      "url": "https://n26.com/en-fr/credit",
+      "finalUrl": "https://n26.com/en-fr/credit",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "N26",
+      "category": "Loans (AT)",
+      "url": "https://n26.com/en-at/credit",
+      "finalUrl": "https://n26.com/en-at/credit",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "N26",
+      "category": "Cards/Plans",
+      "url": "https://n26.com/en-eu/plans",
+      "finalUrl": "https://n26.com/en-eu/plans",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "N26",
+      "category": "Investments",
+      "url": "https://n26.com/en-eu/stocks-and-etfs",
+      "finalUrl": "https://n26.com/en-eu/stocks-and-etfs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "N26",
+      "category": "Installments",
+      "url": "https://n26.com/en-de/installment-loans",
+      "finalUrl": "https://n26.com/en-de/installment-loans",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Klarna",
+      "category": "Loans",
+      "url": "https://www.klarna.com/personal-loans/",
+      "finalUrl": "https://www.klarna.com/personal-loans/",
+      "status": 202,
+      "ok": false
+    },
+    {
+      "provider": "Klarna",
+      "category": "Cards",
+      "url": "https://www.klarna.com/klarna-card/",
+      "finalUrl": "https://www.klarna.com/klarna-card/",
+      "status": 202,
+      "ok": false
+    },
+    {
+      "provider": "Klarna",
+      "category": "BNPL",
+      "url": "https://www.klarna.com/pay-in-3/",
+      "finalUrl": "https://www.klarna.com/pay-in-3/",
+      "status": 202,
+      "ok": false
+    },
+    {
+      "provider": "Klarna",
+      "category": "BNPL",
+      "url": "https://www.klarna.com/pay-later/",
+      "finalUrl": "https://www.klarna.com/pay-later/",
+      "status": 202,
+      "ok": false
+    },
+    {
+      "provider": "ING",
+      "category": "Loans (NL)",
+      "url": "https://www.ing.nl/lenen/persoonlijke-lening",
+      "finalUrl": "https://www.ing.nl/lenen/persoonlijke-lening",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "ING",
+      "category": "Loans (DE)",
+      "url": "https://www.ing.de/kredit/ratenkredit/",
+      "finalUrl": "https://www.ing.de/kredit/ratenkredit/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "ING",
+      "category": "Cards (NL)",
+      "url": "https://www.ing.nl/betalen/creditcard",
+      "finalUrl": "https://www.ing.nl/betalen/creditcard",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "ING",
+      "category": "Investments (NL)",
+      "url": "https://www.ing.nl/beleggen",
+      "finalUrl": "https://www.ing.nl/particulier/beleggen",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "ING",
+      "category": "Investments (DE)",
+      "url": "https://www.ing.de/wertpapiere/",
+      "finalUrl": "https://www.ing.de/wertpapiere/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Paysera",
+      "category": "Transfers",
+      "url": "https://www.paysera.com/v2/en/payment-gateway",
+      "finalUrl": "https://www.paysera.com/v2/en/payment-gateway",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Paysera",
+      "category": "Cards",
+      "url": "https://www.paysera.com/v2/en/payment-card-visa",
+      "finalUrl": "https://www.paysera.com/v2/en/payment-card-visa",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Paysera",
+      "category": "Exchange",
+      "url": "https://www.paysera.com/v2/en/currency-exchange",
+      "finalUrl": "https://www.paysera.com/v2/en/currency-exchange",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "bunq",
+      "category": "Cards",
+      "url": "https://www.bunq.com/cards",
+      "finalUrl": "https://www.bunq.com/personal-account/banking-features/credit-card",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "bunq",
+      "category": "Loans",
+      "url": "https://www.bunq.com/loans",
+      "finalUrl": "https://www.bunq.com/loans",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "bunq",
+      "category": "Investments",
+      "url": "https://www.bunq.com/investments",
+      "finalUrl": "https://www.bunq.com/investments",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "bunq",
+      "category": "Insurance",
+      "url": "https://www.bunq.com/insurance",
+      "finalUrl": "https://www.bunq.com/insurance",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Monese",
+      "category": "Cards",
+      "url": "https://monese.com/cards",
+      "finalUrl": "https://www.monese.com/cards",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Monese",
+      "category": "Transfers",
+      "url": "https://monese.com/send-money",
+      "finalUrl": "https://www.monese.com/send-money",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "eToro",
+      "category": "Investments",
+      "url": "https://www.etoro.com/investing/",
+      "finalUrl": "https://www.etoro.com/academy/investing/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "eToro",
+      "category": "Stocks",
+      "url": "https://www.etoro.com/stocks/",
+      "finalUrl": "https://www.etoro.com/stocks/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "eToro",
+      "category": "ETFs",
+      "url": "https://www.etoro.com/etfs/",
+      "finalUrl": "https://www.etoro.com/etfs/",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "eToro",
+      "category": "Crypto",
+      "url": "https://www.etoro.com/crypto/",
+      "finalUrl": "https://www.etoro.com/crypto/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "eToro",
+      "category": "CopyTrader",
+      "url": "https://www.etoro.com/copytrader/",
+      "finalUrl": "https://www.etoro.com/copytrader/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "eToro",
+      "category": "Smart Portfolios",
+      "url": "https://www.etoro.com/smart-portfolios/",
+      "finalUrl": "https://www.etoro.com/smart-portfolios/",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "DEGIRO",
+      "category": "Platform",
+      "url": "https://www.degiro.com/trading-platform",
+      "finalUrl": "https://www.degiro.com/trading-platform",
+      "status": 503,
+      "ok": false
+    },
+    {
+      "provider": "DEGIRO",
+      "category": "ETFs",
+      "url": "https://www.degiro.com/etfs",
+      "finalUrl": "https://www.degiro.com/etfs",
+      "status": 503,
+      "ok": false
+    },
+    {
+      "provider": "DEGIRO",
+      "category": "Stocks",
+      "url": "https://www.degiro.com/stocks",
+      "finalUrl": "https://www.degiro.com/stocks",
+      "status": 503,
+      "ok": false
+    },
+    {
+      "provider": "IBKR",
+      "category": "Stocks",
+      "url": "https://www.interactivebrokers.com/en/trading/stocks.php",
+      "finalUrl": "https://www.interactivebrokers.com/en/trading/stocks.php",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "IBKR",
+      "category": "ETFs",
+      "url": "https://www.interactivebrokers.com/en/trading/etfs.php",
+      "finalUrl": "https://www.interactivebrokers.com/en/trading/products-exchanges.php",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "IBKR",
+      "category": "Options",
+      "url": "https://www.interactivebrokers.com/en/trading/options.php",
+      "finalUrl": "https://www.interactivebrokers.com/en/trading/options.php",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "IBKR",
+      "category": "Forex",
+      "url": "https://www.interactivebrokers.com/en/trading/forex.php",
+      "finalUrl": "https://www.interactivebrokers.com/en/trading/forex.php",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Trading212",
+      "category": "Invest",
+      "url": "https://www.trading212.com/invest",
+      "finalUrl": "https://www.trading212.com/invest",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Trading212",
+      "category": "CFD",
+      "url": "https://www.trading212.com/cfd-trading",
+      "finalUrl": "https://www.trading212.com/invest",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Trading212",
+      "category": "Interest",
+      "url": "https://www.trading212.com/interest-on-cash",
+      "finalUrl": "https://www.trading212.com/interest-on-cash",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Santander",
+      "category": "Loans (DE)",
+      "url": "https://www.santander.de/kredit/",
+      "finalUrl": "https://www.santander.de/kredit/",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Santander",
+      "category": "Loans (ES)",
+      "url": "https://www.santander.es/prestamos",
+      "finalUrl": "https://www.santander.es/prestamos",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Santander",
+      "category": "Loans (PT)",
+      "url": "https://www.santander.pt/credito-pessoal",
+      "finalUrl": "https://www.santander.pt/credito-pessoal",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Allianz",
+      "category": "Insurance (DE)",
+      "url": "https://www.allianz-reiseversicherung.de/",
+      "finalUrl": "https://www.allianzdirect.de/reiseversicherung/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Allianz",
+      "category": "Insurance (EU)",
+      "url": "https://www.allianz-assistance.com/",
+      "finalUrl": "",
+      "status": "ERROR",
+      "ok": false
+    },
+    {
+      "provider": "AXA",
+      "category": "Insurance (FR)",
+      "url": "https://www.axa.fr/assurance-auto.html",
+      "finalUrl": "https://www.axa.fr/particuliers/vehicules-mobilite/assurance-auto.html",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "AXA",
+      "category": "Insurance (DE)",
+      "url": "https://www.axa.de/versicherungen",
+      "finalUrl": "https://www.axa.de/versicherungen",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Generali",
+      "category": "Insurance (IT)",
+      "url": "https://www.generali.it/assicurazioni",
+      "finalUrl": "https://www.generali.it/",
+      "status": 200,
+      "ok": false
+    },
+    {
+      "provider": "Generali",
+      "category": "Insurance (DE)",
+      "url": "https://www.generali.de/versicherungen",
+      "finalUrl": "https://www.generali.de/versicherungen",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Scalable",
+      "category": "Investments",
+      "url": "https://www.scalable.capital/en/broker",
+      "finalUrl": "https://www.scalable.capital/en/broker",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "TradeRepublic",
+      "category": "Investments",
+      "url": "https://traderepublic.com/",
+      "finalUrl": "https://traderepublic.com/en-de",
+      "status": 200,
+      "ok": false
+    },
+    {
+      "provider": "Bitpanda",
+      "category": "Investments",
+      "url": "https://www.bitpanda.com/en/invest",
+      "finalUrl": "https://www.bitpanda.com/en/invest",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Bitpanda",
+      "category": "Crypto",
+      "url": "https://www.bitpanda.com/en/crypto",
+      "finalUrl": "https://www.bitpanda.com/en/crypto",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "Coinbase",
+      "category": "Trading",
+      "url": "https://www.coinbase.com/trade",
+      "finalUrl": "https://www.coinbase.com/trade",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "CurrencyFair",
+      "category": "Transfers",
+      "url": "https://www.currencyfair.com/send-money/",
+      "finalUrl": "https://www.currencyfair.com/send-money/",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "WorldRemit",
+      "category": "Transfers",
+      "url": "https://www.worldremit.com/en/send-money",
+      "finalUrl": "https://www.worldremit.com/en/send-money",
+      "status": 403,
+      "ok": false
+    },
+    {
+      "provider": "WesternUnion",
+      "category": "Transfers",
+      "url": "https://www.westernunion.com/send-money/",
+      "finalUrl": "https://www.westernunion.com/us/en/404.html",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "XE",
+      "category": "Transfers",
+      "url": "https://www.xe.com/send-money/",
+      "finalUrl": "https://www.xe.com/send-money/",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Payoneer",
+      "category": "Payments",
+      "url": "https://www.payoneer.com/solutions/get-paid/",
+      "finalUrl": "https://www.payoneer.com/solutions/get-paid/",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "provider": "SafetyWing",
+      "category": "Insurance",
+      "url": "https://safetywing.com/nomad-insurance",
+      "finalUrl": "https://safetywing.com/nomad-insurance",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "provider": "Admiral",
+      "category": "Insurance",
+      "url": "https://www.admiral.com/travel-insurance",
+      "finalUrl": "",
+      "status": "ERROR",
+      "ok": false
+    }
+  ]
+}

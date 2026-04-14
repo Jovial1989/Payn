@@ -12,6 +12,7 @@ import {
 } from "@/components/product-entry-action";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { trackSignInClicked } from "@/lib/analytics";
 import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
@@ -177,6 +178,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     user?.email?.split("@")[0] ||
     "Payn";
   const avatarInitials = getInitials(displayName) || "P";
+  const handleSignInClick = () => {
+    trackSignInClicked({
+      country: preferences.country,
+      language: preferences.locale,
+      loggedIn: false,
+    });
+  };
 
   const handleLanguageChange = (nextLocale: typeof preferences.locale) => {
     preferences.setLanguage(nextLocale);
@@ -438,7 +446,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       ) : null}
                     </div>
                   ) : (
-                    <Link href={localePath(preferences.locale, "/login")} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+                    <Link
+                      href={localePath(preferences.locale, "/login")}
+                      onClick={handleSignInClick}
+                      className={buttonStyles({ variant: "secondary", size: "sm" })}
+                    >
                       {uiCopy.auth.signIn}
                     </Link>
                   )}

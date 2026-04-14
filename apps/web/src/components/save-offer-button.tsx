@@ -7,6 +7,11 @@ import { useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AnalyticsEvent,
+  buildWebAnalyticsProperties,
+  trackAnalyticsEvent,
+} from "@/lib/analytics";
 import { localePath } from "@/lib/locale";
 import { getOfferHref } from "@/lib/marketplace";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
@@ -24,7 +29,7 @@ export function SaveOfferButton({
   className?: string;
 }) {
   const router = useRouter();
-  const { locale } = useMarketplacePreferences();
+  const { country, locale } = useMarketplacePreferences();
   const uiCopy = getUiCopy(locale);
   const { user } = useAuth();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
@@ -95,6 +100,17 @@ export function SaveOfferButton({
             category: offer.category,
           },
           { onConflict: "user_id,offer_id" },
+        );
+        trackAnalyticsEvent(
+          AnalyticsEvent.OfferSaved,
+          buildWebAnalyticsProperties({
+            category: offer.category,
+            country,
+            language: locale,
+            loggedIn: Boolean(user),
+            offerId: offer.id,
+            provider: offer.providerName,
+          }),
         );
         setSaved(true);
         emitSavedOfferChange(true);

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Amplitude } from "@/amplitude";
 import { Providers } from "@/components/providers";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import "./globals.css";
@@ -25,6 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           rel="stylesheet"
         />
       </head>
+      <Amplitude />
       <body className="font-sans antialiased">
         <Providers
           initialLocale={preferences.locale}

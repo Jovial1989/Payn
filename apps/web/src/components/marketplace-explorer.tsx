@@ -11,6 +11,12 @@ import { InvestmentIntelligenceBlock } from "@/components/investment-intelligenc
 import { OfferCard } from "@/components/offer-card";
 import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  AnalyticsEvent,
+  buildWebAnalyticsProperties,
+  trackAnalyticsEvent,
+} from "@/lib/analytics";
 import { getCountryCurrency } from "@/lib/countries";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
@@ -67,6 +73,7 @@ export function MarketplaceExplorer({
   mode: "home" | "category";
 }) {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [selectedCategory, setSelectedCategory] = useState<ExplorerCategory>(initialCategory);
   const [filters, setFilters] = useState(defaultMarketplaceFilters);
@@ -120,16 +127,32 @@ export function MarketplaceExplorer({
   };
 
   const toggleCompare = useCallback((id: string) => {
-    setCompareIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else if (next.size < 3) {
-        next.add(id);
+    const offer = offers.find((candidate) => candidate.id === id);
+    const next = new Set(compareIds);
+    const alreadySelected = next.has(id);
+
+    if (alreadySelected) {
+      next.delete(id);
+    } else if (next.size < 3) {
+      next.add(id);
+
+      if (!loading && offer && next.size === 2) {
+        trackAnalyticsEvent(AnalyticsEvent.CompareStarted, {
+          ...buildWebAnalyticsProperties({
+            category: offer.category,
+            country: preferences.country,
+            language: preferences.locale,
+            loggedIn: Boolean(user),
+            offerId: offer.id,
+            provider: offer.providerName,
+          }),
+          compare_count: next.size,
+        });
       }
-      return next;
-    });
-  }, []);
+    }
+
+    setCompareIds(next);
+  }, [compareIds, loading, offers, preferences.country, preferences.locale, user]);
 
   const compareOffers = offers.filter((o) => compareIds.has(o.id));
 
@@ -431,7 +454,20 @@ export function MarketplaceExplorer({
       <ComparisonTray
         count={compareIds.size}
         locale={preferences.locale}
-        onOpen={() => setCompareOpen(true)}
+        onOpen={() => {
+          trackAnalyticsEvent(AnalyticsEvent.CompareViewed, {
+            ...buildWebAnalyticsProperties({
+              category: selectedCategory === "all" ? null : selectedCategory,
+              country: preferences.country,
+              language: preferences.locale,
+              loggedIn: Boolean(user),
+            }),
+            compare_count: compareOffers.length,
+            offer_ids: compareOffers.map((offer) => offer.id),
+            providers: compareOffers.map((offer) => offer.providerName),
+          });
+          setCompareOpen(true);
+        }}
         onClear={() => setCompareIds(new Set())}
       />
 

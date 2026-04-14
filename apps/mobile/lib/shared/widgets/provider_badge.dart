@@ -1,5 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
+import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProviderBrand {
   const ProviderBrand({
@@ -154,6 +160,8 @@ Future<void> showProviderHandoffSheet(
   BuildContext context, {
   required PaynOffer offer,
 }) {
+  final controller = AppScope.of(context);
+
   return showModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
@@ -189,20 +197,36 @@ Future<void> showProviderHandoffSheet(
             ),
             const SizedBox(height: 16),
             Text(
-              'Payn would continue into the provider journey for ${offer.title} using the destination below.',
+              'You\'re leaving Payn and going to ${offer.providerName}\'s website to complete your application.',
               style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 14),
-            SelectableText(
-              offer.providerWebsiteUrl,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
             ),
             const SizedBox(height: 18),
             FilledButton(
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                final uri = Uri.tryParse(offer.providerWebsiteUrl);
+                if (uri == null) return;
+                unawaited(
+                  controller.analytics.track(
+                    AnalyticsEvents.providerClicked,
+                    properties: controller.analytics.buildDefaultProperties(
+                      preferences: controller.preferences,
+                      loggedIn: controller.isAuthenticated,
+                      category: offer.category,
+                      offerId: offer.id,
+                      provider: offer.providerName,
+                    ),
+                  ),
+                );
+                Navigator.of(context).pop();
+                await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+              },
+              child: const Text('Continue to provider'),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Done'),
+              child: const Text('Cancel'),
             ),
           ],
         ),

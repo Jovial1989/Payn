@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -21,6 +25,17 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
+          AnalyticsViewTracker(
+            viewKey: 'settings-view',
+            onTrack:
+                () => controller.analytics.track(
+                  AnalyticsEvents.settingsViewed,
+                  properties: controller.analytics.buildDefaultProperties(
+                    preferences: controller.preferences,
+                    loggedIn: controller.isAuthenticated,
+                  ),
+                ),
+          ),
           // ── Page title ──
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -95,7 +110,19 @@ class ProfileScreen extends StatelessWidget {
                     children: <Widget>[
                       Expanded(
                         child: FilledButton(
-                          onPressed: () => context.push('/auth?mode=signIn'),
+                          onPressed: () {
+                            unawaited(
+                              controller.analytics.track(
+                                AnalyticsEvents.signInClicked,
+                                properties: controller.analytics
+                                    .buildDefaultProperties(
+                                      preferences: controller.preferences,
+                                      loggedIn: controller.isAuthenticated,
+                                    ),
+                              ),
+                            );
+                            context.push('/auth?mode=signIn');
+                          },
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 40),
                           ),

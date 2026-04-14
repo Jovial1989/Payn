@@ -3,11 +3,13 @@
 import type { MarketplaceCategory } from "@payn/types";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { DashboardCardsWorkspace } from "@/components/dashboard-cards-workspace";
 import { DashboardCategoryWorkspace } from "@/components/dashboard-category-workspace";
 import { DashboardInvestmentsWorkspace } from "@/components/dashboard-investments-workspace";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import {
   getCategoryOffersForCountrySelection,
 } from "@/lib/countries";
@@ -31,12 +33,13 @@ function mergeInsights(...buckets: DashboardOfferInsight[][]) {
 
 export function ProductCategoryView({ category }: { category: MarketplaceCategory }) {
   const searchParams = useSearchParams();
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const productMarketScope = "eu_fallback";
   const discoverHref = localePath(preferences.locale, "/discover");
   const dashboardHref = localePath(preferences.locale, "/dashboard");
+  const assetId = category === "investments" ? searchParams.get("asset") : null;
 
   const loadInsights = useCallback(async () => {
     if (!user) {
@@ -77,10 +80,25 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
         insights.trendingInMarket.filter((item) => item.offer.category === category),
       )
     : [];
+  const pageView = (
+    <AnalyticsPageView
+      eventName={AnalyticsEvent.CategoryViewed}
+      dedupeKey={`category:${category}:${assetId ?? "default"}`}
+      properties={buildWebAnalyticsProperties({
+        asset: assetId,
+        category,
+        country: preferences.country,
+        language: preferences.locale,
+        loggedIn: Boolean(user),
+      })}
+      ready={!loading}
+    />
+  );
 
   if (category === "investments") {
     return (
       <div className="grid gap-5">
+        {pageView}
         <DashboardInvestmentsWorkspace
           key={`investments:${searchParams.get("asset") ?? "btc"}`}
           locale={preferences.locale}
@@ -98,6 +116,7 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
   if (category === "cards") {
     return (
       <div className="grid gap-5">
+        {pageView}
         <DashboardCardsWorkspace
           key="cards"
           locale={preferences.locale}
@@ -112,6 +131,7 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
 
   return (
     <div className="grid gap-5">
+      {pageView}
       <DashboardCategoryWorkspace
         key={category}
         locale={preferences.locale}

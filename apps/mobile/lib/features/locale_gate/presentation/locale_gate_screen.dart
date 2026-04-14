@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 
 class LocaleGateScreen extends StatefulWidget {
@@ -43,6 +47,19 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              AnalyticsViewTracker(
+                viewKey: 'locale-gate-view',
+                onTrack: () {
+                  final controller = AppScope.of(context);
+                  return controller.analytics.track(
+                    AnalyticsEvents.onboardingRegionModalViewed,
+                    properties: controller.analytics.buildDefaultProperties(
+                      preferences: controller.preferences,
+                      loggedIn: controller.isAuthenticated,
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 40),
 
               // Logo mark
@@ -96,7 +113,10 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               _SelectorField(
                 label: 'Region',
                 hint: 'Select your country',
-                value: _selectedMarket == null ? null : _marketLabel(_selectedMarket!),
+                value:
+                    _selectedMarket == null
+                        ? null
+                        : _marketLabel(_selectedMarket!),
                 onTap: () => _showMarketPicker(context),
               ),
 
@@ -106,7 +126,10 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               _SelectorField(
                 label: 'Language',
                 hint: 'Select a language',
-                value: _selectedLanguage == null ? null : '${_selectedLanguage!.native} — ${_selectedLanguage!.label}',
+                value:
+                    _selectedLanguage == null
+                        ? null
+                        : '${_selectedLanguage!.native} — ${_selectedLanguage!.label}',
                 onTap: () => _showLanguagePicker(context),
               ),
 
@@ -166,17 +189,33 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       builder: (ctx) {
         return _PickerSheet(
           title: 'Select your country',
-          items: _supportedMarkets.map((entry) {
-            return _PickerItem(
-              value: entry.market,
-              flag: entry.flag,
-              label: entry.label,
-              selected: _selectedMarket == entry.market,
-            );
-          }).toList(),
+          items:
+              _supportedMarkets.map((entry) {
+                return _PickerItem(
+                  value: entry.market,
+                  flag: entry.flag,
+                  label: entry.label,
+                  selected: _selectedMarket == entry.market,
+                );
+              }).toList(),
           onSelect: (value) {
             HapticFeedback.selectionClick();
-            setState(() => _selectedMarket = value as PaynMarket);
+            final market = value as PaynMarket;
+            final controller = AppScope.of(context);
+            unawaited(
+              controller.analytics.track(
+                AnalyticsEvents.regionSelected,
+                properties: controller.analytics.buildDefaultProperties(
+                  preferences: controller.preferences,
+                  loggedIn: controller.isAuthenticated,
+                  country: market.name,
+                  language:
+                      _selectedLanguage?.code ??
+                      controller.preferences.languageCode,
+                ),
+              ),
+            );
+            setState(() => _selectedMarket = market);
             Navigator.of(ctx).pop();
           },
         );
@@ -196,17 +235,33 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       builder: (ctx) {
         return _PickerSheet(
           title: 'Select a language',
-          items: _languages.map((lang) {
-            return _PickerItem(
-              value: lang,
-              flag: lang.flag,
-              label: '${lang.native} — ${lang.label}',
-              selected: _selectedLanguage == lang,
-            );
-          }).toList(),
+          items:
+              _languages.map((lang) {
+                return _PickerItem(
+                  value: lang,
+                  flag: lang.flag,
+                  label: '${lang.native} — ${lang.label}',
+                  selected: _selectedLanguage == lang,
+                );
+              }).toList(),
           onSelect: (value) {
             HapticFeedback.selectionClick();
-            setState(() => _selectedLanguage = value as _AppLanguage);
+            final language = value as _AppLanguage;
+            final controller = AppScope.of(context);
+            unawaited(
+              controller.analytics.track(
+                AnalyticsEvents.languageSelected,
+                properties: controller.analytics.buildDefaultProperties(
+                  preferences: controller.preferences,
+                  loggedIn: controller.isAuthenticated,
+                  country:
+                      _selectedMarket?.name ??
+                      controller.preferences.market.name,
+                  language: language.code,
+                ),
+              ),
+            );
+            setState(() => _selectedLanguage = language);
             Navigator.of(ctx).pop();
           },
         );
@@ -239,7 +294,11 @@ const _supportedMarkets = <_MarketEntry>[
   _MarketEntry(market: PaynMarket.nl, flag: '🇳🇱', label: 'Netherlands'),
   _MarketEntry(market: PaynMarket.pt, flag: '🇵🇹', label: 'Portugal'),
   _MarketEntry(market: PaynMarket.eu, flag: '🇪🇺', label: 'All Europe'),
-  _MarketEntry(market: PaynMarket.international, flag: '🌍', label: 'International'),
+  _MarketEntry(
+    market: PaynMarket.international,
+    flag: '🌍',
+    label: 'International',
+  ),
 ];
 
 String _marketLabel(PaynMarket market) {
@@ -265,7 +324,12 @@ const _languages = <_AppLanguage>[
   _AppLanguage(code: 'es', label: 'Spanish', native: 'Español', flag: '🇪🇸'),
   _AppLanguage(code: 'fr', label: 'French', native: 'Français', flag: '🇫🇷'),
   _AppLanguage(code: 'it', label: 'Italian', native: 'Italiano', flag: '🇮🇹'),
-  _AppLanguage(code: 'pt', label: 'Portuguese', native: 'Português', flag: '🇵🇹'),
+  _AppLanguage(
+    code: 'pt',
+    label: 'Portuguese',
+    native: 'Português',
+    flag: '🇵🇹',
+  ),
 ];
 
 // ─────────────────────────────────────────────────
@@ -330,7 +394,10 @@ class _PickerSheet extends StatelessWidget {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return _PickerRow(item: item, onTap: () => onSelect(item.value));
+                  return _PickerRow(
+                    item: item,
+                    onTap: () => onSelect(item.value),
+                  );
                 },
               ),
             ),
@@ -430,7 +497,10 @@ class _SelectorField extends StatelessWidget {
               color: PaynColors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: hasValue ? PaynColors.text.withValues(alpha: 0.15) : PaynColors.outline,
+                color:
+                    hasValue
+                        ? PaynColors.text.withValues(alpha: 0.15)
+                        : PaynColors.outline,
               ),
               boxShadow: <BoxShadow>[
                 BoxShadow(
@@ -446,7 +516,8 @@ class _SelectorField extends StatelessWidget {
                   child: Text(
                     value ?? hint,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: hasValue ? PaynColors.text : PaynColors.textTertiary,
+                      color:
+                          hasValue ? PaynColors.text : PaynColors.textTertiary,
                       fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -465,4 +536,3 @@ class _SelectorField extends StatelessWidget {
     );
   }
 }
-

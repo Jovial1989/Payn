@@ -9,6 +9,7 @@
     "typecheck": "next typegen && mkdir -p .next/types && touch .next/types/cache-life.d.ts && tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@amplitude/unified": "^1.0.16",
     "@payn/config": "workspace:*",
     "@payn/types": "workspace:*",
     "@payn/ui": "workspace:*",

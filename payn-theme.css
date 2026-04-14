@@ -1,0 +1,51 @@
+@layer base {
+  :root {
+    /* Core Brand - Premium Dark Fintech */
+    --bg-main: #050B09;      /* Deepest Black-Green */
+    --bg-card: #0F1614;      /* Slightly lighter surface */
+    --bg-card-hover: #141C19;
+    
+    /* Action - CreditPay Green */
+    --brand-primary: #2FA36B;
+    --brand-hover: #268C5B;
+    --brand-glow: rgba(47, 163, 107, 0.4);
+    
+    /* Status */
+    --success-bg: rgba(47, 163, 107, 0.1);
+    --success-text: #2FA36B;
+    
+    /* Surface */
+    --surface-glass: rgba(15, 22, 20, 0.7);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-active: rgba(47, 163, 107, 0.5);
+    
+    /* Typography */
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+    --text-tertiary: #64748B;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .payn-glass {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .payn-shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .payn-shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Animations */
+  .hover-lift { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px var(--brand-glow); }
+}

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:payn_mobile/core/storage/local_store.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/dashboard_analytics_service.dart';
 import 'package:payn_mobile/shared/services/local_auth_repository.dart';
 import 'package:payn_mobile/shared/services/local_marketplace_repository.dart';
@@ -14,6 +16,7 @@ class AppController extends ChangeNotifier {
     required this.store,
     required this.authRepository,
     required this.marketplaceRepository,
+    required this.analytics,
     required this.dashboardAnalyticsService,
     required this.marketIntelligenceService,
   });
@@ -27,6 +30,7 @@ class AppController extends ChangeNotifier {
   final LocalStore store;
   final LocalAuthRepository authRepository;
   final LocalMarketplaceRepository marketplaceRepository;
+  final AnalyticsService analytics;
   final DashboardAnalyticsService dashboardAnalyticsService;
   final MarketIntelligenceService marketIntelligenceService;
 
@@ -69,6 +73,7 @@ class AppController extends ChangeNotifier {
 
     final localeGateRaw = await store.readString(_localeGateKey);
     _localeGateDone = localeGateRaw == '1';
+    await analytics.setUserId(_session.isAuthenticated ? _session.email : null);
 
     notifyListeners();
   }
@@ -77,7 +82,10 @@ class AppController extends ChangeNotifier {
     required PaynMarket market,
     required String language,
   }) async {
-    _preferences = _preferences.copyWith(market: market);
+    _preferences = _preferences.copyWith(
+      languageCode: language,
+      market: market,
+    );
     _localeGateDone = true;
     await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
     await store.saveString(_localeGateKey, '1');
@@ -91,7 +99,25 @@ class AppController extends ChangeNotifier {
   }
 
   void setExploreCategory(PaynCategory? category) {
+    if (_selectedExploreCategory == category) {
+      return;
+    }
+
     _selectedExploreCategory = category;
+
+    if (category != null) {
+      unawaited(
+        analytics.track(
+          AnalyticsEvents.categoryViewed,
+          properties: analytics.buildDefaultProperties(
+            preferences: _preferences,
+            loggedIn: isAuthenticated,
+            category: category,
+          ),
+        ),
+      );
+    }
+
     notifyListeners();
   }
 
@@ -111,6 +137,22 @@ class AppController extends ChangeNotifier {
       _compareOfferIds.remove(offerId);
     } else {
       _savedOfferIds = <String>[offerId, ..._savedOfferIds];
+
+      final offer = marketplaceRepository.offerById(offerId);
+      if (offer != null) {
+        unawaited(
+          analytics.track(
+            AnalyticsEvents.offerSaved,
+            properties: analytics.buildDefaultProperties(
+              preferences: _preferences,
+              loggedIn: isAuthenticated,
+              category: offer.category,
+              offerId: offer.id,
+              provider: offer.providerName,
+            ),
+          ),
+        );
+      }
     }
 
     await _persistSavedState();
@@ -131,6 +173,22 @@ class AppController extends ChangeNotifier {
 
     _compareOfferIds = <String>[..._compareOfferIds, offerId];
     await store.saveStringList(_compareKey, _compareOfferIds);
+    final offer = marketplaceRepository.offerById(offerId);
+    if (offer != null && _compareOfferIds.length == 2) {
+      unawaited(
+        analytics.track(
+          AnalyticsEvents.compareStarted,
+          properties: analytics.buildDefaultProperties(
+            preferences: _preferences,
+            loggedIn: isAuthenticated,
+            category: offer.category,
+            offerId: offer.id,
+            provider: offer.providerName,
+            extra: <String, dynamic>{'compare_count': _compareOfferIds.length},
+          ),
+        ),
+      );
+    }
     notifyListeners();
     return true;
   }
@@ -139,6 +197,21 @@ class AppController extends ChangeNotifier {
     _recentOfferIds.remove(offerId);
     _recentOfferIds = <String>[offerId, ..._recentOfferIds].take(8).toList();
     await store.saveStringList(_recentKey, _recentOfferIds);
+    final offer = marketplaceRepository.offerById(offerId);
+    if (offer != null) {
+      unawaited(
+        analytics.track(
+          AnalyticsEvents.offerDetailsViewed,
+          properties: analytics.buildDefaultProperties(
+            preferences: _preferences,
+            loggedIn: isAuthenticated,
+            category: offer.category,
+            offerId: offer.id,
+            provider: offer.providerName,
+          ),
+        ),
+      );
+    }
     notifyListeners();
   }
 
@@ -158,6 +231,7 @@ class AppController extends ChangeNotifier {
       email: normalizedEmail,
       password: password,
     );
+    await analytics.setUserId(_session.email);
     notifyListeners();
     return null;
   }
@@ -178,6 +252,7 @@ class AppController extends ChangeNotifier {
       email: normalizedEmail,
       password: password,
     );
+    await analytics.setUserId(_session.email);
     notifyListeners();
     return null;
   }
@@ -185,6 +260,7 @@ class AppController extends ChangeNotifier {
   Future<void> signOut() async {
     await authRepository.signOut();
     _session = const UserSession.guest();
+    await analytics.setUserId(null);
     notifyListeners();
   }
 

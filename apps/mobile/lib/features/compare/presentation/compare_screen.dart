@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 
 class CompareScreen extends StatelessWidget {
@@ -12,40 +14,57 @@ class CompareScreen extends StatelessWidget {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
     final offers = controller.compareOffers;
+    final compareViewTracker = AnalyticsViewTracker(
+      viewKey: 'compare-view',
+      onTrack:
+          () => controller.analytics.track(
+            AnalyticsEvents.compareViewed,
+            properties: controller.analytics.buildDefaultProperties(
+              preferences: controller.preferences,
+              loggedIn: controller.isAuthenticated,
+              extra: <String, dynamic>{'compare_count': offers.length},
+            ),
+          ),
+    );
 
     if (offers.length < 2) {
       return Scaffold(
         appBar: AppBar(title: const Text('Compare')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Icon(
-                  Icons.compare_arrows_rounded,
-                  size: 48,
-                  color: PaynColors.textTertiary,
+        body: Stack(
+          children: <Widget>[
+            compareViewTracker,
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(
+                      Icons.compare_arrows_rounded,
+                      size: 48,
+                      color: PaynColors.textTertiary,
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Select at least 2 offers',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Use the Saved tab to choose offers for comparison.',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () => context.go('/saved'),
+                      child: const Text('Go to Saved'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  'Select at least 2 offers',
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Use the Saved tab to choose offers for comparison.',
-                  style: theme.textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () => context.go('/saved'),
-                  child: const Text('Go to Saved'),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       );
     }
@@ -63,6 +82,7 @@ class CompareScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
+          compareViewTracker,
           // ── Winner card ──
           Container(
             padding: const EdgeInsets.all(14),

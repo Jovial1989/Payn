@@ -2,9 +2,11 @@
 
 import type { MarketplaceCategory } from "@payn/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { DashboardDiscoverWorkspace } from "@/components/dashboard-discover-workspace";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import { getOffersForCountrySelection } from "@/lib/countries";
 import type { DashboardInsights } from "@/lib/dashboard";
 import { localePath } from "@/lib/locale";
@@ -36,7 +38,7 @@ export function DiscoverPageView({
 }: {
   initialIntent?: MarketplaceCategory;
 }) {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const productMarketScope = "eu_fallback";
@@ -77,20 +79,33 @@ export function DiscoverPageView({
   const recentTrail = useMemo(() => getRecentTrailOffers(insights), [insights]);
 
   return (
-    <DashboardDiscoverWorkspace
-      locale={preferences.locale}
-      userId={user?.id ?? null}
-      initialIntent={initialIntent}
-      marketLabel={preferences.countryLabel}
-      preferredCountry={preferences.country}
-      onCountryChange={preferences.setCountry}
-      profile={profile ?? null}
-      offers={offers}
-      recentOffers={recentTrail}
-      savedOffers={insights?.savedOffers ?? []}
-      dashboardHref={localePath(preferences.locale, "/dashboard")}
-      settingsHref={localePath(preferences.locale, "/settings")}
-      categoryHref={(category: MarketplaceCategory) => localePath(preferences.locale, `/${category}`)}
-    />
+    <>
+      <AnalyticsPageView
+        eventName={AnalyticsEvent.DiscoverViewed}
+        dedupeKey="discover"
+        properties={buildWebAnalyticsProperties({
+          category: initialIntent ?? null,
+          country: preferences.country,
+          language: preferences.locale,
+          loggedIn: Boolean(user),
+        })}
+        ready={!loading}
+      />
+      <DashboardDiscoverWorkspace
+        locale={preferences.locale}
+        userId={user?.id ?? null}
+        initialIntent={initialIntent}
+        marketLabel={preferences.countryLabel}
+        preferredCountry={preferences.country}
+        onCountryChange={preferences.setCountry}
+        profile={profile ?? null}
+        offers={offers}
+        recentOffers={recentTrail}
+        savedOffers={insights?.savedOffers ?? []}
+        dashboardHref={localePath(preferences.locale, "/dashboard")}
+        settingsHref={localePath(preferences.locale, "/settings")}
+        categoryHref={(category: MarketplaceCategory) => localePath(preferences.locale, `/${category}`)}
+      />
+    </>
   );
 }

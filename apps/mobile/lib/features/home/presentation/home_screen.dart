@@ -4,8 +4,10 @@ import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
@@ -29,6 +31,19 @@ class HomeScreen extends StatelessWidget {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: <Widget>[
+          SliverToBoxAdapter(
+            child: AnalyticsViewTracker(
+              viewKey: 'dashboard-view',
+              onTrack:
+                  () => controller.analytics.track(
+                    AnalyticsEvents.dashboardViewed,
+                    properties: controller.analytics.buildDefaultProperties(
+                      preferences: controller.preferences,
+                      loggedIn: controller.isAuthenticated,
+                    ),
+                  ),
+            ),
+          ),
           // ── Header ──
           SliverToBoxAdapter(
             child: Padding(
@@ -570,7 +585,12 @@ class _SignalChip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(signal.label, style: t.textTheme.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            signal.label,
+            style: t.textTheme.labelMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 6),
           Text(
             signal.value,

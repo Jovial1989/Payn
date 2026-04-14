@@ -5,8 +5,10 @@ import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/insight_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
@@ -30,6 +32,19 @@ class ExploreScreen extends StatelessWidget {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: <Widget>[
+          SliverToBoxAdapter(
+            child: AnalyticsViewTracker(
+              viewKey: 'discover-view',
+              onTrack:
+                  () => controller.analytics.track(
+                    AnalyticsEvents.discoverViewed,
+                    properties: controller.analytics.buildDefaultProperties(
+                      preferences: controller.preferences,
+                      loggedIn: controller.isAuthenticated,
+                    ),
+                  ),
+            ),
+          ),
           // ── Header ──
           SliverToBoxAdapter(
             child: Padding(
@@ -714,9 +729,10 @@ class _FilterButton extends StatelessWidget {
               Text(
                 hasFilters ? 'Filters $count' : 'Filters',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: hasFilters
-                      ? PaynColors.surface
-                      : PaynColors.textSecondary,
+                  color:
+                      hasFilters
+                          ? PaynColors.surface
+                          : PaynColors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
