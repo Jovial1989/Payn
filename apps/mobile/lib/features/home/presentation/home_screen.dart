@@ -215,7 +215,7 @@ class HomeScreen extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 86,
+                height: 116,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -568,15 +568,17 @@ class _SignalChip extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(signal.label, style: t.textTheme.labelMedium),
+          Text(signal.label, style: t.textTheme.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 6),
           Text(
             signal.value,
             style: t.textTheme.titleMedium,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          const SizedBox(height: 4),
           Text(
             signal.detail,
             style: t.textTheme.labelMedium,
