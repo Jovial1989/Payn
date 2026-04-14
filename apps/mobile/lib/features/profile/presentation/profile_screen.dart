@@ -21,6 +21,11 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
+          // ── Page title ──
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text('Profile', style: theme.textTheme.headlineMedium),
+          ),
           // ── Account ──
           Container(
             padding: const EdgeInsets.all(14),

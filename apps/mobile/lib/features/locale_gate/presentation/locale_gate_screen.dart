@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 
 class LocaleGateScreen extends StatefulWidget {
   const LocaleGateScreen({super.key});
@@ -19,6 +21,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
 
   Future<void> _handleContinue() async {
     if (!_ready) return;
+    HapticFeedback.mediumImpact();
     final controller = AppScope.of(context);
     await controller.completeLocaleGate(
       market: _selectedMarket!,
@@ -53,7 +56,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.center,
-                    child: const _PaynMark(),
+                    child: const PaynMark(size: 14, strokeWidth: 2.2),
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -172,6 +175,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
             );
           }).toList(),
           onSelect: (value) {
+            HapticFeedback.selectionClick();
             setState(() => _selectedMarket = value as PaynMarket);
             Navigator.of(ctx).pop();
           },
@@ -201,6 +205,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
             );
           }).toList(),
           onSelect: (value) {
+            HapticFeedback.selectionClick();
             setState(() => _selectedLanguage = value as _AppLanguage);
             Navigator.of(ctx).pop();
           },
@@ -461,39 +466,3 @@ class _SelectorField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────
-// Payn logo mark (inline SVG equivalent)
-// ─────────────────────────────────────────────────
-
-class _PaynMark extends StatelessWidget {
-  const _PaynMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(14, 14),
-      painter: _MarkPainter(),
-    );
-  }
-}
-
-class _MarkPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..moveTo(size.width * 0.18, size.height * 0.82)
-      ..lineTo(size.width * 0.5, size.height * 0.18)
-      ..lineTo(size.width * 0.82, size.height * 0.82);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

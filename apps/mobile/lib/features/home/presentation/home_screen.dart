@@ -8,6 +8,7 @@ import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
+import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
@@ -42,14 +43,7 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      'P',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: PaynColors.surface,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
-                    ),
+                    child: const PaynMark(size: 14, strokeWidth: 2.2),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -69,22 +63,23 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => context.go('/profile'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: PaynColors.surfaceDim,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        formatMarketLabel(controller.preferences.market),
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: PaynColors.textSecondary,
-                          fontWeight: FontWeight.w600,
+                  Material(
+                    color: PaynColors.surfaceDim,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => context.go('/profile'),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          formatMarketLabel(controller.preferences.market),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: PaynColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
@@ -40,7 +41,10 @@ class ExploreScreen extends StatelessWidget {
                   ),
                   _FilterButton(
                     count: controller.activeFilterCount,
-                    onTap: () => _openFilterSheet(context, controller),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      _openFilterSheet(context, controller);
+                    },
                   ),
                 ],
               ),
@@ -689,32 +693,35 @@ class _FilterButton extends StatelessWidget {
     final theme = Theme.of(context);
     final hasFilters = count > 0;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: hasFilters ? PaynColors.text : PaynColors.surfaceDim,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.tune_rounded,
-              size: 14,
-              color: hasFilters ? PaynColors.surface : PaynColors.textSecondary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              hasFilters ? 'Filters $count' : 'Filters',
-              style: theme.textTheme.labelMedium?.copyWith(
+    return Material(
+      color: hasFilters ? PaynColors.text : PaynColors.surfaceDim,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                Icons.tune_rounded,
+                size: 14,
                 color:
                     hasFilters ? PaynColors.surface : PaynColors.textSecondary,
-                fontWeight: FontWeight.w600,
               ),
-            ),
-          ],
+              const SizedBox(width: 4),
+              Text(
+                hasFilters ? 'Filters $count' : 'Filters',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: hasFilters
+                      ? PaynColors.surface
+                      : PaynColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

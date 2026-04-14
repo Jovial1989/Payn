@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
@@ -48,15 +49,32 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
         title: Text(offer.category.label),
         actions: <Widget>[
           IconButton(
-            onPressed: () => controller.toggleSaved(offer.id),
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              controller.toggleSaved(offer.id);
+            },
             icon: Icon(
               isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
             ),
           ),
         ],
       ),
+      // ── Sticky primary CTA ──
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: FilledButton.icon(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              showProviderHandoffSheet(context, offer: offer);
+            },
+            icon: const Icon(Icons.open_in_new_rounded, size: 16),
+            label: const Text('Continue to provider'),
+          ),
+        ),
+      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
           // ── Header ──
@@ -64,17 +82,23 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               ProviderBadge(offer: offer),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(offer.providerName, style: theme.textTheme.labelLarge),
-                    const SizedBox(height: 2),
+                    Text(
+                      offer.providerName,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: PaynColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       offer.title,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontSize: 22,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
@@ -82,96 +106,77 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             offer.subtitle,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: PaynColors.textSecondary,
+              height: 1.5,
             ),
           ),
 
-          // ── Score badge ──
-          const SizedBox(height: 12),
+          // ── Score badges ──
+          const SizedBox(height: 14),
           Row(
             children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color:
-                      ranked.score >= 110
-                          ? PaynColors.positiveSurface
-                          : PaynColors.accentSurface,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  ranked.score >= 110 ? 'Best option' : 'Strong match',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color:
-                        ranked.score >= 110
-                            ? PaynColors.positive
-                            : PaynColors.accent,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              _Badge(
+                label: ranked.score >= 110 ? 'Best option' : 'Strong match',
+                bg: ranked.score >= 110
+                    ? PaynColors.positiveSurface
+                    : PaynColors.accentSurface,
+                fg: ranked.score >= 110
+                    ? PaynColors.positive
+                    : PaynColors.accent,
               ),
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: PaynColors.surfaceDim,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  offer.category.label,
-                  style: theme.textTheme.labelMedium,
-                ),
+              _Badge(
+                label: offer.category.label,
+                bg: PaynColors.surfaceDim,
+                fg: PaynColors.textSecondary,
               ),
             ],
           ),
 
-          // ── Metrics ──
-          const SizedBox(height: 16),
+          // ── Metrics grid ──
+          const SizedBox(height: 20),
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 2.2,
-            children:
-                offer.metrics.map((metric) {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: PaynColors.surfaceDim,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(metric.label, style: theme.textTheme.labelMedium),
-                        const SizedBox(height: 2),
-                        Text(metric.value, style: theme.textTheme.titleMedium),
-                      ],
-                    ),
-                  );
-                }).toList(),
+            childAspectRatio: 2.0,
+            children: offer.metrics.map((metric) {
+              return Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: PaynColors.surfaceDim,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(metric.label, style: theme.textTheme.labelMedium),
+                    const SizedBox(height: 4),
+                    Text(metric.value, style: theme.textTheme.titleMedium),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
 
           // ── Match reasons ──
           if (reasons.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               'Why this result',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: PaynColors.textSecondary,
-              ),
+              style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             ...reasons.map(
               (reason) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -179,11 +184,11 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       padding: EdgeInsets.only(top: 2),
                       child: Icon(
                         Icons.check_circle_rounded,
-                        size: 14,
+                        size: 16,
                         color: PaynColors.positive,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         reason,
@@ -202,40 +207,38 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
           if (offer.bestFor.isNotEmpty) ...<Widget>[
             const SizedBox(height: 12),
             Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children:
-                  offer.bestFor
-                      .map(
-                        (item) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: PaynColors.surfaceDim,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            item,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: PaynColors.text,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+              spacing: 6,
+              runSpacing: 6,
+              children: offer.bestFor.map((item) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: PaynColors.surfaceDim,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: PaynColors.outlineSubtle),
+                  ),
+                  child: Text(
+                    item,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: PaynColors.text,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
 
           // ── Tradeoff ──
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: PaynColors.warningSurface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,11 +247,11 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   padding: EdgeInsets.only(top: 1),
                   child: Icon(
                     Icons.info_outline_rounded,
-                    size: 14,
+                    size: 16,
                     color: PaynColors.warning,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +263,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                           fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         controller.tradeoffFor(offer),
                         style: theme.textTheme.bodyMedium?.copyWith(
@@ -274,19 +277,16 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
             ),
           ),
 
-          // ── Actions ──
+          // ── Secondary actions ──
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => showProviderHandoffSheet(context, offer: offer),
-            icon: const Icon(Icons.open_in_new_rounded, size: 16),
-            label: const Text('Continue to provider'),
-          ),
-          const SizedBox(height: 8),
           Row(
             children: <Widget>[
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => controller.toggleSaved(offer.id),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    controller.toggleSaved(offer.id);
+                  },
                   icon: Icon(
                     isSaved
                         ? Icons.bookmark_rounded
@@ -299,24 +299,24 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed:
-                      isSaved
-                          ? () async {
-                            final ok = await controller.toggleCompare(offer.id);
-                            if (!context.mounted) return;
-                            if (!ok) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Compare supports up to 3 offers.',
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-                            context.push('/compare');
+                  onPressed: isSaved
+                      ? () async {
+                          HapticFeedback.selectionClick();
+                          final ok =
+                              await controller.toggleCompare(offer.id);
+                          if (!context.mounted) return;
+                          if (!ok) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Compare supports up to 3 offers.'),
+                              ),
+                            );
+                            return;
                           }
-                          : null,
+                          context.push('/compare');
+                        }
+                      : null,
                   icon: Icon(
                     isCompared
                         ? Icons.compare_arrows_rounded
@@ -329,6 +329,36 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────
+// Badge
+// ─────────────────────────────────────────────────
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label, required this.bg, required this.fg});
+
+  final String label;
+  final Color bg;
+  final Color fg;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
