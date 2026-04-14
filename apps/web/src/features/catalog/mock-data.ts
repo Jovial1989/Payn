@@ -43,7 +43,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.91,
     providerWebsiteUrl: "https://n26.com",
-    affiliateLink: "https://n26.com/en-de/credit",
+    affiliateLink: "https://n26.com/en-es/credit",
     providerUrls: { DE: "https://n26.com/en-de/credit", ES: "https://n26.com/en-es/credit", FR: "https://n26.com/en-fr/credit", AT: "https://n26.com/en-at/credit-and-loans" },
     updatedAt: "2026-03-24T00:00:00Z",
   },
@@ -340,7 +340,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.87,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com",
+    affiliateLink: "https://wise.com/sg/blog/uob-personal-loan",
     updatedAt: "2026-03-24T00:00:00Z",
   },
   {
