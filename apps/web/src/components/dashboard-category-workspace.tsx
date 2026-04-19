@@ -321,8 +321,8 @@ function getLoanEmploymentBoost(offer: MarketplaceOffer, employmentStatus: LoanE
 
 function getCompareToggleClassName(selected: boolean) {
   return selected
-    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-black bg-white px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface sm:w-auto"
-    : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:text-ink sm:w-auto";
+    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-black bg-black px-3 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-gray-800 active:scale-[0.97] sm:w-auto"
+    : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-transparent px-3 py-2 text-sm font-semibold text-ink-secondary transition-all duration-150 hover:border-line-strong hover:text-ink active:scale-[0.97] sm:w-auto";
 }
 
 function getMetricDisplayValue(
@@ -1803,10 +1803,16 @@ export function DashboardCategoryWorkspace({
           </div>
 
           {topResult ? (
-            <div className="rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3 text-sm text-ink-secondary">
-              <span className="font-semibold text-ink">{copy.topLead} {topResult.offer.providerName}</span>
-              {" · "}
-              {topResult.primaryLabel}: {topResult.primaryValue}
+            <div className="flex shrink-0 items-center gap-2.5 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3">
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">
+                1
+              </span>
+              <p className="text-sm text-ink-secondary">
+                <span className="font-semibold text-ink">{topResult.offer.providerName}</span>
+                {" · "}
+                {topResult.primaryLabel}:{" "}
+                <span className="font-semibold text-ink">{topResult.primaryValue}</span>
+              </p>
             </div>
           ) : null}
         </div>
@@ -1836,8 +1842,12 @@ export function DashboardCategoryWorkspace({
         ) : null}
 
         {quoteLoading ? (
-          <div className="mt-6 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-10 text-center text-sm text-ink-secondary">
-            {copy.updatingLiveComparison}
+          <div className="mt-6 flex items-center justify-center gap-3 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-10">
+            <svg className="h-4 w-4 animate-spin text-ink-tertiary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeOpacity="0.2"/>
+              <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <span className="text-sm text-ink-secondary">{copy.updatingLiveComparison}</span>
           </div>
         ) : rankedResults.length === 0 ? (
           <div className="mt-6">
@@ -1878,7 +1888,16 @@ export function DashboardCategoryWorkspace({
                       }
                       className={getCompareToggleClassName(compareSelection.includes(row.offer.id))}
                     >
-                      <span>{compareSelection.includes(row.offer.id) ? "[x]" : "[ ]"}</span>
+                      {compareSelection.includes(row.offer.id) ? (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                          <rect width="14" height="14" rx="4" fill="white" fillOpacity="0.25"/>
+                          <path d="M3 7l3 3 5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                          <rect x="0.5" y="0.5" width="13" height="13" rx="3.5" stroke="currentColor" strokeOpacity="0.4"/>
+                        </svg>
+                      )}
                       <span>{copy.compare}</span>
                     </button>
                   )

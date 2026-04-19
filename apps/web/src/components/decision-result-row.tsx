@@ -122,17 +122,17 @@ export function DecisionResultRow({
           </dl>
         </div>
 
-        <div className="grid gap-4 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] lg:content-start">
-          <div className="text-left lg:text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+        <div className="grid gap-3 rounded-[20px] border border-[#EAEAEA] bg-[#FAFAFA] px-4 py-4 lg:content-start">
+          <div className="border-b border-[#F0F0F0] pb-3 text-left lg:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
               {normalizeDisplayText(primaryLabel)}
             </p>
-            <p className="mt-2 text-[30px] font-bold tracking-[-0.06em] text-ink tabular-nums">
+            <p className="mt-1.5 text-[28px] font-bold tracking-[-0.055em] text-ink tabular-nums">
               {normalizeDisplayText(primaryValue)}
             </p>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid grid-cols-1 gap-2">
             <ProviderLinkButton
               offer={offer}
               label={resolvedProviderLabel}
