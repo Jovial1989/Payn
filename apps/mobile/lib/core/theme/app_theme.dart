@@ -2,30 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─────────────────────────────────────────────────────────────
-// Payn Design System v2.1 — Premium polish pass
-// ─────────────────────────────────────────────────────────────
-// Typography: H1 28 / Title 18 / Subtitle 15 / Body 14 / Label 13 / Caption 12
-// Spacing:    4 / 8 / 12 / 16 / 20 / 24 / 28 / 32
-// Radius:     section 28 / cards 20 / chips 10 / buttons 14 / badges 8
-// Elevation:  subtle shadow on cards for depth
-// ─────────────────────────────────────────────────────────────
+abstract final class PaynSpace {
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 20;
+  static const double xl = 24;
+  static const double xxl = 32;
+}
+
+abstract final class PaynRadius {
+  static const double chip = 999;
+  static const double button = 18;
+  static const double card = 28;
+  static const double panel = 32;
+  static const double badge = 16;
+}
 
 abstract final class PaynColors {
-  static const background = Color(0xFFF5F5F7);
+  static const background = Color(0xFFF3F5F2);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceDim = Color(0xFFF1F2F4);
-  static const text = Color(0xFF0D0D0D);
-  static const textSecondary = Color(0xFF5F6368);
-  static const textTertiary = Color(0xFF9AA0A6);
-  static const outline = Color(0xFFE6E8EC);
-  static const outlineSubtle = Color(0xFFEEF0F3);
-  static const accent = Color(0xFF1A73E8);
-  static const accentSurface = Color(0xFFE8F0FE);
-  static const positive = Color(0xFF137333);
-  static const positiveSurface = Color(0xFFE6F4EA);
-  static const warning = Color(0xFFE37400);
-  static const warningSurface = Color(0xFFFEF3E2);
+  static const surfaceDim = Color(0xFFF5F7F4);
+  static const text = Color(0xFF111827);
+  static const textSecondary = Color(0xFF4B5563);
+  static const textTertiary = Color(0xFF8A94A6);
+  static const outline = Color(0xFFDDE3DD);
+  static const outlineSubtle = Color(0xFFE9EEEA);
+  static const accent = Color(0xFF0F8A4B);
+  static const accentStrong = Color(0xFF0B6D3B);
+  static const accentSurface = Color(0xFFDDF4E7);
+  static const positive = Color(0xFF0F8A4B);
+  static const positiveSurface = Color(0xFFE7F7EF);
+  static const warning = Color(0xFFC46B1A);
+  static const warningSurface = Color(0xFFFFF1E5);
+  static const info = Color(0xFF1F6FEB);
+  static const infoSurface = Color(0xFFE8F3FF);
   static const error = Color(0xFFD93025);
 }
 
@@ -80,7 +92,7 @@ ThemeData buildAppTheme() {
     colorScheme: colorScheme,
     scaffoldBackgroundColor: bg,
     canvasColor: bg,
-    splashColor: Colors.black.withValues(alpha: 0.04),
+    splashColor: PaynColors.accent.withValues(alpha: 0.08),
     highlightColor: Colors.transparent,
     dividerColor: ol,
     textTheme: tt.copyWith(
@@ -149,10 +161,10 @@ ThemeData buildAppTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: sf,
-      indicatorColor: Colors.black.withValues(alpha: 0.06),
-      surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.transparent,
-      height: 72,
+        indicatorColor: PaynColors.accentSurface,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        height: 76,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return tt.labelMedium?.copyWith(
@@ -174,20 +186,22 @@ ThemeData buildAppTheme() {
       margin: EdgeInsets.zero,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shadowColor: Colors.black.withValues(alpha: 0.08),
+      shadowColor: Colors.black.withValues(alpha: 0.06),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(PaynRadius.card),
         side: BorderSide(color: ol),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: tx,
+        backgroundColor: PaynColors.accent,
         foregroundColor: sf,
         disabledBackgroundColor: ol,
         disabledForegroundColor: txTer,
         minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(PaynRadius.button),
+        ),
         textStyle: tt.labelLarge?.copyWith(
           fontSize: 14,
           fontWeight: FontWeight.w700,
@@ -202,7 +216,9 @@ ThemeData buildAppTheme() {
         backgroundColor: sf,
         side: BorderSide(color: ol),
         minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(PaynRadius.button),
+        ),
         textStyle: tt.labelLarge?.copyWith(fontSize: 14),
         padding: const EdgeInsets.symmetric(horizontal: 24),
       ),
@@ -214,7 +230,7 @@ ThemeData buildAppTheme() {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       labelStyle: tt.labelMedium?.copyWith(fontSize: 13, color: tx, fontWeight: FontWeight.w600),
       secondaryLabelStyle: tt.labelMedium?.copyWith(fontSize: 13, color: tx, fontWeight: FontWeight.w600),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       showCheckmark: false,
     ),
     bottomSheetTheme: BottomSheetThemeData(
@@ -223,7 +239,7 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(PaynRadius.card)),
       ),
     ),
     snackBarTheme: SnackBarThemeData(
@@ -243,6 +259,7 @@ ThemeData buildAppTheme() {
         side: WidgetStatePropertyAll(BorderSide(color: ol)),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          
         ),
         visualDensity: VisualDensity.compact,
       ),
@@ -263,7 +280,7 @@ ThemeData buildAppTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: tx, width: 1.5),
+        borderSide: const BorderSide(color: PaynColors.accent, width: 1.5),
       ),
     ),
     sliderTheme: SliderThemeData(

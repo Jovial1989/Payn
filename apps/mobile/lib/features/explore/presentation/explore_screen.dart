@@ -15,14 +15,34 @@ import 'package:payn_mobile/shared/widgets/offer_card.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
-class ExploreScreen extends StatelessWidget {
+enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
+
+class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
+
+  @override
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  _ExploreSort _sort = _ExploreSort.bestMatch;
+  bool _showSkeleton = false;
+
+  void _pulseLoading() {
+    if (!mounted) return;
+    setState(() => _showSkeleton = true);
+    Future<void>.delayed(const Duration(milliseconds: 220), () {
+      if (mounted) {
+        setState(() => _showSkeleton = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
-    final results = controller.exploreVisibleResults;
+    final results = _sortResults(controller.exploreVisibleResults);
     final usingFallback = controller.isUsingExploreFallback;
 
     return SafeArea(
@@ -58,6 +78,7 @@ class ExploreScreen extends StatelessWidget {
                     count: controller.activeFilterCount,
                     onTap: () {
                       HapticFeedback.selectionClick();
+                      _pulseLoading();
                       _openFilterSheet(context, controller);
                     },
                   ),
@@ -66,70 +87,109 @@ class ExploreScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Search ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: SizedBox(
-                height: 48,
-                child: TextField(
-                  onChanged: (value) {
-                    controller.updateExploreFilters(
-                      controller.exploreFilters.copyWith(query: value),
-                    );
-                  },
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: PaynColors.text,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Search providers or products',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    suffixIcon:
-                        controller.exploreFilters.query.isEmpty
-                            ? null
-                            : IconButton(
-                              onPressed: () {
-                                controller.updateExploreFilters(
-                                  controller.exploreFilters.copyWith(query: ''),
-                                );
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyExploreControls(
+              minExtent: 176,
+              maxExtent: 176,
+              child: Container(
+                color: PaynColors.background.withValues(alpha: 0.96),
+                padding: const EdgeInsets.only(top: 10, bottom: 12),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: SizedBox(
+                        height: 48,
+                        child: TextField(
+                          onChanged: (value) {
+                            _pulseLoading();
+                            controller.updateExploreFilters(
+                              controller.exploreFilters.copyWith(query: value),
+                            );
+                          },
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: PaynColors.text,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search providers or products',
+                            prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                            suffixIcon:
+                                controller.exploreFilters.query.isEmpty
+                                    ? null
+                                    : IconButton(
+                                      onPressed: () {
+                                        _pulseLoading();
+                                        controller.updateExploreFilters(
+                                          controller.exploreFilters.copyWith(query: ''),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.close_rounded, size: 16),
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 44,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: PaynCategory.values.length + 1,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            final selected =
+                                controller.selectedExploreCategory == null;
+                            return _ControlChip(
+                              label: 'All ${controller.exploreResults.length}',
+                              selected: selected,
+                              onTap: () {
+                                _pulseLoading();
+                                controller.setExploreCategory(null);
                               },
-                              icon: const Icon(Icons.close_rounded, size: 16),
-                            ),
-                  ),
+                            );
+                          }
+                          final category = PaynCategory.values[index - 1];
+                          final count = controller.categoryCounts[category] ?? 0;
+                          return _ControlChip(
+                            label: '${category.label} $count',
+                            selected:
+                                controller.selectedExploreCategory == category,
+                            onTap: () {
+                              _pulseLoading();
+                              controller.setExploreCategory(category);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 40,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _ExploreSort.values.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final option = _ExploreSort.values[index];
+                          return _ControlChip(
+                            label: _sortLabel(option),
+                            selected: _sort == option,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _pulseLoading();
+                              setState(() => _sort = option);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ),
-
-          // ── Category chips ──
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                itemCount: PaynCategory.values.length + 1,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    final selected = controller.selectedExploreCategory == null;
-                    return ChoiceChip(
-                      selected: selected,
-                      label: Text('All ${controller.exploreResults.length}'),
-                      onSelected: (_) => controller.setExploreCategory(null),
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }
-                  final category = PaynCategory.values[index - 1];
-                  final count = controller.categoryCounts[category] ?? 0;
-                  return ChoiceChip(
-                    selected: controller.selectedExploreCategory == category,
-                    label: Text('${category.label} $count'),
-                    onSelected: (_) => controller.setExploreCategory(category),
-                    visualDensity: VisualDensity.compact,
-                  );
-                },
               ),
             ),
           ),
@@ -210,32 +270,107 @@ class ExploreScreen extends StatelessWidget {
           // ── Results ──
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            sliver: SliverList.separated(
-              itemCount: results.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final item = results[index];
-                return OfferCard(
-                  offer: item.offer,
-                  reasons: item.reasons,
-                  tradeoff: item.tradeoff,
-                  saved: controller.isSaved(item.offer.id),
-                  onTap: () => context.push('/offer/${item.offer.id}'),
-                  onSave: () => controller.toggleSaved(item.offer.id),
-                  onProviderTap:
-                      () =>
-                          showProviderHandoffSheet(context, offer: item.offer),
-                  showCategory: controller.selectedExploreCategory == null,
-                  rankLabel: '#${index + 1}',
-                );
-              },
-            ),
+            sliver:
+                _showSkeleton
+                    ? SliverList.separated(
+                      itemCount: 3,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder:
+                          (context, index) => const _OfferCardSkeleton(),
+                    )
+                    : SliverList.separated(
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final item = results[index];
+                        return OfferCard(
+                          offer: item.offer,
+                          reasons: item.reasons,
+                          tradeoff: item.tradeoff,
+                          saved: controller.isSaved(item.offer.id),
+                          onTap: () => context.push('/offer/${item.offer.id}'),
+                          onSave: () => controller.toggleSaved(item.offer.id),
+                          onProviderTap:
+                              () => showProviderHandoffSheet(
+                                context,
+                                offer: item.offer,
+                              ),
+                          showCategory:
+                              controller.selectedExploreCategory == null,
+                          rankLabel: '#${index + 1}',
+                        );
+                      },
+                    ),
           ),
 
-          const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 112 + MediaQuery.paddingOf(context).bottom,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  List<RankedOffer> _sortResults(List<RankedOffer> input) {
+    final results = List<RankedOffer>.from(input);
+
+    switch (_sort) {
+      case _ExploreSort.lowestFee:
+        results.sort((a, b) => _metricScore(a.offer) - _metricScore(b.offer));
+        break;
+      case _ExploreSort.fastest:
+        results.sort((a, b) => _speedScore(a.offer) - _speedScore(b.offer));
+        break;
+      case _ExploreSort.recommended:
+        results.sort(
+          (a, b) =>
+              _recommendationScore(b.offer).compareTo(
+                _recommendationScore(a.offer),
+              ),
+        );
+        break;
+      case _ExploreSort.bestMatch:
+        results.sort((a, b) => b.score.compareTo(a.score));
+        break;
+    }
+
+    return results;
+  }
+
+  int _metricScore(PaynOffer offer) {
+    if (offer.metrics.isEmpty) return 999999;
+    final value = offer.metrics.first.value.replaceAll(RegExp(r'[^0-9.]'), '');
+    return (double.tryParse(value) ?? 999999).round();
+  }
+
+  int _speedScore(PaynOffer offer) {
+    final text = [
+      offer.subtitle.toLowerCase(),
+      ...offer.bestFor.map((item) => item.toLowerCase()),
+    ].join(' ');
+    if (text.contains('instant')) return 0;
+    if (text.contains('same day')) return 1;
+    if (text.contains('next day')) return 2;
+    return 3;
+  }
+
+  double _recommendationScore(PaynOffer offer) {
+    return offer.affiliatePriorityScore + (offer.bestFor.length * 0.2);
+  }
+
+  String _sortLabel(_ExploreSort option) {
+    switch (option) {
+      case _ExploreSort.bestMatch:
+        return 'Best match';
+      case _ExploreSort.lowestFee:
+        return 'Lowest fee';
+      case _ExploreSort.fastest:
+        return 'Fastest';
+      case _ExploreSort.recommended:
+        return 'Recommended';
+    }
   }
 
   Future<void> _openFilterSheet(
@@ -417,6 +552,167 @@ class ExploreScreen extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _StickyExploreControls extends SliverPersistentHeaderDelegate {
+  const _StickyExploreControls({
+    required this.minExtent,
+    required this.maxExtent,
+    required this.child,
+  });
+
+  @override
+  final double minExtent;
+
+  @override
+  final double maxExtent;
+
+  final Widget child;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyExploreControls oldDelegate) {
+    return oldDelegate.child != child;
+  }
+}
+
+class _ControlChip extends StatelessWidget {
+  const _ControlChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? PaynColors.accent : Colors.white,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected ? Colors.transparent : PaynColors.outlineSubtle,
+            ),
+            boxShadow:
+                selected
+                    ? <BoxShadow>[
+                      BoxShadow(
+                        color: PaynColors.accent.withValues(alpha: 0.18),
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                    : null,
+          ),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: selected ? Colors.white : PaynColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OfferCardSkeleton extends StatelessWidget {
+  const _OfferCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(PaynRadius.card),
+        border: Border.all(color: PaynColors.outlineSubtle),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              _SkeletonBox(width: 52, height: 52, radius: 16),
+              SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _SkeletonBox(width: 84, height: 12, radius: 999),
+                    SizedBox(height: 10),
+                    _SkeletonBox(width: 180, height: 18, radius: 999),
+                    SizedBox(height: 8),
+                    _SkeletonBox(width: 140, height: 14, radius: 999),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18),
+          _SkeletonBox(width: double.infinity, height: 150, radius: 24),
+          SizedBox(height: 18),
+          Row(
+            children: <Widget>[
+              Expanded(child: _SkeletonBox(width: double.infinity, height: 46, radius: 999)),
+              SizedBox(width: 10),
+              Expanded(child: _SkeletonBox(width: double.infinity, height: 46, radius: 999)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    required this.radius,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.35, end: 0.8),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeInOut,
+      builder: (context, value, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: PaynColors.surfaceDim.withValues(alpha: value),
+            borderRadius: BorderRadius.circular(radius),
+          ),
+        );
+      },
+      onEnd: () {},
     );
   }
 }

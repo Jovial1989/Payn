@@ -42,39 +42,20 @@ class _OfferCardState extends State<OfferCard> {
     final theme = Theme.of(context);
     final primaryMetric =
         widget.offer.metrics.isNotEmpty ? widget.offer.metrics.first : null;
-    final tags = <_CardTagData>[];
-
-    if (widget.rankLabel != null) {
-      tags.add(
-        _CardTagData(
-          label: widget.rankLabel!,
-          background: PaynColors.accentSurface,
-          foreground: PaynColors.accent,
-        ),
-      );
-    }
-
-    for (final value in widget.offer.bestFor.take(2)) {
-      tags.add(_tagData(value, isPrimary: true));
-    }
-
-    for (final value in widget.reasons.take(1)) {
-      if (tags.any((tag) => tag.label == value)) {
-        continue;
-      }
-      tags.add(_tagData(value));
-    }
-
-    if (widget.showCategory &&
-        !tags.any((tag) => tag.label == widget.offer.category.label)) {
-      tags.add(
-        _CardTagData(
-          label: widget.offer.category.label,
-          background: PaynColors.surfaceDim,
-          foreground: PaynColors.textSecondary,
-        ),
-      );
-    }
+    final badgeLabel = _decisionLabel();
+    final highlightText =
+        widget.reasons.isNotEmpty ? widget.reasons.first : widget.tradeoff;
+    final benefits =
+        <String>[
+              ...widget.offer.bestFor,
+              ...widget.reasons,
+              if (widget.showCategory) widget.offer.category.label,
+            ]
+            .map((value) => value.trim())
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .take(3)
+            .toList();
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -88,14 +69,19 @@ class _OfferCardState extends State<OfferCard> {
           curve: Curves.easeOutCubic,
           transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFFFFF),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFEAEAEA)),
+            color: PaynColors.surface,
+            borderRadius: BorderRadius.circular(PaynRadius.card),
+            border: Border.all(
+              color:
+                  _hovered
+                      ? PaynColors.accent.withValues(alpha: 0.24)
+                      : PaynColors.outlineSubtle,
+            ),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withValues(alpha: _hovered ? 0.07 : 0.03),
-                blurRadius: _hovered ? 24 : 16,
-                offset: Offset(0, _hovered ? 6 : 3),
+                color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.05),
+                blurRadius: _hovered ? 34 : 20,
+                offset: Offset(0, _hovered ? 14 : 8),
               ),
             ],
           ),
@@ -103,12 +89,12 @@ class _OfferCardState extends State<OfferCard> {
             color: Colors.transparent,
             child: InkWell(
               onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(PaynRadius.card),
               onTapDown: (_) => setState(() => _pressed = true),
               onTapUp: (_) => setState(() => _pressed = false),
               onTapCancel: () => setState(() => _pressed = false),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(PaynSpace.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -121,14 +107,27 @@ class _OfferCardState extends State<OfferCard> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
-                                widget.offer.providerName,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: PaynColors.textSecondary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                    widget.offer.providerName,
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: PaynColors.text,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (widget.rankLabel != null)
+                                    _OfferTag(
+                                      label: widget.rankLabel!,
+                                      background: PaynColors.surfaceDim,
+                                      foreground: PaynColors.textSecondary,
+                                    ),
+                                ],
                               ),
                               const SizedBox(height: 6),
                               Text(
@@ -137,7 +136,16 @@ class _OfferCardState extends State<OfferCard> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.45,
-                                  height: 1.12,
+                                  height: 1.08,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.offer.subtitle,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: PaynColors.textSecondary,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -145,31 +153,169 @@ class _OfferCardState extends State<OfferCard> {
                             ],
                           ),
                         ),
-                        if (primaryMetric != null) ...<Widget>[
-                          const SizedBox(width: 14),
-                          _MetricEmphasis(metric: primaryMetric),
-                        ],
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            _OfferTag(
+                              label: badgeLabel,
+                              background: PaynColors.accentSurface,
+                              foreground: PaynColors.accent,
+                            ),
+                            const SizedBox(height: 10),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 110),
+                              child: Text(
+                                badgeLabel,
+                                textAlign: TextAlign.right,
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: PaynColors.text,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    if (tags.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 18),
+                    Container(
+                      padding: const EdgeInsets.all(PaynSpace.lg),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFE3EBE6)),
+                        gradient: const LinearGradient(
+                          colors: <Color>[
+                            Color(0xFFFDFEFD),
+                            Color(0xFFF7FAF8),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          if (primaryMetric != null)
+                            Text(
+                              primaryMetric.label.toUpperCase(),
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: PaynColors.textTertiary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.6,
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          Text(
+                            primaryMetric?.value ?? 'On request',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                              letterSpacing: -1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            widget.offer.subtitle,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: PaynColors.textSecondary,
+                              height: 1.45,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(PaynSpace.md),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: PaynColors.outlineSubtle,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Highlight',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: PaynColors.accent,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  badgeLabel,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  highlightText,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: PaynColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (benefits.isNotEmpty) ...<Widget>[
                       const SizedBox(height: 16),
                       Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
+                        spacing: 8,
+                        runSpacing: 8,
                         children:
-                            tags
-                                .take(4)
+                            benefits
                                 .map(
-                                  (tag) => _OfferTag(
-                                    label: tag.label,
-                                    background: tag.background,
-                                    foreground: tag.foreground,
+                                  (item) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFBFCFB),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: const Color(0xFFE6ECE8),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: const BoxDecoration(
+                                            color: PaynColors.accent,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            item,
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  color:
+                                                      PaynColors.textSecondary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 )
                                 .toList(),
                       ),
                     ],
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     Container(height: 1, color: PaynColors.outlineSubtle),
                     const SizedBox(height: 16),
                     Row(
@@ -184,9 +330,9 @@ class _OfferCardState extends State<OfferCard> {
                             onPressed: widget.onTap,
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 46),
-                              side: const BorderSide(color: Color(0xFFEAEAEA)),
+                              side: const BorderSide(color: PaynColors.outline),
                             ),
-                            child: const Text('Details'),
+                            child: const Text('View offer'),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -195,8 +341,9 @@ class _OfferCardState extends State<OfferCard> {
                             onPressed: widget.onProviderTap,
                             style: FilledButton.styleFrom(
                               minimumSize: const Size(0, 46),
+                              backgroundColor: PaynColors.accent,
                             ),
-                            child: const Text('Check rate'),
+                            child: const Text('Continue'),
                           ),
                         ),
                       ],
@@ -215,69 +362,24 @@ class _OfferCardState extends State<OfferCard> {
     );
   }
 
-  _CardTagData _tagData(String label, {bool isPrimary = false}) {
-    final normalized = label.toLowerCase();
-    if (normalized.contains('fast') || normalized.contains('instant')) {
-      return _CardTagData(
-        label: label,
-        background: PaynColors.accentSurface,
-        foreground: PaynColors.accent,
-      );
+  String _decisionLabel() {
+    final metricText = widget.offer.metrics
+        .map((metric) => metric.value.toLowerCase())
+        .join(' ');
+
+    if (metricText.contains('0%') ||
+        metricText.contains('no fee') ||
+        metricText.contains('free')) {
+      return 'No fees';
     }
-    if (normalized.contains('no fee') ||
-        normalized.contains('top') ||
-        normalized.contains('best') ||
-        normalized.contains('save') ||
-        isPrimary) {
-      return _CardTagData(
-        label: label,
-        background: PaynColors.positiveSurface,
-        foreground: PaynColors.positive,
-      );
+    if (widget.reasons.any(
+      (reason) =>
+          reason.toLowerCase().contains('fast') ||
+          reason.toLowerCase().contains('instant'),
+    )) {
+      return 'Fast';
     }
-
-    return _CardTagData(
-      label: label,
-      background: PaynColors.surfaceDim,
-      foreground: PaynColors.textSecondary,
-    );
-  }
-}
-
-class _MetricEmphasis extends StatelessWidget {
-  const _MetricEmphasis({required this.metric});
-
-  final PaynMetric metric;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      constraints: const BoxConstraints(minWidth: 92),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          Text(
-            metric.label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: PaynColors.textTertiary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            metric.value,
-            textAlign: TextAlign.right,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: PaynColors.text,
-            ),
-          ),
-        ],
-      ),
-    );
+    return 'Best value';
   }
 }
 
@@ -298,7 +400,7 @@ class _OfferTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
@@ -330,7 +432,7 @@ class _SaveButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
-              color: saved ? Colors.transparent : const Color(0xFFEAEAEA),
+              color: saved ? Colors.transparent : PaynColors.outline,
             ),
           ),
         ),
@@ -342,16 +444,4 @@ class _SaveButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CardTagData {
-  const _CardTagData({
-    required this.label,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String label;
-  final Color background;
-  final Color foreground;
 }

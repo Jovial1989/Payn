@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
@@ -132,24 +133,33 @@ class ProviderBadge extends StatelessWidget {
       width: dimension,
       height: dimension,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(compact ? 12 : 16),
-        color: brand.background,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+        borderRadius: BorderRadius.circular(compact ? 14 : 16),
+        color: const Color(0xFFF4F6F4),
+        border: Border.all(color: PaynColors.outlineSubtle),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: compact ? 0.08 : 0.12),
-            blurRadius: compact ? 10 : 18,
+            color: Colors.black.withValues(alpha: compact ? 0.05 : 0.06),
+            blurRadius: compact ? 10 : 16,
             offset: Offset(0, compact ? 4 : 8),
           ),
         ],
       ),
       alignment: Alignment.center,
-      child: Text(
-        brand.mark,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: brand.foreground,
-          fontWeight: FontWeight.w800,
-          fontSize: compact ? 12 : 14,
+      child: Container(
+        width: dimension - 8,
+        height: dimension - 8,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(compact ? 12 : 14),
+          color: brand.background,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          brand.mark,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: brand.foreground,
+            fontWeight: FontWeight.w800,
+            fontSize: compact ? 12 : 14,
+          ),
         ),
       ),
     );

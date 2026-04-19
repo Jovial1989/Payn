@@ -121,21 +121,28 @@ class _SplashScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              width: 64,
-              height: 64,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
-                color: PaynColors.text,
-                borderRadius: BorderRadius.circular(18),
+                gradient: const LinearGradient(
+                  colors: <Color>[
+                    PaynColors.accent,
+                    PaynColors.accentStrong,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.10),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: PaynColors.accent.withValues(alpha: 0.22),
+                    blurRadius: 32,
+                    offset: const Offset(0, 14),
                   ),
                 ],
               ),
               alignment: Alignment.center,
-              child: const PaynMark(size: 22, strokeWidth: 2.8),
+              child: const PaynMark(size: 24, strokeWidth: 2.8),
             ),
             const SizedBox(height: 18),
             const Text(
@@ -146,6 +153,18 @@ class _SplashScreen extends StatelessWidget {
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.6,
                 color: PaynColors.text,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Move money with more clarity',
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
+                color: PaynColors.textSecondary,
                 decoration: TextDecoration.none,
               ),
             ),

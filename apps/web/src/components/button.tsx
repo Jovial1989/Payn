@@ -19,18 +19,18 @@ export function buttonStyles({
     size === "md" && "h-11 rounded-full px-6 text-sm",
     size === "lg" && "h-12 rounded-full px-7 text-base",
     variant === "primary" &&
-      "bg-black text-white shadow-subtle hover:bg-gray-800 active:bg-gray-900",
+      "bg-accent-emerald text-white shadow-subtle hover:bg-accent-emerald-strong active:scale-[0.99]",
     variant === "secondary" &&
-      "border border-line-strong bg-white text-ink hover:bg-bg-surface",
+      "border border-line bg-white text-ink hover:border-accent-emerald/30 hover:bg-bg-surface",
     variant === "ghost" &&
-      "bg-transparent text-ink hover:bg-bg-surface",
+      "bg-transparent text-ink hover:bg-bg-surface hover:text-accent-emerald-strong",
     fullWidth && "w-full",
   );
 }
 
 export function providerCtaStyles({ fullWidth = false }: { fullWidth?: boolean } = {}) {
   return clsx(
-    "inline-flex min-h-11 min-w-[132px] items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-gray-800 active:bg-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 sm:min-w-[148px]",
+    "inline-flex min-h-11 min-w-[132px] items-center justify-center rounded-full bg-accent-emerald px-5 py-2.5 text-sm font-semibold text-white shadow-subtle transition-all duration-200 hover:bg-accent-emerald-strong active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-emerald/25 focus-visible:ring-offset-2 sm:min-w-[148px]",
     fullWidth && "w-full",
   );
 }

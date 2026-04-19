@@ -5,49 +5,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Background layers (light)
         bg: {
-          deep: "#F8F9FA",
+          deep: "#F3F5F2",
           DEFAULT: "#FFFFFF",
           elevated: "#FFFFFF",
-          surface: "#F4F5F7",
-          overlay: "#F0F1F3",
+          surface: "#F5F7F4",
+          overlay: "#EEF2EE",
         },
-        // Primary - pure black for CTAs
         primary: {
-          DEFAULT: "#000000",
-          soft: "rgba(0, 0, 0, 0.04)",
-          glow: "rgba(0, 0, 0, 0.06)",
+          DEFAULT: "#0F1720",
+          soft: "rgba(15, 23, 32, 0.04)",
+          glow: "rgba(15, 23, 32, 0.08)",
         },
-        // Accent - subtle blue for badges
         accent: {
-          blue: "#E8F0FE",
-          "blue-text": "#1A73E8",
-          green: "#E6F4EA",
-          "green-text": "#137333",
-          purple: "#F3E8FD",
-          "purple-text": "#7B2FF2",
-          orange: "#FEF3E2",
-          "orange-text": "#E37400",
+          blue: "#E8F3FF",
+          "blue-text": "#1F6FEB",
+          green: "#E7F7EF",
+          "green-text": "#0F8A4B",
+          emerald: "#0F8A4B",
+          "emerald-soft": "#DDF4E7",
+          "emerald-strong": "#0B6D3B",
+          orange: "#FFF1E5",
+          "orange-text": "#C46B1A",
         },
-        // Text
         ink: {
-          DEFAULT: "#000000",
-          secondary: "#6B7280",
-          tertiary: "#9CA3AF",
+          DEFAULT: "#111827",
+          secondary: "#4B5563",
+          tertiary: "#8A94A6",
         },
-        // Borders
         line: {
-          DEFAULT: "rgba(0, 0, 0, 0.06)",
-          strong: "rgba(0, 0, 0, 0.10)",
-          active: "rgba(0, 0, 0, 0.20)",
+          DEFAULT: "rgba(17, 24, 39, 0.08)",
+          strong: "rgba(17, 24, 39, 0.14)",
+          active: "rgba(15, 138, 75, 0.35)",
         },
       },
       boxShadow: {
-        subtle: "0 1px 2px rgba(0, 0, 0, 0.04)",
-        card: "0 4px 20px rgba(0, 0, 0, 0.04)",
-        elevated: "0 8px 30px rgba(0, 0, 0, 0.06)",
-        "card-hover": "0 12px 40px rgba(0, 0, 0, 0.08)",
+        subtle: "0 8px 20px rgba(15, 23, 32, 0.04)",
+        card: "0 10px 30px rgba(15, 23, 32, 0.05)",
+        elevated: "0 18px 48px rgba(15, 23, 32, 0.08)",
+        "card-hover": "0 22px 56px rgba(15, 23, 32, 0.1)",
         glow: "0 0 0 rgba(0, 0, 0, 0)",
         "glow-strong": "0 0 0 rgba(0, 0, 0, 0)",
       },
@@ -71,6 +67,7 @@ const config: Config = {
         "fade-in": "fadeIn 0.5s ease-out",
         "slide-up": "slideUp 0.5s ease-out",
         "float": "float 6s ease-in-out infinite",
+        shimmer: "shimmer 1.8s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -84,6 +81,10 @@ const config: Config = {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
       },
     },

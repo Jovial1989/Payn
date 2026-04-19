@@ -3,7 +3,7 @@
 import type { MarketplaceLocale, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
-import { startTransition, useCallback, useDeferredValue, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/components/button";
 import { ComparisonTable, ComparisonTray } from "@/components/comparison-table";
@@ -40,11 +40,10 @@ import { getUiCopy } from "@/lib/ui-copy";
 const PAGE_SIZE = 12;
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "relevance", label: "Relevance" },
-  { value: "apr", label: "APR (low to high)" },
-  { value: "fees", label: "Fees (low to high)" },
-  { value: "provider", label: "Provider (A-Z)" },
-  { value: "updated", label: "Recently updated" },
+  { value: "relevance", label: "Best match" },
+  { value: "fees", label: "Lowest fee" },
+  { value: "speed", label: "Fastest" },
+  { value: "recommended", label: "Recommended" },
 ];
 
 function totalCategoryCount(counts: Record<(typeof marketplaceCategories)[number], number>) {
@@ -61,6 +60,26 @@ function formatAmountLabel(value: number, locale: MarketplaceLocale, currency: s
   return formatter.format(value);
 }
 
+function buildEmptySuggestions(selectedCategory: ExplorerCategory, locale: MarketplaceLocale) {
+  return [
+    locale === "de" ? "Clear filters" : "Clear filters",
+    selectedCategory === "all"
+      ? locale === "de"
+        ? "Open cards"
+        : "Open cards"
+      : locale === "de"
+        ? "Show all categories"
+        : "Show all categories",
+    selectedCategory === "transfers"
+      ? locale === "de"
+        ? "Try exchange"
+        : "Try exchange"
+      : locale === "de"
+        ? "Try transfers"
+        : "Try transfers",
+  ];
+}
+
 export function MarketplaceExplorer({
   offers,
   initialMarket,
@@ -73,6 +92,7 @@ export function MarketplaceExplorer({
   mode: "home" | "category";
 }) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const { user, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [selectedCategory, setSelectedCategory] = useState<ExplorerCategory>(initialCategory);
@@ -102,6 +122,19 @@ export function MarketplaceExplorer({
     selectedCategory === "all"
       ? dictionary.explorer.description
       : dictionary.categoryDescriptions[selectedCategory];
+  const isFiltering = deferredQuery !== filters.query || isPending;
+  const emptySuggestions = buildEmptySuggestions(selectedCategory, preferences.locale);
+  const summaryChips = useMemo(
+    () =>
+      [
+        preferences.countryLabel,
+        filters.provider,
+        filters.feature,
+        filters.subtype,
+        filters.query ? `Search: ${filters.query}` : "",
+      ].filter((value): value is string => Boolean(value)),
+    [filters.feature, filters.provider, filters.query, filters.subtype, preferences.countryLabel],
+  );
 
   const updateCategory = (nextCategory: ExplorerCategory) => {
     setSelectedCategory(nextCategory);
@@ -157,10 +190,10 @@ export function MarketplaceExplorer({
   const compareOffers = offers.filter((o) => compareIds.has(o.id));
 
   return (
-    <div className="grid gap-6">
-      <section className="rounded-[32px] border border-line bg-white p-5 shadow-card sm:p-7">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div className="mx-auto grid max-w-6xl gap-6">
+      <section className="premium-card rounded-[32px] p-5 sm:p-7">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
                 {dictionary.explorer.eyebrow}
@@ -180,39 +213,8 @@ export function MarketplaceExplorer({
             )}
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <label className="grid gap-2 rounded-[24px] border border-line bg-bg-surface p-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                {dictionary.filters.countryLabel}
-              </span>
-              <select
-                value={preferences.country}
-                onChange={(event) => updateCountry(event.target.value)}
-                className="h-11 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink outline-none transition-colors focus:border-black"
-              >
-                {preferences.availableCountries.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2 rounded-[24px] border border-line bg-bg-surface p-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                {dictionary.filters.searchLabel}
-              </span>
-              <input
-                value={filters.query}
-                onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
-                placeholder={dictionary.filters.searchPlaceholder}
-                className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition-colors placeholder:text-ink-tertiary focus:border-black"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-3 rounded-[28px] border border-line bg-[#FBFBFA] p-4">
-            <div className="flex flex-wrap gap-2">
+          <div className="sticky top-[76px] z-20 -mx-2 rounded-[28px] border border-[rgba(17,24,39,0.06)] bg-[rgba(255,255,255,0.86)] p-2 backdrop-blur-xl sm:mx-0">
+            <div className="flex snap-x gap-2 overflow-x-auto pb-1">
               {explorerCategories.map((category) => {
                 const count =
                   category === "all"
@@ -224,17 +226,13 @@ export function MarketplaceExplorer({
                     key={category}
                     type="button"
                     onClick={() => updateCategory(category)}
-                    className={clsx(
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
-                      selectedCategory === category
-                        ? "bg-black text-white"
-                        : "bg-white text-ink-secondary hover:bg-white hover:text-ink",
-                    )}
+                    className="pill-chip shrink-0 snap-start text-sm font-semibold"
+                    data-active={selectedCategory === category}
                   >
                     <span>{dictionary.categories[category]}</span>
                     <span
                       className={clsx(
-                        "rounded-full px-2 py-0.5 text-xs",
+                        "rounded-full px-2 py-0.5 text-[11px]",
                         selectedCategory === category ? "bg-white/15 text-white" : "bg-bg-surface text-ink-tertiary",
                       )}
                     >
@@ -245,13 +243,58 @@ export function MarketplaceExplorer({
               })}
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              <label className="grid gap-2">
+            <div className="mt-3 grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
+              <label className="grid gap-2 rounded-[20px] border border-line bg-bg-surface/80 p-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  {dictionary.filters.countryLabel}
+                </span>
+                <select
+                  value={preferences.country}
+                  onChange={(event) => updateCountry(event.target.value)}
+                  className="h-11 rounded-full border border-line bg-white px-4 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald"
+                >
+                  {preferences.availableCountries.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="grid gap-2 rounded-[20px] border border-line bg-bg-surface/80 p-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  {dictionary.filters.searchLabel}
+                </span>
+                <input
+                  value={filters.query}
+                  onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
+                  placeholder={dictionary.filters.searchPlaceholder}
+                  className="h-11 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors placeholder:text-ink-tertiary focus:border-accent-emerald"
+                />
+              </label>
+            </div>
+
+            <div className="mt-3 flex snap-x gap-2 overflow-x-auto pb-1">
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFilters((current) => ({ ...current, sortBy: option.value }))}
+                  className="pill-chip shrink-0 snap-start text-sm font-semibold"
+                  data-active={filters.sortBy === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
                 <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.providerLabel}</span>
                 <select
                   value={filters.provider}
                   onChange={(event) => setFilters((current) => ({ ...current, provider: event.target.value }))}
-                  className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-black"
+                  className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                 >
                   <option value="">{dictionary.filters.anyProvider}</option>
                   {providerOptions.map((provider) => (
@@ -262,12 +305,12 @@ export function MarketplaceExplorer({
                 </select>
               </label>
 
-              <label className="grid gap-2">
+              <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
                 <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.featureLabel}</span>
                 <select
                   value={filters.feature}
                   onChange={(event) => setFilters((current) => ({ ...current, feature: event.target.value }))}
-                  className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-black"
+                  className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                 >
                   <option value="">{dictionary.filters.anyFeature}</option>
                   {featureOptions.map((feature) => (
@@ -279,12 +322,12 @@ export function MarketplaceExplorer({
               </label>
 
               {(selectedCategory === "insurance" || selectedCategory === "investments") && (
-                <label className="grid gap-2">
+                <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
                   <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.subtypeLabel}</span>
                   <select
                     value={filters.subtype}
                     onChange={(event) => setFilters((current) => ({ ...current, subtype: event.target.value }))}
-                    className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-black"
+                    className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                   >
                     <option value="">{dictionary.filters.anySubtype}</option>
                     {subtypeOptions.map((subtype) => (
@@ -298,10 +341,10 @@ export function MarketplaceExplorer({
 
               {selectedCategory === "loans" && (
                 <>
-                  <label className="grid gap-2">
+                  <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
                     <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.amountLabel}</span>
-                    <div className="rounded-2xl border border-line bg-white px-4 py-3">
-                        <div className="flex items-center justify-between text-sm font-semibold text-ink">
+                    <div className="rounded-[20px] border border-line bg-bg-surface px-4 py-3">
+                      <div className="flex items-center justify-between text-sm font-semibold text-ink">
                         <span>
                           {formatAmountLabel(
                             filters.amount,
@@ -327,12 +370,12 @@ export function MarketplaceExplorer({
                     </div>
                   </label>
 
-                  <label className="grid gap-2">
+                  <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
                     <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.termLabel}</span>
                     <select
                       value={filters.term}
                       onChange={(event) => setFilters((current) => ({ ...current, term: Number(event.target.value) }))}
-                      className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-black"
+                      className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                     >
                       {[12, 24, 36, 48, 60, 72, 84].map((term) => (
                         <option key={term} value={term}>
@@ -356,15 +399,16 @@ export function MarketplaceExplorer({
               </button>
             </div>
           </div>
+
         </div>
       </section>
 
-      <section className="grid gap-5 rounded-[32px] bg-[#F5F5F7] p-4 sm:p-5">
+      <section className="grid gap-5 rounded-[32px] bg-[#F5F7F4] p-4 sm:p-5">
         {selectedCategory === "investments" ? (
           <InvestmentIntelligenceBlock locale={preferences.locale} />
         ) : null}
 
-        <div className="rounded-[28px] border border-[#E2E4E8] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] sm:p-6">
+        <div className="premium-card rounded-[28px] p-5 sm:p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-bold text-ink">
@@ -375,32 +419,18 @@ export function MarketplaceExplorer({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Tag tone="success">{preferences.countryLabel}</Tag>
-              <Tag tone="muted">
-                {providerOptions.length} {dictionary.explorer.providersLabel}
-              </Tag>
-              <label className="inline-flex items-center gap-2 rounded-full bg-bg-surface px-3 py-1.5">
-                <span className="text-xs font-semibold text-ink-tertiary">Sort:</span>
-                <select
-                  value={filters.sortBy}
-                  onChange={(event) =>
-                    setFilters((current) => ({ ...current, sortBy: event.target.value as SortKey }))
-                  }
-                  className="bg-transparent text-xs font-semibold text-ink outline-none"
-                >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {summaryChips.map((chip) => (
+                <Tag key={chip} tone={chip === preferences.countryLabel ? "success" : "muted"}>
+                  {chip}
+                </Tag>
+              ))}
+              <Tag tone="blue">{SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label}</Tag>
             </div>
           </div>
         </div>
 
         {shownOffers.length === 0 && (
-          <div className="rounded-[28px] border border-[#E2E4E8] bg-white p-10 text-center shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+          <div className="premium-card rounded-[28px] p-10 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-bg-surface">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-tertiary">
                 <circle cx="11" cy="11" r="8" />
@@ -411,29 +441,75 @@ export function MarketplaceExplorer({
             <p className="mt-2 max-w-xl justify-self-center text-sm leading-relaxed text-ink-secondary">
               {dictionary.explorer.emptyDescription}
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setFilters(defaultMarketplaceFilters);
-                setSelectedCategory("all");
-              }}
-              className={buttonStyles({ variant: "secondary", size: "md" }) + " mt-5"}
-            >
-              Reset all filters
-            </button>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters(defaultMarketplaceFilters);
+                  setSelectedCategory("all");
+                }}
+                className={buttonStyles({ variant: "secondary", size: "md" })}
+              >
+                {emptySuggestions[0]}
+              </button>
+              <button
+                type="button"
+                onClick={() => updateCategory(selectedCategory === "all" ? "cards" : "all")}
+                className={buttonStyles({ variant: "ghost", size: "md" })}
+              >
+                {emptySuggestions[1]}
+              </button>
+              <button
+                type="button"
+                onClick={() => updateCategory(selectedCategory === "transfers" ? "exchange" : "transfers")}
+                className={buttonStyles({ variant: "ghost", size: "md" })}
+              >
+                {emptySuggestions[2]}
+              </button>
+            </div>
           </div>
         )}
 
-        {shownOffers.map((offer, index) => (
-          <OfferCard
-            key={offer.id}
-            offer={offer}
-            rank={index + 1}
-            locale={preferences.locale}
-            compareSelected={compareIds.has(offer.id)}
-            onToggleCompare={toggleCompare}
-          />
-        ))}
+        {isFiltering
+          ? Array.from({ length: Math.min(3, PAGE_SIZE) }).map((_, index) => (
+              <div key={`skeleton-${index}`} className="premium-card rounded-[28px] p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="skeleton-block h-12 w-12 rounded-[14px]" />
+                    <div className="space-y-2">
+                      <div className="skeleton-block h-3 w-28 rounded-full" />
+                      <div className="skeleton-block h-5 w-48 rounded-full" />
+                      <div className="skeleton-block h-4 w-40 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="skeleton-block h-8 w-24 rounded-full" />
+                    <div className="skeleton-block h-4 w-20 rounded-full" />
+                  </div>
+                </div>
+                <div className="mt-5 skeleton-block h-36 rounded-[24px]" />
+                <div className="mt-5 flex gap-2">
+                  <div className="skeleton-block h-9 w-28 rounded-full" />
+                  <div className="skeleton-block h-9 w-24 rounded-full" />
+                  <div className="skeleton-block h-9 w-32 rounded-full" />
+                </div>
+              </div>
+            ))
+          : shownOffers.map((offer, index) => (
+              <div
+                key={offer.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 45}ms`, animationFillMode: "both" }}
+              >
+                <OfferCard
+                  offer={offer}
+                  rank={index + 1}
+                  locale={preferences.locale}
+                  compareSelected={compareIds.has(offer.id)}
+                  onToggleCompare={toggleCompare}
+                />
+              </div>
+            ))}
 
         {hasMore && (
           <div className="flex flex-col items-center gap-2 py-4">

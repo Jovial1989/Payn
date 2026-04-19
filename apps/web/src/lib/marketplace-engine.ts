@@ -8,7 +8,7 @@ import {
   marketplaceCategories,
 } from "@/lib/marketplace";
 
-export type SortKey = "relevance" | "apr" | "fees" | "provider" | "updated";
+export type SortKey = "relevance" | "fees" | "speed" | "recommended";
 
 export interface MarketplaceFilterState {
   query: string;
@@ -116,20 +116,21 @@ export function filterMarketplaceOffers({
 function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: ExplorerCategory) {
   return [...offers].sort((left, right) => {
     switch (sortBy) {
-      case "apr": {
-        const leftApr = parseMetricRange(getMetricValue(left, ["APR"])).min ?? 999;
-        const rightApr = parseMetricRange(getMetricValue(right, ["APR"])).min ?? 999;
-        return leftApr - rightApr;
-      }
       case "fees": {
         const leftFee = parseMetricRange(getMetricValue(left, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
         const rightFee = parseMetricRange(getMetricValue(right, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
         return leftFee - rightFee;
       }
-      case "provider":
-        return left.providerName.localeCompare(right.providerName);
-      case "updated":
-        return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+      case "speed": {
+        const order = { instant: 0, same_day: 1, next_day: 2, standard: 3 } as const;
+        const leftSpeed = order[left.attributes?.speed ?? "standard"];
+        const rightSpeed = order[right.attributes?.speed ?? "standard"];
+        return leftSpeed - rightSpeed || right.affiliatePriorityScore - left.affiliatePriorityScore;
+      }
+      case "recommended":
+        return Number(Boolean(right.attributes?.isPartner)) - Number(Boolean(left.attributes?.isPartner)) ||
+          (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "") ||
+          right.affiliatePriorityScore - left.affiliatePriorityScore;
       default: {
         if (left.category !== right.category && category === "all") {
           return marketplaceCategories.indexOf(left.category) - marketplaceCategories.indexOf(right.category);

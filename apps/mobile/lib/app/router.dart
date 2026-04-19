@@ -26,7 +26,11 @@ GoRouter createRouter(AppController controller) {
     routes: <RouteBase>[
       GoRoute(
         path: '/locale-gate',
-        builder: (context, state) => const LocaleGateScreen(),
+        pageBuilder:
+            (context, state) => _buildTransitionPage(
+              state: state,
+              child: const LocaleGateScreen(),
+            ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -37,7 +41,11 @@ GoRouter createRouter(AppController controller) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                pageBuilder:
+                    (context, state) => _buildTransitionPage(
+                      state: state,
+                      child: const HomeScreen(),
+                    ),
               ),
             ],
           ),
@@ -45,7 +53,11 @@ GoRouter createRouter(AppController controller) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/explore',
-                builder: (context, state) => const ExploreScreen(),
+                pageBuilder:
+                    (context, state) => _buildTransitionPage(
+                      state: state,
+                      child: const ExploreScreen(),
+                    ),
               ),
             ],
           ),
@@ -53,7 +65,11 @@ GoRouter createRouter(AppController controller) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/saved',
-                builder: (context, state) => const SavedScreen(),
+                pageBuilder:
+                    (context, state) => _buildTransitionPage(
+                      state: state,
+                      child: const SavedScreen(),
+                    ),
               ),
             ],
           ),
@@ -61,7 +77,11 @@ GoRouter createRouter(AppController controller) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/profile',
-                builder: (context, state) => const ProfileScreen(),
+                pageBuilder:
+                    (context, state) => _buildTransitionPage(
+                      state: state,
+                      child: const ProfileScreen(),
+                    ),
               ),
             ],
           ),
@@ -69,21 +89,31 @@ GoRouter createRouter(AppController controller) {
       ),
       GoRoute(
         path: '/offer/:offerId',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final offerId = state.pathParameters['offerId']!;
-          return OfferDetailScreen(offerId: offerId);
+          return _buildTransitionPage(
+            state: state,
+            child: OfferDetailScreen(offerId: offerId),
+          );
         },
       ),
       GoRoute(
         path: '/compare',
-        builder: (context, state) => const CompareScreen(),
+        pageBuilder:
+            (context, state) => _buildTransitionPage(
+              state: state,
+              child: const CompareScreen(),
+            ),
       ),
       GoRoute(
         path: '/auth',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final mode = state.uri.queryParameters['mode'] ?? 'signIn';
-          return AuthScreen(
-            initialMode: mode == 'signUp' ? AuthMode.signUp : AuthMode.signIn,
+          return _buildTransitionPage(
+            state: state,
+            child: AuthScreen(
+              initialMode: mode == 'signUp' ? AuthMode.signUp : AuthMode.signIn,
+            ),
           );
         },
       ),
@@ -96,6 +126,31 @@ GoRouter createRouter(AppController controller) {
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
+      );
+    },
+  );
+}
+
+CustomTransitionPage<void> _buildTransitionPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fade = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.03),
+        end: Offset.zero,
+      ).animate(fade);
+
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(position: slide, child: child),
       );
     },
   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:payn_mobile/core/theme/app_theme.dart';
 
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
@@ -27,7 +28,7 @@ class AppScaffold extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -52,7 +53,12 @@ class AppScaffold extends StatelessWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              0,
+              20,
+              112 + MediaQuery.paddingOf(context).bottom,
+            ),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => Padding(
@@ -84,15 +90,15 @@ class AppPanel extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(PaynRadius.card),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.85),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.16),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -124,10 +130,10 @@ class AppPanelHeader extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.12),
+            color: PaynColors.accentSurface,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: theme.colorScheme.primary),
+          child: Icon(icon, color: PaynColors.accent),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -164,8 +170,8 @@ class AppInfoPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(999),
+        color: PaynColors.accentSurface,
+        borderRadius: BorderRadius.circular(PaynRadius.chip),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.8),
         ),
@@ -195,7 +201,7 @@ class AppBulletRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+          child: Icon(icon, size: 20, color: PaynColors.accent),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -255,7 +261,7 @@ class _EyebrowChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(PaynRadius.chip),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
         ),
@@ -266,7 +272,7 @@ class _EyebrowChip extends StatelessWidget {
           Icon(
             Icons.shield_outlined,
             size: 16,
-            color: theme.colorScheme.primary,
+            color: PaynColors.accent,
           ),
           const SizedBox(width: 8),
           Text(
