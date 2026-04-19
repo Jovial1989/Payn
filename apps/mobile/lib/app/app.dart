@@ -25,6 +25,8 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
   late final AnimationController _splashController;
   late final Animation<double> _splashOpacity;
   bool _splashDone = false;
+  bool _minimumSplashElapsed = false;
+  bool _firstFrameReady = false;
 
   @override
   void initState() {
@@ -61,12 +63,30 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
       ),
     );
 
-    // Brief branded moment (250ms) then fade out.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _firstFrameReady = true);
+      _completeSplashIfReady();
+    });
+
+    // Keep the branded launch surface visible until the app has produced
+    // its first real frame and the minimum splash duration has elapsed.
     Timer(const Duration(milliseconds: 250), () {
       if (!mounted) return;
-      _splashController.forward().then((_) {
-        if (mounted) setState(() => _splashDone = true);
-      });
+      setState(() => _minimumSplashElapsed = true);
+      _completeSplashIfReady();
+    });
+  }
+
+  void _completeSplashIfReady() {
+    if (_splashDone || !_minimumSplashElapsed || !_firstFrameReady) {
+      return;
+    }
+
+    _splashController.forward().then((_) {
+      if (mounted) {
+        setState(() => _splashDone = true);
+      }
     });
   }
 
@@ -91,7 +111,7 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
         builder: (context, child) {
           return Stack(
             children: <Widget>[
-              child ?? const SizedBox.shrink(),
+              child ?? const _SplashScreen(),
               if (!_splashDone)
                 FadeTransition(
                   opacity: ReverseAnimation(_splashOpacity),
