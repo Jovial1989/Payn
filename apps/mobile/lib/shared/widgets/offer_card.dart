@@ -43,8 +43,7 @@ class _OfferCardState extends State<OfferCard> {
     final primaryMetric =
         widget.offer.metrics.isNotEmpty ? widget.offer.metrics.first : null;
     final badgeLabel = _decisionLabel();
-    final highlightText =
-        widget.reasons.isNotEmpty ? widget.reasons.first : widget.tradeoff;
+    final metricNarrative = _metricNarrative(primaryMetric, badgeLabel);
     final benefits =
         <String>[
               ...widget.offer.bestFor,
@@ -142,39 +141,14 @@ class _OfferCardState extends State<OfferCard> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                widget.offer.subtitle,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: PaynColors.textSecondary,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: <Widget>[
-                            _OfferTag(
-                              label: badgeLabel,
-                              background: PaynColors.accentSurface,
-                              foreground: PaynColors.accent,
-                            ),
-                            const SizedBox(height: 10),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 110),
-                              child: Text(
-                                badgeLabel,
-                                textAlign: TextAlign.right,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: PaynColors.text,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
+                        _OfferTag(
+                          label: badgeLabel,
+                          background: PaynColors.accentSurface,
+                          foreground: PaynColors.accent,
                         ),
                       ],
                     ),
@@ -207,61 +181,69 @@ class _OfferCardState extends State<OfferCard> {
                             ),
                           const SizedBox(height: 8),
                           Text(
-                            primaryMetric?.value ?? 'On request',
+                            primaryMetric == null ? 'On request' : primaryMetric.value,
                             style: theme.textTheme.headlineMedium?.copyWith(
-                              fontSize: 34,
+                              fontSize: 28,
                               fontWeight: FontWeight.w800,
-                              height: 1,
+                              height: 1.05,
                               letterSpacing: -1.0,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 6),
                           Text(
-                            widget.offer.subtitle,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: PaynColors.textSecondary,
-                              height: 1.45,
+                            metricNarrative.toUpperCase(),
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: PaynColors.accent,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(PaynSpace.md),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: PaynColors.outlineSubtle,
-                              ),
+                          if (widget.offer.metrics.length > 1) ...<Widget>[
+                            const SizedBox(height: 14),
+                            Container(
+                              height: 1,
+                              color: const Color(0xFFE3EBE6),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Highlight',
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    color: PaynColors.accent,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  badgeLabel,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  highlightText,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: PaynColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 12),
+                            Row(
+                              children: widget.offer.metrics
+                                  .skip(1)
+                                  .take(3)
+                                  .expand<Widget>(
+                                    (m) => <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              m.label.toUpperCase(),
+                                              style: theme.textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    color:
+                                                        PaynColors.textTertiary,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 10,
+                                                    letterSpacing: 1.4,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              m.value,
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                  .toList(),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -276,7 +258,7 @@ class _OfferCardState extends State<OfferCard> {
                                   (item) => Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
-                                      vertical: 10,
+                                      vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFFBFCFB),
@@ -329,10 +311,10 @@ class _OfferCardState extends State<OfferCard> {
                           child: OutlinedButton(
                             onPressed: widget.onTap,
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 46),
+                              minimumSize: const Size(0, 48),
                               side: const BorderSide(color: PaynColors.outline),
                             ),
-                            child: const Text('View offer'),
+                            child: Text(_secondaryCtaLabel()),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -340,10 +322,15 @@ class _OfferCardState extends State<OfferCard> {
                           child: FilledButton(
                             onPressed: widget.onProviderTap,
                             style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 46),
+                              minimumSize: const Size(0, 48),
                               backgroundColor: PaynColors.accent,
                             ),
-                            child: const Text('Continue'),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Flexible(child: Text(_primaryCtaLabel())),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -380,6 +367,56 @@ class _OfferCardState extends State<OfferCard> {
       return 'Fast';
     }
     return 'Best value';
+  }
+
+  String _metricNarrative(PaynMetric? metric, String badgeLabel) {
+    if (metric == null) {
+      return 'Personalized match';
+    }
+
+    final normalized = metric.label.toLowerCase();
+    if (normalized.contains('apr') || normalized.contains('rate')) {
+      return badgeLabel == 'Best value' ? 'Lowest in market' : badgeLabel;
+    }
+    if (normalized.contains('fee') || normalized.contains('spread')) {
+      return 'Transparent total cost';
+    }
+    if (normalized.contains('speed')) {
+      return 'Fastest handoff';
+    }
+    return badgeLabel == 'Fast' ? 'Quick decision flow' : 'Top ranked today';
+  }
+
+  String _primaryCtaLabel() {
+    switch (widget.offer.category) {
+      case PaynCategory.loans:
+        return 'Check my rate';
+      case PaynCategory.cards:
+        return 'See approval odds';
+      case PaynCategory.transfers:
+      case PaynCategory.exchange:
+        return 'Save on fees';
+      case PaynCategory.insurance:
+        return 'Check cover price';
+      case PaynCategory.investments:
+        return 'Open investing details';
+    }
+  }
+
+  String _secondaryCtaLabel() {
+    switch (widget.offer.category) {
+      case PaynCategory.loans:
+        return 'View repayment details';
+      case PaynCategory.cards:
+        return 'See card details';
+      case PaynCategory.transfers:
+      case PaynCategory.exchange:
+        return 'See fee details';
+      case PaynCategory.insurance:
+        return 'View policy details';
+      case PaynCategory.investments:
+        return 'See platform details';
+    }
   }
 }
 

@@ -65,10 +65,10 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text('Payn', style: theme.textTheme.titleLarge),
+                        Text('Best offers for you', style: theme.textTheme.titleLarge),
                         const SizedBox(height: 3),
                         Text(
-                          'Top financial options for ${formatMarketLabel(controller.preferences.market)}',
+                          'Clear, ranked options for ${formatMarketLabel(controller.preferences.market)}.',
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: PaynColors.textTertiary,
                           ),
@@ -86,15 +86,26 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
+                          horizontal: 10,
                           vertical: 8,
                         ),
-                        child: Text(
-                          formatMarketLabel(controller.preferences.market),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: PaynColors.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              formatMarketLabel(controller.preferences.market),
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: PaynColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 14,
+                              color: PaynColors.textTertiary,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -104,63 +115,10 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Stats ──
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: Row(
-                children: <Widget>[
-                  _Stat(
-                    value: '${controller.marketOfferCount}',
-                    label: 'Products',
-                  ),
-                  const SizedBox(width: 10),
-                  _Stat(value: '${controller.savedCount}', label: 'Saved'),
-                  const SizedBox(width: 10),
-                  _Stat(
-                    value: '${controller.activeProviderCount}',
-                    label: 'Providers',
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              child: _ActivitySection(controller: controller),
-            ),
-          ),
-
-          // ── Categories ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              child: Text('Categories', style: theme.textTheme.titleLarge),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final cat = PaynCategory.values[index];
-                final count = controller.categoryCounts[cat] ?? 0;
-                return _CategoryTile(
-                  category: cat,
-                  count: count,
-                  onTap: () {
-                    controller.setExploreCategory(cat);
-                    context.go('/explore');
-                  },
-                );
-              }, childCount: PaynCategory.values.length),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 2.2,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: const _TrustBar(),
             ),
           ),
 
@@ -173,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        'Top offers',
+                        'Best matches today',
                         style: theme.textTheme.titleLarge,
                       ),
                     ),
@@ -217,41 +175,13 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
-          // ── Market signals ──
-          if (controller.trendSignals.isNotEmpty) ...<Widget>[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-                child: Text(
-                  'Market signals',
-                  style: theme.textTheme.titleLarge,
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 116,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                  itemCount: controller.trendSignals.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, index) {
-                    final s = controller.trendSignals[index];
-                    return _SignalChip(signal: s);
-                  },
-                ),
-              ),
-            ),
-          ],
-
           // ── Recently viewed ──
           if (recent.isNotEmpty) ...<Widget>[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
                 child: Text(
-                  'Recently viewed',
+                  'Continue where you left off',
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -271,8 +201,121 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+              child: Row(
+                children: <Widget>[
+                  _Stat(
+                    value: '${controller.savedCount}',
+                    label: 'Saved',
+                  ),
+                  const SizedBox(width: 10),
+                  _Stat(
+                    value: '${controller.activeProviderCount}',
+                    label: 'Providers',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
+      ),
+    );
+  }
+}
+
+class _TrustBar extends StatelessWidget {
+  const _TrustBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: PaynColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: PaynColors.outlineSubtle),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '4.9/5 Trust Rating',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Trusted by people comparing rates, cards, and transfers.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: PaynColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Wrap(
+            spacing: 8,
+            children: <Widget>[
+              _TrustLogo(label: 'Revolut'),
+              _TrustLogo(label: 'Wise'),
+              _TrustLogo(label: 'Klarna'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrustLogo extends StatelessWidget {
+  const _TrustLogo({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = switch (label) {
+      'Revolut' => (const Color(0xFF191C1F), Colors.white),
+      'Wise' => (const Color(0xFF9FE870), const Color(0xFF163300)),
+      'Klarna' => (const Color(0xFFFFB3C7), const Color(0xFF17120F)),
+      _ => (PaynColors.surfaceDim, PaynColors.text),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.$1,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: colors.$2,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -483,129 +526,6 @@ class _Stat extends StatelessWidget {
             Text(label, style: t.textTheme.labelMedium),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CategoryTile extends StatelessWidget {
-  const _CategoryTile({
-    required this.category,
-    required this.count,
-    required this.onTap,
-  });
-  final PaynCategory category;
-  final int count;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: PaynColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: PaynColors.outlineSubtle),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Icon(_icon(category), size: 18, color: PaynColors.textSecondary),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  category.label,
-                  style: t.textTheme.labelLarge,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text('$count offers', style: t.textTheme.labelMedium),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static IconData _icon(PaynCategory c) {
-    switch (c) {
-      case PaynCategory.loans:
-        return Icons.account_balance_outlined;
-      case PaynCategory.cards:
-        return Icons.credit_card_outlined;
-      case PaynCategory.transfers:
-        return Icons.swap_horiz_rounded;
-      case PaynCategory.exchange:
-        return Icons.currency_exchange_rounded;
-      case PaynCategory.insurance:
-        return Icons.shield_outlined;
-      case PaynCategory.investments:
-        return Icons.show_chart_rounded;
-    }
-  }
-}
-
-class _SignalChip extends StatelessWidget {
-  const _SignalChip({required this.signal});
-  final TrendSignal signal;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context);
-    return Container(
-      width: 180,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: PaynColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: PaynColors.outlineSubtle),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            signal.label,
-            style: t.textTheme.labelMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            signal.value,
-            style: t.textTheme.titleMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            signal.detail,
-            style: t.textTheme.labelMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
