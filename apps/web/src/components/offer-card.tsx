@@ -38,6 +38,10 @@ export function OfferCard({
   const supportLabel = primaryMetric
     ? normalizeDisplayText(getMetricLabel(locale, primaryMetric.label))
     : normalizeDisplayText(offer.subtitle);
+  const metricNarrative =
+    primaryMetric && /apr|rate/i.test(primaryMetric.label)
+      ? "Market Leading Rate"
+      : decisionTag;
   const benefitBullets = [
     ...(offer.attributes?.comparisonHighlights ?? []),
     ...offer.bestFor.map((item) => translateUiToken(locale, item)),
@@ -79,9 +83,6 @@ export function OfferCard({
                 {normalizeDisplayText(offer.title)}
               </h3>
             </Link>
-            <p className="mt-1 text-sm text-ink-secondary">
-              {normalizeDisplayText(offer.subtitle)}
-            </p>
           </div>
         </div>
 
@@ -89,10 +90,7 @@ export function OfferCard({
           <Tag tone="accent" className="ml-auto">
             {decisionTag}
           </Tag>
-          <p className="mt-3 max-w-[120px] text-sm font-semibold leading-snug text-ink">
-            {normalizeDisplayText(decisionTag)}
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-ink-secondary">
+          <p className="mt-2 max-w-[120px] text-xs leading-relaxed text-ink-secondary">
             {highlightCopy}
           </p>
         </div>
@@ -107,17 +105,26 @@ export function OfferCard({
             {primaryMetric ? normalizeDisplayText(primaryMetric.value) : "-"}
           </p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
-            {normalizeDisplayText(offer.subtitle)}
+            {metricNarrative.toUpperCase()}
           </p>
         </div>
 
-        <div className="rounded-[20px] border border-[#E3EBE6] bg-white/90 p-4 shadow-[0_8px_20px_rgba(15,23,32,0.04)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-emerald">
-            Highlight
-          </p>
-          <p className="mt-2 text-base font-bold leading-tight text-ink">{normalizeDisplayText(decisionTag)}</p>
-          <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{highlightCopy}</p>
-        </div>
+        {offer.metrics.length > 1 && (
+          <div className="rounded-[20px] border border-[#E3EBE6] bg-white/90 p-4 shadow-[0_8px_20px_rgba(15,23,32,0.04)]">
+            <dl className="grid gap-y-3">
+              {offer.metrics.slice(1, 4).map((m) => (
+                <div key={m.label}>
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-tertiary">
+                    {normalizeDisplayText(getMetricLabel(locale, m.label))}
+                  </dt>
+                  <dd className="mt-0.5 text-sm font-bold text-ink">
+                    {normalizeDisplayText(m.value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -164,6 +171,9 @@ export function OfferCard({
             </button>
           )}
         </div>
+        <p className="mt-3 text-xs leading-relaxed text-ink-tertiary">
+          You are being redirected to a secure partner site. Payn.online does not store your banking credentials.
+        </p>
       </div>
     </article>
   );

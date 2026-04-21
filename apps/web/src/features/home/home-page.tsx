@@ -327,23 +327,28 @@ export function HomePage() {
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.home.heroEyebrow}
             </p>
-            <h1 className="mt-4 max-w-2xl text-display text-ink">{dictionary.home.heroTitle}</h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-secondary sm:text-lg">
+            <h1 className="mt-4 max-w-2xl text-[2rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.75rem] lg:text-display">
+              {dictionary.home.heroTitle}
+            </h1>
+            <p className="mt-4 max-w-[32ch] text-[15px] leading-relaxed text-ink-secondary sm:text-base">
               {dictionary.home.heroSubtitle}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               <Link
                 href={discoverHref}
-                className={buttonStyles({ variant: "primary", size: "lg" })}
+                className={`${buttonStyles({ variant: "primary", size: "lg" })} w-full sm:w-auto`}
               >
                 <ProductEntryActionLabel locale={locale} />
               </Link>
               <Link
                 href={discoverHref}
-                className={buttonStyles({ variant: "secondary", size: "lg" })}
+                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-ink-secondary transition-colors hover:text-ink"
               >
                 {dictionary.home.heroCtaSecondary}
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
             </div>
           </div>
@@ -377,14 +382,28 @@ export function HomePage() {
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           {dictionary.home.steps.map((step, index) => (
-            <div key={step} className="rounded-[18px] border border-line bg-[#F7F8F9] px-5 py-5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-[11px] font-bold text-white">
-                {index + 1}
+            <div key={step} className="relative flex flex-col rounded-[18px] border border-line bg-[#F7F8F9] px-5 py-5">
+              <span className="font-mono text-[2.75rem] font-extrabold leading-none tracking-[-0.05em] text-ink-tertiary/30 select-none">
+                {String(index + 1).padStart(2, "0")}
               </span>
+              <div className="mt-3 flex h-8 w-8 items-center justify-center rounded-xl bg-white text-ink shadow-subtle">
+                {index === 0 && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h7" /><circle cx="19" cy="18" r="3" /><path d="M19 16v2l1 1" /></svg>
+                )}
+                {index === 1 && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="7" height="14" rx="2" /><rect x="14" y="9" width="7" height="10" rx="2" /></svg>
+                )}
+                {index === 2 && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                )}
+              </div>
               <p className="mt-3 text-[14px] font-semibold leading-relaxed text-ink">{step}</p>
             </div>
           ))}
         </div>
+        <p className="mt-4 text-[13px] text-ink-tertiary">
+          No account required to compare.
+        </p>
 
         {/* Divider */}
         <div className="my-8 border-t border-line" />

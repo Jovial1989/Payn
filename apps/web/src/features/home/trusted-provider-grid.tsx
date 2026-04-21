@@ -44,9 +44,11 @@ const trustedProviders: TrustedProvider[] = [
   },
   {
     label: "Klarna",
-    kind: "wordmark",
-    lines: ["Klarna"],
-    className: "text-[11px] font-extrabold tracking-[-0.08em]",
+    kind: "asset",
+    src: "/logos/klarna.svg",
+    scale: 0.9,
+    maxWidthClassName: "max-w-[52px]",
+    maxHeightClassName: "max-h-[18px]",
   },
   {
     label: "Santander",
@@ -107,17 +109,17 @@ const trustedProviders: TrustedProvider[] = [
 function getEyebrow(locale: MarketplaceLocale) {
   switch (locale) {
     case "de":
-      return "Vertrauen führender Finanzanbieter";
+      return "Führende Finanzanbieter im Vergleich";
     case "es":
-      return "Confianza de proveedores financieros líderes";
+      return "Proveedores financieros que comparamos";
     case "fr":
-      return "La confiance des principaux acteurs financiers";
+      return "Les fournisseurs financiers que nous comparons";
     case "it":
-      return "La fiducia dei principali operatori finanziari";
+      return "I fornitori finanziari che confrontiamo";
     case "pt":
-      return "A confiança dos principais provedores financeiros";
+      return "Fornecedores financeiros que comparamos";
     default:
-      return "Trusted by leading financial providers";
+      return "Financial providers we compare";
   }
 }
 
