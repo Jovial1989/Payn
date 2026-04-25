@@ -321,16 +321,16 @@ export function HomePage() {
         {impactSiteVerificationText}
       </p>
 
-      <section className="overflow-hidden rounded-[32px] border border-line bg-white">
-        <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-9 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-8 lg:px-10 lg:py-10">
+      <section className="overflow-hidden rounded-[36px] border border-line bg-white shadow-[0_24px_60px_rgba(15,23,32,0.06)]">
+        <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)] lg:items-center lg:gap-10 lg:px-12 lg:py-12">
           <div className="flex flex-col justify-center">
-            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
-              {dictionary.home.heroEyebrow}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-emerald">
+              Best options for your money
             </p>
-            <h1 className="mt-4 max-w-2xl text-[2rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.75rem] lg:text-display">
+            <h1 className="mt-4 max-w-2xl text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.05em] text-ink sm:text-[3.4rem] lg:text-[4.25rem]">
               {dictionary.home.heroTitle}
             </h1>
-            <p className="mt-4 max-w-[32ch] text-[15px] leading-relaxed text-ink-secondary sm:text-base">
+            <p className="mt-5 max-w-[34ch] text-[15px] leading-relaxed text-ink-secondary sm:text-[17px]">
               {dictionary.home.heroSubtitle}
             </p>
 
@@ -351,6 +351,33 @@ export function HomePage() {
                 </svg>
               </Link>
             </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Ranked offers
+                </p>
+                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
+                  40+
+                </p>
+              </div>
+              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Markets
+                </p>
+                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
+                  EU
+                </p>
+              </div>
+              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Clarity first
+                </p>
+                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
+                  1 tap
+                </p>
+              </div>
+            </div>
           </div>
 
           <HeroProductShowcase
@@ -363,7 +390,7 @@ export function HomePage() {
       <TrustedProviderGrid locale={locale} />
 
       {/* ── How it works + Why Payn — merged into one section ── */}
-      <section className="rounded-[28px] border border-line bg-white p-5 sm:p-6 lg:p-8">
+      <section className="rounded-[32px] border border-line bg-white p-5 shadow-[0_18px_44px_rgba(15,23,32,0.04)] sm:p-6 lg:p-8">
         {/* How it works */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -380,10 +407,10 @@ export function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {dictionary.home.steps.map((step, index) => (
-            <div key={step} className="relative flex flex-col rounded-[18px] border border-line bg-[#F7F8F9] px-5 py-5">
-              <span className="font-mono text-[2.75rem] font-extrabold leading-none tracking-[-0.05em] text-ink-tertiary/30 select-none">
+            <div key={step} className="relative flex flex-col rounded-[24px] border border-line bg-[#F7F9F7] px-5 py-5">
+              <span className="font-mono text-[3rem] font-extrabold leading-none tracking-[-0.05em] text-ink-tertiary/25 select-none">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className="mt-3 flex h-8 w-8 items-center justify-center rounded-xl bg-white text-ink shadow-subtle">
@@ -397,7 +424,7 @@ export function HomePage() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                 )}
               </div>
-              <p className="mt-3 text-[14px] font-semibold leading-relaxed text-ink">{step}</p>
+              <p className="mt-4 text-[15px] font-semibold leading-relaxed tracking-[-0.02em] text-ink">{step}</p>
             </div>
           ))}
         </div>
@@ -424,17 +451,17 @@ export function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-6 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {whyPaynCards.slice(0, 3).map((point, index) => (
             <div
               key={point.title}
-              className="flex h-full flex-col rounded-[18px] border border-line bg-[#F7F8F9] px-4 py-4"
+              className="flex h-full flex-col rounded-[24px] border border-line bg-[#F7F9F7] px-5 py-5"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white text-ink">
                 {whyPaynIcons[index] ?? whyPaynIcons[0]}
               </div>
-              <p className="mt-4 text-[14px] font-semibold text-ink">{point.title}</p>
-              <p className="mt-2 text-[13px] leading-5 text-ink-secondary">
+              <p className="mt-4 text-[15px] font-semibold tracking-[-0.02em] text-ink">{point.title}</p>
+              <p className="mt-2 text-[13px] leading-6 text-ink-secondary">
                 {point.description}
               </p>
             </div>
