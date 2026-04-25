@@ -3,7 +3,6 @@
 import type { MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
-import type { MouseEvent } from "react";
 import { providerCtaStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,11 +11,7 @@ import {
   buildWebAnalyticsProperties,
   trackAnalyticsEvent,
 } from "@/lib/analytics";
-import {
-  buildRedirectTarget,
-  handleExternalRedirect,
-  type RedirectFallbackState,
-} from "@/lib/external-redirect";
+import { buildRedirectTarget } from "@/lib/external-redirect";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 
 export function ProviderLinkButton({
@@ -35,30 +30,36 @@ export function ProviderLinkButton({
   const { user } = useAuth();
   const { country, language } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-  const [redirectState, setRedirectState] = useState<RedirectFallbackState | null>(null);
-  const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const targetUrl =
+  const rawUrl =
     offer.providerUrls?.[country] ??
     offer.affiliateLink ??
     offer.providerWebsiteUrl;
 
-  const affiliateParams = {
+  const affiliateParams = useMemo(() => ({
     utm_source: "payn_web",
     utm_medium: source,
     utm_campaign: offer.category,
     aff_offer_id: offer.id,
     aff_provider: offer.providerName,
     aff_country: country,
-  };
+  }), [source, offer.category, offer.id, offer.providerName, country]);
+
+  const resolvedUrl = useMemo(() => {
+    if (!rawUrl) return null;
+    const resolved = buildRedirectTarget({ rawUrl, affiliateParams });
+    return resolved.ok ? resolved.targetUrl : null;
+  }, [rawUrl, affiliateParams]);
 
   useEffect(() => {
-    if (!errorToast) return;
-    const timeout = window.setTimeout(() => setErrorToast(null), 2600);
-    return () => window.clearTimeout(timeout);
-  }, [errorToast]);
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 2000);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
-  const trackClick = () => {
+  const doTracking = () => {
     trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
       ...buildWebAnalyticsProperties({
         category: offer.category,
@@ -79,7 +80,7 @@ export function ProviderLinkButton({
           providerName: offer.providerName,
           country,
           source,
-          href: targetUrl,
+          href: rawUrl,
         },
       }),
     );
@@ -93,7 +94,7 @@ export function ProviderLinkButton({
             offer_id: offer.id,
             category: offer.category,
             metadata: {
-              href: targetUrl,
+              href: rawUrl,
               source,
               slug: offer.slug,
               providerName: offer.providerName,
@@ -102,69 +103,40 @@ export function ProviderLinkButton({
             },
           });
         } catch {
-          // Tracking should never block the provider handoff.
+          // Tracking must never block the provider handoff.
         }
       })();
     }
   };
 
-  const openProvider = (event?: MouseEvent<HTMLElement>) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-    setRedirectState(null);
-    trackClick();
-
-    const resolved = buildRedirectTarget({
-      rawUrl: targetUrl,
-      affiliateParams,
-    });
-
-    if (!resolved.ok) {
-      setErrorToast(resolved.error);
+  const handleClick = () => {
+    if (!resolvedUrl) {
+      setToast("Provider link is not available yet.");
       return;
     }
 
-    handleExternalRedirect({
-      rawUrl: targetUrl,
-      providerName: offer.providerName,
-      affiliateParams,
-      onConnecting: (state) => setRedirectState(state),
-      onComplete: (resolvedUrl) => {
-        setRedirectState({
-          providerName: offer.providerName,
-          targetUrl: resolvedUrl,
-          message: "You are leaving Payn to continue.",
-          phase: "connecting",
-        });
-        window.setTimeout(() => setRedirectState(null), 900);
-      },
-      onFallback: (state) => {
-        setRedirectState({
-          ...state,
-          message: state.message || "Open provider manually to continue.",
-          phase: "fallback",
-        });
-      },
-    });
-  };
+    // ─── window.open MUST be called first — before state updates, tracking,
+    // or any async work. Browsers end the user-gesture context immediately
+    // after the first async boundary, which causes popup blockers to trigger. ───
+    const popup = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
 
-  const manualOpenHref = useMemo(() => {
-    const resolved = buildRedirectTarget({
-      rawUrl: targetUrl,
-      affiliateParams,
-    });
-    return resolved.ok ? resolved.targetUrl : "";
-  }, [affiliateParams, targetUrl]);
+    // Track after opening so it never delays or blocks the handoff.
+    doTracking();
+
+    if (popup) {
+      // New tab opened. Payn stays here. Show a brief success toast.
+      setToast(`Opening ${offer.providerName}…`);
+    } else {
+      // Browser blocked the new tab. Show fallback modal with a direct link.
+      setFallbackUrl(resolvedUrl);
+    }
+  };
 
   return (
     <>
       <button
         type="button"
-        onClick={openProvider}
-        onMouseDown={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
+        onClick={handleClick}
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
       >
         <svg
@@ -185,50 +157,42 @@ export function ProviderLinkButton({
         {label}
       </button>
 
-      {redirectState ? (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(17,24,39,0.44)] p-4 backdrop-blur-md">
-          <div className="w-full max-w-[360px] rounded-[28px] border border-line bg-white p-5 shadow-[0_24px_60px_rgba(15,23,32,0.2)]">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-[20px] bg-[#111827] text-white shadow-[0_14px_34px_rgba(17,24,39,0.18)]">
-                <span className="absolute inset-0 rounded-[20px] border border-white/12" />
-                <span className="inline-flex h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold tracking-[-0.04em] text-ink">
-                  Opening {redirectState.providerName}
-                </h3>
-                <p className="mt-1 text-sm text-ink-secondary">
-                  You are leaving Payn to continue.
-                </p>
-              </div>
+      {/* Fallback modal — only shown when the browser blocks window.open */}
+      {fallbackUrl ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(17,24,39,0.44)] p-4 backdrop-blur-md"
+          onClick={() => setFallbackUrl(null)}
+        >
+          <div
+            className="w-full max-w-[360px] rounded-[28px] border border-line bg-white p-6 shadow-[0_24px_60px_rgba(15,23,32,0.2)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#F3F4F6]">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#6B7280" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4.5" y="9" width="11" height="7.5" rx="2" />
+                <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
+              </svg>
             </div>
+            <h3 className="mt-4 text-[17px] font-bold tracking-[-0.03em] text-ink">
+              Open in a new tab
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+              Your browser prevented the tab from opening automatically. Click below to visit {offer.providerName}.
+            </p>
 
-            <div className="mt-4 rounded-[18px] bg-bg-surface px-4 py-3 text-sm text-ink-secondary">
-              {redirectState.message}
-            </div>
-
-            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            <div className="mt-5 flex flex-col gap-2.5">
               <a
-                href={manualOpenHref || "#"}
+                href={fallbackUrl}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                onClick={(event) => {
-                  event.stopPropagation();
-                }}
-                className={clsx(
-                  providerCtaStyles({ fullWidth: true }),
-                  !manualOpenHref && "pointer-events-none opacity-50",
-                )}
+                className={clsx(providerCtaStyles({ fullWidth: true }))}
+                onClick={() => setFallbackUrl(null)}
               >
-                Open provider
+                Open {offer.providerName}
               </a>
               <button
                 type="button"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setRedirectState(null);
-                }}
+                onClick={() => setFallbackUrl(null)}
                 className="pressable inline-flex h-11 w-full items-center justify-center rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
               >
                 Back to Payn
@@ -238,9 +202,10 @@ export function ProviderLinkButton({
         </div>
       ) : null}
 
-      {errorToast ? (
-        <div className="fixed bottom-5 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2 text-sm font-medium text-white shadow-[0_14px_34px_rgba(17,24,39,0.22)]">
-          {errorToast}
+      {/* Toast — success or error */}
+      {toast ? (
+        <div className="fixed bottom-5 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2.5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(17,24,39,0.22)]">
+          {toast}
         </div>
       ) : null}
     </>

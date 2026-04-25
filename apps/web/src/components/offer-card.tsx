@@ -43,7 +43,7 @@ export function OfferCard({
   ]
     .map((item) => normalizeDisplayText(item))
     .filter((item, index, items) => Boolean(item) && items.indexOf(item) === index)
-    .slice(0, 3);
+    .slice(0, 2);
   const secondaryMetrics = offer.metrics.slice(1, 4);
 
   return (
@@ -52,7 +52,7 @@ export function OfferCard({
       style={{ ["--motion-delay" as string]: `${Math.min(rank * 70, 280)}ms` }}
       aria-label={`${offer.providerName} ${offer.title}`}
     >
-      <div className="flex flex-col gap-5 p-5 sm:p-6">
+      <div className="flex flex-col gap-6 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -70,8 +70,8 @@ export function OfferCard({
                 </span>
                 {offer.attributes?.isPartner ? <Tag tone="blue">Partner</Tag> : null}
               </div>
-              <Link href={localePath(locale, getOfferHref(offer))} className="mt-0.5 block">
-                <h3 className="line-clamp-2 text-[16px] font-bold leading-snug tracking-[-0.025em] text-ink transition-colors group-hover:text-accent-emerald-strong">
+              <Link href={localePath(locale, getOfferHref(offer))} className="mt-1 block">
+                <h3 className="line-clamp-2 text-[18px] font-bold leading-snug tracking-[-0.03em] text-ink transition-colors group-hover:text-accent-emerald-strong">
                   {normalizeDisplayText(offer.title)}
                 </h3>
               </Link>
@@ -88,11 +88,16 @@ export function OfferCard({
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-tertiary">
             {supportLabel}
           </p>
-          <p className="mt-1.5 text-[2.25rem] font-extrabold leading-none tracking-[-0.055em] text-ink tabular-nums">
+          <p className="mt-2 text-[2.7rem] font-extrabold leading-none tracking-[-0.07em] text-ink tabular-nums">
             {primaryMetric ? normalizeDisplayText(primaryMetric.value) : "—"}
           </p>
+          {benefitBullets[0] ? (
+            <p className="mt-3 text-[14px] font-medium text-ink-secondary">
+              {benefitBullets[0]}
+            </p>
+          ) : null}
           {secondaryMetrics.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
               {secondaryMetrics.map((m) => (
                 <div key={m.label}>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
@@ -108,9 +113,9 @@ export function OfferCard({
         </div>
 
         {/* Benefits — clean dot list */}
-        {benefitBullets.length > 0 && (
+        {benefitBullets.length > 1 && (
           <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-            {benefitBullets.map((item) => (
+            {benefitBullets.slice(1).map((item) => (
               <span key={item} className="flex items-center gap-1.5 text-[13px] text-ink-secondary">
                 <span className="h-1 w-1 shrink-0 rounded-full bg-accent-emerald" />
                 {item}

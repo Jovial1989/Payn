@@ -70,30 +70,66 @@ class _ExploreScreenState extends State<ExploreScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Best options for you', style: theme.textTheme.titleLarge),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Search once, then narrow the strongest matches.',
-                          style: theme.textTheme.labelMedium,
-                        ),
-                      ],
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF7FBF8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(PaynRadius.panel),
+                  border: Border.all(color: PaynColors.outlineSubtle),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
-                  ),
-                  _FilterButton(
-                    count: controller.activeFilterCount,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _pulseLoading();
-                      _openFilterSheet(context, controller);
-                    },
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Best options for you',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontSize: 28,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Search once, then narrow the strongest matches.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: PaynColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            '${results.length} ranked offers in ${formatMarketLabel(controller.preferences.market)}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: PaynColors.accent,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _FilterButton(
+                      count: controller.activeFilterCount,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _pulseLoading();
+                        _openFilterSheet(context, controller);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -113,12 +149,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: PaynColors.surface,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: PaynColors.outlineSubtle),
                           boxShadow: <BoxShadow>[
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.04),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
+                              blurRadius: 24,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -227,27 +264,35 @@ class _ExploreScreenState extends State<ExploreScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    '${results.length} results',
-                    style: theme.textTheme.labelMedium,
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    width: 3,
-                    height: 3,
-                    decoration: const BoxDecoration(
-                      color: PaynColors.textTertiary,
-                      shape: BoxShape.circle,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: PaynColors.surfaceRaised,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: PaynColors.outlineSubtle),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      '${results.length} results',
+                      style: theme.textTheme.labelLarge,
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    formatMarketLabel(controller.preferences.market),
-                    style: theme.textTheme.labelMedium,
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 3,
+                      height: 3,
+                      decoration: const BoxDecoration(
+                        color: PaynColors.textTertiary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formatMarketLabel(controller.preferences.market),
+                      style: theme.textTheme.labelMedium,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -23,6 +23,8 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final picks = controller.homeRecommendations;
     final recent = controller.recentOffers;
+    final trending = controller.trendingOffers.take(3).toList();
+    final categoryCounts = controller.categoryCounts;
 
     return SafeArea(
       bottom: false,
@@ -48,68 +50,74 @@ class HomeScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: PaynColors.text,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.center,
-                    child: const PaynMark(size: 14, strokeWidth: 2.2),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Best offers for you', style: theme.textTheme.titleLarge),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Clear, ranked options for ${formatMarketLabel(controller.preferences.market)}.',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: PaynColors.textTertiary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Material(
-                    color: PaynColors.surfaceDim,
-                    borderRadius: BorderRadius.circular(10),
-                    child: InkWell(
-                      onTap: () => context.go('/profile'),
-                      borderRadius: BorderRadius.circular(10),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              formatMarketLabel(controller.preferences.market),
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: PaynColors.textSecondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 14,
-                              color: PaynColors.textTertiary,
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: PaynColors.text,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
+                        alignment: Alignment.center,
+                        child: const PaynMark(size: 15, strokeWidth: 2.2),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Payn',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      Material(
+                        color: PaynColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        child: InkWell(
+                          onTap: () => context.go('/profile'),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text(
+                                  formatMarketLabel(controller.preferences.market),
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: PaynColors.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 14,
+                                  color: PaynColors.textTertiary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 18),
+                  _DashboardHero(controller: controller),
                 ],
               ),
             ),
@@ -117,8 +125,28 @@ class HomeScreen extends StatelessWidget {
 
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: const _TrustBar(),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 58,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final category = PaynCategory.values[index];
+                  return _CategoryPill(
+                    label: category.label,
+                    count: categoryCounts[category] ?? 0,
+                    onTap: () => context.go('/explore'),
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemCount: PaynCategory.values.length,
+              ),
             ),
           ),
 
@@ -176,6 +204,36 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
+          if (trending.isNotEmpty) ...<Widget>[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                child: Text(
+                  'Smart suggestions',
+                  style: theme.textTheme.titleLarge,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 170,
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: trending.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final item = trending[index];
+                    return _SuggestionCard(
+                      offer: item.offer,
+                      onTap: () => context.push('/offer/${item.offer.id}'),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+
           // ── Recently viewed ──
           if (recent.isNotEmpty) ...<Widget>[
             SliverToBoxAdapter(
@@ -219,9 +277,16 @@ class _TrustBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: PaynColors.surface,
+        color: PaynColors.surfaceRaised,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: PaynColors.outlineSubtle),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: <Widget>[
@@ -249,6 +314,246 @@ class _TrustBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DashboardHero extends StatelessWidget {
+  const _DashboardHero({required this.controller});
+
+  final AppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF7FBF8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(PaynRadius.panel),
+        border: Border.all(color: PaynColors.outlineSubtle),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Best options for you',
+            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 34),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Clear, ranked offers for ${formatMarketLabel(controller.preferences.market)} with calm handoff to providers.',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: PaynColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _HeroMetric(
+                  label: 'Saved',
+                  value: '${controller.savedCount}',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroMetric(
+                  label: 'Compared',
+                  value: '${controller.compareCount}',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroMetric(
+                  label: 'Providers',
+                  value: '${controller.activeProviderCount}+',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: PaynColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PaynColors.outlineSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(label, style: theme.textTheme.labelMedium),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
+    required this.label,
+    required this.count,
+    required this.onTap,
+  });
+
+  final String label;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: PaynColors.surface,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: PaynColors.outlineSubtle),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: PaynColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: PaynColors.surfaceDim,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$count',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: PaynColors.text,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SuggestionCard extends StatelessWidget {
+  const _SuggestionCard({required this.offer, required this.onTap});
+
+  final PaynOffer offer;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryMetric = offer.metrics.isNotEmpty ? offer.metrics.first : null;
+
+    return SizedBox(
+      width: 220,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(26),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: PaynColors.surface,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: PaynColors.outlineSubtle),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                ProviderBadge(offer: offer, compact: true),
+                const Spacer(),
+                Text(
+                  offer.providerName,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: PaynColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  primaryMetric?.value ?? offer.title,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontSize: 24,
+                    height: 1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  primaryMetric?.label ?? offer.category.label,
+                  style: theme.textTheme.labelMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

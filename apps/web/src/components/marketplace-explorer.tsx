@@ -193,7 +193,9 @@ export function MarketplaceExplorer({
 
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
-      <section className="premium-card rounded-[32px] p-5 sm:p-7">
+      <section className="section-shell p-5 sm:p-7">
+        <div className="hero-orb hero-orb-emerald floating-layer left-[-12%] top-[-22%] h-[260px] w-[260px]" />
+        <div className="hero-orb hero-orb-dark floating-layer-delayed right-[-10%] top-[2%] h-[220px] w-[220px]" />
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -205,17 +207,27 @@ export function MarketplaceExplorer({
                 {activeCategoryDescription}
               </p>
             </div>
-            {selectedCategory !== "all" && (
-              <Link
-                href={localePath(preferences.locale, `/${selectedCategory}`)}
-                className={buttonStyles({ variant: "secondary", size: "md" })}
-              >
-                {dictionary.explorer.openCategoryPage}
-              </Link>
-            )}
+            <div className="surface-panel flex w-full max-w-[340px] items-center justify-between rounded-[24px] px-4 py-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Live ranking
+                </p>
+                <p className="mt-1 text-sm font-semibold text-ink">
+                  {roundOfferCount(totalCount)} options in {preferences.countryLabel}
+                </p>
+              </div>
+              {selectedCategory !== "all" && (
+                <Link
+                  href={localePath(preferences.locale, `/${selectedCategory}`)}
+                  className={buttonStyles({ variant: "secondary", size: "md" })}
+                >
+                  {dictionary.explorer.openCategoryPage}
+                </Link>
+              )}
+            </div>
           </div>
 
-          <div className="sticky top-[76px] z-20 -mx-2 rounded-[28px] border border-[rgba(17,24,39,0.06)] bg-[rgba(255,255,255,0.86)] p-2 backdrop-blur-xl sm:mx-0">
+          <div className="surface-panel sticky top-[76px] z-20 -mx-2 rounded-[30px] p-2 sm:mx-0">
             {/* Category tabs */}
             <div className="flex snap-x gap-2 overflow-x-auto pb-1">
               {explorerCategories.map((category) => {
@@ -378,12 +390,12 @@ export function MarketplaceExplorer({
         </div>
       </section>
 
-      <section className="grid gap-5 rounded-[32px] bg-[#F5F7F4] p-4 sm:p-5">
+      <section className="grid gap-5 rounded-[36px] bg-[linear-gradient(180deg,rgba(255,255,255,0.45)_0%,rgba(245,247,244,0.92)_100%)] p-4 sm:p-5">
         {selectedCategory === "investments" ? (
           <InvestmentIntelligenceBlock locale={preferences.locale} />
         ) : null}
 
-        <div className="premium-card rounded-[28px] p-5 sm:p-6">
+        <div className="surface-panel rounded-[30px] p-5 sm:p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-bold text-ink">

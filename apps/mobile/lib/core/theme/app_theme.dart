@@ -17,13 +17,15 @@ abstract final class PaynRadius {
   static const double button = 18;
   static const double card = 28;
   static const double panel = 32;
+  static const double shell = 34;
   static const double badge = 16;
 }
 
 abstract final class PaynColors {
-  static const background = Color(0xFFF3F5F2);
+  static const background = Color(0xFFF4F6F3);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceDim = Color(0xFFF5F7F4);
+  static const surfaceDim = Color(0xFFF7F9F6);
+  static const surfaceRaised = Color(0xFFFBFCFB);
   static const text = Color(0xFF111827);
   static const textSecondary = Color(0xFF4B5563);
   static const textTertiary = Color(0xFF8A94A6);
@@ -98,17 +100,24 @@ ThemeData buildAppTheme() {
     textTheme: tt.copyWith(
       // H1 — screen headlines
       headlineMedium: tt.headlineMedium?.copyWith(
-        fontSize: 28,
+        fontSize: 30,
         fontWeight: FontWeight.w800,
-        letterSpacing: -0.8,
-        height: 1.12,
+        letterSpacing: -1.0,
+        height: 1.06,
+        color: tx,
+      ),
+      headlineLarge: tt.headlineLarge?.copyWith(
+        fontSize: 38,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1.6,
+        height: 0.98,
         color: tx,
       ),
       // Title — section titles
       titleLarge: tt.titleLarge?.copyWith(
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
+        letterSpacing: -0.42,
         color: tx,
       ),
       // Subtitle — card titles, row titles (lighter than title for hierarchy)
@@ -186,10 +195,10 @@ ThemeData buildAppTheme() {
       margin: EdgeInsets.zero,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shadowColor: Colors.black.withValues(alpha: 0.06),
+      shadowColor: Colors.black.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(PaynRadius.card),
-        side: BorderSide(color: ol),
+        side: BorderSide(color: PaynColors.outlineSubtle),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(

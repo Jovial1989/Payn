@@ -322,62 +322,39 @@ export function HomePage() {
         {impactSiteVerificationText}
       </p>
 
-      <MotionReveal as="section" className="overflow-hidden rounded-[36px] border border-line bg-white shadow-[0_24px_60px_rgba(15,23,32,0.06)]">
-        <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)] lg:items-center lg:gap-10 lg:px-12 lg:py-12">
-          <div className="flex flex-col justify-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-emerald">
-              Best options for your money
-            </p>
-            <h1 className="mt-4 max-w-2xl text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.05em] text-ink sm:text-[3.4rem] lg:text-[4.25rem]">
-              {dictionary.home.heroTitle}
+      <MotionReveal as="section" className="hero-stage overflow-hidden rounded-[40px] px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+        <div className="hero-orb hero-orb-emerald floating-layer left-[-8%] top-[-10%] h-[320px] w-[320px]" />
+        <div className="hero-orb hero-orb-dark floating-layer-delayed right-[-4%] top-[8%] h-[280px] w-[280px]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[46%] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.82),rgba(255,255,255,0)_70%)]" />
+
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] lg:items-center lg:gap-8">
+          <div className="relative z-10 flex flex-col justify-center">
+            <div className="hero-eyebrow inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-emerald">
+              <span className="h-2 w-2 rounded-full bg-accent-emerald" />
+              Decision-first finance
+            </div>
+
+            <h1 className="mt-6 max-w-[11ch] text-[3.2rem] font-extrabold leading-[0.9] tracking-[-0.08em] text-ink sm:text-[4.4rem] lg:text-[5.5rem]">
+              Compare less. Decide better.
             </h1>
-            <p className="mt-5 max-w-[34ch] text-[15px] leading-relaxed text-ink-secondary sm:text-[17px]">
-              {dictionary.home.heroSubtitle}
+
+            <p className="mt-5 max-w-[30ch] text-[16px] leading-7 text-ink-secondary sm:text-[18px]">
+              Payn turns messy financial search into one clear recommendation, with pricing and tradeoffs visible before you leave.
             </p>
 
-            <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="mt-8">
               <Link
                 href={discoverHref}
-                className={`${buttonStyles({ variant: "primary", size: "lg" })} w-full sm:w-auto`}
+                className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta w-full sm:w-auto`}
               >
                 <ProductEntryActionLabel locale={locale} />
               </Link>
-              <Link
-                href={discoverHref}
-                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-ink-secondary transition-colors hover:text-ink"
-              >
-                {dictionary.home.heroCtaSecondary}
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Ranked offers
-                </p>
-                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
-                  40+
-                </p>
-              </div>
-              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Markets
-                </p>
-                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
-                  EU
-                </p>
-              </div>
-              <div className="rounded-[22px] bg-[#F7F9F7] px-4 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Clarity first
-                </p>
-                <p className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.05em] text-ink">
-                  1 tap
-                </p>
-              </div>
+            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-ink-secondary">
+              <span className="hero-inline-signal rounded-full px-3 py-2">40+ ranked offers</span>
+              <span className="hero-inline-signal rounded-full px-3 py-2">Loans · Cards · Transfers · FX</span>
+              <span className="hero-inline-signal rounded-full px-3 py-2">No signup required</span>
             </div>
           </div>
 
@@ -395,7 +372,7 @@ export function HomePage() {
       <MotionReveal
         as="section"
         delay={120}
-        className="rounded-[32px] border border-line bg-white p-5 shadow-[0_18px_44px_rgba(15,23,32,0.04)] sm:p-6 lg:p-8"
+        className="section-shell p-5 sm:p-6 lg:p-8"
       >
         {/* How it works */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -415,7 +392,7 @@ export function HomePage() {
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {dictionary.home.steps.map((step, index) => (
-            <div key={step} className="relative flex flex-col rounded-[24px] border border-line bg-[#F7F9F7] px-5 py-5">
+            <div key={step} className="metric-tile relative flex flex-col rounded-[26px] px-5 py-5">
               <span className="font-mono text-[3rem] font-extrabold leading-none tracking-[-0.05em] text-ink-tertiary/25 select-none">
                 {String(index + 1).padStart(2, "0")}
               </span>
@@ -461,7 +438,7 @@ export function HomePage() {
           {whyPaynCards.slice(0, 3).map((point, index) => (
             <div
               key={point.title}
-              className="flex h-full flex-col rounded-[24px] border border-line bg-[#F7F9F7] px-5 py-5"
+              className="metric-tile flex h-full flex-col rounded-[26px] px-5 py-5"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white text-ink">
                 {whyPaynIcons[index] ?? whyPaynIcons[0]}
