@@ -201,25 +201,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              child: Row(
-                children: <Widget>[
-                  _Stat(
-                    value: '${controller.savedCount}',
-                    label: 'Saved',
-                  ),
-                  const SizedBox(width: 10),
-                  _Stat(
-                    value: '${controller.activeProviderCount}',
-                    label: 'Providers',
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
@@ -235,54 +216,36 @@ class _TrustBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: PaynColors.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: PaynColors.outlineSubtle),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Row(
         children: <Widget>[
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  '4.9/5 Trust Rating',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Trusted by people comparing rates, cards, and transfers.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: PaynColors.textSecondary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          Text(
+            'Comparing',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: PaynColors.textTertiary,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           const Wrap(
-            spacing: 8,
+            spacing: 6,
             children: <Widget>[
               _TrustLogo(label: 'Revolut'),
               _TrustLogo(label: 'Wise'),
               _TrustLogo(label: 'Klarna'),
             ],
+          ),
+          const Spacer(),
+          Text(
+            '50+ providers',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: PaynColors.accent,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),

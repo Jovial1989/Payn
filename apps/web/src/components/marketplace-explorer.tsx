@@ -3,12 +3,13 @@
 import type { MarketplaceLocale, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
-import { useCallback, useDeferredValue, useMemo, useState, useTransition } from "react";
+import { useCallback, useDeferredValue, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/components/button";
 import { ComparisonTable, ComparisonTray } from "@/components/comparison-table";
 import { InvestmentIntelligenceBlock } from "@/components/investment-intelligence-block";
 import { OfferCard } from "@/components/offer-card";
+import { OfferCardSkeleton } from "@/components/offer-card-skeleton";
 import { Tag } from "@/components/tag";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
@@ -97,6 +98,7 @@ export function MarketplaceExplorer({
   const preferences = useMarketplacePreferences();
   const [selectedCategory, setSelectedCategory] = useState<ExplorerCategory>(initialCategory);
   const [filters, setFilters] = useState(defaultMarketplaceFilters);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [compareOpen, setCompareOpen] = useState(false);
@@ -214,6 +216,7 @@ export function MarketplaceExplorer({
           </div>
 
           <div className="sticky top-[76px] z-20 -mx-2 rounded-[28px] border border-[rgba(17,24,39,0.06)] bg-[rgba(255,255,255,0.86)] p-2 backdrop-blur-xl sm:mx-0">
+            {/* Category tabs */}
             <div className="flex snap-x gap-2 overflow-x-auto pb-1">
               {explorerCategories.map((category) => {
                 const count =
@@ -243,38 +246,44 @@ export function MarketplaceExplorer({
               })}
             </div>
 
-            <div className="mt-3 grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-              <label className="grid gap-2 rounded-[20px] border border-line bg-bg-surface/80 p-4">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.filters.countryLabel}
-                </span>
-                <select
-                  value={preferences.country}
-                  onChange={(event) => updateCountry(event.target.value)}
-                  className="h-11 rounded-full border border-line bg-white px-4 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald"
-                >
-                  {preferences.availableCountries.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="grid gap-2 rounded-[20px] border border-line bg-bg-surface/80 p-4">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.filters.searchLabel}
-                </span>
-                <input
-                  value={filters.query}
-                  onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
-                  placeholder={dictionary.filters.searchPlaceholder}
-                  className="h-11 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors placeholder:text-ink-tertiary focus:border-accent-emerald"
-                />
-              </label>
+            {/* Search + country + filters toggle */}
+            <div className="mt-2 flex gap-2">
+              <input
+                value={filters.query}
+                onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
+                placeholder={dictionary.filters.searchPlaceholder}
+                className="h-10 min-w-0 flex-1 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors placeholder:text-ink-tertiary focus:border-accent-emerald"
+              />
+              <select
+                value={preferences.country}
+                onChange={(event) => updateCountry(event.target.value)}
+                className="h-10 rounded-full border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald"
+              >
+                {preferences.availableCountries.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((v) => !v)}
+                className={clsx(
+                  "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors",
+                  filtersOpen || filters.provider || filters.feature || filters.subtype
+                    ? "border-accent-emerald/30 bg-accent-emerald-soft text-accent-emerald-strong"
+                    : "border-line bg-white text-ink-secondary hover:text-ink",
+                )}
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 4h12M4 8h8M6 12h4" />
+                </svg>
+                {preferences.locale === "de" ? "Filter" : "Filters"}
+              </button>
             </div>
 
-            <div className="mt-3 flex snap-x gap-2 overflow-x-auto pb-1">
+            {/* Sort pills */}
+            <div className="mt-2 flex snap-x gap-1.5 overflow-x-auto pb-1">
               {SORT_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -288,73 +297,50 @@ export function MarketplaceExplorer({
               ))}
             </div>
 
-            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
-                <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.providerLabel}</span>
+            {/* Collapsible advanced filters */}
+            {filtersOpen && (
+              <div className="mt-2 grid gap-2 border-t border-line pt-2 md:grid-cols-2 xl:grid-cols-4">
                 <select
                   value={filters.provider}
                   onChange={(event) => setFilters((current) => ({ ...current, provider: event.target.value }))}
-                  className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
+                  className="h-10 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                 >
                   <option value="">{dictionary.filters.anyProvider}</option>
                   {providerOptions.map((provider) => (
-                    <option key={provider} value={provider}>
-                      {provider}
-                    </option>
+                    <option key={provider} value={provider}>{provider}</option>
                   ))}
                 </select>
-              </label>
 
-              <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
-                <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.featureLabel}</span>
                 <select
                   value={filters.feature}
                   onChange={(event) => setFilters((current) => ({ ...current, feature: event.target.value }))}
-                  className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
+                  className="h-10 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                 >
                   <option value="">{dictionary.filters.anyFeature}</option>
                   {featureOptions.map((feature) => (
-                    <option key={feature} value={feature}>
-                      {feature}
-                    </option>
+                    <option key={feature} value={feature}>{feature}</option>
                   ))}
                 </select>
-              </label>
 
-              {(selectedCategory === "insurance" || selectedCategory === "investments") && (
-                <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
-                  <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.subtypeLabel}</span>
+                {(selectedCategory === "insurance" || selectedCategory === "investments") && (
                   <select
                     value={filters.subtype}
                     onChange={(event) => setFilters((current) => ({ ...current, subtype: event.target.value }))}
-                    className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
+                    className="h-10 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                   >
                     <option value="">{dictionary.filters.anySubtype}</option>
                     {subtypeOptions.map((subtype) => (
-                      <option key={subtype} value={subtype}>
-                        {subtype}
-                      </option>
+                      <option key={subtype} value={subtype}>{subtype}</option>
                     ))}
                   </select>
-                </label>
-              )}
+                )}
 
-              {selectedCategory === "loans" && (
-                <>
-                  <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
-                    <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.amountLabel}</span>
-                    <div className="rounded-[20px] border border-line bg-bg-surface px-4 py-3">
-                      <div className="flex items-center justify-between text-sm font-semibold text-ink">
-                        <span>
-                          {formatAmountLabel(
-                            filters.amount,
-                            preferences.locale,
-                            getCountryCurrency(preferences.country),
-                          )}
-                        </span>
-                        <span className="text-xs font-medium text-ink-tertiary">
-                          {getCountryCurrency(preferences.country)}
-                        </span>
+                {selectedCategory === "loans" && (
+                  <>
+                    <div className="rounded-full border border-line bg-white px-4 py-1.5">
+                      <div className="flex items-center justify-between text-xs font-semibold text-ink">
+                        <span>{formatAmountLabel(filters.amount, preferences.locale, getCountryCurrency(preferences.country))}</span>
+                        <span className="text-ink-tertiary">{getCountryCurrency(preferences.country)}</span>
                       </div>
                       <input
                         type="range"
@@ -362,42 +348,31 @@ export function MarketplaceExplorer({
                         max={80000}
                         step={1000}
                         value={filters.amount}
-                        onChange={(event) =>
-                          setFilters((current) => ({ ...current, amount: Number(event.target.value) }))
-                        }
-                        className="mt-3 w-full"
+                        onChange={(event) => setFilters((current) => ({ ...current, amount: Number(event.target.value) }))}
+                        className="w-full"
                       />
                     </div>
-                  </label>
-
-                  <label className="grid gap-2 rounded-[20px] border border-line bg-white p-4">
-                    <span className="text-xs font-medium text-ink-secondary">{dictionary.filters.termLabel}</span>
                     <select
                       value={filters.term}
                       onChange={(event) => setFilters((current) => ({ ...current, term: Number(event.target.value) }))}
-                      className="h-11 rounded-full border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
+                      className="h-10 rounded-full border border-line bg-white px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald"
                     >
                       {[12, 24, 36, 48, 60, 72, 84].map((term) => (
-                        <option key={term} value={term}>
-                          {term} {uiCopy.common.months}
-                        </option>
+                        <option key={term} value={term}>{term} {uiCopy.common.months}</option>
                       ))}
                     </select>
-                  </label>
-                </>
-              )}
+                  </>
+                )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setFilters(defaultMarketplaceFilters);
-                  setVisibleCount(PAGE_SIZE);
-                }}
-                className={buttonStyles({ variant: "ghost", size: "md", fullWidth: true })}
-              >
-                {dictionary.filters.reset}
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => { setFilters(defaultMarketplaceFilters); setVisibleCount(PAGE_SIZE); }}
+                  className={buttonStyles({ variant: "ghost", size: "md" })}
+                >
+                  {dictionary.filters.reset}
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
@@ -472,28 +447,7 @@ export function MarketplaceExplorer({
 
         {isFiltering
           ? Array.from({ length: Math.min(3, PAGE_SIZE) }).map((_, index) => (
-              <div key={`skeleton-${index}`} className="premium-card rounded-[28px] p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="skeleton-block h-12 w-12 rounded-[14px]" />
-                    <div className="space-y-2">
-                      <div className="skeleton-block h-3 w-28 rounded-full" />
-                      <div className="skeleton-block h-5 w-48 rounded-full" />
-                      <div className="skeleton-block h-4 w-40 rounded-full" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="skeleton-block h-8 w-24 rounded-full" />
-                    <div className="skeleton-block h-4 w-20 rounded-full" />
-                  </div>
-                </div>
-                <div className="mt-5 skeleton-block h-36 rounded-[24px]" />
-                <div className="mt-5 flex gap-2">
-                  <div className="skeleton-block h-9 w-28 rounded-full" />
-                  <div className="skeleton-block h-9 w-24 rounded-full" />
-                  <div className="skeleton-block h-9 w-32 rounded-full" />
-                </div>
-              </div>
+              <OfferCardSkeleton key={`skeleton-${index}`} />
             ))
           : shownOffers.map((offer, index) => (
               <div

@@ -152,101 +152,65 @@ class _OfferCardState extends State<OfferCard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
-                    Container(
-                      padding: const EdgeInsets.all(PaynSpace.lg),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFFE3EBE6)),
-                        gradient: const LinearGradient(
-                          colors: <Color>[
-                            Color(0xFFFDFEFD),
-                            Color(0xFFF7FAF8),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                    const SizedBox(height: 20),
+                    // Primary metric — Robinhood-style, no container
+                    if (primaryMetric != null)
+                      Text(
+                        primaryMetric.label.toUpperCase(),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: PaynColors.textTertiary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          letterSpacing: 1.6,
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          if (primaryMetric != null)
-                            Text(
-                              primaryMetric.label.toUpperCase(),
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: PaynColors.textTertiary,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.6,
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          Text(
-                            primaryMetric == null ? 'On request' : primaryMetric.value,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              height: 1.05,
-                              letterSpacing: -1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            metricNarrative.toUpperCase(),
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: PaynColors.accent,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          if (widget.offer.metrics.length > 1) ...<Widget>[
-                            const SizedBox(height: 14),
-                            Container(
-                              height: 1,
-                              color: const Color(0xFFE3EBE6),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: widget.offer.metrics
-                                  .skip(1)
-                                  .take(3)
-                                  .expand<Widget>(
-                                    (m) => <Widget>[
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              m.label.toUpperCase(),
-                                              style: theme.textTheme.labelMedium
-                                                  ?.copyWith(
-                                                    color:
-                                                        PaynColors.textTertiary,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 10,
-                                                    letterSpacing: 1.4,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              m.value,
-                                              style: theme.textTheme.titleMedium
-                                                  ?.copyWith(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-                                          ],
+                    const SizedBox(height: 6),
+                    Text(
+                      primaryMetric == null ? 'On request' : primaryMetric.value,
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                        letterSpacing: -1.2,
+                      ),
+                    ),
+                    if (widget.offer.metrics.length > 1) ...<Widget>[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: widget.offer.metrics
+                            .skip(1)
+                            .take(3)
+                            .expand<Widget>(
+                              (m) => <Widget>[
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        m.label.toUpperCase(),
+                                        style: theme.textTheme.labelMedium?.copyWith(
+                                          color: PaynColors.textTertiary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 10,
+                                          letterSpacing: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        m.value,
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ],
-                                  )
-                                  .toList(),
-                            ),
-                          ],
-                        ],
+                                  ),
+                                ),
+                              ],
+                            )
+                            .toList(),
                       ),
-                    ),
+                    ],
                     if (benefits.isNotEmpty) ...<Widget>[
                       const SizedBox(height: 16),
                       Wrap(
