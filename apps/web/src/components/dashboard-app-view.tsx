@@ -173,6 +173,18 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   const savedOffers = insights?.savedOffers ?? [];
   const watchedOffers = insights?.watchedOffers ?? [];
   const bestOffers = insights?.recommended.slice(0, 3) ?? [];
+  const recentActivity = [
+    ...watchedOffers.slice(0, 2).map((offer) => ({
+      id: `viewed-${offer.id}`,
+      label: "Viewed",
+      title: `${offer.providerName} · ${offer.title}`,
+    })),
+    ...savedOffers.slice(0, 2).map((offer) => ({
+      id: `saved-${offer.id}`,
+      label: "Saved",
+      title: `${offer.providerName} · ${offer.title}`,
+    })),
+  ].slice(0, 4);
   const categoryCounts = Object.fromEntries(
     dashboardCategories.map((category) => [
       category,
@@ -233,6 +245,55 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
                 Save or open offers to build your shortlist.
               </div>
             ) : null}
+          </div>
+        </DashboardSectionCard>
+
+        <DashboardSectionCard
+          eyebrow="Activity"
+          title="Recent activity"
+          description="Your latest shortlist actions and signals, kept lightweight."
+        >
+          <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-[22px] border border-[#EAEAEA] bg-[#F7F9F7] p-5">
+              {recentActivity.length > 0 ? (
+                <div className="grid gap-3">
+                  {recentActivity.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 shadow-[0_4px_18px_rgba(15,23,32,0.04)]"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 truncate text-sm font-semibold text-ink">
+                          {item.title}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm leading-relaxed text-ink-secondary">
+                  Open or save offers to start building your activity trail.
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
+                <p className="mt-2 text-2xl font-bold text-ink">{savedOffers.length}</p>
+              </div>
+              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Viewed</p>
+                <p className="mt-2 text-2xl font-bold text-ink">{watchedOffers.length}</p>
+              </div>
+              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Suggestions</p>
+                <p className="mt-2 text-2xl font-bold text-ink">{bestOffers.length}</p>
+              </div>
+            </div>
           </div>
         </DashboardSectionCard>
 

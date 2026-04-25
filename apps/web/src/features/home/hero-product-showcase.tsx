@@ -151,20 +151,19 @@ export function HeroProductShowcase({
 
   return (
     <div ref={containerRef} className="flex flex-col items-center justify-center">
-      {/* Card wrapper with hover pause */}
       <div
         className="relative w-full max-w-[400px]"
         style={{ perspective: "1000px" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Glow halo */}
+        <div className="floating-layer absolute -left-6 top-6 h-32 w-32 rounded-[28px] border border-white/60 bg-white/65 shadow-[0_18px_44px_rgba(15,23,32,0.08)] backdrop-blur" />
+        <div className="floating-layer-delayed absolute -right-5 bottom-14 h-24 w-24 rounded-[24px] bg-[radial-gradient(circle_at_top,_rgba(15,138,75,0.22),_rgba(15,138,75,0.04)_60%,_transparent_100%)]" />
         <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.02] blur-2xl" />
 
-        {/* Card — fully clickable Link */}
         <Link
           href={card.href}
-          className="group relative block cursor-pointer rounded-[24px] border border-black/[0.07] bg-white"
+          className="group motion-card relative block cursor-pointer rounded-[24px] border border-black/[0.07] bg-white"
           style={{
             boxShadow: [
               "0 2px 4px rgba(0,0,0,0.04)",
@@ -172,15 +171,15 @@ export function HeroProductShowcase({
               "0 24px 48px rgba(0,0,0,0.06)",
             ].join(", "),
             opacity: transitioning ? 0 : 1,
-            transition: "opacity 350ms ease, transform 200ms ease, box-shadow 200ms ease",
-            // Desktop: subtle 3D tilt. Mobile: remove tilt via JS media check below.
+            transition: "opacity 350ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1)",
+            ["--motion-delay" as string]: "120ms",
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.boxShadow = [
               "0 4px 6px -1px rgba(0,0,0,0.05)",
               "0 20px 40px -8px rgba(0,0,0,0.12)",
             ].join(", ");
-            (e.currentTarget as HTMLElement).style.transform = "perspective(900px) rotateY(-4deg) rotateX(1.5deg) translateY(-2px)";
+            (e.currentTarget as HTMLElement).style.transform = "perspective(900px) rotateY(-4deg) rotateX(1.5deg) translateY(-5px) scale(1.012)";
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.boxShadow = [
@@ -281,9 +280,8 @@ export function HeroProductShowcase({
           </div>
         </Link>
 
-        {/* Stack depth hint */}
         <div
-          className="absolute -bottom-2 left-3 right-3 -z-10 h-full rounded-[24px] border border-black/[0.04] bg-white/60"
+          className="floating-layer-delayed absolute -bottom-2 left-3 right-3 -z-10 h-full rounded-[24px] border border-black/[0.04] bg-white/60"
           style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}
         />
       </div>

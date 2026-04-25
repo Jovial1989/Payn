@@ -10,6 +10,7 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import { HeroPhoneMockup, WaitlistBadge } from "@/components/hero-phone-mockup";
+import { MotionReveal } from "@/components/motion-reveal";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { HeroProductShowcase } from "@/features/home/hero-product-showcase";
@@ -321,7 +322,7 @@ export function HomePage() {
         {impactSiteVerificationText}
       </p>
 
-      <section className="overflow-hidden rounded-[36px] border border-line bg-white shadow-[0_24px_60px_rgba(15,23,32,0.06)]">
+      <MotionReveal as="section" className="overflow-hidden rounded-[36px] border border-line bg-white shadow-[0_24px_60px_rgba(15,23,32,0.06)]">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)] lg:items-center lg:gap-10 lg:px-12 lg:py-12">
           <div className="flex flex-col justify-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-emerald">
@@ -385,12 +386,17 @@ export function HomePage() {
             countryName={preferences.countryLabel}
           />
         </div>
-      </section>
+      </MotionReveal>
 
-      <TrustedProviderGrid locale={locale} />
+      <MotionReveal delay={80}>
+        <TrustedProviderGrid locale={locale} />
+      </MotionReveal>
 
-      {/* ── How it works + Why Payn — merged into one section ── */}
-      <section className="rounded-[32px] border border-line bg-white p-5 shadow-[0_18px_44px_rgba(15,23,32,0.04)] sm:p-6 lg:p-8">
+      <MotionReveal
+        as="section"
+        delay={120}
+        className="rounded-[32px] border border-line bg-white p-5 shadow-[0_18px_44px_rgba(15,23,32,0.04)] sm:p-6 lg:p-8"
+      >
         {/* How it works */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -467,10 +473,13 @@ export function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+      </MotionReveal>
 
-      {/* ── Mobile app promo — bottom of page ── */}
-      <section className="overflow-hidden rounded-[32px] bg-[#0A0D0C]">
+      <MotionReveal
+        as="section"
+        delay={180}
+        className="overflow-hidden rounded-[32px] bg-[#0A0D0C]"
+      >
         <div className="grid lg:grid-cols-[1fr_auto] lg:items-center">
           {/* Text side */}
           <div className="flex flex-col justify-center px-6 py-10 sm:px-8 lg:px-12 lg:py-14">
@@ -524,7 +533,7 @@ export function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </MotionReveal>
 
       {/* ── Waitlist modal ── */}
       {appPromoOpen && (

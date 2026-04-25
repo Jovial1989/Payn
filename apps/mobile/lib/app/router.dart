@@ -144,13 +144,22 @@ CustomTransitionPage<void> _buildTransitionPage({
         curve: Curves.easeOutCubic,
       );
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.03),
+        begin: const Offset(0, 0.028),
         end: Offset.zero,
       ).animate(fade);
+      final scale = Tween<double>(
+        begin: 0.988,
+        end: 1,
+      ).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      );
 
       return FadeTransition(
         opacity: fade,
-        child: SlideTransition(position: slide, child: child),
+        child: SlideTransition(
+          position: slide,
+          child: ScaleTransition(scale: scale, child: child),
+        ),
       );
     },
   );

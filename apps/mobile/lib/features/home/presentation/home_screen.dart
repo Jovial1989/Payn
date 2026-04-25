@@ -169,6 +169,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                     rankLabel: '#${index + 1}',
                     showCategory: true,
+                    motionIndex: index,
                   );
                 },
               ),

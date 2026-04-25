@@ -134,29 +134,50 @@ class _NavButton extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  AnimatedScale(
-                    scale: selected ? 1.0 : 0.96,
-                    duration: const Duration(milliseconds: 180),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOutCubic,
-                    child: Icon(
-                      selected ? item.selectedIcon : item.icon,
-                      size: 21,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
                       color:
                           selected
-                              ? PaynColors.accent
-                              : PaynColors.textTertiary,
+                              ? PaynColors.accentSurface.withValues(alpha: 0.92)
+                              : Colors.transparent,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: AnimatedScale(
+                      scale: selected ? 1.0 : 0.96,
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      child: Icon(
+                        selected ? item.selectedIcon : item.icon,
+                        size: 21,
+                        color:
+                            selected
+                                ? PaynColors.accent
+                                : PaynColors.textTertiary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    item.label,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontSize: 11,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
-                      color: selected
-                          ? PaynColors.accent
-                          : PaynColors.textTertiary,
+                  AnimatedSlide(
+                    offset: Offset(0, selected ? 0 : 0.08),
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    child: AnimatedOpacity(
+                      opacity: selected ? 1 : 0.82,
+                      duration: const Duration(milliseconds: 180),
+                      child: Text(
+                        item.label,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontSize: 11,
+                          fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                          color: selected
+                              ? PaynColors.accent
+                              : PaynColors.textTertiary,
+                        ),
+                      ),
                     ),
                   ),
                 ],

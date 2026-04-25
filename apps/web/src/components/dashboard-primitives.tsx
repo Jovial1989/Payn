@@ -16,7 +16,7 @@ export function DashboardSectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
+    <section className="motion-section rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>

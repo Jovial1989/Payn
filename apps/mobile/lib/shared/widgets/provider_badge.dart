@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -118,18 +119,20 @@ class ProviderBadge extends StatelessWidget {
     required this.offer,
     this.compact = false,
     this.size,
+    this.heroTag,
   });
 
   final PaynOffer offer;
   final bool compact;
   final double? size;
+  final Object? heroTag;
 
   @override
   Widget build(BuildContext context) {
     final brand = providerBrandFor(offer.providerName, offer.providerMark);
     final dimension = size ?? (compact ? 38.0 : 48.0);
 
-    return Container(
+    final badge = Container(
       width: dimension,
       height: dimension,
       decoration: BoxDecoration(
@@ -163,6 +166,19 @@ class ProviderBadge extends StatelessWidget {
         ),
       ),
     );
+
+    if (heroTag == null) {
+      return badge;
+    }
+
+    return Hero(
+      tag: heroTag!,
+      flightShuttleBuilder:
+          (context, animation, flightDirection, fromContext, toContext) {
+            return ScaleTransition(scale: animation.drive(Tween<double>(begin: 0.96, end: 1)), child: badge);
+          },
+      child: badge,
+    );
   }
 }
 
@@ -189,6 +205,16 @@ Future<void> showProviderHandoffSheet(
       ),
     ),
   );
+
+  if (trackedUri == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This provider link is unavailable right now.'),
+      ),
+    );
+    return Future<void>.value();
+  }
+
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -296,11 +322,9 @@ class _ProviderRedirectOverlay extends StatefulWidget {
 }
 
 class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
-  bool _showFallback = false;
   bool _launching = true;
   String? _error;
-  bool _copied = false;
-  Timer? _fallbackTimer;
+  Timer? _autoCloseTimer;
 
   @override
   void initState() {
@@ -310,31 +334,18 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
 
   @override
   void dispose() {
-    _fallbackTimer?.cancel();
+    _autoCloseTimer?.cancel();
     super.dispose();
   }
 
   Future<void> _launchProvider() async {
-    _fallbackTimer?.cancel();
-      if (mounted) {
-        setState(() {
-          _launching = true;
-          _showFallback = false;
-          _error = null;
-          _copied = false;
-        });
-      }
-
-    _fallbackTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _launching) {
-        setState(() {
-          _showFallback = true;
-          _error = 'The provider page is taking longer than expected.';
-        });
-      }
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    _autoCloseTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _launching = true;
+        _error = null;
+      });
+    }
 
     final result = await handleExternalRedirect(widget.uri);
 
@@ -343,8 +354,11 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     }
 
     if (result.success) {
-      _fallbackTimer?.cancel();
-      Navigator.of(context).pop();
+      _autoCloseTimer = Timer(const Duration(milliseconds: 900), () {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
       return;
     }
 
@@ -353,7 +367,6 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
       if (!mounted) return;
       setState(() {
         _launching = false;
-        _showFallback = true;
         _error = result.error ?? 'We could not validate this provider link.';
       });
       return;
@@ -361,7 +374,6 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
 
     setState(() {
       _launching = false;
-      _showFallback = true;
       _error =
           result.error ?? 'Automatic redirect failed. You can retry or open it manually.';
     });
@@ -372,102 +384,141 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     final theme = Theme.of(context);
 
     return PopScope(
-      canPop: !_launching,
+      canPop: true,
       child: Dialog.fullscreen(
-        backgroundColor: PaynColors.background,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: PaynColors.text,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: const Icon(
-                    Icons.lock_outline_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Opening ${widget.providerName}...',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Securely redirecting you to the provider.',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: PaynColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(18),
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: Container(color: Colors.black.withValues(alpha: 0.22)),
+              ),
+            ),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: PaynColors.surface,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(28),
                     border: Border.all(color: PaynColors.outlineSubtle),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: PaynColors.accent,
-                        ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.16),
+                        blurRadius: 40,
+                        offset: const Offset(0, 18),
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              SizedBox(
+                                width: 56,
+                                height: 56,
+                                child: CircularProgressIndicator(
+                                  value: _launching ? null : 1,
+                                  strokeWidth: 2.4,
+                                  color: PaynColors.accent,
+                                  backgroundColor: PaynColors.accentSurface,
+                                ),
+                              ),
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: PaynColors.text,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  widget.providerName.isNotEmpty
+                                      ? widget.providerName[0].toUpperCase()
+                                      : '?',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Opening ${widget.providerName}',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontSize: 22,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'You are leaving Payn to continue',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: PaynColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: PaynColors.surfaceDim,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
                         child: Text(
-                          _showFallback
-                              ? (_error ??
-                                  'Use the backup link below to continue.')
-                              : 'Opening partner page...',
+                          _error ??
+                              (_launching
+                                  ? 'Opening provider page...'
+                                  : 'Use Open provider if nothing happened.'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: PaynColors.text,
                           ),
                         ),
                       ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: widget.uri == null ? null : _openManualLink,
+                              child: Text(_launching ? 'Open provider' : 'Open provider'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Back to Payn'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                if (_showFallback) ...<Widget>[
-                  const SizedBox(height: 22),
-                  FilledButton(
-                    onPressed: _launching ? null : () => unawaited(_launchProvider()),
-                    child: const Text('Retry redirect'),
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton(
-                    onPressed: widget.uri == null ? null : _openManualLink,
-                    child: const Text('Open in browser'),
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton(
-                    onPressed: widget.uri == null ? null : _copyLink,
-                    child: Text(_copied ? 'Link copied' : 'Copy link'),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Back to Payn'),
-                  ),
-                ],
-                const Spacer(),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -482,17 +533,8 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     }
     if (!mounted) return;
     setState(() {
-      _showFallback = true;
       _launching = false;
       _error = result.error ?? _error;
     });
-  }
-
-  Future<void> _copyLink() async {
-    final uri = widget.uri;
-    if (uri == null) return;
-    await Clipboard.setData(ClipboardData(text: uri.toString()));
-    if (!mounted) return;
-    setState(() => _copied = true);
   }
 }

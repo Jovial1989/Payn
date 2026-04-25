@@ -16,6 +16,7 @@ class OfferCard extends StatefulWidget {
     this.footer,
     this.showCategory = false,
     this.rankLabel,
+    this.motionIndex = 0,
   });
 
   final PaynOffer offer;
@@ -28,6 +29,7 @@ class OfferCard extends StatefulWidget {
   final Widget? footer;
   final bool showCategory;
   final String? rankLabel;
+  final int motionIndex;
 
   @override
   State<OfferCard> createState() => _OfferCardState();
@@ -55,37 +57,51 @@ class _OfferCardState extends State<OfferCard> {
             .take(3)
             .toList();
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.98 : 1,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
-          decoration: BoxDecoration(
-            color: PaynColors.surface,
-            borderRadius: BorderRadius.circular(PaynRadius.card),
-            border: Border.all(
-              color:
-                  _hovered
-                      ? PaynColors.accent.withValues(alpha: 0.24)
-                      : PaynColors.outlineSubtle,
-            ),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.05),
-                blurRadius: _hovered ? 34 : 20,
-                offset: Offset(0, _hovered ? 14 : 8),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 420 + (widget.motionIndex * 70)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value.clamp(0, 1),
+          child: Transform.translate(
+            offset: Offset(0, (1 - value) * 20),
+            child: MouseRegion(
+              onEnter: (_) => setState(() => _hovered = true),
+              onExit: (_) => setState(() => _hovered = false),
+              child: AnimatedScale(
+                scale: _pressed ? 0.98 : 1,
+                duration: const Duration(milliseconds: 120),
+                curve: Curves.easeOutCubic,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
+                  decoration: BoxDecoration(
+                    color: PaynColors.surface,
+                    borderRadius: BorderRadius.circular(PaynRadius.card),
+                    border: Border.all(
+                      color:
+                          _hovered
+                              ? PaynColors.accent.withValues(alpha: 0.24)
+                              : PaynColors.outlineSubtle,
+                    ),
+                    gradient: const LinearGradient(
+                      colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF8FBF8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: _hovered ? 0.10 : 0.06),
+                        blurRadius: _hovered ? 38 : 22,
+                        offset: Offset(0, _hovered ? 18 : 10),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
               onTap: widget.onTap,
               borderRadius: BorderRadius.circular(PaynRadius.card),
               onTapDown: (_) => setState(() => _pressed = true),
@@ -99,7 +115,11 @@ class _OfferCardState extends State<OfferCard> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        ProviderBadge(offer: widget.offer, size: 52),
+                        ProviderBadge(
+                          offer: widget.offer,
+                          size: 52,
+                          heroTag: 'provider-${widget.offer.id}',
+                        ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -305,10 +325,14 @@ class _OfferCardState extends State<OfferCard> {
                   ],
                 ),
               ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

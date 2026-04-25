@@ -120,6 +120,7 @@ class SavedScreen extends StatelessWidget {
                               reasons: item.reasons,
                               tradeoff: item.tradeoff,
                               saved: false,
+                              motionIndex: 0,
                               onTap: () => context.push('/offer/${item.offer.id}'),
                               onSave: () => controller.toggleSaved(item.offer.id),
                               onProviderTap:
@@ -150,6 +151,7 @@ class SavedScreen extends StatelessWidget {
                     reasons: controller.reasonsFor(offer),
                     tradeoff: controller.tradeoffFor(offer),
                     saved: true,
+                    motionIndex: index,
                     onTap: () => context.push('/offer/${offer.id}'),
                     onSave: () => controller.toggleSaved(offer.id),
                     onProviderTap:

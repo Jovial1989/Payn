@@ -4,6 +4,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ChatWidget } from "@/components/chat-widget";
 import { LocaleGate } from "@/components/locale-gate";
 import { MarketplacePreferencesProvider } from "@/components/marketplace-preferences";
+import { PageTransition } from "@/components/page-transition";
 import type { MarketplaceLocale, MarketplaceMarket } from "@payn/types";
 
 export function Providers({
@@ -24,7 +25,7 @@ export function Providers({
         initialCountry={initialCountry}
         initialMarket={initialMarket}
       >
-        {children}
+        <PageTransition>{children}</PageTransition>
         <ChatWidget />
         <LocaleGate />
       </MarketplacePreferencesProvider>

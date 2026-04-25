@@ -48,7 +48,8 @@ export function OfferCard({
 
   return (
     <article
-      className="premium-card premium-card-hover group overflow-hidden rounded-[24px]"
+      className="premium-card premium-card-hover motion-card group overflow-hidden rounded-[24px]"
+      style={{ ["--motion-delay" as string]: `${Math.min(rank * 70, 280)}ms` }}
       aria-label={`${offer.providerName} ${offer.title}`}
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
@@ -127,7 +128,7 @@ export function OfferCard({
         />
         <Link
           href={localePath(locale, getOfferHref(offer))}
-          className="text-[13px] font-semibold text-ink-secondary transition-colors hover:text-ink"
+          className="pressable text-[13px] font-semibold text-ink-secondary transition-colors hover:text-ink"
         >
           {locale === "de" ? "Angebot ansehen" : "View offer"} &rarr;
         </Link>

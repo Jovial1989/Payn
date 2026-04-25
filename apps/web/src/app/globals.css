@@ -18,6 +18,7 @@
     --emerald-soft: #ddf4e7;
     --shadow-soft: 0 10px 30px rgba(15, 23, 32, 0.05);
     --shadow-hover: 0 22px 56px rgba(15, 23, 32, 0.1);
+    --shadow-floating: 0 28px 80px rgba(15, 23, 32, 0.12);
   }
 
   html {
@@ -79,19 +80,97 @@
     background: var(--surface-base);
     border: 1px solid var(--line-subtle);
     box-shadow: var(--shadow-soft);
+    position: relative;
+    isolation: isolate;
+  }
+
+  .premium-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0) 36%),
+      radial-gradient(circle at top right, rgba(15, 138, 75, 0.08), transparent 34%);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: -1;
   }
 
   .premium-card-hover {
     transition:
-      transform 180ms ease,
-      box-shadow 180ms ease,
-      border-color 180ms ease;
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 220ms ease;
+    will-change: transform, box-shadow;
   }
 
   .premium-card-hover:hover {
-    transform: translateY(-2px);
+    transform: translateY(-5px) scale(1.012);
     border-color: rgba(15, 138, 75, 0.24);
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-floating);
+  }
+
+  .pressable {
+    transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .pressable:active {
+    transform: scale(0.985);
+  }
+
+  .motion-section {
+    animation: section-enter 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--motion-delay, 0ms);
+  }
+
+  .motion-card {
+    animation: card-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--motion-delay, 0ms);
+  }
+
+  .page-transition {
+    animation: page-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .floating-layer {
+    animation: float-layer 7.5s ease-in-out infinite;
+  }
+
+  .floating-layer-delayed {
+    animation: float-layer 9s ease-in-out infinite;
+    animation-delay: 1.4s;
+  }
+
+  .nav-link {
+    position: relative;
+    transition:
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--emerald) 0%, var(--emerald-strong) 100%);
+    transform: scaleX(0.35);
+    transform-origin: center;
+    opacity: 0;
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 180ms ease;
+  }
+
+  .nav-link:hover::after,
+  .nav-link[data-active="true"]::after {
+    transform: scaleX(1);
+    opacity: 1;
   }
 
   .pill-chip {
@@ -158,5 +237,62 @@
     cursor: pointer;
     border: 3px solid #FFFFFF;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes float-layer {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-card-hover,
+  .motion-section,
+  .motion-card,
+  .page-transition,
+  .floating-layer,
+  .floating-layer-delayed,
+  .nav-link::after,
+  .pressable {
+    animation: none !important;
+    transition: none !important;
   }
 }

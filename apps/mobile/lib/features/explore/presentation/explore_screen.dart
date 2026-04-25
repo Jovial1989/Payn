@@ -327,6 +327,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           showCategory:
                               controller.selectedExploreCategory == null,
                           rankLabel: '#${index + 1}',
+                          motionIndex: index,
                         );
                       },
                     ),

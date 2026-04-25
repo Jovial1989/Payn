@@ -23,7 +23,34 @@ export function appendAffiliateParams(
   return parsed.toString();
 }
 
-export async function handleExternalRedirect({
+export function buildRedirectTarget({
+  rawUrl,
+  affiliateParams,
+}: {
+  rawUrl: string;
+  affiliateParams: Record<string, string | number | boolean | null | undefined>;
+}) {
+  try {
+    const targetUrl = appendAffiliateParams(rawUrl, affiliateParams);
+    const parsed = new URL(targetUrl);
+
+    if (parsed.protocol !== "https:") {
+      return {
+        ok: false as const,
+        error: "Only secure provider links can be opened from Payn.",
+      };
+    }
+
+    return { ok: true as const, targetUrl };
+  } catch {
+    return {
+      ok: false as const,
+      error: "This provider link is unavailable right now.",
+    };
+  }
+}
+
+export function handleExternalRedirect({
   rawUrl,
   providerName,
   affiliateParams,
@@ -36,20 +63,21 @@ export async function handleExternalRedirect({
   affiliateParams: Record<string, string | number | boolean | null | undefined>;
   onFallback: (state: RedirectFallbackState) => void;
   onConnecting?: (state: RedirectFallbackState) => void;
-  onComplete?: () => void;
+  onComplete?: (targetUrl: string) => void;
 }) {
-  const targetUrl = appendAffiliateParams(rawUrl, affiliateParams);
-  const parsed = new URL(targetUrl);
+  const resolved = buildRedirectTarget({ rawUrl, affiliateParams });
 
-  if (parsed.protocol !== "https:") {
+  if (!resolved.ok) {
     onFallback({
       providerName,
-      targetUrl,
-      message: "This secure link could not be opened.",
+      targetUrl: "",
+      message: resolved.error,
       phase: "fallback",
     });
-    return { ok: false, targetUrl };
+    return { ok: false as const, targetUrl: "" };
   }
+
+  const targetUrl = resolved.targetUrl;
 
   onConnecting?.({
     providerName,
@@ -58,27 +86,29 @@ export async function handleExternalRedirect({
     phase: "connecting",
   });
 
-  const popup = window.open("", "_blank", "noopener,noreferrer");
+  const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
 
-  await new Promise((resolve) => {
-    window.setTimeout(resolve, 1500);
-  });
-
-  if (popup && !popup.closed) {
-    popup.location.href = targetUrl;
-    onComplete?.();
+  if (popup) {
+    onComplete?.(targetUrl);
+    return { ok: true as const, targetUrl };
   }
 
-  window.setTimeout(() => {
-    if (!popup || popup.closed || typeof popup.closed === "undefined") {
-      onFallback({
-        providerName,
-        targetUrl,
-        message: "Still opening. Use the backup link if needed.",
-        phase: "fallback",
-      });
-    }
-  }, 2000);
-
-  return { ok: Boolean(popup), targetUrl };
+  try {
+    window.location.href = targetUrl;
+    onFallback({
+      providerName,
+      targetUrl,
+      message: "If nothing happens, use Open provider below.",
+      phase: "fallback",
+    });
+    return { ok: true as const, targetUrl };
+  } catch {
+    onFallback({
+      providerName,
+      targetUrl,
+      message: "Open provider manually to continue.",
+      phase: "fallback",
+    });
+    return { ok: false as const, targetUrl };
+  }
 }

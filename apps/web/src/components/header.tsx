@@ -101,11 +101,10 @@ export function Header({
                 <Link
                   key={key}
                   href={localePath(locale, navPaths[key])}
+                  data-active={activePage === key}
                   className={clsx(
-                    "relative inline-flex items-center gap-2 pb-1 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:rounded-full after:transition-opacity",
-                    activePage === key
-                      ? "text-ink after:bg-black/85 after:opacity-100"
-                      : "text-ink-secondary after:opacity-0 hover:text-ink",
+                    "nav-link inline-flex items-center gap-2 pb-1 text-sm font-medium",
+                    activePage === key ? "text-ink" : "text-ink-secondary hover:text-ink",
                   )}
                 >
                   {label}
@@ -230,7 +229,7 @@ export function Header({
                   href={localePath(locale, navPaths[key])}
                   onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
-                    "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                    "pressable inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     activePage === key
                       ? "bg-bg-surface text-ink"
                       : "text-ink-secondary hover:bg-bg-surface hover:text-ink",

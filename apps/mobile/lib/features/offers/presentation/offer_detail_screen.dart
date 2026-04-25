@@ -97,7 +97,10 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    ProviderBadge(offer: offer),
+                    ProviderBadge(
+                      offer: offer,
+                      heroTag: 'provider-${offer.id}',
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
