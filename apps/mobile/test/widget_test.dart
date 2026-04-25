@@ -26,7 +26,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
 
     expect(find.text('Explore'), findsOneWidget);
-    expect(find.text('Payn'), findsWidgets);
-    expect(find.text('Your financial activity'), findsOneWidget);
+    expect(find.text('Best offers for you'), findsOneWidget);
+    expect(find.text('4.9/5 Trust Rating'), findsOneWidget);
   });
 }

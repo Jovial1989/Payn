@@ -14,6 +14,7 @@ class SavedScreen extends StatelessWidget {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
     final offers = controller.savedOffers;
+    final suggestions = controller.homeRecommendations.take(2).toList();
 
     return SafeArea(
       bottom: false,
@@ -68,10 +69,19 @@ class SavedScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      const Icon(
-                        Icons.bookmark_border_rounded,
-                        size: 48,
-                        color: PaynColors.textTertiary,
+                      Container(
+                        width: 88,
+                        height: 88,
+                        decoration: BoxDecoration(
+                          color: PaynColors.surfaceDim,
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.bookmark_border_rounded,
+                          size: 42,
+                          color: PaynColors.textTertiary,
+                        ),
                       ),
                       const SizedBox(height: 14),
                       Text(
@@ -88,10 +98,39 @@ class SavedScreen extends StatelessWidget {
                       FilledButton(
                         onPressed: () => context.go('/explore'),
                         style: FilledButton.styleFrom(
-                          minimumSize: const Size(0, 42),
+                          minimumSize: const Size(0, 48),
                         ),
-                        child: const Text('Explore offers'),
+                        child: const Text('Find my best offers'),
                       ),
+                      if (suggestions.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Suggested offers',
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...suggestions.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: OfferCard(
+                              offer: item.offer,
+                              reasons: item.reasons,
+                              tradeoff: item.tradeoff,
+                              saved: false,
+                              onTap: () => context.push('/offer/${item.offer.id}'),
+                              onSave: () => controller.toggleSaved(item.offer.id),
+                              onProviderTap:
+                                  () => showProviderHandoffSheet(
+                                    context,
+                                    offer: item.offer,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

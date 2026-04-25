@@ -43,7 +43,6 @@ class _OfferCardState extends State<OfferCard> {
     final primaryMetric =
         widget.offer.metrics.isNotEmpty ? widget.offer.metrics.first : null;
     final badgeLabel = _decisionLabel();
-    final metricNarrative = _metricNarrative(primaryMetric, badgeLabel);
     final benefits =
         <String>[
               ...widget.offer.bestFor,
@@ -332,25 +331,6 @@ class _OfferCardState extends State<OfferCard> {
     }
     return 'Best value';
   }
-
-  String _metricNarrative(PaynMetric? metric, String badgeLabel) {
-    if (metric == null) {
-      return 'Personalized match';
-    }
-
-    final normalized = metric.label.toLowerCase();
-    if (normalized.contains('apr') || normalized.contains('rate')) {
-      return badgeLabel == 'Best value' ? 'Lowest in market' : badgeLabel;
-    }
-    if (normalized.contains('fee') || normalized.contains('spread')) {
-      return 'Transparent total cost';
-    }
-    if (normalized.contains('speed')) {
-      return 'Fastest handoff';
-    }
-    return badgeLabel == 'Fast' ? 'Quick decision flow' : 'Top ranked today';
-  }
-
   String _primaryCtaLabel() {
     switch (widget.offer.category) {
       case PaynCategory.loans:

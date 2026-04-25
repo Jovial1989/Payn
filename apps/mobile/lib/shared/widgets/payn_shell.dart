@@ -52,37 +52,46 @@ class _FrostedNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: const Color(0xEBFFFFFF),
-              border: const Border(
-                top: BorderSide(color: PaynColors.outlineSubtle),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xECFFFFFF),
+                border: Border.all(color: PaynColors.outlineSubtle),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List<Widget>.generate(_destinations.length, (index) {
-                  final item = _destinations[index];
-                  final selected = navigationShell.currentIndex == index;
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List<Widget>.generate(_destinations.length, (index) {
+                    final item = _destinations[index];
+                    final selected = navigationShell.currentIndex == index;
 
-                  return Expanded(
-                    child: _NavButton(
-                      item: item,
-                      selected: selected,
-                      onTap: () {
-                        navigationShell.goBranch(
-                          index,
-                          initialLocation: index == navigationShell.currentIndex,
-                        );
-                      },
-                    ),
-                  );
-                }),
+                    return Expanded(
+                      child: _NavButton(
+                        item: item,
+                        selected: selected,
+                        onTap: () {
+                          navigationShell.goBranch(
+                            index,
+                            initialLocation: index == navigationShell.currentIndex,
+                          );
+                        },
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
           ),
@@ -110,7 +119,7 @@ class _NavButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
-        height: 68,
+        height: 60,
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(18),
@@ -125,26 +134,20 @@ class _NavButton extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                  AnimatedScale(
+                    scale: selected ? 1.0 : 0.96,
+                    duration: const Duration(milliseconds: 180),
                     curve: Curves.easeOutCubic,
-                    width: selected ? 52 : 32,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? PaynColors.accentSurface
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
                     child: Icon(
                       selected ? item.selectedIcon : item.icon,
-                      size: 20,
-                      color: selected
-                          ? PaynColors.accent
-                          : PaynColors.textTertiary,
+                      size: 21,
+                      color:
+                          selected
+                              ? PaynColors.accent
+                              : PaynColors.textTertiary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     item.label,
                     textAlign: TextAlign.center,

@@ -13,6 +13,7 @@ import 'package:payn_mobile/shared/widgets/insight_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
+import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
@@ -72,7 +73,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Row(
                 children: <Widget>[
                   Expanded(
-                    child: Text('Explore', style: theme.textTheme.titleLarge),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('Best options for you', style: theme.textTheme.titleLarge),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Search once, then narrow the strongest matches.',
+                          style: theme.textTheme.labelMedium,
+                        ),
+                      ],
+                    ),
                   ),
                   _FilterButton(
                     count: controller.activeFilterCount,
@@ -99,34 +110,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      child: SizedBox(
-                        height: 48,
-                        child: TextField(
-                          onChanged: (value) {
-                            _pulseLoading();
-                            controller.updateExploreFilters(
-                              controller.exploreFilters.copyWith(query: value),
-                            );
-                          },
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: PaynColors.text,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Search providers or products',
-                            prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                            suffixIcon:
-                                controller.exploreFilters.query.isEmpty
-                                    ? null
-                                    : IconButton(
-                                      onPressed: () {
-                                        _pulseLoading();
-                                        controller.updateExploreFilters(
-                                          controller.exploreFilters.copyWith(query: ''),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.close_rounded, size: 16),
-                                    ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: PaynColors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: SizedBox(
+                          height: 54,
+                          child: TextField(
+                            onChanged: (value) {
+                              _pulseLoading();
+                              controller.updateExploreFilters(
+                                controller.exploreFilters.copyWith(query: value),
+                              );
+                            },
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: PaynColors.text,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Search providers or products',
+                              prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                              suffixIcon:
+                                  controller.exploreFilters.query.isEmpty
+                                      ? null
+                                      : IconButton(
+                                        onPressed: () {
+                                          _pulseLoading();
+                                          controller.updateExploreFilters(
+                                            controller.exploreFilters.copyWith(query: ''),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.close_rounded, size: 16),
+                                      ),
+                            ),
                           ),
                         ),
                       ),
@@ -144,7 +168,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             final selected =
                                 controller.selectedExploreCategory == null;
                             return _ControlChip(
-                              label: 'All ${controller.exploreResults.length}',
+                              label: 'All',
+                              detail: '${controller.exploreResults.length}',
                               selected: selected,
                               onTap: () {
                                 _pulseLoading();
@@ -155,7 +180,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           final category = PaynCategory.values[index - 1];
                           final count = controller.categoryCounts[category] ?? 0;
                           return _ControlChip(
-                            label: '${category.label} $count',
+                            label: category.label,
+                            detail: '$count',
                             selected:
                                 controller.selectedExploreCategory == category,
                             onTap: () {
@@ -167,25 +193,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    SizedBox(
-                      height: 40,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: _ExploreSort.values.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final option = _ExploreSort.values[index];
-                          return _ControlChip(
-                            label: _sortLabel(option),
-                            selected: _sort == option,
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              _pulseLoading();
-                              setState(() => _sort = option);
-                            },
-                          );
-                        },
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<_ExploreSort>(
+                          segments:
+                              _ExploreSort.values
+                                  .map(
+                                    (option) => ButtonSegment<_ExploreSort>(
+                                      value: option,
+                                      label: Text(_sortLabel(option)),
+                                    ),
+                                  )
+                                  .toList(),
+                          selected: <_ExploreSort>{_sort},
+                          showSelectedIcon: false,
+                          onSelectionChanged: (selection) {
+                            HapticFeedback.selectionClick();
+                            _pulseLoading();
+                            setState(() => _sort = selection.first);
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -276,7 +305,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       itemCount: 3,
                       separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder:
-                          (context, index) => const _OfferCardSkeleton(),
+                          (context, index) => const OfferCardSkeleton(),
                     )
                     : SliverList.separated(
                       itemCount: results.length,
@@ -589,26 +618,30 @@ class _StickyExploreControls extends SliverPersistentHeaderDelegate {
 class _ControlChip extends StatelessWidget {
   const _ControlChip({
     required this.label,
+    required this.detail,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
+  final String detail;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? PaynColors.accent : Colors.white,
-      borderRadius: BorderRadius.circular(999),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          width: 116,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
+            color: selected ? PaynColors.text : Colors.white,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? Colors.transparent : PaynColors.outlineSubtle,
             ),
@@ -623,12 +656,31 @@ class _ControlChip extends StatelessWidget {
                     ]
                     : null,
           ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: selected ? Colors.white : PaynColors.textSecondary,
-              fontWeight: FontWeight.w700,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: selected ? Colors.white : PaynColors.text,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                detail,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color:
+                      selected
+                          ? Colors.white.withValues(alpha: 0.72)
+                          : PaynColors.textTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -636,83 +688,49 @@ class _ControlChip extends StatelessWidget {
   }
 }
 
-class _OfferCardSkeleton extends StatelessWidget {
-  const _OfferCardSkeleton();
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(PaynRadius.card),
-        border: Border.all(color: PaynColors.outlineSubtle),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
+    final theme = Theme.of(context);
+    final hasFilters = count > 0;
+
+    return Material(
+      color: hasFilters ? PaynColors.text : PaynColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _SkeletonBox(width: 52, height: 52, radius: 16),
-              SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _SkeletonBox(width: 84, height: 12, radius: 999),
-                    SizedBox(height: 10),
-                    _SkeletonBox(width: 180, height: 18, radius: 999),
-                    SizedBox(height: 8),
-                    _SkeletonBox(width: 140, height: 14, radius: 999),
-                  ],
+              Icon(
+                Icons.tune_rounded,
+                size: 16,
+                color:
+                    hasFilters ? PaynColors.surface : PaynColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                hasFilters ? 'Filters $count' : 'Filters',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color:
+                      hasFilters
+                          ? PaynColors.surface
+                          : PaynColors.textSecondary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 18),
-          _SkeletonBox(width: double.infinity, height: 150, radius: 24),
-          SizedBox(height: 18),
-          Row(
-            children: <Widget>[
-              Expanded(child: _SkeletonBox(width: double.infinity, height: 46, radius: 999)),
-              SizedBox(width: 10),
-              Expanded(child: _SkeletonBox(width: double.infinity, height: 46, radius: 999)),
-            ],
-          ),
-        ],
+        ),
       ),
-    );
-  }
-}
-
-class _SkeletonBox extends StatelessWidget {
-  const _SkeletonBox({
-    required this.width,
-    required this.height,
-    required this.radius,
-  });
-
-  final double width;
-  final double height;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0.35, end: 0.8),
-      duration: const Duration(milliseconds: 900),
-      curve: Curves.easeInOut,
-      builder: (context, value, child) {
-        return Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: PaynColors.surfaceDim.withValues(alpha: value),
-            borderRadius: BorderRadius.circular(radius),
-          ),
-        );
-      },
-      onEnd: () {},
     );
   }
 }
@@ -988,53 +1006,6 @@ class _InvestmentIntelligenceBlockState
             },
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.count, required this.onTap});
-
-  final int count;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final hasFilters = count > 0;
-
-    return Material(
-      color: hasFilters ? PaynColors.text : PaynColors.surfaceDim,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                Icons.tune_rounded,
-                size: 14,
-                color:
-                    hasFilters ? PaynColors.surface : PaynColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                hasFilters ? 'Filters $count' : 'Filters',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color:
-                      hasFilters
-                          ? PaynColors.surface
-                          : PaynColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

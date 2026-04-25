@@ -67,89 +67,83 @@ export function DecisionResultRow({
 
   return (
     <article
-      className={`rounded-[26px] border border-transparent bg-white px-4 py-5 shadow-[0_8px_22px_rgba(17,24,39,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#EAEAEA] hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.995] sm:px-5 ${
-        highlighted ? "border-[#ECEDEF] bg-[#FCFCFD]" : ""
+      className={`group rounded-[20px] bg-white p-5 shadow-[0_2px_10px_rgba(17,24,39,0.05)] transition-all duration-200 hover:shadow-[0_8px_28px_rgba(17,24,39,0.09)] active:scale-[0.997] sm:p-6 ${
+        highlighted ? "" : "opacity-95"
       }`}
     >
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-6">
-        <div className="min-w-0">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div className="w-8 shrink-0 pt-1 text-sm font-semibold text-ink-tertiary">#{rank}</div>
-            <div className="min-w-0 flex-1">
-              <div className="grid min-w-0 gap-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
-                <ProviderLogo providerName={offer.providerName} size="sm" />
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-ink">{offer.providerName}</p>
-                  <Link
-                    href={localePath(locale, getOfferHref(offer))}
-                    className="mt-1 block text-base font-bold tracking-[-0.03em] text-ink transition-colors hover:text-ink-secondary"
-                  >
-                    <span className="line-clamp-2">{offer.title}</span>
-                  </Link>
-                  <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-                    {normalizeDisplayText(summary)}
-                  </p>
-                </div>
+      <div className="flex items-start gap-3 sm:gap-4">
+        {/* Rank */}
+        <span className="mt-1 w-7 shrink-0 text-[13px] font-semibold tabular-nums text-ink-tertiary">
+          #{rank}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          {/* Header: logo + name/title + primary value */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <ProviderLogo providerName={offer.providerName} size="sm" />
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold text-ink-tertiary">{offer.providerName}</p>
+                <Link
+                  href={localePath(locale, getOfferHref(offer))}
+                  className="mt-0.5 block line-clamp-2 text-[15px] font-bold leading-snug tracking-[-0.025em] text-ink transition-colors hover:text-accent-emerald-strong"
+                >
+                  {offer.title}
+                </Link>
               </div>
+            </div>
+
+            {/* Primary metric — inline, no box */}
+            <div className="shrink-0 text-right">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                {normalizeDisplayText(primaryLabel)}
+              </p>
+              <p className="mt-1 text-[1.7rem] font-extrabold leading-none tracking-[-0.04em] text-ink tabular-nums">
+                {normalizeDisplayText(primaryValue)}
+              </p>
             </div>
           </div>
 
+          {/* Tags — max 2, all neutral */}
           {tags.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <Tag key={`${offer.id}-${tag.label}`} tone={tag.tone ?? "muted"}>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {tags.slice(0, 2).map((tag) => (
+                <Tag key={`${offer.id}-${tag.label}`} tone="muted">
                   {normalizeDisplayText(translateUiToken(locale, tag.label))}
                 </Tag>
               ))}
             </div>
           ) : null}
 
-          {why ? (
-            <p className="mt-3 text-sm leading-relaxed text-ink">
-              <span className="font-semibold">{whyPrefix}</span> {normalizeDisplayText(why)}
-            </p>
+          {/* Metrics — flat row, no grid boxes */}
+          {metrics.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+              {metrics.map((metric) => (
+                <div key={`${offer.id}-${metric.label}`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                    {normalizeDisplayText(metric.label)}
+                  </p>
+                  <p className="mt-0.5 text-[13px] font-semibold text-ink">
+                    {normalizeDisplayText(metric.value)}
+                  </p>
+                </div>
+              ))}
+            </div>
           ) : null}
 
-          <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
-            {metrics.map((metric) => (
-              <div key={`${offer.id}-${metric.label}`}>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                  {normalizeDisplayText(metric.label)}
-                </dt>
-                <dd className="mt-1 text-sm font-semibold text-ink">{normalizeDisplayText(metric.value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="grid gap-3 rounded-[20px] border border-[#EAEAEA] bg-[#FAFAFA] px-4 py-4 lg:content-start">
-          <div className="border-b border-[#F0F0F0] pb-3 text-left lg:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              {normalizeDisplayText(primaryLabel)}
-            </p>
-            <p className="mt-1.5 text-[28px] font-bold tracking-[-0.055em] text-ink tabular-nums">
-              {normalizeDisplayText(primaryValue)}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2">
-            <ProviderLinkButton
-              offer={offer}
-              label={resolvedProviderLabel}
-              fullWidth
-              className="justify-center"
-            />
+          {/* CTA row */}
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#F2F3F2] pt-4">
+            <ProviderLinkButton offer={offer} label={resolvedProviderLabel} />
             <Link
               href={localePath(locale, getOfferHref(offer))}
-              className={clsx(
-                buttonStyles({ variant: "secondary", size: "sm" }),
-                "w-full justify-center",
-              )}
+              className="text-[13px] font-semibold text-ink-secondary transition-colors hover:text-ink"
             >
-              {resolvedDetailsLabel}
+              {resolvedDetailsLabel} &rarr;
             </Link>
-            <SaveOfferButton offer={offer} variant="ghost" size="sm" className="w-full justify-center" />
-            {extraActions}
+            <div className="ml-auto flex items-center gap-2">
+              <SaveOfferButton offer={offer} variant="ghost" size="sm" />
+              {extraActions}
+            </div>
           </div>
         </div>
       </div>

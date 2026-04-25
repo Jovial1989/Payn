@@ -90,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             controller.isAuthenticated
-                                ? '${preferences.profileType.label} · ${formatMarketLabel(preferences.market)}'
+                                ? formatMarketLabel(preferences.market)
                                 : 'Browse freely, save locally, or log in to sync your shortlist.',
                             style: theme.textTheme.labelMedium,
                           ),
@@ -171,63 +171,6 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ── Profile type ──
-          _SettingsSection(
-            title: 'Profile type',
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children:
-                  ProfileType.values.map((type) {
-                    return ChoiceChip(
-                      selected: preferences.profileType == type,
-                      label: Text(type.label),
-                      onSelected: (_) {
-                        controller.updatePreferences(
-                          preferences.copyWith(profileType: type),
-                        );
-                      },
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Categories ──
-          _SettingsSection(
-            title: 'Categories',
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children:
-                  PaynCategory.values.map((category) {
-                    final selected = preferences.selectedCategories.contains(
-                      category,
-                    );
-                    return FilterChip(
-                      selected: selected,
-                      label: Text(category.label),
-                      onSelected: (_) {
-                        final next = List<PaynCategory>.from(
-                          preferences.selectedCategories,
-                        );
-                        if (selected) {
-                          next.remove(category);
-                        } else {
-                          next.add(category);
-                        }
-                        controller.updatePreferences(
-                          preferences.copyWith(selectedCategories: next),
-                        );
-                      },
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
           // ── Interests ──
           _SettingsSection(
             title: 'Interests',
@@ -254,27 +197,6 @@ class ProfileScreen extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                     );
                   }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Stats ──
-          _SettingsSection(
-            title: 'Activity',
-            child: Row(
-              children: <Widget>[
-                _MiniStat(label: 'Saved', value: '${controller.savedCount}'),
-                const SizedBox(width: 8),
-                _MiniStat(
-                  label: 'Compare',
-                  value: '${controller.compareCount}',
-                ),
-                const SizedBox(width: 8),
-                _MiniStat(
-                  label: 'Viewed',
-                  value: '${controller.recentOffers.length}',
-                ),
-              ],
             ),
           ),
         ],
@@ -313,35 +235,6 @@ class _SettingsSection extends StatelessWidget {
           const SizedBox(height: 10),
           child,
         ],
-      ),
-    );
-  }
-}
-
-class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          color: PaynColors.surfaceDim,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(value, style: theme.textTheme.titleMedium),
-            Text(label, style: theme.textTheme.labelMedium),
-          ],
-        ),
       ),
     );
   }

@@ -458,42 +458,6 @@ class _ActivityMetricCard extends StatelessWidget {
   }
 }
 
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label});
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context);
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: PaynColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: PaynColors.outlineSubtle),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(value, style: t.textTheme.titleLarge),
-            const SizedBox(height: 2),
-            Text(label, style: t.textTheme.labelMedium),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _RecentItem extends StatelessWidget {
   const _RecentItem({required this.offer, required this.onTap});
   final PaynOffer offer;

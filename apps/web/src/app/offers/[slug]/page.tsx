@@ -104,6 +104,8 @@ export default async function OfferDetailPage({
     .filter((candidate) => matchesOfferCountrySelection(candidate, preferences.country))
     .slice(0, 2);
   const tradeoff = getOfferTradeoff(offer);
+  const primaryMetric = offer.metrics[0];
+  const secondaryMetrics = offer.metrics.slice(1, 4);
 
   return (
     <>
@@ -113,90 +115,148 @@ export default async function OfferDetailPage({
         language={preferences.locale}
         market={resolvedMarket}
       />
-      <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex items-start gap-4">
-            <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
-            <div>
-              <p className="text-sm font-bold text-ink">{offer.providerName}</p>
-              <p className="mt-1 text-sm text-ink-secondary">
-                {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {offer.bestFor.map((item) => (
-                  <Tag key={item} tone="muted">
-                    {normalizeDisplayText(item)}
-                  </Tag>
-                ))}
+      <section className="grid gap-5">
+        <div className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start gap-4">
+                <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
+                <div>
+                  <p className="text-sm font-bold text-ink">{offer.providerName}</p>
+                  <p className="mt-1 text-sm text-ink-secondary">
+                    {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Tag tone="accent">#{offerRank}</Tag>
+                    {offer.bestFor.slice(0, 2).map((item) => (
+                      <Tag key={item} tone="muted">
+                        {normalizeDisplayText(item)}
+                      </Tag>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <SaveOfferButton offer={offer} variant="ghost" size="md" />
+                <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
+                  {dictionary.offerDetail.backToCategory}
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-tertiary">
+                  {primaryMetric
+                    ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
+                    : categoryLabel}
+                </p>
+                <h1 className="mt-3 text-[3rem] font-extrabold leading-none tracking-[-0.07em] text-ink sm:text-[4.5rem]">
+                  {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
+                </h1>
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
+                  {normalizeDisplayText(offer.subtitle)}
+                </p>
+              </div>
+
+              <div className="rounded-[28px] bg-[#F7F9F7] p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Primary action
+                </p>
+                <div className="mt-4 grid gap-3">
+                  <ProviderLinkButton offer={offer} label="Check my rate" source="offer_detail" fullWidth />
+                  <p className="text-sm leading-relaxed text-ink-secondary">
+                    Smooth handoff to {offer.providerName} when you are ready.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            <ProviderLinkButton offer={offer} label={dictionary.offerDetail.visitProvider} source="offer_detail" />
-            <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
-              {dictionary.offerDetail.backToCategory}
-            </Link>
-            <SaveOfferButton offer={offer} variant="ghost" size="md" />
-          </div>
         </div>
 
-        <dl className="mt-8 grid gap-3 sm:grid-cols-3">
-          {offer.metrics.map((metric) => (
-            <div key={metric.label} className="rounded-2xl bg-bg-surface px-5 py-4">
-              <dt className="text-xs font-medium text-ink-tertiary">
-                {normalizeDisplayText(getMetricLabel(preferences.locale, metric.label))}
-              </dt>
-              <dd className="mt-1.5 text-lg font-bold tracking-tight text-ink">
-                {normalizeDisplayText(metric.value)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-3xl border border-accent-blue bg-accent-blue/30 p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-blue-text">
-              {dictionary.offerDetail.whyShown}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded-[28px] border border-line bg-white p-6 shadow-card lg:col-span-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+              Rates
             </p>
-            <div className="mt-3 grid gap-2">
-              {(reasons.length > 0 ? reasons : ["Visible pricing", "Provider context"]).map((reason) => (
-                <div key={reason} className="flex items-start gap-2">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mt-0.5 shrink-0 text-accent-blue-text">
-                    <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
-                    <path d="M7 4v3M7 9h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  </svg>
-                  <p className="text-sm leading-relaxed text-accent-blue-text">
-                    {normalizeDisplayText(translateMatchReason(preferences.locale, reason))}
+            <div className="mt-5 grid gap-4">
+              {offer.metrics.map((metric) => (
+                <div key={metric.label}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                    {normalizeDisplayText(getMetricLabel(preferences.locale, metric.label))}
+                  </p>
+                  <p className="mt-1 text-xl font-bold tracking-[-0.04em] text-ink">
+                    {normalizeDisplayText(metric.value)}
                   </p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-line bg-[#FCFCFB] p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              {dictionary.offerDetail.tradeoff}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-              {normalizeDisplayText(translateTradeoff(preferences.locale, tradeoff))}
-            </p>
+          <div className="rounded-[28px] border border-line bg-white p-6 shadow-card lg:col-span-2">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Benefits
+                </p>
+                <div className="mt-4 grid gap-3">
+                  {(reasons.length > 0 ? reasons : ["Visible pricing", "Provider context"]).map((reason) => (
+                    <div key={reason} className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#DDF4E7] text-accent-emerald">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                          <path d="M3.5 8l3 3 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <p className="text-sm leading-relaxed text-ink-secondary">
+                        {normalizeDisplayText(translateMatchReason(preferences.locale, reason))}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                  Tradeoffs
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
+                  {normalizeDisplayText(translateTradeoff(preferences.locale, tradeoff))}
+                </p>
+                {secondaryMetrics.length > 0 ? (
+                  <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                    {secondaryMetrics.map((metric) => (
+                      <div key={metric.label} className="rounded-[20px] bg-[#F7F9F7] px-4 py-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                          {normalizeDisplayText(getMetricLabel(preferences.locale, metric.label))}
+                        </p>
+                        <p className="mt-1 text-base font-bold text-ink">
+                          {normalizeDisplayText(metric.value)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 rounded-3xl border border-line bg-[#FCFCFB] p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-            {dictionary.offerDetail.beforeClick}
-          </p>
-          <div className="mt-3 grid gap-2">
-            {dictionary.offerDetail.beforeClickPoints.map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0 text-ink-tertiary">
-                  <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <p className="text-sm leading-relaxed text-ink-secondary">{item}</p>
-              </div>
-            ))}
+        <div className="sticky bottom-4 z-20 rounded-[28px] border border-line bg-white/92 p-4 shadow-[0_20px_46px_rgba(15,23,32,0.14)] backdrop-blur">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                {primaryMetric
+                  ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
+                  : categoryLabel}
+              </p>
+              <p className="mt-1 text-2xl font-extrabold tracking-[-0.05em] text-ink">
+                {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <ProviderLinkButton offer={offer} label="Check my rate" source="offer_detail_sticky" />
+            </div>
           </div>
         </div>
       </section>

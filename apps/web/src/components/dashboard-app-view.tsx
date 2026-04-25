@@ -7,8 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { DashboardLoadingState, DashboardSectionCard } from "@/components/dashboard-primitives";
-import { DashboardOverviewWorkspace } from "@/components/dashboard-overview-workspace";
 import { DashboardProfileWorkspace } from "@/components/dashboard-profile-workspace";
+import { OfferCard } from "@/components/offer-card";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { useAuth } from "@/hooks/use-auth";
@@ -19,9 +19,9 @@ import {
 } from "@/lib/analytics";
 import {
   getCategoryOffersForCountrySelection,
-  getOffersForCountrySelection,
 } from "@/lib/countries";
 import type { DashboardInsights } from "@/lib/dashboard";
+import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { getDashboardHref, type DashboardView } from "@/lib/dashboard-navigation";
 import { getUiCopy } from "@/lib/ui-copy";
@@ -54,6 +54,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   const { user, profile, loading, updateProfile, signOut, requestPasswordReset } = useAuth();
   const preferences = useMarketplacePreferences();
   const uiCopy = getUiCopy(preferences.locale);
+  const dictionary = getDictionary(preferences.locale);
   const productEntryActionLabel = getProductEntryActionLabel(preferences.locale);
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const productMarketScope = "eu_fallback";
@@ -113,10 +114,6 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
     void loadInsights();
   }, [loadInsights]);
 
-  const allOffers = useMemo(
-    () => getOffersForCountrySelection(preferences.country, productMarketScope),
-    [preferences.country],
-  );
   const pageView = (
     <AnalyticsPageView
       eventName={view === "settings" ? AnalyticsEvent.SettingsViewed : AnalyticsEvent.DashboardViewed}
@@ -173,9 +170,9 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
     );
   }
 
-  const username = user.email ? user.email.split("@")[0] : "Payn";
   const savedOffers = insights?.savedOffers ?? [];
   const watchedOffers = insights?.watchedOffers ?? [];
+  const bestOffers = insights?.recommended.slice(0, 3) ?? [];
   const categoryCounts = Object.fromEntries(
     dashboardCategories.map((category) => [
       category,
@@ -204,21 +201,67 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
     );
   } else {
     body = (
-      <DashboardOverviewWorkspace
-        key="dashboard"
-        locale={preferences.locale}
-        username={username}
-        profile={profile ?? null}
-        marketLabel={preferences.countryLabel}
-        marketOffers={allOffers}
-        savedOffers={savedOffers}
-        watchedOffers={watchedOffers}
-        categoryCounts={categoryCounts}
-        settingsHref={dashboardHref("settings")}
-        discoverHref={discoverHref}
-        categoryHref={(category) => dashboardHref(category)}
-        investmentsHref={dashboardHref("investments")}
-      />
+      <div className="grid gap-6">
+        <DashboardSectionCard
+          eyebrow="Personalized"
+          title="Best offers for you"
+          description="Your clearest next options, ranked for quick decisions."
+          action={
+            <Link href={discoverHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
+              {productEntryActionLabel}
+            </Link>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-3">
+            {bestOffers.map((item, index) => (
+              <OfferCard key={item.offer.id} offer={item.offer} rank={index + 1} locale={preferences.locale} />
+            ))}
+          </div>
+        </DashboardSectionCard>
+
+        <DashboardSectionCard
+          eyebrow="Continue"
+          title="Continue where you left off"
+          description="Jump back into recently viewed or saved offers without restarting your search."
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            {(watchedOffers.length > 0 ? watchedOffers : savedOffers).slice(0, 2).map((offer, index) => (
+              <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} />
+            ))}
+            {watchedOffers.length === 0 && savedOffers.length === 0 ? (
+              <div className="rounded-[20px] border border-dashed border-line bg-white p-6 text-sm leading-relaxed text-ink-secondary">
+                Save or open offers to build your shortlist.
+              </div>
+            ) : null}
+          </div>
+        </DashboardSectionCard>
+
+        <DashboardSectionCard
+          eyebrow="Explore"
+          title="Explore categories"
+          description="Browse by financial goal with the shortest path to a decision."
+        >
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {dashboardCategories.map((category) => (
+              <Link
+                key={category}
+                href={dashboardHref(category)}
+                className="group rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(15,138,75,0.18)] hover:shadow-[0_16px_36px_rgba(15,23,32,0.08)]"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  {categoryCounts[category]} offers
+                </p>
+                <p className="mt-2 text-lg font-bold tracking-[-0.03em] text-ink">
+                  {dictionary.categories[category]}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-accent-emerald transition-colors group-hover:text-accent-emerald-strong">
+                  Explore {dictionary.categories[category].toLowerCase()} &rarr;
+                </p>
+              </Link>
+            ))}
+          </div>
+        </DashboardSectionCard>
+      </div>
     );
   }
 
