@@ -89,26 +89,18 @@ export function handleExternalRedirect({
   const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
 
   if (popup) {
+    // New tab opened — Payn stays open in current tab.
     onComplete?.(targetUrl);
     return { ok: true as const, targetUrl };
   }
 
-  try {
-    window.location.href = targetUrl;
-    onFallback({
-      providerName,
-      targetUrl,
-      message: "If nothing happens, use Open provider below.",
-      phase: "fallback",
-    });
-    return { ok: true as const, targetUrl };
-  } catch {
-    onFallback({
-      providerName,
-      targetUrl,
-      message: "Open provider manually to continue.",
-      phase: "fallback",
-    });
-    return { ok: false as const, targetUrl };
-  }
+  // Popup was blocked by the browser. Never navigate the current tab.
+  // Show fallback so the user can open manually.
+  onFallback({
+    providerName,
+    targetUrl,
+    message: "Your browser blocked the new tab. Click "Open provider" to continue.",
+    phase: "fallback",
+  });
+  return { ok: false as const, targetUrl };
 }
