@@ -3,6 +3,7 @@
 import type { MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
+import type { MouseEvent } from "react";
 import { providerCtaStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
@@ -107,7 +108,9 @@ export function ProviderLinkButton({
     }
   };
 
-  const openProvider = () => {
+  const openProvider = (event?: MouseEvent<HTMLElement>) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setRedirectState(null);
     trackClick();
 
@@ -158,6 +161,10 @@ export function ProviderLinkButton({
       <button
         type="button"
         onClick={openProvider}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
       >
         <svg
@@ -205,6 +212,9 @@ export function ProviderLinkButton({
                 href={manualOpenHref || "#"}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
                 className={clsx(
                   providerCtaStyles({ fullWidth: true }),
                   !manualOpenHref && "pointer-events-none opacity-50",
@@ -214,7 +224,11 @@ export function ProviderLinkButton({
               </a>
               <button
                 type="button"
-                onClick={() => setRedirectState(null)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setRedirectState(null);
+                }}
                 className="pressable inline-flex h-11 w-full items-center justify-center rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
               >
                 Back to Payn

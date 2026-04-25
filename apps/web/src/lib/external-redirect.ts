@@ -99,7 +99,7 @@ export function handleExternalRedirect({
   onFallback({
     providerName,
     targetUrl,
-    message: "Your browser blocked the new tab. Click "Open provider" to continue.",
+    message: 'Your browser blocked the new tab. Click "Open provider" to continue.',
     phase: "fallback",
   });
   return { ok: false as const, targetUrl };
