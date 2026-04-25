@@ -30,7 +30,6 @@ export function ProviderLinkButton({
   const { user } = useAuth();
   const { country, language } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-  const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const rawUrl =
@@ -47,6 +46,7 @@ export function ProviderLinkButton({
     aff_country: country,
   }), [source, offer.category, offer.id, offer.providerName, country]);
 
+  // Computed once — the fully-resolved HTTPS affiliate URL.
   const resolvedUrl = useMemo(() => {
     if (!rawUrl) return null;
     const resolved = buildRedirectTarget({ rawUrl, affiliateParams });
@@ -55,11 +55,19 @@ export function ProviderLinkButton({
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 2000);
+    const t = window.setTimeout(() => setToast(null), 2200);
     return () => window.clearTimeout(t);
   }, [toast]);
 
-  const doTracking = () => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!resolvedUrl) {
+      // No URL — block navigation and show error.
+      e.preventDefault();
+      setToast("Provider link is not available yet.");
+      return;
+    }
+    // Navigation proceeds via the anchor's href + target="_blank".
+    // We only fire tracking here — it never blocks or delays the tab open.
     trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
       ...buildWebAnalyticsProperties({
         category: offer.category,
@@ -109,35 +117,21 @@ export function ProviderLinkButton({
     }
   };
 
-  const handleClick = () => {
-    if (!resolvedUrl) {
-      setToast("Provider link is not available yet.");
-      return;
-    }
-
-    // ─── window.open MUST be called first — before state updates, tracking,
-    // or any async work. Browsers end the user-gesture context immediately
-    // after the first async boundary, which causes popup blockers to trigger. ───
-    const popup = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
-
-    // Track after opening so it never delays or blocks the handoff.
-    doTracking();
-
-    if (popup) {
-      // New tab opened. Payn stays here. Show a brief success toast.
-      setToast(`Opening ${offer.providerName}…`);
-    } else {
-      // Browser blocked the new tab. Show fallback modal with a direct link.
-      setFallbackUrl(resolvedUrl);
-    }
-  };
-
   return (
     <>
-      <button
-        type="button"
+      {/*
+        Using <a target="_blank"> instead of <button> + window.open.
+        Native anchor link clicks with target="_blank" are NEVER blocked
+        by browser popup blockers. window.open() from a JS handler can be.
+        Payn stays open in the current tab; provider opens in a new one.
+      */}
+      <a
+        href={resolvedUrl ?? "#"}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
         onClick={handleClick}
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
+        aria-disabled={!resolvedUrl}
       >
         <svg
           width="16"
@@ -155,54 +149,9 @@ export function ProviderLinkButton({
           <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
         </svg>
         {label}
-      </button>
+      </a>
 
-      {/* Fallback modal — only shown when the browser blocks window.open */}
-      {fallbackUrl ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(17,24,39,0.44)] p-4 backdrop-blur-md"
-          onClick={() => setFallbackUrl(null)}
-        >
-          <div
-            className="w-full max-w-[360px] rounded-[28px] border border-line bg-white p-6 shadow-[0_24px_60px_rgba(15,23,32,0.2)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#F3F4F6]">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#6B7280" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4.5" y="9" width="11" height="7.5" rx="2" />
-                <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
-              </svg>
-            </div>
-            <h3 className="mt-4 text-[17px] font-bold tracking-[-0.03em] text-ink">
-              Open in a new tab
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              Your browser prevented the tab from opening automatically. Click below to visit {offer.providerName}.
-            </p>
-
-            <div className="mt-5 flex flex-col gap-2.5">
-              <a
-                href={fallbackUrl}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className={clsx(providerCtaStyles({ fullWidth: true }))}
-                onClick={() => setFallbackUrl(null)}
-              >
-                Open {offer.providerName}
-              </a>
-              <button
-                type="button"
-                onClick={() => setFallbackUrl(null)}
-                className="pressable inline-flex h-11 w-full items-center justify-center rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
-              >
-                Back to Payn
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Toast — success or error */}
+      {/* Error toast — shown only when the provider URL is missing */}
       {toast ? (
         <div className="fixed bottom-5 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2.5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(17,24,39,0.22)]">
           {toast}
