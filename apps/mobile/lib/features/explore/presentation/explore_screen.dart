@@ -137,8 +137,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
           SliverPersistentHeader(
             pinned: true,
             delegate: _StickyExploreControls(
-              minExtent: 176,
-              maxExtent: 176,
+              minExtent: 198,
+              maxExtent: 198,
               child: Container(
                 color: PaynColors.background.withValues(alpha: 0.96),
                 padding: const EdgeInsets.only(top: 10, bottom: 12),
@@ -194,7 +194,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 44,
+                      height: 56,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -230,28 +230,25 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: SegmentedButton<_ExploreSort>(
-                          segments:
-                              _ExploreSort.values
-                                  .map(
-                                    (option) => ButtonSegment<_ExploreSort>(
-                                      value: option,
-                                      label: Text(_sortLabel(option)),
-                                    ),
-                                  )
-                                  .toList(),
-                          selected: <_ExploreSort>{_sort},
-                          showSelectedIcon: false,
-                          onSelectionChanged: (selection) {
-                            HapticFeedback.selectionClick();
-                            _pulseLoading();
-                            setState(() => _sort = selection.first);
-                          },
-                        ),
+                    SizedBox(
+                      height: 42,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _ExploreSort.values.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final option = _ExploreSort.values[index];
+                          return _SortChip(
+                            label: _sortLabel(option),
+                            selected: _sort == option,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _pulseLoading();
+                              setState(() => _sort = option);
+                            },
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -676,6 +673,8 @@ class _ControlChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20),
@@ -683,8 +682,8 @@ class _ControlChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          width: 116,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          constraints: const BoxConstraints(minWidth: 84),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: selected ? PaynColors.text : Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -702,31 +701,96 @@ class _ControlChip extends StatelessWidget {
                     ]
                     : null,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: selected ? Colors.white : PaynColors.text,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: selected ? Colors.white : PaynColors.text,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                detail,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color:
-                      selected
-                          ? Colors.white.withValues(alpha: 0.72)
-                          : PaynColors.textTertiary,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: selected ? Colors.white : PaynColors.text,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  detail,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color:
+                        selected
+                            ? PaynColors.text
+                            : PaynColors.textTertiary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SortChip extends StatelessWidget {
+  const _SortChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? PaynColors.text : PaynColors.surface,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected ? Colors.transparent : PaynColors.outlineSubtle,
+            ),
+            boxShadow:
+                selected
+                    ? <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                    : null,
+          ),
+          child: Text(
+            label,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: selected ? Colors.white : PaynColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

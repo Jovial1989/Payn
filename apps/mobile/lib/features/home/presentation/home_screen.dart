@@ -97,7 +97,9 @@ class HomeScreen extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Text(
-                                  formatMarketLabel(controller.preferences.market),
+                                  formatMarketLabel(
+                                    controller.preferences.market,
+                                  ),
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: PaynColors.textSecondary,
                                     fontWeight: FontWeight.w700,
@@ -147,6 +149,13 @@ class HomeScreen extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemCount: PaynCategory.values.length,
               ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+              child: _ActivitySection(controller: controller),
             ),
           ),
 
@@ -260,7 +269,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
-          const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 112)),
         ],
       ),
     );
@@ -335,17 +344,17 @@ class _DashboardHero extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF7FBF8)],
+          colors: <Color>[Color(0xFF171C1C), Color(0xFF0A0E0A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(PaynRadius.panel),
-        border: Border.all(color: PaynColors.outlineSubtle),
+        border: Border.all(color: Colors.white10),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
+            color: Colors.black.withValues(alpha: 0.16),
+            blurRadius: 32,
+            offset: const Offset(0, 18),
           ),
         ],
       ),
@@ -354,13 +363,16 @@ class _DashboardHero extends StatelessWidget {
         children: <Widget>[
           Text(
             'Best options for you',
-            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 34),
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontSize: 36,
+              color: PaynColors.textInverse,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Clear, ranked offers for ${formatMarketLabel(controller.preferences.market)} with calm handoff to providers.',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: PaynColors.textSecondary,
+              color: PaynColors.textInverse.withValues(alpha: 0.72),
             ),
           ),
           const SizedBox(height: 18),
@@ -407,20 +419,26 @@ class _HeroMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: PaynColors.surface,
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PaynColors.outlineSubtle),
+        border: Border.all(color: Colors.white12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(label, style: theme.textTheme.labelMedium),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: PaynColors.textInverse.withValues(alpha: 0.58),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             value,
             style: theme.textTheme.titleLarge?.copyWith(
               fontSize: 20,
               fontWeight: FontWeight.w800,
+              color: PaynColors.textInverse,
             ),
           ),
         ],
@@ -507,7 +525,7 @@ class _SuggestionCard extends StatelessWidget {
     final primaryMetric = offer.metrics.isNotEmpty ? offer.metrics.first : null;
 
     return SizedBox(
-      width: 220,
+      width: 244,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -545,7 +563,7 @@ class _SuggestionCard extends StatelessWidget {
                     fontSize: 24,
                     height: 1,
                   ),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),

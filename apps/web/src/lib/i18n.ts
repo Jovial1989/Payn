@@ -37,6 +37,8 @@ type Dictionary = {
     eyebrow: string;
     title: string;
     description: string;
+    liveRankingLabel: string;
+    optionsInCountry: string;
     resultsLabel: string;
     providersLabel: string;
     filteredFrom: string;
@@ -46,6 +48,18 @@ type Dictionary = {
     emptyDescription: string;
     filterSummary: string;
     openCategoryPage: string;
+    filtersButton: string;
+    searchChipPrefix: string;
+    showingResults: string;
+    showMoreResults: string;
+    sortOptions: Record<"relevance" | "fees" | "speed" | "recommended", string>;
+    emptyActions: {
+      clearFilters: string;
+      openCards: string;
+      showAllCategories: string;
+      tryExchange: string;
+      tryTransfers: string;
+    };
   };
   home: {
     heroEyebrow: string;
@@ -115,12 +129,21 @@ type Dictionary = {
     reviewOffer: string;
     providerSite: string;
     reviewBeforeLeave: string;
+    providerCta: Record<MarketplaceCategory, string>;
+    compareAdded: string;
+    compareToggle: string;
+    partnerLabel: string;
   };
   offerDetail: {
     detailEyebrow: string;
     reviewedOn: string;
     backToCategory: string;
     visitProvider: string;
+    primaryAction: string;
+    primaryActionBody: string;
+    ratesTitle: string;
+    benefitsTitle: string;
+    tradeoffsTitle: string;
     whyShown: string;
     tradeoff: string;
     beforeClick: string;
@@ -293,6 +316,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Find products by country, category, and real filters.",
       description:
         "Select a country, narrow the category, and adjust filters to see ranked offers immediately.",
+      liveRankingLabel: "Live ranking",
+      optionsInCountry: "{count} options in {country}",
       resultsLabel: "matching results",
       providersLabel: "providers",
       filteredFrom: "Filtered from",
@@ -302,6 +327,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       emptyDescription: "Try a different country, category, or filter combination to widen the marketplace view.",
       filterSummary: "Results update immediately when country, category, search, or filters change.",
       openCategoryPage: "Open category page",
+      filtersButton: "Filters",
+      searchChipPrefix: "Search",
+      showingResults: "Showing {shown} of {total} results",
+      showMoreResults: "Show more results",
+      sortOptions: {
+        relevance: "Best match",
+        fees: "Lowest fee",
+        speed: "Fastest",
+        recommended: "Recommended",
+      },
+      emptyActions: {
+        clearFilters: "Clear filters",
+        openCards: "Open cards",
+        showAllCategories: "Show all categories",
+        tryExchange: "Try exchange",
+        tryTransfers: "Try transfers",
+      },
     },
     home: {
       heroEyebrow: "Decision-first financial comparison",
@@ -396,12 +438,28 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       reviewOffer: "Check details",
       providerSite: "Go to provider",
       reviewBeforeLeave: "Review the product on Payn before you leave for the provider.",
+      providerCta: {
+        loans: "Check my rate",
+        cards: "See card details",
+        transfers: "Open provider",
+        exchange: "Open provider",
+        insurance: "Check price",
+        investments: "View platform",
+      },
+      compareAdded: "Added",
+      compareToggle: "Compare",
+      partnerLabel: "Partner",
     },
     offerDetail: {
       detailEyebrow: "Offer detail",
       reviewedOn: "reviewed on",
       backToCategory: "Back to category",
       visitProvider: "Visit provider",
+      primaryAction: "Primary action",
+      primaryActionBody: "Smooth handoff to {provider} when you are ready.",
+      ratesTitle: "Rates",
+      benefitsTitle: "Benefits",
+      tradeoffsTitle: "Tradeoffs",
       whyShown: "Why Payn shows this offer",
       tradeoff: "Main tradeoff to review",
       beforeClick: "Before you click through",
@@ -539,6 +597,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Produkte nach Land, Kategorie und echten Filtern finden.",
       description:
         "Land auswählen, Kategorie eingrenzen und Filter anpassen, um sofort sortierte Angebote zu sehen.",
+      liveRankingLabel: "Live-Ranking",
+      optionsInCountry: "{count} Optionen in {country}",
       resultsLabel: "passende Ergebnisse",
       providersLabel: "Anbieter",
       filteredFrom: "Gefiltert aus",
@@ -548,6 +608,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       emptyDescription: "Versuchen Sie ein anderes Land, eine andere Kategorie oder andere Filter.",
       filterSummary: "Ergebnisse aktualisieren sich sofort bei Land, Kategorie, Suche oder Filtern.",
       openCategoryPage: "Kategorieseite öffnen",
+      filtersButton: "Filter",
+      searchChipPrefix: "Suche",
+      showingResults: "{shown} von {total} Ergebnissen",
+      showMoreResults: "Mehr Ergebnisse",
+      sortOptions: {
+        relevance: "Beste Wahl",
+        fees: "Niedrigste Gebühr",
+        speed: "Schnellste",
+        recommended: "Empfohlen",
+      },
+      emptyActions: {
+        clearFilters: "Filter löschen",
+        openCards: "Karten öffnen",
+        showAllCategories: "Alle Kategorien",
+        tryExchange: "Wechsel versuchen",
+        tryTransfers: "Transfers versuchen",
+      },
     },
     home: {
       heroEyebrow: "Finanzvergleich für Entscheidungen",
@@ -642,12 +719,28 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       reviewOffer: "Details ansehen",
       providerSite: "Zum Anbieter",
       reviewBeforeLeave: "Prüfen Sie das Produkt zuerst auf Payn, bevor Sie zur Anbieterseite gehen.",
+      providerCta: {
+        loans: "Rate prüfen",
+        cards: "Karte ansehen",
+        transfers: "Anbieter öffnen",
+        exchange: "Anbieter öffnen",
+        insurance: "Preis prüfen",
+        investments: "Plattform ansehen",
+      },
+      compareAdded: "Hinzugefügt",
+      compareToggle: "Vergleichen",
+      partnerLabel: "Partner",
     },
     offerDetail: {
       detailEyebrow: "Angebotsdetail",
       reviewedOn: "geprüft am",
       backToCategory: "Zurück zur Kategorie",
       visitProvider: "Anbieter öffnen",
+      primaryAction: "Nächster Schritt",
+      primaryActionBody: "Öffnen Sie {provider}, wenn Sie fortfahren möchten.",
+      ratesTitle: "Konditionen",
+      benefitsTitle: "Vorteile",
+      tradeoffsTitle: "Worauf Sie achten sollten",
       whyShown: "Warum Payn dieses Angebot zeigt",
       tradeoff: "Wichtigster Zielkonflikt",
       beforeClick: "Vor dem Weiterklick",
@@ -777,7 +870,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       loans: "Préstamos",
       cards: "Tarjetas",
       transfers: "Transferencias",
-      exchange: "Cambio",
+      exchange: "Cambio de divisa",
       insurance: "Seguros",
       investments: "Inversiones",
     },
@@ -816,8 +909,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       providerLabel: "Proveedor",
       featureLabel: "Enfoque",
       subtypeLabel: "Subtipo",
-      amountLabel: "Importe necesario",
-      termLabel: "Cobertura mínima de plazo",
+      amountLabel: "Importe",
+      termLabel: "Plazo",
       reset: "Restablecer filtros",
       anyProvider: "Todos los proveedores",
       anyFeature: "Cualquier enfoque",
@@ -825,9 +918,11 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
     },
     explorer: {
       eyebrow: "Mercado por país",
-      title: "Empieza con país, categoría y filtros reales.",
+      title: "Explora por país, categoría y filtros útiles.",
       description:
-        "Payn ahora abre con selección de mercado, filtros útiles y resultados directos en lugar de un hero dominante.",
+        "Compara con una selección de país clara, filtros útiles y resultados listos para decidir.",
+      liveRankingLabel: "Ranking en tiempo real",
+      optionsInCountry: "{count} opciones en {country}",
       resultsLabel: "resultados",
       providersLabel: "proveedores",
       filteredFrom: "Filtrado desde",
@@ -835,15 +930,32 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       topResults: "Mejores resultados",
       emptyTitle: "No hay ofertas para esta combinación",
       emptyDescription: "Prueba otro país, otra categoría o filtros distintos.",
-      filterSummary: "Los resultados cambian al instante cuando cambias país, categoría, búsqueda o filtros.",
+      filterSummary: "Los resultados se actualizan al instante cuando cambias país, categoría, búsqueda o filtros.",
       openCategoryPage: "Abrir página de categoría",
+      filtersButton: "Filtros",
+      searchChipPrefix: "Búsqueda",
+      showingResults: "Mostrando {shown} de {total} resultados",
+      showMoreResults: "Ver más resultados",
+      sortOptions: {
+        relevance: "Mejor encaje",
+        fees: "Menor coste",
+        speed: "Más rápido",
+        recommended: "Recomendado",
+      },
+      emptyActions: {
+        clearFilters: "Borrar filtros",
+        openCards: "Ver tarjetas",
+        showAllCategories: "Ver todas las categorías",
+        tryExchange: "Probar cambio de divisa",
+        tryTransfers: "Probar transferencias",
+      },
     },
     home: {
       heroEyebrow: "Comparación financiera para decidir",
       heroTitle: "Encuentra tu mejor opción financiera en Europa en menos de 60 segundos",
       heroSubtitle:
         "Compara más de 40 bancos y fintechs con total transparencia — sin comisiones ocultas y sin impacto en tu historial crediticio",
-      heroCta: "Consulta tus opciones",
+      heroCta: "Comparar ahora",
       heroCtaSecondary: "Ver mejores ofertas",
       heroPanelTitle: "Mejores ofertas en tu mercado",
       heroPanelSubtitle: "Ordenadas por transparencia, comisiones y encaje para tu mercado seleccionado.",
@@ -873,12 +985,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       seeAll: "Ver todo",
       tagFastest: "Más rápido",
       tagNoFees: "Sin comisiones",
-      tagBestValue: "Mejor valor",
+      tagBestValue: "Mejor opción",
       whyPaynEyebrow: "Por qué Payn",
       whyPaynTitle: "Por qué la gente usa Payn antes de solicitar",
       howItWorksEyebrow: "Cómo funciona",
       howItWorksTitle: "Tres pasos desde la necesidad hasta el proveedor",
-      openExplore: "Empezar a comparar",
+      openExplore: "Comparar ahora",
       step: "Paso",
       steps: [
         "Selecciona lo que necesitas",
@@ -894,9 +1006,9 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         "Retoma donde lo dejaste",
       ],
       appWaitlistNote: "Únete a la lista para acceso anticipado. iOS y Android.",
-      providerTitle: "Cobertura de proveedores",
+      providerTitle: "Proveedores disponibles",
       providerDescription:
-        "Los proveedores reconocibles siguen visibles bajo los resultados para mantener el mercado anclado en instituciones reales.",
+        "Payn mantiene proveedores reconocibles a la vista para que la comparación siga siendo creíble y clara.",
       appTitle: "App de Payn",
       appDescription:
         "La app móvil sigue en lista de espera, pero la ruta es real y conecta con el roadmap actual.",
@@ -929,15 +1041,31 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
     offerCard: {
       updated: "Actualizado hoy",
       keyTradeoff: "Punto clave a revisar",
-      reviewOffer: "Revisar detalles",
+      reviewOffer: "Ver oferta",
       providerSite: "Ir al proveedor",
       reviewBeforeLeave: "Revisa el producto en Payn antes de salir al proveedor.",
+      providerCta: {
+        loans: "Consultar tipo",
+        cards: "Ver tarjeta",
+        transfers: "Ir al proveedor",
+        exchange: "Ir al proveedor",
+        insurance: "Ver precio",
+        investments: "Ver plataforma",
+      },
+      compareAdded: "Añadido",
+      compareToggle: "Comparar",
+      partnerLabel: "Partner",
     },
     offerDetail: {
       detailEyebrow: "Detalle de oferta",
       reviewedOn: "revisado el",
       backToCategory: "Volver a la categoría",
       visitProvider: "Ir al proveedor",
+      primaryAction: "Siguiente paso",
+      primaryActionBody: "Abre {provider} cuando quieras continuar.",
+      ratesTitle: "Condiciones",
+      benefitsTitle: "Ventajas",
+      tradeoffsTitle: "Aspectos a revisar",
       whyShown: "Por qué Payn muestra esta oferta",
       tradeoff: "Punto clave a revisar",
       beforeClick: "Antes de continuar",
@@ -1005,10 +1133,12 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
     },
     metrics: {
       ...baseMetrics,
+      APR: "TAE",
       Amount: "Importe",
       Term: "Plazo",
       "Annual fee": "Cuota anual",
       "Monthly fee": "Cuota mensual",
+      Spread: "Margen",
       Speed: "Velocidad",
       Fee: "Comisión",
       Cover: "Cobertura",
@@ -1092,6 +1222,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Commencer par le pays, la catégorie et de vrais filtres.",
       description:
         "Payn ouvre désormais sur la sélection du marché, des filtres utiles et des résultats directs plutôt que sur un hero dominant.",
+      liveRankingLabel: "Classement en direct",
+      optionsInCountry: "{count} options en {country}",
       resultsLabel: "résultats",
       providersLabel: "fournisseurs",
       filteredFrom: "Filtré depuis",
@@ -1101,6 +1233,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       emptyDescription: "Essayez un autre pays, une autre catégorie ou d'autres filtres.",
       filterSummary: "Les résultats changent immédiatement quand le pays, la catégorie, la recherche ou les filtres changent.",
       openCategoryPage: "Ouvrir la catégorie",
+      filtersButton: "Filtres",
+      searchChipPrefix: "Recherche",
+      showingResults: "{shown} sur {total} résultats",
+      showMoreResults: "Voir plus de résultats",
+      sortOptions: {
+        relevance: "Meilleure adéquation",
+        fees: "Moins cher",
+        speed: "Le plus rapide",
+        recommended: "Recommandé",
+      },
+      emptyActions: {
+        clearFilters: "Effacer les filtres",
+        openCards: "Voir les cartes",
+        showAllCategories: "Voir toutes les catégories",
+        tryExchange: "Essayer le change",
+        tryTransfers: "Essayer les transferts",
+      },
     },
     home: {
       heroEyebrow: "Comparaison financière pour décider",
@@ -1196,12 +1345,28 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       reviewOffer: "Voir les détails",
       providerSite: "Aller au fournisseur",
       reviewBeforeLeave: "Vérifiez le produit sur Payn avant de quitter vers le fournisseur.",
+      providerCta: {
+        loans: "Vérifier mon taux",
+        cards: "Voir la carte",
+        transfers: "Ouvrir le fournisseur",
+        exchange: "Ouvrir le fournisseur",
+        insurance: "Voir le prix",
+        investments: "Voir la plateforme",
+      },
+      compareAdded: "Ajouté",
+      compareToggle: "Comparer",
+      partnerLabel: "Partenaire",
     },
     offerDetail: {
       detailEyebrow: "Détail de l'offre",
       reviewedOn: "révisé le",
       backToCategory: "Retour à la catégorie",
       visitProvider: "Voir le fournisseur",
+      primaryAction: "Action principale",
+      primaryActionBody: "Ouvrez {provider} quand vous êtes prêt à continuer.",
+      ratesTitle: "Conditions",
+      benefitsTitle: "Avantages",
+      tradeoffsTitle: "Points à surveiller",
       whyShown: "Pourquoi Payn montre cette offre",
       tradeoff: "Principal point d'attention",
       beforeClick: "Avant de continuer",
@@ -1356,6 +1521,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Parti da paese, categoria e filtri reali.",
       description:
         "Payn ora apre con selezione del mercato, filtri utili e risultati immediati invece di una hero dominante.",
+      liveRankingLabel: "Classifica live",
+      optionsInCountry: "{count} opzioni in {country}",
       resultsLabel: "risultati",
       providersLabel: "provider",
       filteredFrom: "Filtrato da",
@@ -1365,6 +1532,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       emptyDescription: "Prova un altro paese, un'altra categoria o filtri diversi.",
       filterSummary: "I risultati cambiano subito quando cambiano paese, categoria, ricerca o filtri.",
       openCategoryPage: "Apri pagina categoria",
+      filtersButton: "Filtri",
+      searchChipPrefix: "Ricerca",
+      showingResults: "{shown} di {total} risultati",
+      showMoreResults: "Mostra altri risultati",
+      sortOptions: {
+        relevance: "Migliore corrispondenza",
+        fees: "Costo più basso",
+        speed: "Più veloce",
+        recommended: "Consigliato",
+      },
+      emptyActions: {
+        clearFilters: "Cancella filtri",
+        openCards: "Apri carte",
+        showAllCategories: "Tutte le categorie",
+        tryExchange: "Prova il cambio",
+        tryTransfers: "Prova i trasferimenti",
+      },
     },
     home: {
       heroEyebrow: "Confronto finanziario per decidere",
@@ -1460,12 +1644,28 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       reviewOffer: "Controlla i dettagli",
       providerSite: "Vai al provider",
       reviewBeforeLeave: "Controlla il prodotto su Payn prima di uscire verso il provider.",
+      providerCta: {
+        loans: "Controlla il tasso",
+        cards: "Vedi la carta",
+        transfers: "Apri il provider",
+        exchange: "Apri il provider",
+        insurance: "Vedi il prezzo",
+        investments: "Vedi la piattaforma",
+      },
+      compareAdded: "Aggiunto",
+      compareToggle: "Confronta",
+      partnerLabel: "Partner",
     },
     offerDetail: {
       detailEyebrow: "Dettaglio offerta",
       reviewedOn: "revisionato il",
       backToCategory: "Torna alla categoria",
       visitProvider: "Vai al provider",
+      primaryAction: "Azione principale",
+      primaryActionBody: "Apri {provider} quando vuoi continuare.",
+      ratesTitle: "Condizioni",
+      benefitsTitle: "Vantaggi",
+      tradeoffsTitle: "Aspetti da valutare",
       whyShown: "Perché Payn mostra questa offerta",
       tradeoff: "Punto principale da valutare",
       beforeClick: "Prima di continuare",
@@ -1620,6 +1820,8 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Comece por país, categoria e filtros reais.",
       description:
         "A Payn agora abre com seleção de mercado, filtros úteis e resultados imediatos em vez de um hero dominante.",
+      liveRankingLabel: "Ranking em tempo real",
+      optionsInCountry: "{count} opções em {country}",
       resultsLabel: "resultados",
       providersLabel: "fornecedores",
       filteredFrom: "Filtrado de",
@@ -1629,6 +1831,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       emptyDescription: "Experimente outro país, outra categoria ou filtros diferentes.",
       filterSummary: "Os resultados mudam de imediato quando muda país, categoria, pesquisa ou filtros.",
       openCategoryPage: "Abrir página da categoria",
+      filtersButton: "Filtros",
+      searchChipPrefix: "Pesquisa",
+      showingResults: "A mostrar {shown} de {total} resultados",
+      showMoreResults: "Ver mais resultados",
+      sortOptions: {
+        relevance: "Melhor correspondência",
+        fees: "Menor custo",
+        speed: "Mais rápido",
+        recommended: "Recomendado",
+      },
+      emptyActions: {
+        clearFilters: "Limpar filtros",
+        openCards: "Ver cartões",
+        showAllCategories: "Ver todas as categorias",
+        tryExchange: "Experimentar câmbio",
+        tryTransfers: "Experimentar transferências",
+      },
     },
     home: {
       heroEyebrow: "Comparação financeira para decidir",
@@ -1724,12 +1943,28 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       reviewOffer: "Ver detalhes",
       providerSite: "Ir ao fornecedor",
       reviewBeforeLeave: "Veja o produto na Payn antes de sair para o fornecedor.",
+      providerCta: {
+        loans: "Ver a minha taxa",
+        cards: "Ver cartão",
+        transfers: "Abrir fornecedor",
+        exchange: "Abrir fornecedor",
+        insurance: "Ver preço",
+        investments: "Ver plataforma",
+      },
+      compareAdded: "Adicionado",
+      compareToggle: "Comparar",
+      partnerLabel: "Parceiro",
     },
     offerDetail: {
       detailEyebrow: "Detalhe da oferta",
       reviewedOn: "revisto em",
       backToCategory: "Voltar à categoria",
       visitProvider: "Ir ao fornecedor",
+      primaryAction: "Ação principal",
+      primaryActionBody: "Abra {provider} quando estiver pronto para continuar.",
+      ratesTitle: "Condições",
+      benefitsTitle: "Vantagens",
+      tradeoffsTitle: "Aspetos a rever",
       whyShown: "Porque a Payn mostra esta oferta",
       tradeoff: "Ponto principal a rever",
       beforeClick: "Antes de continuar",
@@ -1928,7 +2163,15 @@ const localizedUiTokens: Record<MarketplaceLocale, Record<string, string>> = {
     Added: "Hinzugefügt",
     Open: "Öffnen",
   },
-  es: {},
+  es: {
+    Compare: "Comparar",
+    Added: "Añadido",
+    Open: "Abrir",
+    Partner: "Partner",
+    "Best value": "Mejor opción",
+    "Best match": "Mejor encaje",
+    Recommended: "Recomendado",
+  },
   fr: {},
   it: {},
   pt: {},
@@ -2068,4 +2311,11 @@ export function translateTradeoff(locale: MarketplaceLocale, tradeoff: string) {
 
 export function translateUiToken(locale: MarketplaceLocale, label: string) {
   return localizedUiTokens[locale][label] ?? label;
+}
+
+export function formatCopy(template: string, values: Record<string, string | number>) {
+  return Object.entries(values).reduce(
+    (copy, [key, value]) => copy.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
 }

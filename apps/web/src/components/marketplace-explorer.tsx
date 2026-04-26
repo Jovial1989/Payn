@@ -2,7 +2,7 @@
 
 import type { MarketplaceLocale, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useCallback, useDeferredValue, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ import {
   trackAnalyticsEvent,
 } from "@/lib/analytics";
 import { getCountryCurrency } from "@/lib/countries";
-import { getDictionary } from "@/lib/i18n";
+import { formatCopy, getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import {
   countOffersByCategory,
@@ -41,12 +41,7 @@ import { getUiCopy } from "@/lib/ui-copy";
 
 const PAGE_SIZE = 12;
 
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "relevance", label: "Best match" },
-  { value: "fees", label: "Lowest fee" },
-  { value: "speed", label: "Fastest" },
-  { value: "recommended", label: "Recommended" },
-];
+const SORT_OPTION_VALUES: SortKey[] = ["relevance", "fees", "speed", "recommended"];
 
 function totalCategoryCount(counts: Record<(typeof marketplaceCategories)[number], number>) {
   return marketplaceCategories.reduce((sum, category) => sum + counts[category], 0);
@@ -63,22 +58,15 @@ function formatAmountLabel(value: number, locale: MarketplaceLocale, currency: s
 }
 
 function buildEmptySuggestions(selectedCategory: ExplorerCategory, locale: MarketplaceLocale) {
+  const dictionary = getDictionary(locale);
   return [
-    locale === "de" ? "Clear filters" : "Clear filters",
+    dictionary.explorer.emptyActions.clearFilters,
     selectedCategory === "all"
-      ? locale === "de"
-        ? "Open cards"
-        : "Open cards"
-      : locale === "de"
-        ? "Show all categories"
-        : "Show all categories",
+      ? dictionary.explorer.emptyActions.openCards
+      : dictionary.explorer.emptyActions.showAllCategories,
     selectedCategory === "transfers"
-      ? locale === "de"
-        ? "Try exchange"
-        : "Try exchange"
-      : locale === "de"
-        ? "Try transfers"
-        : "Try transfers",
+      ? dictionary.explorer.emptyActions.tryExchange
+      : dictionary.explorer.emptyActions.tryTransfers,
   ];
 }
 
@@ -134,9 +122,9 @@ export function MarketplaceExplorer({
         filters.provider,
         filters.feature,
         filters.subtype,
-        filters.query ? `Search: ${filters.query}` : "",
+        filters.query ? `${dictionary.explorer.searchChipPrefix}: ${filters.query}` : "",
       ].filter((value): value is string => Boolean(value)),
-    [filters.feature, filters.provider, filters.query, filters.subtype, preferences.countryLabel],
+    [dictionary.explorer.searchChipPrefix, filters.feature, filters.provider, filters.query, filters.subtype, preferences.countryLabel],
   );
 
   const updateCategory = (nextCategory: ExplorerCategory) => {
@@ -211,10 +199,13 @@ export function MarketplaceExplorer({
             <div className="surface-panel flex w-full max-w-[340px] items-center justify-between rounded-[24px] px-4 py-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Live ranking
+                  {dictionary.explorer.liveRankingLabel}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-ink">
-                  {roundOfferCount(totalCount)} options in {preferences.countryLabel}
+                  {formatCopy(dictionary.explorer.optionsInCountry, {
+                    count: roundOfferCount(totalCount),
+                    country: preferences.countryLabel,
+                  })}
                 </p>
               </div>
               {selectedCategory !== "all" && (
@@ -291,21 +282,21 @@ export function MarketplaceExplorer({
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M2 4h12M4 8h8M6 12h4" />
                 </svg>
-                {preferences.locale === "de" ? "Filter" : "Filters"}
+                {dictionary.explorer.filtersButton}
               </button>
             </div>
 
             {/* Sort pills */}
             <div className="mt-2 flex snap-x gap-1.5 overflow-x-auto pb-1">
-              {SORT_OPTIONS.map((option) => (
+              {SORT_OPTION_VALUES.map((option) => (
                 <button
-                  key={option.value}
+                  key={option}
                   type="button"
-                  onClick={() => setFilters((current) => ({ ...current, sortBy: option.value }))}
+                  onClick={() => setFilters((current) => ({ ...current, sortBy: option }))}
                   className="pill-chip shrink-0 snap-start text-sm font-semibold"
-                  data-active={filters.sortBy === option.value}
+                  data-active={filters.sortBy === option}
                 >
-                  {option.label}
+                  {dictionary.explorer.sortOptions[option]}
                 </button>
               ))}
             </div>
@@ -400,7 +391,10 @@ export function MarketplaceExplorer({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-bold text-ink">
-                Showing {shownOffers.length} of {totalCount} {dictionary.explorer.resultsLabel}
+                {formatCopy(dictionary.explorer.showingResults, {
+                  shown: shownOffers.length,
+                  total: totalCount,
+                })}
               </p>
               <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
                 {dictionary.explorer.filterSummary}
@@ -412,7 +406,7 @@ export function MarketplaceExplorer({
                   {chip}
                 </Tag>
               ))}
-              <Tag tone="blue">{SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label}</Tag>
+              <Tag tone="blue">{dictionary.explorer.sortOptions[filters.sortBy]}</Tag>
             </div>
           </div>
         </div>
@@ -496,10 +490,13 @@ export function MarketplaceExplorer({
               onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
               className={buttonStyles({ variant: "secondary", size: "md" })}
             >
-              Show more results
+              {dictionary.explorer.showMoreResults}
             </button>
             <p className="text-xs text-ink-tertiary">
-              Showing {shownOffers.length} of {totalCount}
+              {formatCopy(dictionary.explorer.showingResults, {
+                shown: shownOffers.length,
+                total: totalCount,
+              })}
             </p>
           </div>
         )}

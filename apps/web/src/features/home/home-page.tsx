@@ -351,10 +351,51 @@ export function HomePage() {
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-ink-secondary">
-              <span className="hero-inline-signal rounded-full px-3 py-2">40+ ranked offers</span>
-              <span className="hero-inline-signal rounded-full px-3 py-2">Loans · Cards · Transfers · FX</span>
-              <span className="hero-inline-signal rounded-full px-3 py-2">No signup required</span>
+            <div className="mt-8 grid gap-3 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
+              <div className="hero-secondary-panel rounded-[26px] p-4 sm:p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
+                  Live recommendation
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                      Starting TAE
+                    </p>
+                    <p className="tabular-nums mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
+                      3.9%
+                    </p>
+                  </div>
+                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                      Decision time
+                    </p>
+                    <p className="mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
+                      Minutes
+                    </p>
+                  </div>
+                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                      Coverage
+                    </p>
+                    <p className="tabular-nums mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
+                      50+
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="dark-surface-panel rounded-[26px] px-5 py-4 text-white">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/55">
+                  Why it feels calmer
+                </p>
+                <p className="mt-3 max-w-[28ch] text-[15px] leading-6 text-white/84">
+                  Every result keeps rates, fees, and tradeoffs visible before the handoff, so you never lose context mid-decision.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-white/74">
+                  <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">No signup required</span>
+                  <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Loans · Cards · Transfers · FX</span>
+                </div>
+              </div>
             </div>
           </div>
 

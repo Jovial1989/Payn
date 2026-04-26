@@ -68,7 +68,7 @@ export function OfferCard({
                 <span className="rounded-full bg-[#F2F3F4] px-2 py-0.5 text-[10px] font-bold text-ink-tertiary">
                   #{rank}
                 </span>
-                {offer.attributes?.isPartner ? <Tag tone="blue">Partner</Tag> : null}
+                {offer.attributes?.isPartner ? <Tag tone="blue">{dictionary.offerCard.partnerLabel}</Tag> : null}
               </div>
               <Link href={localePath(locale, getOfferHref(offer))} className="mt-1 block">
                 <h3 className="line-clamp-2 text-[18px] font-bold leading-snug tracking-[-0.03em] text-ink transition-colors group-hover:text-accent-emerald-strong">
@@ -129,13 +129,13 @@ export function OfferCard({
       <div className="flex flex-wrap items-center gap-3 border-t border-[#F0F2F0] px-5 py-4 sm:px-6">
         <ProviderLinkButton
           offer={offer}
-          label={locale === "de" ? "Weiter" : "Check my rate"}
+          label={dictionary.offerCard.providerCta[offer.category]}
         />
         <Link
           href={localePath(locale, getOfferHref(offer))}
           className="pressable text-[13px] font-semibold text-ink-secondary transition-colors hover:text-ink"
         >
-          {locale === "de" ? "Angebot ansehen" : "View offer"} &rarr;
+          {dictionary.offerCard.reviewOffer} &rarr;
         </Link>
         {onToggleCompare && (
           <button
@@ -157,9 +157,7 @@ export function OfferCard({
                 <rect x="0.5" y="0.5" width="13" height="13" rx="3.5" stroke="currentColor" strokeOpacity="0.4" />
               </svg>
             )}
-            {compareSelected
-              ? (locale === "de" ? "Hinzugefügt" : "Added")
-              : translateUiToken(locale, "Compare")}
+            {compareSelected ? dictionary.offerCard.compareAdded : dictionary.offerCard.compareToggle}
           </button>
         )}
       </div>

@@ -23,20 +23,23 @@ abstract final class PaynRadius {
 }
 
 abstract final class PaynColors {
-  static const background = Color(0xFFF4F6F3);
+  static const background = Color(0xFFFAFAF7);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceDim = Color(0xFFF7F9F6);
-  static const surfaceRaised = Color(0xFFFBFCFB);
-  static const text = Color(0xFF111827);
-  static const textSecondary = Color(0xFF4B5563);
-  static const textTertiary = Color(0xFF8A94A6);
-  static const outline = Color(0xFFDDE3DD);
-  static const outlineSubtle = Color(0xFFE9EEEA);
-  static const accent = Color(0xFF0F8A4B);
-  static const accentStrong = Color(0xFF0B6D3B);
-  static const accentSurface = Color(0xFFDDF4E7);
-  static const accentSurfaceStrong = Color(0xFFCDEFD9);
-  static const positive = Color(0xFF0F8A4B);
+  static const surfaceDim = Color(0xFFF2F4F1);
+  static const surfaceRaised = Color(0xFFF7F8F5);
+  static const surfaceDark = Color(0xFF13181A);
+  static const surfaceElevatedDark = Color(0xFF1B2123);
+  static const text = Color(0xFF0A0E0A);
+  static const textInverse = Color(0xFFF5F7F3);
+  static const textSecondary = Color(0xFF5C5F5C);
+  static const textTertiary = Color(0xFF8C8F8C);
+  static const outline = Color(0xFFE6E6E0);
+  static const outlineSubtle = Color(0xFFEDEEE8);
+  static const accent = Color(0xFF0FBE7B);
+  static const accentStrong = Color(0xFF0D9F67);
+  static const accentSurface = Color(0xFFE2F7EE);
+  static const accentSurfaceStrong = Color(0xFFD1F2E2);
+  static const positive = Color(0xFF0FBE7B);
   static const positiveSurface = Color(0xFFE7F7EF);
   static const warning = Color(0xFFC46B1A);
   static const warningSurface = Color(0xFFFFF1E5);
@@ -55,10 +58,10 @@ ThemeData buildAppTheme() {
 
   const colorScheme = ColorScheme(
     brightness: Brightness.light,
-    primary: tx,
+    primary: PaynColors.accent,
     onPrimary: sf,
-    secondary: PaynColors.accentSurface,
-    onSecondary: PaynColors.accent,
+    secondary: PaynColors.surfaceDim,
+    onSecondary: tx,
     error: PaynColors.error,
     onError: sf,
     surface: sf,
@@ -88,7 +91,7 @@ ThemeData buildAppTheme() {
         useMaterial3: true,
         colorScheme: colorScheme,
       ).textTheme;
-  final tt = GoogleFonts.manropeTextTheme(base);
+  final bodyText = GoogleFonts.interTextTheme(base);
 
   return ThemeData(
     useMaterial3: true,
@@ -99,62 +102,57 @@ ThemeData buildAppTheme() {
     splashColor: PaynColors.accent.withValues(alpha: 0.08),
     highlightColor: Colors.transparent,
     dividerColor: ol,
-    textTheme: tt.copyWith(
+    textTheme: bodyText.copyWith(
       // H1 — screen headlines
-      headlineMedium: tt.headlineMedium?.copyWith(
-        fontSize: 30,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.0,
-        height: 1.06,
-        color: tx,
-      ),
-      headlineLarge: tt.headlineLarge?.copyWith(
+      headlineMedium: GoogleFonts.interTight(
         fontSize: 38,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.6,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -1.45,
         height: 0.98,
         color: tx,
       ),
-      // Title — section titles
-      titleLarge: tt.titleLarge?.copyWith(
-        fontSize: 19,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.42,
-        color: tx,
-      ),
-      // Subtitle — card titles, row titles (lighter than title for hierarchy)
-      titleMedium: tt.titleMedium?.copyWith(
-        fontSize: 15,
+      headlineLarge: GoogleFonts.interTight(
+        fontSize: 58,
         fontWeight: FontWeight.w600,
-        letterSpacing: -0.15,
+        letterSpacing: -2.2,
+        height: 0.94,
         color: tx,
       ),
-      // Body
-      bodyLarge: tt.bodyLarge?.copyWith(
-        fontSize: 15,
+      titleLarge: GoogleFonts.interTight(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.55,
+        color: tx,
+      ),
+      titleMedium: bodyText.titleMedium?.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.22,
+        color: tx,
+      ),
+      bodyLarge: bodyText.bodyLarge?.copyWith(
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         color: tx,
-        height: 1.4,
+        height: 1.55,
       ),
-      bodyMedium: tt.bodyMedium?.copyWith(
-        fontSize: 13,
+      bodyMedium: bodyText.bodyMedium?.copyWith(
+        fontSize: 15,
         fontWeight: FontWeight.w400,
         color: txSec,
-        height: 1.4,
+        height: 1.5,
       ),
-      // Label — buttons, badges, small headings
-      labelLarge: tt.labelLarge?.copyWith(
-        fontSize: 13,
+      labelLarge: bodyText.labelLarge?.copyWith(
+        fontSize: 14,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.0,
+        letterSpacing: -0.05,
         color: tx,
       ),
-      // Caption — minimum 12px for legibility
-      labelMedium: tt.labelMedium?.copyWith(
-        fontSize: 12,
+      labelMedium: bodyText.labelMedium?.copyWith(
+        fontSize: 12.5,
         fontWeight: FontWeight.w500,
         color: txTer,
-        letterSpacing: 0.05,
+        letterSpacing: 0.32,
       ),
     ),
     appBarTheme: AppBarTheme(
@@ -164,31 +162,31 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       foregroundColor: tx,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
-      titleTextStyle: tt.titleMedium?.copyWith(
-        fontSize: 15,
+      titleTextStyle: GoogleFonts.interTight(
+        fontSize: 17,
         color: tx,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: sf,
-        indicatorColor: PaynColors.accentSurface,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        height: 76,
+      indicatorColor: PaynColors.accentSurface,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      height: 74,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
-        return tt.labelMedium?.copyWith(
+        return bodyText.labelMedium?.copyWith(
           fontSize: 11,
-          color: selected ? tx : txTer,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+          color: selected ? PaynColors.accent : txTer,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
         );
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return IconThemeData(
-          color: selected ? tx : txTer,
-          size: selected ? 24 : 22,
+          color: selected ? PaynColors.accent : txTer,
+          size: selected ? 23 : 21,
         );
       }),
     ),
@@ -213,12 +211,13 @@ ThemeData buildAppTheme() {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PaynRadius.button),
         ),
-        textStyle: tt.labelLarge?.copyWith(
+        textStyle: bodyText.labelLarge?.copyWith(
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24),
+        shadowColor: Colors.transparent,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -230,7 +229,7 @@ ThemeData buildAppTheme() {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PaynRadius.button),
         ),
-        textStyle: tt.labelLarge?.copyWith(fontSize: 14),
+        textStyle: bodyText.labelLarge?.copyWith(fontSize: 14),
         padding: const EdgeInsets.symmetric(horizontal: 24),
       ),
     ),
@@ -239,8 +238,16 @@ ThemeData buildAppTheme() {
       selectedColor: PaynColors.accentSurface,
       side: BorderSide(color: PaynColors.outlineSubtle),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      labelStyle: tt.labelMedium?.copyWith(fontSize: 13, color: tx, fontWeight: FontWeight.w600),
-      secondaryLabelStyle: tt.labelMedium?.copyWith(fontSize: 13, color: tx, fontWeight: FontWeight.w600),
+      labelStyle: bodyText.labelMedium?.copyWith(
+        fontSize: 13,
+        color: tx,
+        fontWeight: FontWeight.w600,
+      ),
+      secondaryLabelStyle: bodyText.labelMedium?.copyWith(
+        fontSize: 13,
+        color: tx,
+        fontWeight: FontWeight.w600,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       showCheckmark: false,
     ),
@@ -250,12 +257,14 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(PaynRadius.card)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(PaynRadius.card),
+        ),
       ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: tx,
-      contentTextStyle: tt.bodyMedium?.copyWith(color: sf),
+      contentTextStyle: bodyText.bodyMedium?.copyWith(color: sf),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
@@ -270,7 +279,6 @@ ThemeData buildAppTheme() {
         side: WidgetStatePropertyAll(BorderSide(color: ol)),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          
         ),
         visualDensity: VisualDensity.compact,
       ),
@@ -278,8 +286,8 @@ ThemeData buildAppTheme() {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: sf,
-      hintStyle: tt.bodyMedium?.copyWith(color: txTer, fontSize: 14),
-      labelStyle: tt.labelMedium?.copyWith(
+      hintStyle: bodyText.bodyMedium?.copyWith(color: txTer, fontSize: 14),
+      labelStyle: bodyText.labelMedium?.copyWith(
         color: txSec,
         fontSize: 13,
         fontWeight: FontWeight.w600,

@@ -117,7 +117,6 @@ class _OfferCardState extends State<OfferCard> {
                                 ProviderBadge(
                                   offer: widget.offer,
                                   size: 52,
-                                  heroTag: 'provider-${widget.offer.id}',
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(

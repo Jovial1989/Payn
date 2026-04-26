@@ -11,7 +11,7 @@ import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { matchesOfferCountrySelection } from "@/lib/countries";
-import { getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
+import { formatCopy, getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import {
   getOfferTradeoff,
   matchesOfferMarket,
@@ -162,12 +162,19 @@ export default async function OfferDetailPage({
 
               <div className="rounded-[28px] bg-[#F7F9F7] p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Primary action
+                  {dictionary.offerDetail.primaryAction}
                 </p>
                 <div className="mt-4 grid gap-3">
-                  <ProviderLinkButton offer={offer} label="Check my rate" source="offer_detail" fullWidth />
+                  <ProviderLinkButton
+                    offer={offer}
+                    label={dictionary.offerCard.providerCta[offer.category]}
+                    source="offer_detail"
+                    fullWidth
+                  />
                   <p className="text-sm leading-relaxed text-ink-secondary">
-                    Smooth handoff to {offer.providerName} when you are ready.
+                    {formatCopy(dictionary.offerDetail.primaryActionBody, {
+                      provider: offer.providerName,
+                    })}
                   </p>
                 </div>
               </div>
@@ -178,7 +185,7 @@ export default async function OfferDetailPage({
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="rounded-[28px] border border-line bg-white p-6 shadow-card lg:col-span-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              Rates
+              {dictionary.offerDetail.ratesTitle}
             </p>
             <div className="mt-5 grid gap-4">
               {offer.metrics.map((metric) => (
@@ -198,7 +205,7 @@ export default async function OfferDetailPage({
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Benefits
+                  {dictionary.offerDetail.benefitsTitle}
                 </p>
                 <div className="mt-4 grid gap-3">
                   {(reasons.length > 0 ? reasons : ["Visible pricing", "Provider context"]).map((reason) => (
@@ -218,7 +225,7 @@ export default async function OfferDetailPage({
 
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  Tradeoffs
+                  {dictionary.offerDetail.tradeoffsTitle}
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
                   {normalizeDisplayText(translateTradeoff(preferences.locale, tradeoff))}
@@ -255,7 +262,11 @@ export default async function OfferDetailPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <ProviderLinkButton offer={offer} label="Check my rate" source="offer_detail_sticky" />
+              <ProviderLinkButton
+                offer={offer}
+                label={dictionary.offerCard.providerCta[offer.category]}
+                source="offer_detail_sticky"
+              />
             </div>
           </div>
         </div>

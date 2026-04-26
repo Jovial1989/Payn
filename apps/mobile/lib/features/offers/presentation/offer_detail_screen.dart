@@ -99,7 +99,6 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   children: <Widget>[
                     ProviderBadge(
                       offer: offer,
-                      heroTag: 'provider-${offer.id}',
                     ),
                     const SizedBox(width: 14),
                     Expanded(

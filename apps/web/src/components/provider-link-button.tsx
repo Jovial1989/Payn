@@ -31,6 +31,18 @@ export function ProviderLinkButton({
   const { country, language } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [toast, setToast] = useState<string | null>(null);
+  const unavailableMessage =
+    language === "de"
+      ? "Dieser Anbieterlink ist derzeit nicht verfügbar."
+      : language === "es"
+        ? "Este enlace del proveedor no está disponible por ahora."
+        : language === "fr"
+          ? "Ce lien fournisseur n'est pas disponible pour le moment."
+          : language === "it"
+            ? "Questo link del provider non è disponibile al momento."
+            : language === "pt"
+              ? "Este link do fornecedor não está disponível neste momento."
+              : "This provider link is not available right now.";
 
   const rawUrl =
     offer.providerUrls?.[country] ??
@@ -63,7 +75,7 @@ export function ProviderLinkButton({
     if (!resolvedUrl) {
       // No URL — block navigation and show error.
       e.preventDefault();
-      setToast("Provider link is not available yet.");
+      setToast(unavailableMessage);
       return;
     }
     // Navigation proceeds via the anchor's href + target="_blank".

@@ -1,7 +1,7 @@
 "use client";
 
 import type { MarketplaceLocale } from "@payn/types";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { localePath } from "@/lib/locale";
@@ -404,6 +404,7 @@ export function HeroProductShowcase({
         </motion.div>
 
         <div className="relative mx-auto flex w-full justify-center px-8 pt-24 lg:px-10 lg:pt-20">
+          <LayoutGroup>
           <div className="relative h-[420px] w-full max-w-[360px]">
             <AnimatePresence mode="sync" initial={false}>
               {stack.slice(0, 3).reverse().map((preview, layerIndex) => {
@@ -434,11 +435,17 @@ export function HeroProductShowcase({
                     y: -18,
                     scale: 0.97,
                   }}
-                  transition={{
-                    duration: reduceMotion ? 0.18 : 0.52,
-                    delay: reduceMotion ? 0 : visualIndex * 0.08,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                  layout
+                  transition={
+                    reduceMotion
+                      ? { duration: 0.18 }
+                      : {
+                          type: "spring",
+                          stiffness: 320,
+                          damping: 32,
+                          delay: visualIndex * 0.06,
+                        }
+                  }
                 >
                   <Link
                     href={href}
@@ -470,7 +477,7 @@ export function HeroProductShowcase({
                         <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
                           Recommendation
                         </p>
-                        <p className="mt-3 text-[3rem] font-extrabold leading-none tracking-[-0.08em] text-ink">
+                        <p className="tabular-nums mt-3 text-[3rem] font-extrabold leading-none tracking-[-0.08em] text-ink">
                           {preview.apr}
                         </p>
                         <p className="mt-3 text-sm font-semibold text-accent-emerald">
@@ -499,6 +506,7 @@ export function HeroProductShowcase({
               })}
             </AnimatePresence>
           </div>
+          </LayoutGroup>
         </div>
 
         <motion.div

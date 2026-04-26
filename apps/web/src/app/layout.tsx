@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
+import { Inter, Inter_Tight } from "next/font/google";
 import { Amplitude } from "@/amplitude";
 import { Providers } from "@/components/providers";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import "./globals.css";
+
+const bodyFont = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const displayFont = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Payn | Financial Marketplace Across Europe",
@@ -18,16 +31,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={preferences.locale}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <Amplitude />
-      <body className="font-sans antialiased">
+      <body className={`${bodyFont.variable} ${displayFont.variable} font-sans antialiased`}>
         <Providers
           initialLocale={preferences.locale}
           initialCountry={preferences.country}
