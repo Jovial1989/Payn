@@ -98,7 +98,7 @@ function SidebarLink({
       className={clsx(
         "flex w-full items-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition-colors",
         active
-          ? "bg-black text-white shadow-subtle"
+          ? "bg-accent-emerald text-white shadow-[0_4px_14px_rgba(15,138,75,0.22)]"
           : "text-ink-secondary hover:bg-[#F3F4F6] hover:text-ink",
       )}
     >
@@ -334,7 +334,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <div className="min-h-[calc(100vh-2.5rem)] rounded-[24px] border border-[#EAEAEA] bg-[#FBFBFC] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+          <div className="min-h-[calc(100vh-2.5rem)] rounded-[24px] border border-[rgba(17,24,39,0.06)] bg-[#F9FAF9] shadow-[0_8px_32px_rgba(10,14,10,0.05)]">
             <header className="border-b border-[#ECEDEF] bg-[#FBFBFC]/95 px-3 py-3 backdrop-blur sm:px-4 sm:py-4 lg:sticky lg:top-0 lg:z-30 lg:px-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-2 sm:gap-3">

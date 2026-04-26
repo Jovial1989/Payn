@@ -16,7 +16,7 @@ export function DashboardSectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="motion-section rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
+    <section className="motion-section relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,0.06)] bg-gradient-to-b from-white to-[#F7F9F7] p-5 shadow-[0_12px_40px_rgba(10,14,10,0.06)] sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">{eyebrow}</p>
@@ -56,7 +56,7 @@ export function DashboardEmptyState({
 
 export function DashboardLoadingState({ label }: { label: string }) {
   return (
-    <div className="rounded-[24px] border border-[#EAEAEA] bg-white p-10 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+    <div className="relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,0.06)] bg-gradient-to-b from-white to-[#F7F9F7] p-10 shadow-[0_12px_40px_rgba(10,14,10,0.06)]">
       <div className="grid gap-4 py-4">
         <div className="h-5 w-32 animate-pulse rounded-full bg-[#ECEEF2]" />
         <div className="grid gap-3 rounded-[24px] border border-[#EAEAEA] bg-[#FCFCFD] p-5">

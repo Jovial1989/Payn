@@ -254,7 +254,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
           description="Your latest shortlist actions and signals, kept lightweight."
         >
           <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[22px] border border-[#EAEAEA] bg-[#F7F9F7] p-5">
+            <div className="metric-tile rounded-[22px] p-5">
               {recentActivity.length > 0 ? (
                 <div className="grid gap-3">
                   {recentActivity.map((item) => (
@@ -281,18 +281,16 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Saved</p>
-                <p className="mt-2 text-2xl font-bold text-ink">{savedOffers.length}</p>
-              </div>
-              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Viewed</p>
-                <p className="mt-2 text-2xl font-bold text-ink">{watchedOffers.length}</p>
-              </div>
-              <div className="rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Suggestions</p>
-                <p className="mt-2 text-2xl font-bold text-ink">{bestOffers.length}</p>
-              </div>
+              {[
+                { label: "Saved", value: savedOffers.length },
+                { label: "Viewed", value: watchedOffers.length },
+                { label: "Suggestions", value: bestOffers.length },
+              ].map((stat) => (
+                <div key={stat.label} className="metric-tile rounded-[22px] px-5 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{stat.label}</p>
+                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-ink">{stat.value}</p>
+                </div>
+              ))}
             </div>
           </div>
         </DashboardSectionCard>
@@ -307,7 +305,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
               <Link
                 key={category}
                 href={dashboardHref(category)}
-                className="group rounded-[22px] border border-[#EAEAEA] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(15,138,75,0.18)] hover:shadow-[0_16px_36px_rgba(15,23,32,0.08)]"
+                className="group metric-tile rounded-[22px] px-5 py-4 transition-all duration-200 hover:-translate-y-1 hover:border-[rgba(15,138,75,0.20)] hover:shadow-[0_18px_40px_rgba(10,14,10,0.08)]"
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                   {categoryCounts[category]} offers
