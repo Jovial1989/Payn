@@ -288,7 +288,11 @@ class _TrustBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: WrapAlignment.spaceBetween,
         children: <Widget>[
           Text(
             'Comparing',
@@ -296,16 +300,15 @@ class _TrustBar extends StatelessWidget {
               color: PaynColors.textTertiary,
             ),
           ),
-          const SizedBox(width: 10),
           const Wrap(
             spacing: 6,
+            runSpacing: 6,
             children: <Widget>[
               _TrustLogo(label: 'Revolut'),
               _TrustLogo(label: 'Wise'),
               _TrustLogo(label: 'Klarna'),
             ],
           ),
-          const Spacer(),
           Text(
             '50+ providers',
             style: theme.textTheme.labelMedium?.copyWith(
