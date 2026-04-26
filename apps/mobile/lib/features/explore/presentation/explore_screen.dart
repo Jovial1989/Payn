@@ -74,7 +74,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF7FBF8)],
+                    colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF4FAF7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -96,24 +96,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
+                            'LIVE RANKING',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: PaynColors.accent,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
                             'Best options for you',
                             style: theme.textTheme.headlineMedium?.copyWith(
-                              fontSize: 28,
+                              fontSize: 26,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Search once, then narrow the strongest matches.',
+                            '${results.length} ranked offers in ${formatMarketLabel(controller.preferences.market)}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: PaynColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            '${results.length} ranked offers in ${formatMarketLabel(controller.preferences.market)}',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: PaynColors.accent,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -257,42 +260,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ),
           ),
 
-          // ── Info row ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: PaynColors.surfaceRaised,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: PaynColors.outlineSubtle),
-                ),
-                child: Row(
-                  children: <Widget>[
-                    Text(
-                      '${results.length} results',
-                      style: theme.textTheme.labelLarge,
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: const BoxDecoration(
-                        color: PaynColors.textTertiary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      formatMarketLabel(controller.preferences.market),
-                      style: theme.textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 6)),
 
           if (usingFallback)
             SliverToBoxAdapter(
@@ -338,6 +306,51 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: _InvestmentIntelligenceBlock(controller: controller),
               ),
             ),
+          // ── Empty state ──
+          if (!_showSkeleton && results.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: PaynColors.surfaceDim,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Icon(
+                        Icons.search_off_rounded,
+                        size: 26,
+                        color: PaynColors.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No offers match your filters',
+                      style: theme.textTheme.titleLarge?.copyWith(fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try clearing filters or switching category.',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: controller.clearExploreFilters,
+                      style: FilledButton.styleFrom(minimumSize: const Size(180, 48)),
+                      child: const Text('Clear filters'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // ── Results ──
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -685,7 +698,7 @@ class _ControlChip extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 84),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? PaynColors.text : Colors.white,
+            color: selected ? PaynColors.accent : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? Colors.transparent : PaynColors.outlineSubtle,
@@ -694,9 +707,9 @@ class _ControlChip extends StatelessWidget {
                 selected
                     ? <BoxShadow>[
                       BoxShadow(
-                        color: PaynColors.accent.withValues(alpha: 0.18),
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
+                        color: PaynColors.accent.withValues(alpha: 0.22),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ]
                     : null,
@@ -720,7 +733,9 @@ class _ControlChip extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: selected ? Colors.white : PaynColors.text,
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.22)
+                      : PaynColors.surfaceDim,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -728,7 +743,7 @@ class _ControlChip extends StatelessWidget {
                   style: theme.textTheme.labelMedium?.copyWith(
                     color:
                         selected
-                            ? PaynColors.text
+                            ? Colors.white
                             : PaynColors.textTertiary,
                     fontWeight: FontWeight.w700,
                     fontSize: 10,
@@ -769,7 +784,7 @@ class _SortChip extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? PaynColors.text : PaynColors.surface,
+            color: selected ? PaynColors.accent : PaynColors.surface,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected ? Colors.transparent : PaynColors.outlineSubtle,
@@ -778,9 +793,9 @@ class _SortChip extends StatelessWidget {
                 selected
                     ? <BoxShadow>[
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
+                        color: PaynColors.accent.withValues(alpha: 0.18),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ]
                     : null,
@@ -810,8 +825,14 @@ class _FilterButton extends StatelessWidget {
     final hasFilters = count > 0;
 
     return Material(
-      color: hasFilters ? PaynColors.text : PaynColors.surface,
+      color: hasFilters ? PaynColors.accent : PaynColors.surface,
       borderRadius: BorderRadius.circular(16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: hasFilters
+            ? BorderSide.none
+            : const BorderSide(color: PaynColors.outlineSubtle),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
