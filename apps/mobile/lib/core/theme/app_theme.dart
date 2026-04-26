@@ -18,6 +18,7 @@ abstract final class PaynRadius {
   static const double card = 28;
   static const double panel = 32;
   static const double shell = 34;
+  static const double input = 22;
   static const double badge = 16;
 }
 
@@ -34,6 +35,7 @@ abstract final class PaynColors {
   static const accent = Color(0xFF0F8A4B);
   static const accentStrong = Color(0xFF0B6D3B);
   static const accentSurface = Color(0xFFDDF4E7);
+  static const accentSurfaceStrong = Color(0xFFCDEFD9);
   static const positive = Color(0xFF0F8A4B);
   static const positiveSurface = Color(0xFFE7F7EF);
   static const warning = Color(0xFFC46B1A);
@@ -277,20 +279,26 @@ ThemeData buildAppTheme() {
       filled: true,
       fillColor: sf,
       hintStyle: tt.bodyMedium?.copyWith(color: txTer, fontSize: 14),
-      labelStyle: tt.bodyMedium?.copyWith(color: txSec, fontSize: 14),
+      labelStyle: tt.labelMedium?.copyWith(
+        color: txSec,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaynColors.outlineSubtle),
+        borderRadius: BorderRadius.circular(PaynRadius.input),
+        borderSide: const BorderSide(color: PaynColors.outlineSubtle),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaynColors.outlineSubtle),
+        borderRadius: BorderRadius.circular(PaynRadius.input),
+        borderSide: const BorderSide(color: PaynColors.outlineSubtle),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(PaynRadius.input),
         borderSide: const BorderSide(color: PaynColors.accent, width: 1.5),
       ),
+      suffixIconColor: txTer,
+      prefixIconColor: txTer,
     ),
     sliderTheme: SliderThemeData(
       activeTrackColor: tx,

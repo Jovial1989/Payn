@@ -53,7 +53,7 @@ class _FrostedNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(PaynRadius.shell),
           child: BackdropFilter(
@@ -71,7 +71,7 @@ class _FrostedNavBar extends StatelessWidget {
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: List<Widget>.generate(_destinations.length, (index) {
@@ -119,7 +119,7 @@ class _NavButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
-        height: 60,
+        height: 56,
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(18),
@@ -137,7 +137,7 @@ class _NavButton extends StatelessWidget {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color:
                           selected
@@ -146,12 +146,12 @@ class _NavButton extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: AnimatedScale(
-                      scale: selected ? 1.0 : 0.96,
+                      scale: selected ? 0.98 : 0.96,
                       duration: const Duration(milliseconds: 180),
                       curve: Curves.easeOutCubic,
                       child: Icon(
                         selected ? item.selectedIcon : item.icon,
-                        size: 21,
+                        size: selected ? 20 : 19,
                         color:
                             selected
                                 ? PaynColors.accent
@@ -159,7 +159,7 @@ class _NavButton extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   AnimatedSlide(
                     offset: Offset(0, selected ? 0 : 0.08),
                     duration: const Duration(milliseconds: 220),
@@ -171,7 +171,7 @@ class _NavButton extends StatelessWidget {
                         item.label,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelMedium?.copyWith(
-                          fontSize: 11,
+                          fontSize: 10.5,
                           fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
                           color: selected
                               ? PaynColors.accent

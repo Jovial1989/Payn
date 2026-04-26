@@ -44,8 +44,8 @@ class _OfferCardState extends State<OfferCard> {
     final theme = Theme.of(context);
     final primaryMetric =
         widget.offer.metrics.isNotEmpty ? widget.offer.metrics.first : null;
-    final badgeLabel = _decisionLabel();
-    final benefits =
+    final secondaryMetrics = widget.offer.metrics.skip(1).take(2).toList();
+    final highlights =
         <String>[
               ...widget.offer.bestFor,
               ...widget.reasons,
@@ -54,31 +54,35 @@ class _OfferCardState extends State<OfferCard> {
             .map((value) => value.trim())
             .where((value) => value.isNotEmpty)
             .toSet()
-            .take(3)
+            .take(2)
             .toList();
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 420 + (widget.motionIndex * 70)),
+      duration: Duration(milliseconds: 380 + (widget.motionIndex * 60)),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         return Opacity(
           opacity: value.clamp(0, 1),
           child: Transform.translate(
-            offset: Offset(0, (1 - value) * 20),
+            offset: Offset(0, (1 - value) * 18),
             child: MouseRegion(
               onEnter: (_) => setState(() => _hovered = true),
               onExit: (_) => setState(() => _hovered = false),
               child: AnimatedScale(
-                scale: _pressed ? 0.98 : 1,
-                duration: const Duration(milliseconds: 120),
+                duration: const Duration(milliseconds: 140),
                 curve: Curves.easeOutCubic,
+                scale: _pressed ? 0.985 : 1,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
-                  transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
+                  transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
                   decoration: BoxDecoration(
-                    color: PaynColors.surface,
+                    gradient: const LinearGradient(
+                      colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF8FBF8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(PaynRadius.card),
                     border: Border.all(
                       color:
@@ -86,245 +90,188 @@ class _OfferCardState extends State<OfferCard> {
                               ? PaynColors.accent.withValues(alpha: 0.24)
                               : PaynColors.outlineSubtle,
                     ),
-                    gradient: const LinearGradient(
-                      colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF8FBF8)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: _hovered ? 0.10 : 0.06),
-                        blurRadius: _hovered ? 38 : 22,
-                        offset: Offset(0, _hovered ? 18 : 10),
+                        color: Colors.black.withValues(alpha: _hovered ? 0.09 : 0.05),
+                        blurRadius: _hovered ? 32 : 20,
+                        offset: Offset(0, _hovered ? 16 : 10),
                       ),
                     ],
                   ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-              onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(PaynRadius.card),
-              onTapDown: (_) => setState(() => _pressed = true),
-              onTapUp: (_) => setState(() => _pressed = false),
-              onTapCancel: () => setState(() => _pressed = false),
-              child: Padding(
-                padding: const EdgeInsets.all(PaynSpace.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        ProviderBadge(
-                          offer: widget.offer,
-                          size: 52,
-                          heroTag: 'provider-${widget.offer.id}',
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    widget.offer.providerName,
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      color: PaynColors.text,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (widget.rankLabel != null)
-                                    _OfferTag(
-                                      label: widget.rankLabel!,
-                                      background: PaynColors.surfaceDim,
-                                      foreground: PaynColors.textSecondary,
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                widget.offer.title,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.45,
-                                  height: 1.08,
+                      onTap: widget.onTap,
+                      borderRadius: BorderRadius.circular(PaynRadius.card),
+                      onTapDown: (_) => setState(() => _pressed = true),
+                      onTapUp: (_) => setState(() => _pressed = false),
+                      onTapCancel: () => setState(() => _pressed = false),
+                      child: Padding(
+                        padding: const EdgeInsets.all(PaynSpace.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                ProviderBadge(
+                                  offer: widget.offer,
+                                  size: 52,
+                                  heroTag: 'provider-${widget.offer.id}',
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _OfferTag(
-                          label: badgeLabel,
-                          background: PaynColors.accentSurface,
-                          foreground: PaynColors.accent,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Primary metric — Robinhood-style, no container
-                    if (primaryMetric != null)
-                      Text(
-                        primaryMetric.label.toUpperCase(),
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: PaynColors.textTertiary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                          letterSpacing: 1.6,
-                        ),
-                      ),
-                    const SizedBox(height: 6),
-                    Text(
-                      primaryMetric == null ? 'On request' : primaryMetric.value,
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        height: 1.0,
-                        letterSpacing: -1.2,
-                      ),
-                    ),
-                    if (widget.offer.metrics.length > 1) ...<Widget>[
-                      const SizedBox(height: 16),
-                      Row(
-                        children: widget.offer.metrics
-                            .skip(1)
-                            .take(3)
-                            .expand<Widget>(
-                              (m) => <Widget>[
+                                const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Text(
-                                        m.label.toUpperCase(),
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          color: PaynColors.textTertiary,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 10,
-                                          letterSpacing: 1.4,
-                                        ),
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        children: <Widget>[
+                                          Text(
+                                            widget.offer.providerName,
+                                            style: theme.textTheme.labelLarge?.copyWith(
+                                              color: PaynColors.textSecondary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          if (widget.rankLabel != null)
+                                            _OfferTag(
+                                              label: widget.rankLabel!,
+                                              background: PaynColors.surfaceDim,
+                                              foreground: PaynColors.textSecondary,
+                                            ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 3),
+                                      const SizedBox(height: 6),
                                       Text(
-                                        m.value,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
+                                        widget.offer.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.titleLarge?.copyWith(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.45,
+                                          height: 1.08,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: <Widget>[
+                                    _OfferTag(
+                                      label: _decisionLabel(),
+                                      background: PaynColors.accentSurface,
+                                      foreground: PaynColors.accent,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _SaveButton(
+                                      saved: widget.saved,
+                                      onPressed: widget.onSave,
+                                    ),
+                                  ],
+                                ),
                               ],
-                            )
-                            .toList(),
-                      ),
-                    ],
-                    if (benefits.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children:
-                            benefits
-                                .map(
-                                  (item) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFBFCFB),
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: const Color(0xFFE6ECE8),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Container(
-                                          width: 6,
-                                          height: 6,
-                                          decoration: const BoxDecoration(
-                                            color: PaynColors.accent,
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          child: Text(
-                                            item,
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color:
-                                                      PaynColors.textSecondary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
-                    Container(height: 1, color: PaynColors.outlineSubtle),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: <Widget>[
-                        _SaveButton(
-                          saved: widget.saved,
-                          onPressed: widget.onSave,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: widget.onTap,
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                              side: const BorderSide(color: PaynColors.outline),
                             ),
-                            child: Text(_secondaryCtaLabel()),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: widget.onProviderTap,
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                              backgroundColor: PaynColors.accent,
+                            const SizedBox(height: 22),
+                            Text(
+                              (primaryMetric?.label ?? widget.offer.category.label).toUpperCase(),
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: PaynColors.textTertiary,
+                                fontSize: 10,
+                                letterSpacing: 1.55,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            const SizedBox(height: 8),
+                            Text(
+                              primaryMetric?.value ?? 'On request',
+                              style: theme.textTheme.headlineLarge?.copyWith(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w800,
+                                height: 0.98,
+                                letterSpacing: -1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              highlights.isNotEmpty ? highlights.first : widget.offer.subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: PaynColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (secondaryMetrics.isNotEmpty) ...<Widget>[
+                              const SizedBox(height: 18),
+                              Row(
+                                children:
+                                    secondaryMetrics.map((metric) {
+                                      final isLast =
+                                          identical(metric, secondaryMetrics.last);
+                                      return Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            right: isLast ? 0 : 10,
+                                          ),
+                                          child: _MetricMiniTile(metric: metric),
+                                        ),
+                                      );
+                                    }).toList(),
+                              ),
+                            ],
+                            if (highlights.length > 1) ...<Widget>[
+                              const SizedBox(height: 16),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    highlights
+                                        .skip(1)
+                                        .map(
+                                          (item) => _InfoPill(label: item),
+                                        )
+                                        .toList(),
+                              ),
+                            ],
+                            const SizedBox(height: 18),
+                            Container(height: 1, color: PaynColors.outlineSubtle),
+                            const SizedBox(height: 16),
+                            Row(
                               children: <Widget>[
-                                Flexible(child: Text(_primaryCtaLabel())),
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: widget.onTap,
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 50),
+                                    ),
+                                    child: Text(_secondaryCtaLabel()),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: FilledButton(
+                                    onPressed: widget.onProviderTap,
+                                    style: FilledButton.styleFrom(
+                                      minimumSize: const Size(0, 50),
+                                    ),
+                                    child: Text(_primaryCtaLabel()),
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
+                            if (widget.footer != null) ...<Widget>[
+                              const SizedBox(height: 12),
+                              widget.footer!,
+                            ],
+                          ],
                         ),
-                      ],
-                    ),
-                    if (widget.footer != null) ...<Widget>[
-                      const SizedBox(height: 12),
-                      widget.footer!,
-                    ],
-                  ],
-                ),
-              ),
+                      ),
                     ),
                   ),
                 ),
@@ -337,10 +284,8 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   String _decisionLabel() {
-    final metricText = widget.offer.metrics
-        .map((metric) => metric.value.toLowerCase())
-        .join(' ');
-
+    final metricText =
+        widget.offer.metrics.map((metric) => metric.value.toLowerCase()).join(' ');
     if (metricText.contains('0%') ||
         metricText.contains('no fee') ||
         metricText.contains('free')) {
@@ -355,6 +300,7 @@ class _OfferCardState extends State<OfferCard> {
     }
     return 'Best value';
   }
+
   String _primaryCtaLabel() {
     switch (widget.offer.category) {
       case PaynCategory.loans:
@@ -363,28 +309,94 @@ class _OfferCardState extends State<OfferCard> {
         return 'See approval odds';
       case PaynCategory.transfers:
       case PaynCategory.exchange:
-        return 'Save on fees';
+        return 'Open provider';
       case PaynCategory.insurance:
         return 'Check cover price';
       case PaynCategory.investments:
-        return 'Open investing details';
+        return 'Open details';
     }
   }
 
   String _secondaryCtaLabel() {
     switch (widget.offer.category) {
       case PaynCategory.loans:
-        return 'View repayment details';
+        return 'Loan details';
       case PaynCategory.cards:
-        return 'See card details';
+        return 'Card details';
       case PaynCategory.transfers:
       case PaynCategory.exchange:
-        return 'See fee details';
+        return 'Fee details';
       case PaynCategory.insurance:
-        return 'View policy details';
+        return 'Policy details';
       case PaynCategory.investments:
-        return 'See platform details';
+        return 'Platform details';
     }
+  }
+}
+
+class _MetricMiniTile extends StatelessWidget {
+  const _MetricMiniTile({required this.metric});
+
+  final PaynMetric metric;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: PaynColors.surfaceRaised,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: PaynColors.outlineSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            metric.label.toUpperCase(),
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontSize: 10,
+              letterSpacing: 1.3,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            metric.value,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: PaynColors.text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFCFB),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFE6ECE8)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: PaynColors.textSecondary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }
 
@@ -428,8 +440,8 @@ class _SaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 46,
-      height: 46,
+      width: 42,
+      height: 42,
       child: IconButton(
         onPressed: onPressed,
         style: IconButton.styleFrom(
@@ -437,13 +449,13 @@ class _SaveButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
-              color: saved ? Colors.transparent : PaynColors.outline,
+              color: saved ? Colors.transparent : PaynColors.outlineSubtle,
             ),
           ),
         ),
         icon: Icon(
           saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-          size: 20,
+          size: 19,
           color: saved ? PaynColors.text : PaynColors.textTertiary,
         ),
       ),
