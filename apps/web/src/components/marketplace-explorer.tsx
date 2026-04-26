@@ -2,6 +2,7 @@
 
 import type { MarketplaceLocale, MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useDeferredValue, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -461,21 +462,32 @@ export function MarketplaceExplorer({
           ? Array.from({ length: Math.min(3, PAGE_SIZE) }).map((_, index) => (
               <OfferCardSkeleton key={`skeleton-${index}`} />
             ))
-          : shownOffers.map((offer, index) => (
-              <div
-                key={offer.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 45}ms`, animationFillMode: "both" }}
-              >
-                <OfferCard
-                  offer={offer}
-                  rank={index + 1}
-                  locale={preferences.locale}
-                  compareSelected={compareIds.has(offer.id)}
-                  onToggleCompare={toggleCompare}
-                />
-              </div>
-            ))}
+          : (
+            <AnimatePresence mode="popLayout" initial={false}>
+              {shownOffers.map((offer, index) => (
+                <motion.div
+                  key={offer.id}
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.18 } }}
+                  transition={{
+                    duration: 0.38,
+                    delay: Math.min(index * 0.04, 0.28),
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <OfferCard
+                    offer={offer}
+                    rank={index + 1}
+                    locale={preferences.locale}
+                    compareSelected={compareIds.has(offer.id)}
+                    onToggleCompare={toggleCompare}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
 
         {hasMore && (
           <div className="flex flex-col items-center gap-2 py-4">
