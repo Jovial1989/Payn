@@ -327,14 +327,14 @@ export function HomePage() {
         <div className="hero-orb hero-orb-dark floating-layer-delayed right-[-4%] top-[8%] h-[280px] w-[280px]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[46%] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.82),rgba(255,255,255,0)_70%)]" />
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] lg:items-center lg:gap-8">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:items-center lg:gap-10">
           <div className="relative z-10 flex flex-col justify-center">
             <div className="hero-eyebrow inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-emerald">
               <span className="h-2 w-2 rounded-full bg-accent-emerald" />
               Decision-first finance
             </div>
 
-            <h1 className="mt-6 max-w-[11ch] text-[3.2rem] font-extrabold leading-[0.9] tracking-[-0.08em] text-ink sm:text-[4.4rem] lg:text-[5.5rem]">
+            <h1 className="mt-6 max-w-[10ch] text-[3.2rem] font-extrabold leading-[0.9] tracking-[-0.08em] text-ink sm:text-[4.4rem] lg:text-[5.35rem]">
               Compare less. Decide better.
             </h1>
 
@@ -342,60 +342,31 @@ export function HomePage() {
               Payn turns messy financial search into one clear recommendation, with pricing and tradeoffs visible before you leave.
             </p>
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={discoverHref}
-                className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta w-full sm:w-auto`}
+                className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta`}
               >
                 <ProductEntryActionLabel locale={locale} />
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-3 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
-              <div className="hero-secondary-panel rounded-[26px] p-4 sm:p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
-                  Live recommendation
-                </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                      Starting TAE
-                    </p>
-                    <p className="tabular-nums mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
-                      3.9%
-                    </p>
-                  </div>
-                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                      Decision time
-                    </p>
-                    <p className="mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
-                      Minutes
-                    </p>
-                  </div>
-                  <div className="hero-metric-card rounded-[20px] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                      Coverage
-                    </p>
-                    <p className="tabular-nums mt-2 text-[1.7rem] font-semibold leading-none tracking-[-0.06em] text-ink">
-                      50+
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="dark-surface-panel rounded-[26px] px-5 py-4 text-white">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/55">
-                  Why it feels calmer
-                </p>
-                <p className="mt-3 max-w-[28ch] text-[15px] leading-6 text-white/84">
-                  Every result keeps rates, fees, and tradeoffs visible before the handoff, so you never lose context mid-decision.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-white/74">
-                  <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">No signup required</span>
-                  <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Loans · Cards · Transfers · FX</span>
-                </div>
-              </div>
+            <div className="mt-8 flex flex-wrap gap-2">
+              {[
+                { label: "40+ providers", icon: "✦" },
+                { label: "Loans · Cards · Transfers · FX", icon: null },
+                { label: "No signup required", icon: null },
+              ].map((pill) => (
+                <span
+                  key={pill.label}
+                  className="hero-inline-signal inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold text-ink-secondary"
+                >
+                  {pill.icon ? (
+                    <span className="text-[9px] text-accent-emerald">{pill.icon}</span>
+                  ) : null}
+                  {pill.label}
+                </span>
+              ))}
             </div>
           </div>
 
