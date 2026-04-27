@@ -3,6 +3,7 @@
 import type { MarketplaceLocale } from "@payn/types";
 import { useEffect, useState } from "react";
 import { getCountrySelectorOptions, individualCountryOptions } from "@/lib/countries";
+import { getMessages } from "@/lib/messages";
 import { supportedLocales } from "@/lib/marketplace";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 
@@ -32,7 +33,8 @@ function markLocaleGateDone() {
 const gateCountryOptions = individualCountryOptions.slice(0, 20); // top 20 by coverage order
 
 export function LocaleGate() {
-  const { setCountry, setLanguage } = useMarketplacePreferences();
+  const { locale, setCountry, setLanguage } = useMarketplacePreferences();
+  const messages = getMessages(locale);
   const [visible, setVisible] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedLocale, setSelectedLocale] = useState<MarketplaceLocale | "">("");
@@ -80,17 +82,17 @@ export function LocaleGate() {
         </div>
 
         <h2 className="text-[22px] font-bold tracking-[-0.03em] text-[#0D0D0D]">
-          Choose your market and language
+          {messages.localeGate.title}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-[#5F6368]">
-          Set your region and language to see the most relevant offers and product experience.
+          {messages.localeGate.description}
         </p>
 
         <div className="mt-6 grid gap-4">
           {/* Market / Region */}
           <label className="grid gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9AA0A6]">
-              Region
+              {messages.localeGate.regionLabel}
             </span>
             <div className="relative">
               <select
@@ -99,7 +101,7 @@ export function LocaleGate() {
                 className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] focus:ring-0"
               >
                 <option value="" disabled>
-                  Select your country
+                  {messages.localeGate.regionPlaceholder}
                 </option>
                 {gateCountryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -114,7 +116,7 @@ export function LocaleGate() {
           {/* Language */}
           <label className="grid gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9AA0A6]">
-              Language
+              {messages.localeGate.languageLabel}
             </span>
             <div className="relative">
               <select
@@ -123,7 +125,7 @@ export function LocaleGate() {
                 className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] focus:ring-0"
               >
                 <option value="" disabled>
-                  Select a language
+                  {messages.localeGate.languagePlaceholder}
                 </option>
                 {languageOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -143,11 +145,11 @@ export function LocaleGate() {
           disabled={!ready}
           className="mt-6 h-[52px] w-full rounded-[16px] bg-black text-sm font-semibold text-white transition-all duration-200 hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-35"
         >
-          Continue
+          {messages.localeGate.continue}
         </button>
 
         <p className="mt-4 text-center text-xs text-[#9AA0A6]">
-          You can change this at any time from settings.
+          {messages.localeGate.hint}
         </p>
       </div>
     </div>

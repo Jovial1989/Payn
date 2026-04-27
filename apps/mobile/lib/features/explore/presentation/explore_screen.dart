@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
@@ -12,6 +13,7 @@ import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/insight_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
+import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
@@ -43,6 +45,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final results = _sortResults(controller.exploreVisibleResults);
     final usingFallback = controller.isUsingExploreFallback;
 
@@ -88,15 +91,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.start,
                   children: <Widget>[
-                    Expanded(
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 280),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'LIVE RANKING',
+                            l10n.exploreLiveRanking.toUpperCase(),
                             style: theme.textTheme.labelMedium?.copyWith(
                               color: PaynColors.accent,
                               fontSize: 10,
@@ -106,14 +112,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Best options for you',
+                            l10n.exploreBestOptions,
                             style: theme.textTheme.headlineMedium?.copyWith(
                               fontSize: 26,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '${results.length} ranked offers in ${formatMarketLabel(controller.preferences.market)}',
+                            l10n.exploreRankedOffersInMarket(
+                              results.length,
+                              controller.preferences.market.localizedLabel(l10n),
+                            ),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: PaynColors.textSecondary,
                               fontSize: 14,
@@ -122,7 +131,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
                     _FilterButton(
                       count: controller.activeFilterCount,
                       onTap: () {
@@ -168,16 +176,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             onChanged: (value) {
                               _pulseLoading();
                               controller.updateExploreFilters(
-                                controller.exploreFilters.copyWith(query: value),
+                                controller.exploreFilters.copyWith(
+                                  query: value,
+                                ),
                               );
                             },
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: PaynColors.text,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Search providers or products',
-                              prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                              hintText: l10n.exploreSearchPlaceholder,
+                              prefixIcon: const Icon(
+                                Icons.search_rounded,
+                                size: 18,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 0,
+                              ),
                               suffixIcon:
                                   controller.exploreFilters.query.isEmpty
                                       ? null
@@ -185,10 +200,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         onPressed: () {
                                           _pulseLoading();
                                           controller.updateExploreFilters(
-                                            controller.exploreFilters.copyWith(query: ''),
+                                            controller.exploreFilters.copyWith(
+                                              query: '',
+                                            ),
                                           );
                                         },
-                                        icon: const Icon(Icons.close_rounded, size: 16),
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 16,
+                                        ),
                                       ),
                             ),
                           ),
@@ -208,7 +228,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             final selected =
                                 controller.selectedExploreCategory == null;
                             return _ControlChip(
-                              label: 'All',
+                              label: l10n.exploreAll,
                               detail: '${controller.exploreResults.length}',
                               selected: selected,
                               onTap: () {
@@ -218,7 +238,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             );
                           }
                           final category = PaynCategory.values[index - 1];
-                          final count = controller.categoryCounts[category] ?? 0;
+                          final count =
+                              controller.categoryCounts[category] ?? 0;
                           return _ControlChip(
                             label: category.label,
                             detail: '$count',
@@ -286,13 +307,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'No exact match. Showing strongest offers for ${formatMarketLabel(controller.preferences.market)}.',
+                          l10n.exploreNoExactMatch(
+                            controller.preferences.market.localizedLabel(l10n),
+                          ),
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
                       TextButton(
                         onPressed: controller.clearExploreFilters,
-                        child: const Text('Clear'),
+                        child: Text(l10n.commonClear),
                       ),
                     ],
                   ),
@@ -311,7 +334,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  24,
+                  20,
+                  PaynShell.contentBottomInset(context),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -330,21 +358,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No offers match your filters',
+                      l10n.exploreNoOffersTitle,
                       style: theme.textTheme.titleLarge?.copyWith(fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Try clearing filters or switching category.',
+                      l10n.exploreNoOffersDescription,
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: controller.clearExploreFilters,
-                      style: FilledButton.styleFrom(minimumSize: const Size(180, 48)),
-                      child: const Text('Clear filters'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(180, 48),
+                      ),
+                      child: Text(l10n.exploreClearFilters),
                     ),
                   ],
                 ),
@@ -389,9 +419,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
 
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 112 + MediaQuery.paddingOf(context).bottom,
-            ),
+            child: SizedBox(height: PaynShell.contentBottomInset(context)),
           ),
         ],
       ),
@@ -410,10 +438,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
         break;
       case _ExploreSort.recommended:
         results.sort(
-          (a, b) =>
-              _recommendationScore(b.offer).compareTo(
-                _recommendationScore(a.offer),
-              ),
+          (a, b) => _recommendationScore(
+            b.offer,
+          ).compareTo(_recommendationScore(a.offer)),
         );
         break;
       case _ExploreSort.bestMatch:
@@ -733,18 +760,16 @@ class _ControlChip extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: selected
-                      ? Colors.white.withValues(alpha: 0.22)
-                      : PaynColors.surfaceDim,
+                  color:
+                      selected
+                          ? Colors.white.withValues(alpha: 0.22)
+                          : PaynColors.surfaceDim,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   detail,
                   style: theme.textTheme.labelMedium?.copyWith(
-                    color:
-                        selected
-                            ? Colors.white
-                            : PaynColors.textTertiary,
+                    color: selected ? Colors.white : PaynColors.textTertiary,
                     fontWeight: FontWeight.w700,
                     fontSize: 10,
                   ),
@@ -826,12 +851,12 @@ class _FilterButton extends StatelessWidget {
 
     return Material(
       color: hasFilters ? PaynColors.accent : PaynColors.surface,
-      borderRadius: BorderRadius.circular(16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: hasFilters
-            ? BorderSide.none
-            : const BorderSide(color: PaynColors.outlineSubtle),
+        side:
+            hasFilters
+                ? BorderSide.none
+                : const BorderSide(color: PaynColors.outlineSubtle),
       ),
       child: InkWell(
         onTap: onTap,
@@ -850,6 +875,8 @@ class _FilterButton extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 hasFilters ? 'Filters $count' : 'Filters',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color:
                       hasFilters
@@ -982,10 +1009,13 @@ class _InvestmentIntelligenceBlockState
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: <Widget>[
-                      Expanded(
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 220),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -996,6 +1026,8 @@ class _InvestmentIntelligenceBlockState
                             const SizedBox(height: 6),
                             Text(
                               data.currentValueLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(fontSize: 24),
                             ),
@@ -1016,6 +1048,8 @@ class _InvestmentIntelligenceBlockState
                         ),
                         child: Text(
                           '${data.changePercent >= 0 ? '+' : ''}${data.changePercent.toStringAsFixed(2)}%',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(
                             context,
                           ).textTheme.labelLarge?.copyWith(

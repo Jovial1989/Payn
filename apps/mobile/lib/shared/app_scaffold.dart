@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
@@ -35,8 +36,11 @@ class AppScaffold extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _EyebrowChip(label: eyebrow),
-                      if (trailing != null) ...[const Spacer(), trailing!],
+                      Expanded(child: _EyebrowChip(label: eyebrow)),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 12),
+                        trailing!,
+                      ],
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -57,7 +61,7 @@ class AppScaffold extends StatelessWidget {
               20,
               0,
               20,
-              112 + MediaQuery.paddingOf(context).bottom,
+              PaynShell.contentBottomInset(context),
             ),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
@@ -269,11 +273,7 @@ class _EyebrowChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.shield_outlined,
-            size: 16,
-            color: PaynColors.accent,
-          ),
+          Icon(Icons.shield_outlined, size: 16, color: PaynColors.accent),
           const SizedBox(width: 8),
           Text(
             label,

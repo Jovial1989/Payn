@@ -10,13 +10,17 @@ dependencies:
   amplitude_flutter: ^4.0.0
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   dio: ^5.8.0+1
   fl_chart: ^0.68.0
   flutter_dotenv: ^5.2.1
   go_router: ^14.8.1
   google_fonts: ^6.3.1
+  intl: ^0.20.2
   shared_preferences: ^2.5.2
   url_launcher: ^6.3.1
+  url_launcher_ios: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +31,7 @@ dependency_overrides:
   path_provider_foundation: 2.5.1
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/

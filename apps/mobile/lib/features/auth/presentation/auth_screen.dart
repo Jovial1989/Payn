@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 
@@ -31,6 +32,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(),
@@ -40,24 +42,26 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           children: <Widget>[
             Text(
-              _mode == AuthMode.signIn ? 'Sign in' : 'Create account',
+              _mode == AuthMode.signIn
+                  ? l10n.authSignIn
+                  : l10n.authCreateAccount,
               style: theme.textTheme.headlineMedium,
             ),
             const SizedBox(height: 4),
             Text(
-              'Login is optional. Guest mode works without an account.',
+              l10n.authOptionalDescription,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             SegmentedButton<AuthMode>(
-              segments: const <ButtonSegment<AuthMode>>[
+              segments: <ButtonSegment<AuthMode>>[
                 ButtonSegment<AuthMode>(
                   value: AuthMode.signIn,
-                  label: Text('Sign in'),
+                  label: Text(l10n.authSignIn),
                 ),
                 ButtonSegment<AuthMode>(
                   value: AuthMode.signUp,
-                  label: Text('Sign up'),
+                  label: Text(l10n.authSignUp),
                 ),
               ],
               selected: <AuthMode>{_mode},
@@ -72,18 +76,18 @@ class _AuthScreenState extends State<AuthScreen> {
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'you@example.com',
+              decoration: InputDecoration(
+                labelText: l10n.authEmail,
+                hintText: l10n.authEmailPlaceholder,
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                hintText: 'At least 6 characters',
+              decoration: InputDecoration(
+                labelText: l10n.authPassword,
+                hintText: l10n.authPasswordPlaceholder,
               ),
             ),
             if (_error != null) ...<Widget>[
@@ -107,16 +111,16 @@ class _AuthScreenState extends State<AuthScreen> {
               onPressed: _submitting ? null : () => _submit(context),
               child: Text(
                 _submitting
-                    ? 'Working...'
+                    ? l10n.authWorking
                     : _mode == AuthMode.signIn
-                    ? 'Sign in'
-                    : 'Create account',
+                    ? l10n.authSignIn
+                    : l10n.authCreateAccount,
               ),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => context.pop(),
-              child: const Text('Continue as guest'),
+              child: Text(l10n.authContinueGuest),
             ),
           ],
         ),
@@ -128,6 +132,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final controller = AppScope.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
+    final l10n = context.l10n;
 
     setState(() {
       _submitting = true;
@@ -156,7 +161,9 @@ class _AuthScreenState extends State<AuthScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            _mode == AuthMode.signIn ? 'Signed in.' : 'Account created.',
+            _mode == AuthMode.signIn
+                ? l10n.authSignedInSuccess
+                : l10n.authCreatedSuccess,
           ),
         ),
       );

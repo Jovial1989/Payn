@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/constants/marketplace_constants.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
-import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
+import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -19,12 +20,18 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final preferences = controller.preferences;
 
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          PaynShell.contentBottomInset(context),
+        ),
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
           AnalyticsViewTracker(
@@ -38,10 +45,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
           ),
-          Text('Profile', style: theme.textTheme.headlineMedium),
+          Text(l10n.profileTitle, style: theme.textTheme.headlineMedium),
           const SizedBox(height: 6),
           Text(
-            'Manage region, language, and how Payn remembers your experience.',
+            l10n.profileSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: PaynColors.textSecondary,
             ),
@@ -50,27 +57,27 @@ class ProfileScreen extends StatelessWidget {
           _ProfileHero(controller: controller),
           const SizedBox(height: 16),
           SectionCard(
-            title: 'Preferences',
-            subtitle: 'Saved locally so your market and language stay consistent.',
+            title: l10n.profilePreferencesTitle,
+            subtitle: l10n.profilePreferencesSubtitle,
             child: Column(
               children: <Widget>[
                 _SettingRow(
-                  label: 'Region',
-                  value: formatMarketLabel(preferences.market),
+                  label: l10n.profileRegion,
+                  value: preferences.market.localizedLabel(l10n),
                   icon: Icons.public_rounded,
                   onTap: () => _showMarketSheet(context, controller),
                 ),
                 const SizedBox(height: 12),
                 _SettingRow(
-                  label: 'Language',
+                  label: l10n.profileLanguage,
                   value: _languageLabel(preferences.languageCode),
                   icon: Icons.translate_rounded,
                   onTap: () => _showLanguageSheet(context, controller),
                 ),
                 const SizedBox(height: 12),
                 _SettingRow(
-                  label: 'Saved offers',
-                  value: '${controller.savedCount} saved',
+                  label: l10n.profileSavedOffers,
+                  value: l10n.profileSavedCount(controller.savedCount),
                   icon: Icons.bookmark_rounded,
                   onTap: () => context.go('/saved'),
                 ),
@@ -79,8 +86,8 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SectionCard(
-            title: 'Interests',
-            subtitle: 'Tune future recommendations toward the categories you care about.',
+            title: l10n.profileInterestsTitle,
+            subtitle: l10n.profileInterestsSubtitle,
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -111,33 +118,33 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SectionCard(
-            title: 'Security',
-            subtitle: 'Provider links always open outside the app so your Payn session stays active.',
+            title: l10n.profileSecurityTitle,
+            subtitle: l10n.profileSecuritySubtitle,
             child: Column(
               children: <Widget>[
                 _InfoRow(
                   icon: Icons.open_in_new_rounded,
-                  title: 'External provider handoff',
-                  description: 'Links open in your browser and return you to Payn without a stuck modal.',
+                  title: l10n.profileExternalHandoff,
+                  description: l10n.profileExternalHandoffDescription,
                 ),
                 const SizedBox(height: 12),
                 _InfoRow(
                   icon: Icons.lock_outline_rounded,
-                  title: 'Local preferences',
-                  description: 'Market, language, and shortlist settings persist on this device.',
+                  title: l10n.profileLocalPreferences,
+                  description: l10n.profileLocalPreferencesDescription,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           SectionCard(
-            title: 'Account',
+            title: l10n.profileAccountTitle,
             child:
                 controller.isAuthenticated
                     ? FilledButton.tonalIcon(
                       onPressed: controller.signOut,
                       icon: const Icon(Icons.logout_rounded, size: 18),
-                      label: const Text('Sign out'),
+                      label: Text(l10n.profileSignOut),
                     )
                     : Row(
                       children: <Widget>[
@@ -156,14 +163,14 @@ class ProfileScreen extends StatelessWidget {
                               );
                               context.push('/auth?mode=signIn');
                             },
-                            child: const Text('Log in'),
+                            child: Text(l10n.profileLogIn),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => context.push('/auth?mode=signUp'),
-                            child: const Text('Create account'),
+                            child: Text(l10n.profileCreateAccount),
                           ),
                         ),
                       ],
@@ -184,19 +191,21 @@ class ProfileScreen extends StatelessWidget {
       useSafeArea: true,
       builder:
           (sheetContext) => _SelectionSheet<PaynMarket>(
-            title: 'Choose region',
+            title: context.l10n.profileChooseRegion,
             options:
                 PaynMarket.values
                     .map(
                       (market) => _SelectionOption<PaynMarket>(
                         value: market,
-                        label: formatMarketLabel(market),
+                        label: market.localizedLabel(context.l10n),
                         selected: preferences.market == market,
                       ),
                     )
                     .toList(),
             onSelected: (market) {
-              controller.updatePreferences(preferences.copyWith(market: market));
+              controller.updatePreferences(
+                preferences.copyWith(market: market),
+              );
               Navigator.of(sheetContext).pop();
             },
           ),
@@ -213,7 +222,7 @@ class ProfileScreen extends StatelessWidget {
       useSafeArea: true,
       builder:
           (sheetContext) => _SelectionSheet<String>(
-            title: 'Choose language',
+            title: context.l10n.profileChooseLanguage,
             options:
                 _languages
                     .map(
@@ -235,7 +244,8 @@ class ProfileScreen extends StatelessWidget {
   }
 
   String _languageLabel(String code) {
-    final match = _languages.where((language) => language.code == code).firstOrNull;
+    final match =
+        _languages.where((language) => language.code == code).firstOrNull;
     if (match == null) return code.toUpperCase();
     return '${match.native} - ${match.label}';
   }
@@ -274,13 +284,20 @@ class _ProfileHero extends StatelessWidget {
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: controller.isAuthenticated ? PaynColors.text : PaynColors.surfaceDim,
+              color:
+                  controller.isAuthenticated
+                      ? PaynColors.text
+                      : PaynColors.surfaceDim,
               borderRadius: BorderRadius.circular(18),
             ),
             alignment: Alignment.center,
             child:
                 controller.isAuthenticated
-                    ? const Icon(Icons.person_rounded, color: Colors.white, size: 24)
+                    ? const Icon(
+                      Icons.person_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    )
                     : const PaynMark(size: 18, strokeWidth: 2.4),
           ),
           const SizedBox(width: 14),
@@ -290,15 +307,17 @@ class _ProfileHero extends StatelessWidget {
               children: <Widget>[
                 Text(
                   controller.isAuthenticated
-                      ? (controller.session.email ?? 'Signed in')
-                      : 'Guest mode',
+                      ? (controller.session.email ?? context.l10n.profileSignedIn)
+                      : context.l10n.profileGuestMode,
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   controller.isAuthenticated
-                      ? 'Your market is ${formatMarketLabel(controller.preferences.market)}.'
-                      : 'Browse freely, save locally, and personalize your market at any time.',
+                      ? context.l10n.profileMarketSummary(
+                        controller.preferences.market.localizedLabel(context.l10n),
+                      )
+                      : context.l10n.profileGuestSummary,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: PaynColors.textSecondary,
                   ),
@@ -451,18 +470,32 @@ class _SelectionSheet<T> extends StatelessWidget {
             (option) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Material(
-                color: option.selected ? PaynColors.accentSurface : PaynColors.surfaceRaised,
+                color:
+                    option.selected
+                        ? PaynColors.accentSurface
+                        : PaynColors.surfaceRaised,
                 borderRadius: BorderRadius.circular(18),
                 child: InkWell(
                   onTap: () => onSelected(option.value),
                   borderRadius: BorderRadius.circular(18),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                     child: Row(
                       children: <Widget>[
-                        Expanded(child: Text(option.label, style: theme.textTheme.labelLarge)),
+                        Expanded(
+                          child: Text(
+                            option.label,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                        ),
                         if (option.selected)
-                          const Icon(Icons.check_rounded, color: PaynColors.accent),
+                          const Icon(
+                            Icons.check_rounded,
+                            color: PaynColors.accent,
+                          ),
                       ],
                     ),
                   ),

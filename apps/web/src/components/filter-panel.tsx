@@ -3,6 +3,9 @@
 import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
 import { useCallback, useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+import { formatCurrency } from "@/lib/format";
+import { getMessages } from "@/lib/messages";
 
 export interface FilterState {
   amount: number;
@@ -29,9 +32,11 @@ const purposeOptions: Record<MarketplaceCategory, string[]> = {
   investments: ["Stocks", "ETF plans", "Crypto", "Long-term investing", "Low-cost trading"],
 };
 
-function formatAmount(val: number) {
-  if (val >= 1000) return `EUR ${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k`;
-  return `EUR ${val}`;
+function formatAmount(locale: string, val: number) {
+  if (val >= 1000) {
+    return `${formatCurrency(locale as never, val, "EUR").replace(/\s?€|EUR\s?/g, "").trim()}k`;
+  }
+  return formatCurrency(locale as never, val, "EUR");
 }
 
 export function FilterPanel({
@@ -43,6 +48,8 @@ export function FilterPanel({
   offers: MarketplaceOffer[];
   onFilter: (filtered: MarketplaceOffer[]) => void;
 }) {
+  const { locale } = useMarketplacePreferences();
+  const messages = getMessages(locale);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const isLoan = category === "loans";
 
@@ -96,8 +103,8 @@ export function FilterPanel({
     <aside className="h-fit rounded-3xl border border-line bg-white p-6 shadow-card lg:sticky lg:top-20">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">Refine</p>
-          <h2 className="mt-2 text-h3 text-ink">Filter results</h2>
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-tertiary">{messages.filters.eyebrow}</p>
+          <h2 className="mt-2 text-h3 text-ink">{messages.filters.title}</h2>
         </div>
         {hasActiveFilter && (
           <button
@@ -105,12 +112,12 @@ export function FilterPanel({
             onClick={reset}
             className="rounded-full bg-bg-surface px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
           >
-            Reset
+            {messages.filters.reset}
           </button>
         )}
       </div>
       <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-        Narrow offers by {isLoan ? "amount, purpose, and provider" : "use case and provider"}.
+        {isLoan ? messages.filters.loanDescription : messages.filters.defaultDescription}
       </p>
 
       <div className="mt-6 grid gap-6">
@@ -118,10 +125,10 @@ export function FilterPanel({
           <section>
             <div className="flex items-center justify-between gap-4">
               <label htmlFor="amount" className="text-sm font-medium text-ink">
-                Amount needed
+                {messages.filters.amountNeeded}
               </label>
               <span className="rounded-full bg-bg-surface px-3 py-1 text-xs font-bold tabular-nums text-ink">
-                {formatAmount(filters.amount)}
+                {formatAmount(locale, filters.amount)}
               </span>
             </div>
             <input
@@ -143,7 +150,7 @@ export function FilterPanel({
 
         <section>
           <p className="mb-3 text-sm font-medium text-ink">
-            {isLoan ? "Purpose" : "Best for"}
+            {isLoan ? messages.filters.purpose : messages.filters.bestFor}
           </p>
           <div className="grid gap-1.5">
             {purposeOptions[category].map((option) => (
@@ -171,7 +178,7 @@ export function FilterPanel({
 
         <section>
           <label htmlFor="provider" className="mb-2 block text-sm font-medium text-ink">
-            Provider
+            {messages.filters.provider}
           </label>
           <select
             id="provider"
@@ -179,7 +186,7 @@ export function FilterPanel({
             onChange={(e) => update({ provider: e.target.value || null })}
             className="h-11 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink transition-colors focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
           >
-            <option value="">All providers</option>
+            <option value="">{messages.filters.allProviders}</option>
             {providers.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
@@ -189,7 +196,7 @@ export function FilterPanel({
 
       <div className="mt-6 border-t border-line pt-4">
         <p className="text-xs leading-5 text-ink-tertiary">
-          Filters refine comparison views using provider data and Payn&apos;s ranking rules.
+          {messages.filters.footer}
         </p>
       </div>
     </aside>

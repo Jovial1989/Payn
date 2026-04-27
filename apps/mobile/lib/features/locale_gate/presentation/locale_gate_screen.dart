@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
@@ -38,6 +39,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: PaynColors.background,
@@ -77,7 +79,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Payn',
+                    l10n.appTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -90,7 +92,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               const SizedBox(height: 48),
 
               Text(
-                'Choose your market\nand language',
+                l10n.localeGateTitle,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -100,7 +102,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Set your region and language to start with the right product experience.',
+                l10n.localeGateSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: PaynColors.textSecondary,
                   height: 1.55,
@@ -111,8 +113,8 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
 
               // Region selector
               _SelectorField(
-                label: 'Region',
-                hint: 'Select your country',
+                label: l10n.localeGateRegion,
+                hint: l10n.localeGateSelectCountry,
                 value:
                     _selectedMarket == null
                         ? null
@@ -124,8 +126,8 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
 
               // Language selector
               _SelectorField(
-                label: 'Language',
-                hint: 'Select a language',
+                label: l10n.localeGateLanguage,
+                hint: l10n.localeGateSelectLanguage,
                 value:
                     _selectedLanguage == null
                         ? null
@@ -137,7 +139,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
 
               // Helper text
               Text(
-                'You can change this at any time from your profile.',
+                l10n.localeGateSettingsHint,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: PaynColors.textTertiary,
@@ -165,7 +167,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: const Text('Continue'),
+                  child: Text(l10n.localeGateContinue),
                 ),
               ),
 
@@ -188,7 +190,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       ),
       builder: (ctx) {
         return _PickerSheet(
-          title: 'Select your country',
+          title: context.l10n.localeGateSelectCountry,
           items:
               _supportedMarkets.map((entry) {
                 return _PickerItem(
@@ -234,7 +236,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       ),
       builder: (ctx) {
         return _PickerSheet(
-          title: 'Select a language',
+          title: context.l10n.localeGateSelectLanguage,
           items:
               _languages.map((lang) {
                 return _PickerItem(

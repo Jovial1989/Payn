@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 
 class PaynShell extends StatelessWidget {
@@ -9,10 +10,16 @@ class PaynShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  static const double toolbarHeight = 72;
+  static const double toolbarTopPadding = 8;
+
+  static double contentBottomInset(BuildContext context) {
+    return toolbarHeight + MediaQuery.paddingOf(context).bottom + 12;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Content flows behind the nav bar so scroll content is visible through it.
       extendBody: true,
       body: navigationShell,
       bottomNavigationBar: _FrostedNavBar(navigationShell: navigationShell),
@@ -25,75 +32,111 @@ class _FrostedNavBar extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  static const _destinations = <_NavItem>[
-    _NavItem(
-      label: 'Home',
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home_rounded,
-    ),
-    _NavItem(
-      label: 'Explore',
-      icon: Icons.explore_outlined,
-      selectedIcon: Icons.explore_rounded,
-    ),
-    _NavItem(
-      label: 'Saved',
-      icon: Icons.bookmark_border_rounded,
-      selectedIcon: Icons.bookmark_rounded,
-    ),
-    _NavItem(
-      label: 'Profile',
-      icon: Icons.person_outline_rounded,
-      selectedIcon: Icons.person_rounded,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(PaynRadius.shell),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: const Color(0xF3FFFFFF),
-                border: Border.all(color: PaynColors.outlineSubtle),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 30,
-                    offset: const Offset(0, 14),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 7, 10, 7),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List<Widget>.generate(_destinations.length, (
-                    index,
-                  ) {
-                    final item = _destinations[index];
-                    final selected = navigationShell.currentIndex == index;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final l10n = context.l10n;
+    final destinations = <_NavItem>[
+      _NavItem(
+        label: l10n.navHome,
+        icon: Icons.home_outlined,
+        selectedIcon: Icons.home_rounded,
+      ),
+      _NavItem(
+        label: l10n.navExplore,
+        icon: Icons.explore_outlined,
+        selectedIcon: Icons.explore_rounded,
+      ),
+      _NavItem(
+        label: l10n.navSaved,
+        icon: Icons.bookmark_border_rounded,
+        selectedIcon: Icons.bookmark_rounded,
+      ),
+      _NavItem(
+        label: l10n.navProfile,
+        icon: Icons.person_outline_rounded,
+        selectedIcon: Icons.person_rounded,
+      ),
+    ];
 
-                    return Expanded(
-                      child: _NavButton(
-                        item: item,
-                        selected: selected,
-                        onTap: () {
-                          navigationShell.goBranch(
-                            index,
-                            initialLocation:
-                                index == navigationShell.currentIndex,
-                          );
-                        },
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xF4FFFFFF),
+            border: Border(
+              top: BorderSide(color: PaynColors.outline.withValues(alpha: 0.7)),
+            ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 28,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: PaynShell.toolbarHeight,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  PaynShell.toolbarTopPadding,
+                  12,
+                  bottomInset > 0 ? 6 : 10,
+                ),
+                child: Stack(
+                  children: <Widget>[
+                    AnimatedAlign(
+                      duration: const Duration(milliseconds: 360),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment(
+                        -1 + (navigationShell.currentIndex * (2 / (destinations.length - 1))),
+                        0,
                       ),
-                    );
-                  }),
+                      child: FractionallySizedBox(
+                        widthFactor: 1 / destinations.length,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Container(
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: PaynColors.accentSurface.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: <BoxShadow>[
+                                BoxShadow(
+                                  color: PaynColors.accent.withValues(alpha: 0.18),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: List<Widget>.generate(destinations.length, (index) {
+                        final item = destinations[index];
+                        final selected = navigationShell.currentIndex == index;
+
+                        return Expanded(
+                          child: _NavButton(
+                            item: item,
+                            selected: selected,
+                            onTap: () {
+                              navigationShell.goBranch(
+                                index,
+                                initialLocation: index == navigationShell.currentIndex,
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -120,85 +163,60 @@ class _NavButton extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: SizedBox(
-        height: 54,
+        height: 48,
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          selected
-                              ? PaynColors.accentSurface.withValues(alpha: 0.82)
-                              : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: AnimatedScale(
-                      scale: selected ? 0.97 : 0.95,
-                      duration: const Duration(milliseconds: 180),
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOutBack,
+                scale: selected ? 1.08 : 1,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
+                      duration: const Duration(milliseconds: 240),
                       curve: Curves.easeOutCubic,
-                      child: Icon(
-                        selected ? item.selectedIcon : item.icon,
-                        size: selected ? 19.5 : 19,
-                        color:
-                            selected
-                                ? PaynColors.accent
-                                : PaynColors.textTertiary,
-                      ),
+                      builder: (context, value, _) {
+                        return Transform.translate(
+                          offset: Offset(0, -1.5 * value),
+                          child: Icon(
+                            selected ? item.selectedIcon : item.icon,
+                            size: selected ? 23 : 22,
+                            color: Color.lerp(
+                              PaynColors.textTertiary,
+                              PaynColors.accent,
+                              value,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  SizedBox(
-                    height: 2,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
+                    const SizedBox(height: 3),
+                    AnimatedSlide(
+                      offset: Offset(0, selected ? 0 : 0.06),
+                      duration: const Duration(milliseconds: 240),
                       curve: Curves.easeOutCubic,
-                      width: selected ? 18 : 0,
-                      decoration: BoxDecoration(
-                        color: PaynColors.accent,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AnimatedSlide(
-                    offset: Offset(0, selected ? 0 : 0.08),
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedOpacity(
-                      opacity: selected ? 1 : 0.82,
-                      duration: const Duration(milliseconds: 180),
-                      child: Text(
-                        item.label,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontSize: 10.5,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
-                          color:
-                              selected
-                                  ? PaynColors.accent
-                                  : PaynColors.textTertiary,
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        style: theme.textTheme.labelMedium!.copyWith(
+                          fontSize: 11,
+                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          color: selected ? PaynColors.accent : PaynColors.textTertiary,
                         ),
+                        child: Text(item.label, textAlign: TextAlign.center),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

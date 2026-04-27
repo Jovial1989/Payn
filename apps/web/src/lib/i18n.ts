@@ -104,6 +104,25 @@ type Dictionary = {
     appPoints: string[];
     waitlistCta: string;
     howWeRankOffers: string;
+    noAccountRequired: string;
+    heroPillProviders: string;
+    heroPillCategories: string;
+    heroPillNoSignup: string;
+    heroEyebrowShort: string;
+    heroHeadline: string;
+    heroSubtitleShort: string;
+    whyPaynCards: Array<{ title: string; description: string }>;
+    waitlistModal: {
+      badge: string;
+      title: string;
+      subtitle: string;
+      placeholder: string;
+      submit: string;
+      submitting: string;
+      successMessage: string;
+      errorFallback: string;
+      noSpam: string;
+    };
     mobile: {
       badge: string;
       heading: string;
@@ -413,6 +432,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Join mobile waitlist",
       howWeRankOffers: "How we rank offers",
+      noAccountRequired: "No account required to compare.",
+      heroPillProviders: "40+ providers",
+      heroPillCategories: "Loans · Cards · Transfers · FX",
+      heroPillNoSignup: "No signup required",
+      heroEyebrowShort: "Decision-first finance",
+      heroHeadline: "Compare less. Decide better.",
+      heroSubtitleShort: "Payn turns messy financial search into one clear recommendation, with pricing and tradeoffs visible before you leave.",
+      whyPaynCards: [
+        {
+          title: "Transparent pricing",
+          description: "Rates, fees, and tradeoffs stay visible before you leave Payn.",
+        },
+        {
+          title: "No hidden fees",
+          description: "Cost signals stay upfront instead of getting buried inside provider flows.",
+        },
+        {
+          title: "Decision-first UX",
+          description: "Compare quickly and move only when a result is worth your time.",
+        },
+        {
+          title: "No credit impact",
+          description: "Checking options on Payn does not affect your credit score.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Early access",
+        title: "Get notified at launch",
+        subtitle: "Enter your email and we'll reach out as soon as Payn is live on iOS and Android.",
+        placeholder: "your@email.com",
+        submit: "Notify me",
+        submitting: "Saving…",
+        successMessage: "You're on the list! We'll notify you when the app launches.",
+        errorFallback: "Something went wrong. Please try again.",
+        noSpam: "No spam. Unsubscribe anytime.",
+      },
       mobile: {
         badge: "Early access open",
         heading: "Payn on mobile — coming soon",
@@ -694,6 +749,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Zur Mobile-Warteliste",
       howWeRankOffers: "Wie wir Angebote bewerten",
+      noAccountRequired: "Kein Konto erforderlich für den Vergleich.",
+      heroPillProviders: "40+ Anbieter",
+      heroPillCategories: "Kredite · Karten · Überweisungen · Wechsel",
+      heroPillNoSignup: "Ohne Registrierung",
+      heroEyebrowShort: "Entscheidungsorientierte Finanzen",
+      heroHeadline: "Weniger vergleichen. Besser entscheiden.",
+      heroSubtitleShort: "Payn macht aus unübersichtlicher Finanzsuche eine klare Empfehlung — mit sichtbaren Preisen und Abwägungen, bevor Sie weiterklicken.",
+      whyPaynCards: [
+        {
+          title: "Transparente Preise",
+          description: "Zinsen, Gebühren und Zielkonflikte bleiben sichtbar, bevor Sie weiterklicken.",
+        },
+        {
+          title: "Keine versteckten Gebühren",
+          description: "Wichtige Kostensignale bleiben vorne statt im Anbieterprozess verborgen.",
+        },
+        {
+          title: "Entscheidungsorientiert",
+          description: "Schnell vergleichen und nur weitergehen, wenn das Ergebnis überzeugt.",
+        },
+        {
+          title: "Ohne Score-Effekt",
+          description: "Das Prüfen von Optionen auf Payn beeinflusst Ihre Bonität nicht.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Frühzugang",
+        title: "Benachrichtigung bei Launch",
+        subtitle: "Gib deine E-Mail ein und wir melden uns, sobald Payn auf iOS und Android verfügbar ist.",
+        placeholder: "deine@email.de",
+        submit: "Benachrichtigen",
+        submitting: "Speichern…",
+        successMessage: "Du bist auf der Liste! Wir benachrichtigen dich beim App-Launch.",
+        errorFallback: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+        noSpam: "Kein Spam. Jederzeit abmeldbar.",
+      },
       mobile: {
         badge: "Frühzugang geöffnet",
         heading: "Payn auf dem Handy — bald verfügbar",
@@ -1019,6 +1110,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Unirse a la lista móvil",
       howWeRankOffers: "Cómo clasificamos las ofertas",
+      noAccountRequired: "No se necesita cuenta para comparar.",
+      heroPillProviders: "40+ proveedores",
+      heroPillCategories: "Préstamos · Tarjetas · Transferencias · Cambio",
+      heroPillNoSignup: "Sin registro",
+      heroEyebrowShort: "Finanzas orientadas a la decisión",
+      heroHeadline: "Compara menos. Decide mejor.",
+      heroSubtitleShort: "Payn convierte la búsqueda financiera confusa en una recomendación clara, con precios y compensaciones visibles antes de salir.",
+      whyPaynCards: [
+        {
+          title: "Precios transparentes",
+          description: "Tipos, comisiones y compromisos siguen visibles antes de salir de Payn.",
+        },
+        {
+          title: "Sin comisiones ocultas",
+          description: "Las señales de coste quedan al frente y no escondidas en el flujo del proveedor.",
+        },
+        {
+          title: "UX para decidir",
+          description: "Compara rápido y avanza solo cuando una opción merece tu tiempo.",
+        },
+        {
+          title: "Sin impacto crediticio",
+          description: "Consultar opciones en Payn no afecta tu puntuación crediticia.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Acceso anticipado",
+        title: "Notificación en el lanzamiento",
+        subtitle: "Introduce tu email y te avisaremos en cuanto Payn esté disponible en iOS y Android.",
+        placeholder: "tu@email.es",
+        submit: "Notificarme",
+        submitting: "Guardando…",
+        successMessage: "¡Estás en la lista! Te avisaremos cuando la app se lance.",
+        errorFallback: "Algo salió mal. Por favor, inténtalo de nuevo.",
+        noSpam: "Sin spam. Cancela cuando quieras.",
+      },
       mobile: {
         badge: "Acceso anticipado abierto",
         heading: "Payn en el móvil — próximamente",
@@ -1320,6 +1447,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Rejoindre la liste mobile",
       howWeRankOffers: "Comment nous classons les offres",
+      noAccountRequired: "Aucun compte requis pour comparer.",
+      heroPillProviders: "40+ fournisseurs",
+      heroPillCategories: "Prêts · Cartes · Virements · Change",
+      heroPillNoSignup: "Sans inscription",
+      heroEyebrowShort: "Finances orientées décision",
+      heroHeadline: "Comparez moins. Décidez mieux.",
+      heroSubtitleShort: "Payn transforme la recherche financière complexe en une recommandation claire, avec prix et compromis visibles avant de partir.",
+      whyPaynCards: [
+        {
+          title: "Tarification claire",
+          description: "Taux, frais et compromis restent visibles avant de quitter Payn.",
+        },
+        {
+          title: "Pas de frais cachés",
+          description: "Les signaux de coût restent en surface au lieu d'être noyés dans le parcours du partenaire.",
+        },
+        {
+          title: "Pensé pour décider",
+          description: "Comparez vite et n'avancez que lorsqu'une offre mérite votre temps.",
+        },
+        {
+          title: "Sans impact crédit",
+          description: "Consulter des options sur Payn n'affecte pas votre score de crédit.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Accès anticipé",
+        title: "Être notifié au lancement",
+        subtitle: "Entrez votre email et nous vous contacterons dès que Payn sera disponible sur iOS et Android.",
+        placeholder: "votre@email.fr",
+        submit: "Me notifier",
+        submitting: "Enregistrement…",
+        successMessage: "Vous êtes sur la liste ! Nous vous préviendrons au lancement.",
+        errorFallback: "Une erreur s'est produite. Veuillez réessayer.",
+        noSpam: "Pas de spam. Désabonnez-vous à tout moment.",
+      },
       mobile: {
         badge: "Accès anticipé ouvert",
         heading: "Payn sur mobile — bientôt disponible",
@@ -1619,6 +1782,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Entra nella lista mobile",
       howWeRankOffers: "Come classifichiamo le offerte",
+      noAccountRequired: "Nessun account richiesto per confrontare.",
+      heroPillProviders: "40+ provider",
+      heroPillCategories: "Prestiti · Carte · Bonifici · Cambio",
+      heroPillNoSignup: "Senza registrazione",
+      heroEyebrowShort: "Finanza orientata alla decisione",
+      heroHeadline: "Confronta meno. Decidi meglio.",
+      heroSubtitleShort: "Payn trasforma la ricerca finanziaria caotica in una chiara raccomandazione, con prezzi e compromessi visibili prima di uscire.",
+      whyPaynCards: [
+        {
+          title: "Prezzi trasparenti",
+          description: "Tassi, costi e compromessi restano visibili prima di uscire da Payn.",
+        },
+        {
+          title: "Nessun costo nascosto",
+          description: "I segnali di costo restano in primo piano invece di sparire nel flusso del provider.",
+        },
+        {
+          title: "UX orientata alla scelta",
+          description: "Confronta rapidamente e vai avanti solo quando un risultato vale il tuo tempo.",
+        },
+        {
+          title: "Nessun impatto sul credito",
+          description: "Controllare le opzioni su Payn non influisce sul tuo punteggio creditizio.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Accesso anticipato",
+        title: "Notifica al lancio",
+        subtitle: "Inserisci la tua email e ti contatteremo appena Payn sarà disponibile su iOS e Android.",
+        placeholder: "tua@email.it",
+        submit: "Notificami",
+        submitting: "Salvataggio…",
+        successMessage: "Sei in lista! Ti avviseremo al lancio dell'app.",
+        errorFallback: "Qualcosa è andato storto. Riprova.",
+        noSpam: "Niente spam. Cancellati quando vuoi.",
+      },
       mobile: {
         badge: "Accesso anticipato aperto",
         heading: "Payn su mobile — in arrivo",
@@ -1918,6 +2117,42 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Entrar na lista móvel",
       howWeRankOffers: "Como classificamos as ofertas",
+      noAccountRequired: "Sem conta necessária para comparar.",
+      heroPillProviders: "40+ fornecedores",
+      heroPillCategories: "Empréstimos · Cartões · Transferências · Câmbio",
+      heroPillNoSignup: "Sem registo",
+      heroEyebrowShort: "Finanças orientadas para a decisão",
+      heroHeadline: "Compare menos. Decida melhor.",
+      heroSubtitleShort: "Payn transforma a pesquisa financeira confusa numa recomendação clara, com preços e compromissos visíveis antes de sair.",
+      whyPaynCards: [
+        {
+          title: "Preços transparentes",
+          description: "Taxas, comissões e compromissos mantêm-se visíveis antes de sair da Payn.",
+        },
+        {
+          title: "Sem comissões ocultas",
+          description: "Os sinais de custo ficam à frente em vez de desaparecerem no fluxo do fornecedor.",
+        },
+        {
+          title: "UX para decidir",
+          description: "Compare depressa e avance apenas quando a opção merece o seu tempo.",
+        },
+        {
+          title: "Sem impacto no crédito",
+          description: "Ver opções na Payn não afeta a sua pontuação de crédito.",
+        },
+      ],
+      waitlistModal: {
+        badge: "Acesso antecipado",
+        title: "Ser notificado no lançamento",
+        subtitle: "Insira o seu email e entraremos em contacto assim que a Payn estiver disponível no iOS e Android.",
+        placeholder: "seu@email.pt",
+        submit: "Notifique-me",
+        submitting: "A guardar…",
+        successMessage: "Está na lista! Notificaremos quando a app for lançada.",
+        errorFallback: "Algo correu mal. Por favor, tente novamente.",
+        noSpam: "Sem spam. Cancele a qualquer momento.",
+      },
       mobile: {
         badge: "Acesso antecipado aberto",
         heading: "Payn no telemóvel — em breve",

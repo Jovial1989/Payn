@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
+import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
@@ -14,6 +16,7 @@ class SavedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final offers = controller.savedOffers;
     final suggestions = controller.homeRecommendations.take(2).toList();
 
@@ -30,10 +33,10 @@ class SavedScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Saved', style: theme.textTheme.headlineMedium),
+                  Text(l10n.savedTitle, style: theme.textTheme.headlineMedium),
                   const SizedBox(height: 6),
                   Text(
-                    'Keep your shortlist ready and compare the strongest options when you want to decide.',
+                    l10n.savedSubtitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: PaynColors.textSecondary,
                     ),
@@ -48,16 +51,20 @@ class SavedScreen extends StatelessWidget {
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  PaynShell.contentBottomInset(context),
+                ),
                 child: Column(
                   children: <Widget>[
                     EmptyStateCard(
-                      title: 'No saved offers yet',
-                      description:
-                          'Save offers from Explore to build a shortlist you can return to quickly.',
+                      title: l10n.savedEmptyTitle,
+                      description: l10n.savedEmptyDescription,
                       action: FilledButton(
                         onPressed: () => context.go('/explore'),
-                        child: const Text('Find my best offers'),
+                        child: Text(l10n.savedFindOffers),
                       ),
                     ),
                     if (suggestions.isNotEmpty) ...<Widget>[
@@ -65,7 +72,7 @@ class SavedScreen extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Suggested for you',
+                          l10n.savedSuggested,
                           style: theme.textTheme.titleLarge,
                         ),
                       ),
@@ -79,7 +86,8 @@ class SavedScreen extends StatelessWidget {
                             tradeoff: item.tradeoff,
                             saved: false,
                             motionIndex: 0,
-                            onTap: () => context.push('/offer/${item.offer.id}'),
+                            onTap:
+                                () => context.push('/offer/${item.offer.id}'),
                             onSave: () => controller.toggleSaved(item.offer.id),
                             onProviderTap:
                                 () => showProviderHandoffSheet(
@@ -100,21 +108,30 @@ class SavedScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: SectionCard(
-                    title: 'Compare tray',
+                    title: l10n.savedCompareTrayTitle,
                     subtitle:
                         controller.compareCount >= 2
-                            ? 'Your shortlist is ready to compare.'
-                            : 'Pick ${2 - controller.compareCount} more offers to compare.',
-                    child: Row(
+                            ? l10n.savedCompareTrayReady
+                            : l10n.savedCompareTrayNeedMore(
+                              2 - controller.compareCount,
+                            ),
+                    child: Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: <Widget>[
-                        Expanded(
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children:
                                 controller.compareOffers
                                     .take(3)
                                     .map(
                                       (offer) => Padding(
-                                        padding: const EdgeInsets.only(right: 8),
+                                        padding: const EdgeInsets.only(
+                                          right: 8,
+                                        ),
                                         child: ProviderBadge(
                                           offer: offer,
                                           compact: true,
@@ -129,7 +146,7 @@ class SavedScreen extends StatelessWidget {
                               controller.compareCount >= 2
                                   ? () => context.push('/compare')
                                   : null,
-                          child: const Text('Compare'),
+                          child: Text(l10n.savedCompare),
                         ),
                       ],
                     ),
@@ -160,7 +177,11 @@ class SavedScreen extends StatelessWidget {
               ),
             ),
           ],
-          const SliverPadding(padding: EdgeInsets.only(bottom: 110)),
+          SliverPadding(
+            padding: EdgeInsets.only(
+              bottom: PaynShell.contentBottomInset(context),
+            ),
+          ),
         ],
       ),
     );
@@ -196,21 +217,21 @@ class _SavedSummary extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: _SummaryMetric(
-              label: 'Saved',
+              label: context.l10n.homeSaved,
               value: '${controller.savedCount}',
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: _SummaryMetric(
-              label: 'Compare',
+              label: context.l10n.savedCompare,
               value: '${controller.compareCount}',
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: _SummaryMetric(
-              label: 'Recent',
+              label: context.l10n.savedRecent,
               value: '${controller.recentOffers.length}',
             ),
           ),
@@ -275,7 +296,7 @@ class _CompareToggle extends StatelessWidget {
           if (!context.mounted) return;
           if (!ok) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Compare supports up to 3 offers.')),
+              SnackBar(content: Text(context.l10n.savedCompareLimit)),
             );
           }
         },
@@ -286,15 +307,20 @@ class _CompareToggle extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(
-                selected ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
+                selected
+                    ? Icons.check_circle_rounded
+                    : Icons.add_circle_outline_rounded,
                 size: 18,
                 color: selected ? PaynColors.accent : PaynColors.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
-                selected ? 'Added to compare' : 'Add to compare',
+                selected
+                    ? context.l10n.savedAddedToCompare
+                    : context.l10n.savedAddToCompare,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: selected ? PaynColors.accent : PaynColors.textSecondary,
+                  color:
+                      selected ? PaynColors.accent : PaynColors.textSecondary,
                 ),
               ),
             ],

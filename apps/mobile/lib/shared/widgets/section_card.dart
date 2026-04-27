@@ -41,10 +41,13 @@ class SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.start,
             children: <Widget>[
-              Expanded(
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 220, maxWidth: 480),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -68,10 +71,7 @@ class SectionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) ...<Widget>[
-                const SizedBox(width: 12),
-                trailing!,
-              ],
+              if (trailing != null) trailing!,
             ],
           ),
           const SizedBox(height: 20),

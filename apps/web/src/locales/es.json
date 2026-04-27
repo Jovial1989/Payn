@@ -1,0 +1,25 @@
+{
+  "localeGate": {
+    "title": "Elige tu mercado e idioma",
+    "description": "Configura tu región e idioma para ver las ofertas y la experiencia de producto más relevantes.",
+    "regionLabel": "Región",
+    "regionPlaceholder": "Selecciona tu país",
+    "languageLabel": "Idioma",
+    "languagePlaceholder": "Selecciona un idioma",
+    "continue": "Continuar",
+    "hint": "Puedes cambiarlo en cualquier momento desde ajustes."
+  },
+  "filters": {
+    "eyebrow": "Refinar",
+    "title": "Filtrar resultados",
+    "reset": "Restablecer",
+    "loanDescription": "Reduce las ofertas por importe, finalidad y proveedor.",
+    "defaultDescription": "Reduce las ofertas por caso de uso y proveedor.",
+    "amountNeeded": "Importe necesario",
+    "purpose": "Finalidad",
+    "bestFor": "Ideal para",
+    "provider": "Proveedor",
+    "allProviders": "Todos los proveedores",
+    "footer": "Los filtros ajustan las vistas comparativas usando datos del proveedor y las reglas de clasificación de Payn."
+  }
+}

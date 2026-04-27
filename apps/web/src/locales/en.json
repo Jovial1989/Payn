@@ -1,0 +1,25 @@
+{
+  "localeGate": {
+    "title": "Choose your market and language",
+    "description": "Set your region and language to see the most relevant offers and product experience.",
+    "regionLabel": "Region",
+    "regionPlaceholder": "Select your country",
+    "languageLabel": "Language",
+    "languagePlaceholder": "Select a language",
+    "continue": "Continue",
+    "hint": "You can change this at any time from settings."
+  },
+  "filters": {
+    "eyebrow": "Refine",
+    "title": "Filter results",
+    "reset": "Reset",
+    "loanDescription": "Narrow offers by amount, purpose, and provider.",
+    "defaultDescription": "Narrow offers by use case and provider.",
+    "amountNeeded": "Amount needed",
+    "purpose": "Purpose",
+    "bestFor": "Best for",
+    "provider": "Provider",
+    "allProviders": "All providers",
+    "footer": "Filters refine comparison views using provider data and Payn's ranking rules."
+  }
+}

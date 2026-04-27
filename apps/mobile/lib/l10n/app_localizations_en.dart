@@ -1,0 +1,495 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Payn';
+
+  @override
+  String get categoryLoans => 'Loans';
+
+  @override
+  String get categoryCards => 'Cards';
+
+  @override
+  String get categoryTransfers => 'Transfers';
+
+  @override
+  String get categoryExchange => 'Exchange';
+
+  @override
+  String get categoryInsurance => 'Insurance';
+
+  @override
+  String get categoryInvestments => 'Investments';
+
+  @override
+  String get profileTypePersonal => 'Personal';
+
+  @override
+  String get profileTypeFreelancer => 'Freelancer';
+
+  @override
+  String get profileTypeBusiness => 'Business';
+
+  @override
+  String get marketEu => 'All Europe';
+
+  @override
+  String get marketInternational => 'International';
+
+  @override
+  String get marketGermany => 'Germany';
+
+  @override
+  String get marketSpain => 'Spain';
+
+  @override
+  String get marketUnitedKingdom => 'United Kingdom';
+
+  @override
+  String get marketFrance => 'France';
+
+  @override
+  String get marketItaly => 'Italy';
+
+  @override
+  String get marketPortugal => 'Portugal';
+
+  @override
+  String get marketNetherlands => 'Netherlands';
+
+  @override
+  String get localeEnglish => 'English';
+
+  @override
+  String get localeGerman => 'German';
+
+  @override
+  String get localeSpanish => 'Spanish';
+
+  @override
+  String get homeLiveRanking => 'Live ranking';
+
+  @override
+  String get homeHeroTitle => 'Best options for you';
+
+  @override
+  String get homeTopPicksTitle => 'Best matches today';
+
+  @override
+  String get homeSmartSuggestions => 'Smart suggestions';
+
+  @override
+  String get homeContinueTitle => 'Continue where you left off';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeSaved => 'Saved';
+
+  @override
+  String get homeCompared => 'Compared';
+
+  @override
+  String get homeProviders => 'Providers';
+
+  @override
+  String get savedTitle => 'Saved';
+
+  @override
+  String get savedSubtitle =>
+      'Keep your shortlist ready and compare the strongest options when you want to decide.';
+
+  @override
+  String get savedEmptyTitle => 'No saved offers yet';
+
+  @override
+  String get savedEmptyDescription =>
+      'Save offers from Explore to build a shortlist you can return to quickly.';
+
+  @override
+  String get savedFindOffers => 'Find my best offers';
+
+  @override
+  String get savedSuggested => 'Suggested for you';
+
+  @override
+  String get savedCompareTrayTitle => 'Compare tray';
+
+  @override
+  String get savedCompareTrayReady => 'Your shortlist is ready to compare.';
+
+  @override
+  String savedCompareTrayNeedMore(int count) {
+    return 'Pick $count more offers to compare.';
+  }
+
+  @override
+  String get savedCompare => 'Compare';
+
+  @override
+  String get savedRecent => 'Recent';
+
+  @override
+  String get savedCompareLimit => 'Compare supports up to 3 offers.';
+
+  @override
+  String get savedAddedToCompare => 'Added to compare';
+
+  @override
+  String get savedAddToCompare => 'Add to compare';
+
+  @override
+  String get compareTitle => 'Compare';
+
+  @override
+  String get compareNeedTwoTitle => 'Select at least 2 offers';
+
+  @override
+  String get compareNeedTwoDescription =>
+      'Use the Saved tab to choose offers for comparison.';
+
+  @override
+  String get compareGoToSaved => 'Go to Saved';
+
+  @override
+  String get compareBestOption => 'Best option';
+
+  @override
+  String get compareApply => 'Apply';
+
+  @override
+  String get compareProvider => 'Provider';
+
+  @override
+  String get compareBestFor => 'Best for';
+
+  @override
+  String get compareTradeoff => 'Tradeoff';
+
+  @override
+  String get compareSelected => 'Selected';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileSubtitle =>
+      'Manage region, language, and how Payn remembers your experience.';
+
+  @override
+  String get profilePreferencesTitle => 'Preferences';
+
+  @override
+  String get profilePreferencesSubtitle =>
+      'Saved locally so your market and language stay consistent.';
+
+  @override
+  String get profileRegion => 'Region';
+
+  @override
+  String get profileLanguage => 'Language';
+
+  @override
+  String get profileSavedOffers => 'Saved offers';
+
+  @override
+  String profileSavedCount(int count) {
+    return '$count saved';
+  }
+
+  @override
+  String get profileInterestsTitle => 'Interests';
+
+  @override
+  String get profileInterestsSubtitle =>
+      'Tune future recommendations toward the categories you care about.';
+
+  @override
+  String get profileSecurityTitle => 'Security';
+
+  @override
+  String get profileSecuritySubtitle =>
+      'Provider links always open outside the app so your Payn session stays active.';
+
+  @override
+  String get profileExternalHandoff => 'External provider handoff';
+
+  @override
+  String get profileExternalHandoffDescription =>
+      'Links open in your browser and return you to Payn without a stuck modal.';
+
+  @override
+  String get profileLocalPreferences => 'Local preferences';
+
+  @override
+  String get profileLocalPreferencesDescription =>
+      'Market, language, and shortlist settings persist on this device.';
+
+  @override
+  String get profileAccountTitle => 'Account';
+
+  @override
+  String get profileSignOut => 'Sign out';
+
+  @override
+  String get profileLogIn => 'Log in';
+
+  @override
+  String get profileCreateAccount => 'Create account';
+
+  @override
+  String get profileChooseRegion => 'Choose region';
+
+  @override
+  String get profileChooseLanguage => 'Choose language';
+
+  @override
+  String get profileSignedIn => 'Signed in';
+
+  @override
+  String get profileGuestMode => 'Guest mode';
+
+  @override
+  String profileMarketSummary(Object market) {
+    return 'Your market is $market.';
+  }
+
+  @override
+  String get profileGuestSummary =>
+      'Browse freely, save locally, and personalize your market at any time.';
+
+  @override
+  String get authSignIn => 'Sign in';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authOptionalDescription =>
+      'Login is optional. Guest mode works without an account.';
+
+  @override
+  String get authSignUp => 'Sign up';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authEmailPlaceholder => 'you@example.com';
+
+  @override
+  String get authPassword => 'Password';
+
+  @override
+  String get authPasswordPlaceholder => 'At least 6 characters';
+
+  @override
+  String get authWorking => 'Working...';
+
+  @override
+  String get authContinueGuest => 'Continue as guest';
+
+  @override
+  String get authSignedInSuccess => 'Signed in.';
+
+  @override
+  String get authCreatedSuccess => 'Account created.';
+
+  @override
+  String get localeGateTitle => 'Choose your market and language';
+
+  @override
+  String get localeGateSubtitle =>
+      'Set your region and language to start with the right product experience.';
+
+  @override
+  String get localeGateRegion => 'Region';
+
+  @override
+  String get localeGateSelectCountry => 'Select your country';
+
+  @override
+  String get localeGateLanguage => 'Language';
+
+  @override
+  String get localeGateSelectLanguage => 'Select a language';
+
+  @override
+  String get localeGateContinue => 'Continue';
+
+  @override
+  String get localeGateSettingsHint =>
+      'You can change this at any time from your profile.';
+
+  @override
+  String get exploreLiveRanking => 'Live ranking';
+
+  @override
+  String get exploreBestOptions => 'Best options for you';
+
+  @override
+  String exploreRankedOffersInMarket(int count, Object market) {
+    return '$count ranked offers in $market';
+  }
+
+  @override
+  String get exploreSearchPlaceholder => 'Search providers or products';
+
+  @override
+  String get exploreAll => 'All';
+
+  @override
+  String exploreNoExactMatch(Object market) {
+    return 'No exact match. Showing strongest offers for $market.';
+  }
+
+  @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get exploreNoOffersTitle => 'No offers match your filters';
+
+  @override
+  String get exploreNoOffersDescription =>
+      'Try clearing filters or switching category.';
+
+  @override
+  String get exploreClearFilters => 'Clear filters';
+
+  @override
+  String get offerDecisionReviewed => 'Reviewed';
+
+  @override
+  String get offerOnRequest => 'On request';
+
+  @override
+  String get offerSave => 'Save';
+
+  @override
+  String get offerSaved => 'Saved';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navExplore => 'Explore';
+
+  @override
+  String get navSaved => 'Saved';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String formatterThousandsCompact(Object value) {
+    return '${value}k';
+  }
+
+  @override
+  String get homeActivityTitle => 'Your financial activity';
+
+  @override
+  String get homeActivitySubtitle => 'Track views, shortlist momentum, and clicks over time.';
+
+  @override
+  String get homeActivityTotalViews => 'Total views';
+
+  @override
+  String get homeActivityCtr => 'Click-through rate';
+
+  @override
+  String get homeActivityOfferHandoff => 'Offer handoff';
+
+  @override
+  String get homeActivitySavedOffers => 'Saved offers';
+
+  @override
+  String get homeActivityShortlistReady => 'Shortlist ready';
+
+  @override
+  String get chartViews => 'Views';
+
+  @override
+  String get chartClicks => 'Clicks';
+
+  @override
+  String get offerDecisionNoFees => 'No fees';
+
+  @override
+  String get offerDecisionFast => 'Fast';
+
+  @override
+  String get offerDecisionBestValue => 'Best value';
+
+  @override
+  String get offerCtaCheckRate => 'Check my rate';
+
+  @override
+  String get offerCtaApprovalOdds => 'See approval odds';
+
+  @override
+  String get offerCtaOpenProvider => 'Open provider';
+
+  @override
+  String get offerCtaCoverPrice => 'Check cover price';
+
+  @override
+  String get offerCtaOpenDetails => 'Open details';
+
+  @override
+  String get offerDetailsLoan => 'Loan details';
+
+  @override
+  String get offerDetailsCard => 'Card details';
+
+  @override
+  String get offerDetailsFee => 'Fee details';
+
+  @override
+  String get offerDetailsPolicy => 'Policy details';
+
+  @override
+  String get offerDetailsPlatform => 'Platform details';
+
+  @override
+  String providerOpeningTitle(Object provider) => 'Opening $provider';
+
+  @override
+  String get providerLeavingDescription => 'You are leaving Payn to continue';
+
+  @override
+  String get providerOpeningMessage => 'Opening provider page...';
+
+  @override
+  String get providerManualMessage => 'Use Open provider if nothing happened.';
+
+  @override
+  String get providerOpenButton => 'Open provider';
+
+  @override
+  String get providerBackButton => 'Back to Payn';
+
+  @override
+  String get providerLinkUnavailable => 'Provider link is unavailable.';
+
+  @override
+  String get providerLinkCopied => 'Could not open automatically. URL copied to clipboard.';
+
+  @override
+  String get providerLinkUnavailableSnackbar => 'This provider link is unavailable right now.';
+
+  @override
+  String get splashTagline => 'Move money with more clarity';
+
+  @override
+  String get routerError => 'We could not open that route.';
+}

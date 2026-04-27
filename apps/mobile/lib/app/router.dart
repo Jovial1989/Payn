@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/features/auth/presentation/auth_screen.dart';
 import 'package:payn_mobile/features/compare/presentation/compare_screen.dart';
 import 'package:payn_mobile/features/explore/presentation/explore_screen.dart';
@@ -122,7 +123,7 @@ GoRouter createRouter(AppController controller) {
       return Scaffold(
         body: Center(
           child: Text(
-            'We could not open that route.',
+            AppLocalizations.of(context)?.routerError ?? 'Page not found.',
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),

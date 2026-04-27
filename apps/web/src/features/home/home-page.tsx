@@ -1,6 +1,5 @@
 "use client";
 
-import type { MarketplaceLocale } from "@payn/types";
 import Link from "next/link";
 import { useState } from "react";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
@@ -82,121 +81,20 @@ const whyPaynIcons = [
   ),
 ];
 
-const whyPaynCardsByLocale: Record<
-  MarketplaceLocale,
-  Array<{ title: string; description: string }>
-> = {
-  en: [
-    {
-      title: "Transparent pricing",
-      description: "Rates, fees, and tradeoffs stay visible before you leave Payn.",
-    },
-    {
-      title: "No hidden fees",
-      description: "Cost signals stay upfront instead of getting buried inside provider flows.",
-    },
-    {
-      title: "Decision-first UX",
-      description: "Compare quickly and move only when a result is worth your time.",
-    },
-    {
-      title: "No credit impact",
-      description: "Checking options on Payn does not affect your credit score.",
-    },
-  ],
-  de: [
-    {
-      title: "Transparente Preise",
-      description: "Zinsen, Gebühren und Zielkonflikte bleiben sichtbar, bevor Sie weiterklicken.",
-    },
-    {
-      title: "Keine versteckten Gebühren",
-      description: "Wichtige Kostensignale bleiben vorne statt im Anbieterprozess verborgen.",
-    },
-    {
-      title: "Entscheidungsorientiert",
-      description: "Schnell vergleichen und nur weitergehen, wenn das Ergebnis überzeugt.",
-    },
-    {
-      title: "Ohne Score-Effekt",
-      description: "Das Prüfen von Optionen auf Payn beeinflusst Ihre Bonität nicht.",
-    },
-  ],
-  es: [
-    {
-      title: "Precios transparentes",
-      description: "Tipos, comisiones y compromisos siguen visibles antes de salir de Payn.",
-    },
-    {
-      title: "Sin comisiones ocultas",
-      description: "Las señales de coste quedan al frente y no escondidas en el flujo del proveedor.",
-    },
-    {
-      title: "UX para decidir",
-      description: "Compara rápido y avanza solo cuando una opción merece tu tiempo.",
-    },
-    {
-      title: "Sin impacto crediticio",
-      description: "Consultar opciones en Payn no afecta tu puntuación crediticia.",
-    },
-  ],
-  fr: [
-    {
-      title: "Tarification claire",
-      description: "Taux, frais et compromis restent visibles avant de quitter Payn.",
-    },
-    {
-      title: "Pas de frais cachés",
-      description: "Les signaux de coût restent en surface au lieu d'être noyés dans le parcours du partenaire.",
-    },
-    {
-      title: "Pensé pour décider",
-      description: "Comparez vite et n'avancez que lorsqu'une offre mérite votre temps.",
-    },
-    {
-      title: "Sans impact crédit",
-      description: "Consulter des options sur Payn n'affecte pas votre score de crédit.",
-    },
-  ],
-  it: [
-    {
-      title: "Prezzi trasparenti",
-      description: "Tassi, costi e compromessi restano visibili prima di uscire da Payn.",
-    },
-    {
-      title: "Nessun costo nascosto",
-      description: "I segnali di costo restano in primo piano invece di sparire nel flusso del provider.",
-    },
-    {
-      title: "UX orientata alla scelta",
-      description: "Confronta rapidamente e vai avanti solo quando un risultato vale il tuo tempo.",
-    },
-    {
-      title: "Nessun impatto sul credito",
-      description: "Controllare le opzioni su Payn non influisce sul tuo punteggio creditizio.",
-    },
-  ],
-  pt: [
-    {
-      title: "Preços transparentes",
-      description: "Taxas, comissões e compromissos mantêm-se visíveis antes de sair da Payn.",
-    },
-    {
-      title: "Sem comissões ocultas",
-      description: "Os sinais de custo ficam à frente em vez de desaparecerem no fluxo do fornecedor.",
-    },
-    {
-      title: "UX para decidir",
-      description: "Compare depressa e avance apenas quando a opção merece o seu tempo.",
-    },
-    {
-      title: "Sem impacto no crédito",
-      description: "Ver opções na Payn não afeta a sua pontuação de crédito.",
-    },
-  ],
+
+type WaitlistModalStrings = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  placeholder: string;
+  submit: string;
+  submitting: string;
+  successMessage: string;
+  errorFallback: string;
+  noSpam: string;
 };
 
-function AppWaitlistModal({ onClose }: { onClose: () => void }) {
+function AppWaitlistModal({ onClose, strings }: { onClose: () => void; strings: WaitlistModalStrings }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -213,15 +111,15 @@ function AppWaitlistModal({ onClose }: { onClose: () => void }) {
       if (!res.ok) {
         const payload = await res.json().catch(() => null) as { error?: string } | null;
         setStatus("error");
-        setMessage(payload?.error ?? "Something went wrong. Please try again.");
+        setMessage(payload?.error ?? strings.errorFallback);
         return;
       }
       setStatus("success");
-      setMessage("You're on the list! We'll notify you when the app launches.");
+      setMessage(strings.successMessage);
       setEmail("");
     } catch {
       setStatus("error");
-      setMessage("Something went wrong. Please try again.");
+      setMessage(strings.errorFallback);
     }
   }
 
@@ -244,17 +142,16 @@ function AppWaitlistModal({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
 
-        {/* Early access badge */}
         <span className="inline-flex items-center gap-1.5 rounded-full bg-black px-3 py-1 text-[11px] font-semibold text-white">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          Early access
+          {strings.badge}
         </span>
 
         <h3 className="mt-4 text-[1.2rem] font-bold tracking-[-0.025em] text-[#0D0D0D]">
-          Get notified at launch
+          {strings.title}
         </h3>
         <p className="mt-1.5 text-sm leading-relaxed text-[#5F6368]">
-          Enter your email and we'll reach out as soon as Payn is live on iOS and Android.
+          {strings.subtitle}
         </p>
 
         {status === "success" ? (
@@ -267,7 +164,7 @@ function AppWaitlistModal({ onClose }: { onClose: () => void }) {
               type="email"
               required
               autoComplete="email"
-              placeholder="your@email.com"
+              placeholder={strings.placeholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={status === "loading"}
@@ -281,13 +178,13 @@ function AppWaitlistModal({ onClose }: { onClose: () => void }) {
               disabled={status === "loading"}
               className="h-[52px] w-full rounded-[16px] bg-black text-sm font-semibold text-white transition-all hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {status === "loading" ? "Saving…" : "Notify me"}
+              {status === "loading" ? strings.submitting : strings.submit}
             </button>
           </form>
         )}
 
         <p className="mt-4 text-center text-xs text-[#9AA0A6]">
-          No spam. Unsubscribe anytime.
+          {strings.noSpam}
         </p>
       </div>
     </div>
@@ -303,7 +200,7 @@ export function HomePage() {
   const { locale } = preferences;
   const [appPromoOpen, setAppPromoOpen] = useState(false);
   const dictionary = getDictionary(locale);
-  const whyPaynCards = whyPaynCardsByLocale[locale] ?? whyPaynCardsByLocale.en;
+  const whyPaynCards = dictionary.home.whyPaynCards;
   const discoverHref = localePath(locale, "/discover");
 
   return (
@@ -331,15 +228,15 @@ export function HomePage() {
           <div className="relative z-10 flex flex-col justify-center">
             <div className="hero-eyebrow inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-emerald">
               <span className="h-2 w-2 rounded-full bg-accent-emerald" />
-              Decision-first finance
+              {dictionary.home.heroEyebrowShort}
             </div>
 
             <h1 className="mt-6 max-w-[10ch] text-[3.2rem] font-extrabold leading-[0.9] tracking-[-0.08em] text-ink sm:text-[4.4rem] lg:text-[5.35rem]">
-              Compare less. Decide better.
+              {dictionary.home.heroHeadline}
             </h1>
 
             <p className="mt-5 max-w-[30ch] text-[16px] leading-7 text-ink-secondary sm:text-[18px]">
-              Payn turns messy financial search into one clear recommendation, with pricing and tradeoffs visible before you leave.
+              {dictionary.home.heroSubtitleShort}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -353,9 +250,9 @@ export function HomePage() {
 
             <div className="mt-8 flex flex-wrap gap-2">
               {[
-                { label: "40+ providers", icon: "✦" },
-                { label: "Loans · Cards · Transfers · FX", icon: null },
-                { label: "No signup required", icon: null },
+                { label: dictionary.home.heroPillProviders, icon: "✦" },
+                { label: dictionary.home.heroPillCategories, icon: null },
+                { label: dictionary.home.heroPillNoSignup, icon: null },
               ].map((pill) => (
                 <span
                   key={pill.label}
@@ -424,7 +321,7 @@ export function HomePage() {
           ))}
         </div>
         <p className="mt-4 text-[13px] text-ink-tertiary">
-          No account required to compare.
+          {dictionary.home.noAccountRequired}
         </p>
 
         {/* Divider */}
@@ -526,7 +423,7 @@ export function HomePage() {
 
       {/* ── Waitlist modal ── */}
       {appPromoOpen && (
-        <AppWaitlistModal onClose={() => setAppPromoOpen(false)} />
+        <AppWaitlistModal onClose={() => setAppPromoOpen(false)} strings={dictionary.home.waitlistModal} />
       )}
     </div>
   );

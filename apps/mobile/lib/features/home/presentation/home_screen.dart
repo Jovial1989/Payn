@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
-import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
@@ -11,6 +11,7 @@ import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
+import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
@@ -21,6 +22,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final picks = controller.homeRecommendations;
     final recent = controller.recentOffers;
     final trending = controller.trendingOffers.take(3).toList();
@@ -75,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Payn',
+                          l10n.appTitle,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -97,9 +99,9 @@ class HomeScreen extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Text(
-                                  formatMarketLabel(
-                                    controller.preferences.market,
-                                  ),
+                                  controller.preferences.market.localizedLabel(l10n),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: PaynColors.textSecondary,
                                     fontWeight: FontWeight.w700,
@@ -141,7 +143,7 @@ class HomeScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final category = PaynCategory.values[index];
                   return _CategoryPill(
-                    label: category.label,
+                    label: category.localizedLabel(l10n),
                     count: categoryCounts[category] ?? 0,
                     onTap: () => context.go('/explore'),
                   );
@@ -168,14 +170,14 @@ class HomeScreen extends StatelessWidget {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        'Best matches today',
+                        l10n.homeTopPicksTitle,
                         style: theme.textTheme.titleLarge,
                       ),
                     ),
                     GestureDetector(
                       onTap: () => context.go('/explore'),
                       child: Text(
-                        'See all',
+                        l10n.homeSeeAll,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: PaynColors.accent,
                         ),
@@ -218,14 +220,14 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
                 child: Text(
-                  'Smart suggestions',
+                  l10n.homeSmartSuggestions,
                   style: theme.textTheme.titleLarge,
                 ),
               ),
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 170,
+                height: 188,
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   scrollDirection: Axis.horizontal,
@@ -249,7 +251,7 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
                 child: Text(
-                  'Continue where you left off',
+                  l10n.homeContinueTitle,
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -269,7 +271,11 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
 
-          const SliverPadding(padding: EdgeInsets.only(bottom: 112)),
+          SliverPadding(
+            padding: EdgeInsets.only(
+              bottom: PaynShell.contentBottomInset(context),
+            ),
+          ),
         ],
       ),
     );
@@ -282,6 +288,7 @@ class _TrustBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -304,7 +311,7 @@ class _TrustBar extends StatelessWidget {
         alignment: WrapAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            'Comparing',
+            l10n.compareTitle,
             style: theme.textTheme.labelMedium?.copyWith(
               color: PaynColors.textTertiary,
             ),
@@ -319,7 +326,7 @@ class _TrustBar extends StatelessWidget {
             ],
           ),
           Text(
-            '50+ providers',
+            '${50}+ ${l10n.homeProviders.toLowerCase()}',
             style: theme.textTheme.labelMedium?.copyWith(
               color: PaynColors.accent,
               fontWeight: FontWeight.w700,
@@ -339,6 +346,7 @@ class _DashboardHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
@@ -362,7 +370,7 @@ class _DashboardHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Best options for you',
+            l10n.homeHeroTitle,
             style: theme.textTheme.headlineLarge?.copyWith(
               fontSize: 36,
               color: PaynColors.textInverse,
@@ -370,7 +378,10 @@ class _DashboardHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Clear, ranked offers for ${formatMarketLabel(controller.preferences.market)} with calm handoff to providers.',
+            l10n.exploreRankedOffersInMarket(
+              controller.homeRecommendations.length,
+              controller.preferences.market.localizedLabel(l10n),
+            ),
             style: theme.textTheme.bodyLarge?.copyWith(
               color: PaynColors.textInverse.withValues(alpha: 0.72),
             ),
@@ -380,21 +391,21 @@ class _DashboardHero extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _HeroMetric(
-                  label: 'Saved',
+                  label: l10n.homeSaved,
                   value: '${controller.savedCount}',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Compared',
+                  label: l10n.homeCompared,
                   value: '${controller.compareCount}',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Providers',
+                  label: l10n.homeProviders,
                   value: '${controller.activeProviderCount}+',
                 ),
               ),
@@ -522,6 +533,7 @@ class _SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final primaryMetric = offer.metrics.isNotEmpty ? offer.metrics.first : null;
 
     return SizedBox(
@@ -568,7 +580,7 @@ class _SuggestionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  primaryMetric?.label ?? offer.category.label,
+                  primaryMetric?.label ?? offer.category.localizedLabel(l10n),
                   style: theme.textTheme.labelMedium,
                 ),
               ],
@@ -630,10 +642,11 @@ class _ActivitySectionState extends State<_ActivitySection> {
   @override
   Widget build(BuildContext context) {
     final snapshot = widget.controller.activitySnapshotFor(_range);
+    final l10n = context.l10n;
 
     return SectionCard(
-      title: 'Your financial activity',
-      subtitle: 'Track views, shortlist momentum, and clicks over time.',
+      title: l10n.homeActivityTitle,
+      subtitle: l10n.homeActivitySubtitle,
       trailing: SegmentedButton<ChartTimeRange>(
         segments:
             ChartTimeRange.values
@@ -656,7 +669,7 @@ class _ActivitySectionState extends State<_ActivitySection> {
             children: <Widget>[
               Expanded(
                 child: _ActivityMetricCard(
-                  label: 'Total views',
+                  label: l10n.homeActivityTotalViews,
                   value: '${snapshot.totalViews}',
                   detail:
                       '${snapshot.changePercent >= 0 ? '+' : ''}${snapshot.changePercent.toStringAsFixed(0)}%',
@@ -665,17 +678,17 @@ class _ActivitySectionState extends State<_ActivitySection> {
               const SizedBox(width: 10),
               Expanded(
                 child: _ActivityMetricCard(
-                  label: 'Click-through rate',
+                  label: l10n.homeActivityCtr,
                   value: '${snapshot.clickThroughRate.toStringAsFixed(1)}%',
-                  detail: 'Offer handoff',
+                  detail: l10n.homeActivityOfferHandoff,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _ActivityMetricCard(
-                  label: 'Saved offers',
+                  label: l10n.homeActivitySavedOffers,
                   value: '${snapshot.savedOffers}',
-                  detail: 'Shortlist ready',
+                  detail: l10n.homeActivityShortlistReady,
                 ),
               ),
             ],
@@ -685,18 +698,18 @@ class _ActivitySectionState extends State<_ActivitySection> {
             range: _range,
             lines: <MarketChartLine>[
               MarketChartLine(
-                label: 'Views',
+                label: l10n.chartViews,
                 points: snapshot.views,
                 color: PaynColors.text,
                 showArea: true,
               ),
               MarketChartLine(
-                label: 'Clicks',
+                label: l10n.chartClicks,
                 points: snapshot.clicks,
                 color: PaynColors.accent,
               ),
               MarketChartLine(
-                label: 'Saved',
+                label: l10n.homeSaved,
                 points: snapshot.saves,
                 color: PaynColors.positive,
               ),
@@ -793,6 +806,7 @@ class _RecentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l10n = context.l10n;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
@@ -813,7 +827,7 @@ class _RecentItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    '${offer.providerName} · ${offer.category.label}',
+                    '${offer.providerName} · ${offer.category.localizedLabel(l10n)}',
                     style: t.textTheme.labelMedium,
                   ),
                 ],

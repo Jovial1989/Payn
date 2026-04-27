@@ -1,0 +1,25 @@
+{
+  "localeGate": {
+    "title": "Markt und Sprache wählen",
+    "description": "Lege Region und Sprache fest, um die relevantesten Angebote und die passende Produkterfahrung zu sehen.",
+    "regionLabel": "Region",
+    "regionPlaceholder": "Land auswählen",
+    "languageLabel": "Sprache",
+    "languagePlaceholder": "Sprache auswählen",
+    "continue": "Weiter",
+    "hint": "Du kannst das jederzeit in den Einstellungen ändern."
+  },
+  "filters": {
+    "eyebrow": "Verfeinern",
+    "title": "Ergebnisse filtern",
+    "reset": "Zurücksetzen",
+    "loanDescription": "Grenze Angebote nach Betrag, Zweck und Anbieter ein.",
+    "defaultDescription": "Grenze Angebote nach Anwendungsfall und Anbieter ein.",
+    "amountNeeded": "Benötigter Betrag",
+    "purpose": "Zweck",
+    "bestFor": "Am besten für",
+    "provider": "Anbieter",
+    "allProviders": "Alle Anbieter",
+    "footer": "Filter verfeinern Vergleichsansichten mithilfe von Anbieterdaten und den Ranking-Regeln von Payn."
+  }
+}

@@ -3,11 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:payn_mobile/shared/services/link_handler_service.dart';
 
 class ProviderBrand {
   const ProviderBrand({
@@ -207,10 +208,9 @@ Future<void> showProviderHandoffSheet(
   );
 
   if (trackedUri == null) {
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('This provider link is unavailable right now.'),
-      ),
+      SnackBar(content: Text(l10n.providerLinkUnavailableSnackbar)),
     );
     return Future<void>.value();
   }
@@ -226,17 +226,6 @@ Future<void> showProviderHandoffSheet(
   );
 }
 
-class ExternalRedirectResult {
-  const ExternalRedirectResult({
-    required this.success,
-    required this.uri,
-    this.error,
-  });
-
-  final bool success;
-  final Uri? uri;
-  final String? error;
-}
 
 Uri? _buildTrackedProviderUri({
   required PaynOffer offer,
@@ -268,44 +257,6 @@ Uri? _buildTrackedProviderUri({
   );
 }
 
-Future<ExternalRedirectResult> handleExternalRedirect(Uri? rawUri) async {
-  if (rawUri == null) {
-    return const ExternalRedirectResult(
-      success: false,
-      uri: null,
-      error: 'We could not validate this provider link.',
-    );
-  }
-
-  final uri = rawUri.scheme == 'http' ? rawUri.replace(scheme: 'https') : rawUri;
-  if (uri.scheme != 'https') {
-    return ExternalRedirectResult(
-      success: false,
-      uri: uri,
-      error: 'Only secure https partner links can be opened from Payn.',
-    );
-  }
-
-  final canOpen = await canLaunchUrl(uri);
-  if (!canOpen) {
-    return ExternalRedirectResult(
-      success: false,
-      uri: uri,
-      error: 'This provider link could not be opened automatically.',
-    );
-  }
-
-  final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-  if (!launched) {
-    return ExternalRedirectResult(
-      success: false,
-      uri: uri,
-      error: 'Automatic redirect failed. You can retry or open it manually.',
-    );
-  }
-
-  return ExternalRedirectResult(success: true, uri: uri);
-}
 
 class _ProviderRedirectOverlay extends StatefulWidget {
   const _ProviderRedirectOverlay({
@@ -340,48 +291,40 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
 
   Future<void> _launchProvider() async {
     _autoCloseTimer?.cancel();
-    if (mounted) {
-      setState(() {
-        _launching = true;
-        _error = null;
-      });
-    }
+    if (mounted) setState(() { _launching = true; _error = null; });
 
-    final result = await handleExternalRedirect(widget.uri);
-
-    if (!mounted) {
-      return;
-    }
-
-    if (result.success) {
-      _autoCloseTimer = Timer(const Duration(milliseconds: 900), () {
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      });
-      return;
-    }
-
-    final uri = result.uri;
+    final uri = widget.uri;
     if (uri == null) {
       if (!mounted) return;
-      setState(() {
-        _launching = false;
-        _error = result.error ?? 'We could not validate this provider link.';
+      final msg = context.l10n.providerLinkUnavailable;
+      setState(() { _launching = false; _error = msg; });
+      return;
+    }
+
+    final result = await LinkHandlerService.open(uri, context: context);
+
+    if (!mounted) return;
+
+    if (result.success) {
+      _autoCloseTimer = Timer(const Duration(milliseconds: 420), () {
+        if (mounted) Navigator.of(context).pop();
       });
       return;
     }
 
+    final l10n = context.l10n;
     setState(() {
       _launching = false;
-      _error =
-          result.error ?? 'Automatic redirect failed. You can retry or open it manually.';
+      _error = result.copiedToClipboard
+          ? l10n.providerLinkCopied
+          : (result.message ?? l10n.providerLinkUnavailable);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: true,
@@ -458,14 +401,14 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'Opening ${widget.providerName}',
+                                  l10n.providerOpeningTitle(widget.providerName),
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontSize: 22,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'You are leaving Payn to continue',
+                                  l10n.providerLeavingDescription,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: PaynColors.textSecondary,
                                   ),
@@ -488,8 +431,8 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
                         child: Text(
                           _error ??
                               (_launching
-                                  ? 'Opening provider page...'
-                                  : 'Use Open provider if nothing happened.'),
+                                  ? l10n.providerOpeningMessage
+                                  : l10n.providerManualMessage),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: PaynColors.text,
                           ),
@@ -501,14 +444,14 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
                           Expanded(
                             child: FilledButton(
                               onPressed: widget.uri == null ? null : _openManualLink,
-                              child: Text(_launching ? 'Open provider' : 'Open provider'),
+                              child: Text(l10n.providerOpenButton),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('Back to Payn'),
+                              child: Text(l10n.providerBackButton),
                             ),
                           ),
                         ],
@@ -525,8 +468,10 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
   }
 
   Future<void> _openManualLink() async {
+    final uri = widget.uri;
+    if (uri == null) return;
     final navigator = Navigator.of(context);
-    final result = await handleExternalRedirect(widget.uri);
+    final result = await LinkHandlerService.open(uri, context: context);
     if (result.success && mounted) {
       navigator.pop();
       return;
@@ -534,7 +479,7 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     if (!mounted) return;
     setState(() {
       _launching = false;
-      _error = result.error ?? _error;
+      _error = result.message ?? _error;
     });
   }
 }

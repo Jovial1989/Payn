@@ -1,8 +1,9 @@
 "use client";
 
 import { createElement } from "react";
-import type { CSSProperties, ElementType, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import type { ElementType, ReactNode } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useRef } from "react";
 
 export function MotionReveal({
   children,
@@ -16,32 +17,26 @@ export function MotionReveal({
   as?: ElementType;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.14 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  const style = { ["--motion-delay" as string]: `${delay}ms` } as CSSProperties;
+  const visible = useInView(ref, { once: true, margin: "-8% 0px -8% 0px" });
+  const reduceMotion = useReducedMotion();
   const tagProps = {
     ref,
-    className: `${visible ? "motion-section" : "opacity-0 translate-y-6"} ${className}`.trim(),
-    style,
+    className,
+    initial: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24, filter: "blur(12px)" },
+    animate:
+      visible || reduceMotion
+        ? {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            transition: {
+              delay: reduceMotion ? 0 : delay / 1000,
+              duration: reduceMotion ? 0.1 : 0.52,
+              ease: [0.22, 1, 0.36, 1],
+            },
+          }
+        : undefined,
   } as const;
 
-  return createElement(Tag, tagProps, children);
+  return createElement(motion(Tag), tagProps, children);
 }

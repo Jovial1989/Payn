@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
@@ -13,6 +14,7 @@ class CompareScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final offers = controller.compareOffers;
     final compareViewTracker = AnalyticsViewTracker(
       viewKey: 'compare-view',
@@ -29,7 +31,7 @@ class CompareScreen extends StatelessWidget {
 
     if (offers.length < 2) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Compare')),
+        appBar: AppBar(title: Text(l10n.compareTitle)),
         body: Stack(
           children: <Widget>[
             compareViewTracker,
@@ -46,19 +48,19 @@ class CompareScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Select at least 2 offers',
+                      l10n.compareNeedTwoTitle,
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Use the Saved tab to choose offers for comparison.',
+                      l10n.compareNeedTwoDescription,
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: () => context.go('/saved'),
-                      child: const Text('Go to Saved'),
+                      child: Text(l10n.compareGoToSaved),
                     ),
                   ],
                 ),
@@ -77,7 +79,7 @@ class CompareScreen extends StatelessWidget {
         offers.expand((o) => o.metrics.map((m) => m.label)).toSet().toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Compare')),
+      appBar: AppBar(title: Text(l10n.compareTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         physics: const BouncingScrollPhysics(),
@@ -99,7 +101,7 @@ class CompareScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'Best option',
+                        l10n.compareBestOption,
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: PaynColors.positive,
                           fontWeight: FontWeight.w600,
@@ -125,7 +127,7 @@ class CompareScreen extends StatelessWidget {
                     minimumSize: const Size(0, 36),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                   ),
-                  child: const Text('Apply'),
+                  child: Text(l10n.compareApply),
                 ),
               ],
             ),
@@ -139,12 +141,12 @@ class CompareScreen extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   _Row(
-                    label: 'Provider',
+                    label: l10n.compareProvider,
                     values: offers.map((o) => o.providerName).toList(),
                     highlightValue: best.offer.providerName,
                   ),
                   _Row(
-                    label: 'Best for',
+                    label: l10n.compareBestFor,
                     values:
                         offers
                             .map((o) => o.bestFor.take(2).join(' · '))
@@ -161,7 +163,7 @@ class CompareScreen extends StatelessWidget {
                     );
                   }),
                   _Row(
-                    label: 'Tradeoff',
+                    label: l10n.compareTradeoff,
                     values: offers.map(controller.tradeoffFor).toList(),
                   ),
                 ],
@@ -171,7 +173,7 @@ class CompareScreen extends StatelessWidget {
 
           // ── Manage ──
           const SizedBox(height: 14),
-          Text('Selected', style: theme.textTheme.labelLarge),
+          Text(l10n.compareSelected, style: theme.textTheme.labelLarge),
           const SizedBox(height: 6),
           ...offers.map(
             (offer) => Padding(
