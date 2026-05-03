@@ -84,7 +84,7 @@ function SidebarLink({
 }) {
   if (disabled) {
     return (
-      <span className="flex w-full items-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold text-ink-tertiary opacity-55">
+      <span className="flex w-full items-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold text-slate-600 opacity-55">
         {icon}
         <span>{label}</span>
       </span>
@@ -98,8 +98,8 @@ function SidebarLink({
       className={clsx(
         "flex w-full items-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition-colors",
         active
-          ? "bg-accent-emerald text-white shadow-[0_4px_14px_rgba(15,138,75,0.22)]"
-          : "text-ink-secondary hover:bg-[#F3F4F6] hover:text-ink",
+          ? "bg-cyan-400/14 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.18)]"
+          : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100",
       )}
     >
       {icon}
@@ -205,18 +205,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#F7F7F8]">
-      <div className="mx-auto flex max-w-[1600px] gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
-        <aside className="hidden overflow-hidden rounded-[24px] border border-[#EAEAEA] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)] lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
-          <Link href={localePath(preferences.locale, "/")} className="flex items-center gap-3 border-b border-[#ECEDEF] px-5 py-5 transition-colors hover:bg-[#FAFAFA]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black">
+    <div className="min-h-screen overflow-x-clip bg-zinc-950 text-slate-200">
+      <div className="mx-auto flex max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
+        <aside className="hidden overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] shadow-[0_18px_48px_rgba(0,0,0,0.28)] backdrop-blur-md lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
+          <Link href={localePath(preferences.locale, "/")} className="flex items-center gap-3 border-b border-white/10 px-5 py-5 transition-colors hover:bg-white/[0.04]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M4 12L8 4L12 12" stroke="#e2f8ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div>
-              <p className="text-lg font-bold tracking-tight text-ink">Payn</p>
-              <p className="text-xs text-ink-tertiary">{uiCopy.common.backToSite}</p>
+              <p className="text-lg font-bold tracking-tight text-slate-100">Payn</p>
+              <p className="text-xs text-slate-500">{uiCopy.common.backToSite}</p>
             </div>
           </Link>
 
@@ -245,28 +245,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={() => setMobileNavOpen(false)}
               className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden"
             />
-            <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(88vw,340px)] flex-col overflow-y-auto border-r border-[#EAEAEA] bg-white px-4 py-4 shadow-[0_24px_64px_rgba(17,24,39,0.22)] lg:hidden">
+            <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(88vw,340px)] flex-col overflow-y-auto border-r border-white/10 bg-zinc-950 px-4 py-4 shadow-[0_24px_64px_rgba(0,0,0,0.42)] lg:hidden">
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href={localePath(preferences.locale, "/")}
                   onClick={() => setMobileNavOpen(false)}
                   className="flex min-w-0 items-center gap-3"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-base font-bold tracking-tight text-ink">Payn</p>
-                    <p className="text-xs text-ink-tertiary">{uiCopy.common.backToSite}</p>
+                    <p className="text-base font-bold tracking-tight text-slate-100">Payn</p>
+                    <p className="text-xs text-slate-500">{uiCopy.common.backToSite}</p>
                   </div>
                 </Link>
 
                 <button
                   type="button"
                   onClick={() => setMobileNavOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink-secondary transition-colors hover:bg-[#F3F4F6] hover:text-ink"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-100"
                   aria-label="Close navigation"
                 >
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
@@ -289,7 +289,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
 
-              <div className="mt-6 grid gap-3 rounded-[22px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-4">
+              <div className="mt-6 grid gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-4">
                 <label className="grid gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                     {dictionary.nav.country}
@@ -297,7 +297,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <select
                     value={preferences.country}
                     onChange={(event) => handleCountryChange(event.target.value)}
-                    className="h-11 rounded-[16px] border border-[#E3E5E8] bg-white px-3 text-sm font-semibold text-ink outline-none"
+                    className="h-11 rounded-[16px] border border-white/10 bg-black/20 px-3 text-sm font-semibold text-slate-100 outline-none"
                   >
                     {preferences.availableCountries.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -314,7 +314,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <select
                     value={preferences.locale}
                     onChange={(event) => handleLanguageChange(event.target.value as typeof preferences.locale)}
-                    className="h-11 rounded-[16px] border border-[#E3E5E8] bg-white px-3 text-sm font-semibold text-ink outline-none"
+                    className="h-11 rounded-[16px] border border-white/10 bg-black/20 px-3 text-sm font-semibold text-slate-100 outline-none"
                   >
                     {Object.entries(dictionary.locales).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -324,9 +324,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </select>
                 </label>
 
-                <div className="rounded-[16px] border border-[#E3E5E8] bg-white px-3 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{dictionary.nav.currency}</p>
-                  <p className="mt-1 text-sm font-semibold text-ink">{preferences.currency}</p>
+                <div className="rounded-[16px] border border-white/10 bg-black/20 px-3 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{dictionary.nav.currency}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-100">{preferences.currency}</p>
                 </div>
               </div>
             </aside>
@@ -334,8 +334,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <div className="min-h-[calc(100vh-2.5rem)] rounded-[24px] border border-[rgba(17,24,39,0.06)] bg-[#F9FAF9] shadow-[0_8px_32px_rgba(10,14,10,0.05)]">
-            <header className="border-b border-[#ECEDEF] bg-[#FBFBFC]/95 px-3 py-3 backdrop-blur sm:px-4 sm:py-4 lg:sticky lg:top-0 lg:z-30 lg:px-6">
+          <div className="min-h-[calc(100vh-2.5rem)] rounded-[24px] border border-white/10 bg-zinc-950/90 shadow-[0_18px_48px_rgba(0,0,0,0.28)]">
+            <header className="border-b border-white/10 bg-zinc-950/88 px-3 py-3 backdrop-blur-xl sm:px-4 sm:py-4 lg:sticky lg:top-0 lg:z-30 lg:px-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-2 sm:gap-3">
                   <button
@@ -344,7 +344,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       setMobileNavOpen(true);
                       setAccountMenuOpen(false);
                     }}
-                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E3E5E8] bg-white text-ink transition-colors hover:bg-[#F7F7F8] lg:hidden"
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-100 transition-colors hover:bg-white/[0.08] lg:hidden"
                     aria-label="Open navigation"
                   >
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
@@ -353,28 +353,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </button>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      <Link href={localePath(preferences.locale, "/")} className="transition-colors hover:text-ink">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      <Link href={localePath(preferences.locale, "/")} className="transition-colors hover:text-slate-100">
                         {uiCopy.common.home}
                       </Link>
                       <span>/</span>
                       <span className="truncate">{currentSectionTitle}</span>
                     </div>
-                    <h1 className="mt-1 truncate text-base font-bold tracking-tight text-ink sm:text-lg">
+                    <h1 className="mt-1 truncate text-base font-bold tracking-tight text-slate-100 sm:text-lg">
                       {currentSectionTitle}
                     </h1>
                   </div>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  <label className="hidden items-center gap-2 rounded-full border border-[#E3E5E8] bg-white px-3 py-2 text-sm xl:flex">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  <label className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm xl:flex">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                       {dictionary.nav.country}
                     </span>
                     <select
                       value={preferences.country}
                       onChange={(event) => handleCountryChange(event.target.value)}
-                      className="bg-transparent text-sm font-semibold text-ink outline-none"
+                      className="bg-transparent text-sm font-semibold text-slate-100 outline-none"
                     >
                       {preferences.availableCountries.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -384,14 +384,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </select>
                   </label>
 
-                  <label className="hidden items-center gap-2 rounded-full border border-[#E3E5E8] bg-white px-3 py-2 text-sm xl:flex">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  <label className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm xl:flex">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                       {dictionary.nav.language}
                     </span>
                     <select
                       value={preferences.locale}
                       onChange={(event) => handleLanguageChange(event.target.value as typeof preferences.locale)}
-                      className="bg-transparent text-sm font-semibold text-ink outline-none"
+                      className="bg-transparent text-sm font-semibold text-slate-100 outline-none"
                     >
                       {Object.entries(dictionary.locales).map(([value, label]) => (
                         <option key={value} value={value}>
@@ -401,7 +401,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </select>
                   </label>
 
-                  <span className="hidden rounded-full border border-[#E3E5E8] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-tertiary sm:inline-flex xl:inline-flex">
+                  <span className="hidden rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 sm:inline-flex xl:inline-flex">
                     {preferences.currency}
                   </span>
 
@@ -413,22 +413,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           setAccountMenuOpen((open) => !open);
                           setMobileNavOpen(false);
                         }}
-                        className="flex items-center gap-2 rounded-full border border-[#E3E5E8] bg-white px-2.5 py-2 transition-colors hover:bg-[#F7F7F8]"
+                        className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-2 transition-colors hover:bg-white/[0.08]"
                       >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/10 text-xs font-bold text-cyan-100">
                           {avatarInitials}
                         </span>
-                        <span className="hidden max-w-[180px] truncate text-sm font-semibold text-ink sm:inline">
+                        <span className="hidden max-w-[180px] truncate text-sm font-semibold text-slate-100 sm:inline">
                           {displayName}
                         </span>
                       </button>
 
                       {accountMenuOpen ? (
-                        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-40 grid min-w-[180px] gap-1 rounded-[18px] border border-[#EAEAEA] bg-white p-2 shadow-[0_18px_36px_rgba(17,24,39,0.12)]">
+                        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-40 grid min-w-[180px] gap-1 rounded-[18px] border border-white/10 bg-zinc-900 p-2 shadow-[0_18px_36px_rgba(0,0,0,0.32)]">
                           <Link
                             href={localePath(preferences.locale, "/settings")}
                             onClick={() => setAccountMenuOpen(false)}
-                            className="rounded-[14px] px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-[#F3F4F6]"
+                            className="rounded-[14px] px-3 py-2 text-sm font-semibold text-slate-100 transition-colors hover:bg-white/[0.06]"
                           >
                             {uiCopy.dashboard.navItems.profile.label}
                           </Link>
@@ -438,7 +438,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               setAccountMenuOpen(false);
                               void handleSignOut();
                             }}
-                            className="rounded-[14px] px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-[#F3F4F6]"
+                            className="rounded-[14px] px-3 py-2 text-left text-sm font-semibold text-slate-100 transition-colors hover:bg-white/[0.06]"
                           >
                             {uiCopy.common.signOut}
                           </button>
@@ -458,7 +458,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </header>
 
-            <div className="p-3 sm:p-5 lg:p-6">{children}</div>
+            <div className="p-4 sm:p-6 lg:p-8">{children}</div>
           </div>
         </div>
       </div>

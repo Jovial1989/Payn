@@ -4,6 +4,7 @@ import type { UserProfileMarketScope } from "@/lib/residence-countries";
 type PersistedProfileDraft = {
   first_name: string | null;
   last_name: string | null;
+  preferred_locale: UserProfile["preferred_locale"];
   selected_categories: string[];
   goals: string[];
   home_country: string | null;
@@ -41,6 +42,7 @@ export function readPersistedProfileDraft(userId?: string | null): PersistedProf
     return {
       first_name: parsed.first_name ?? null,
       last_name: parsed.last_name ?? null,
+      preferred_locale: parsed.preferred_locale ?? null,
       selected_categories: Array.isArray(parsed.selected_categories) ? parsed.selected_categories : [],
       goals: Array.isArray(parsed.goals) ? parsed.goals : [],
       home_country: parsed.home_country ?? null,
@@ -65,6 +67,7 @@ export function writePersistedProfileDraft(
   const next: PersistedProfileDraft = {
     first_name: draft.first_name ?? current?.first_name ?? null,
     last_name: draft.last_name ?? current?.last_name ?? null,
+    preferred_locale: draft.preferred_locale ?? current?.preferred_locale ?? null,
     selected_categories: draft.selected_categories ?? current?.selected_categories ?? [],
     goals: draft.goals ?? current?.goals ?? [],
     home_country: draft.home_country ?? current?.home_country ?? null,
@@ -97,6 +100,9 @@ export function mergeProfileWithPersistedDraft(
     user_id: userId,
     first_name: useDraft ? draft.first_name : (profile?.first_name ?? draft?.first_name ?? null),
     last_name: useDraft ? draft.last_name : (profile?.last_name ?? draft?.last_name ?? null),
+    preferred_locale: useDraft
+      ? draft.preferred_locale
+      : (profile?.preferred_locale ?? draft?.preferred_locale ?? null),
     selected_categories: useDraft
       ? draft.selected_categories
       : (profile?.selected_categories ?? draft?.selected_categories ?? []),

@@ -4,6 +4,7 @@ import type {
   MarketplaceMarket,
   MarketplaceOffer,
 } from "@payn/types";
+import { canonicalCountryLabels, canonicalCountryOptions } from "@payn/config";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { fallbackMarketplaceOffers } from "@/features/catalog/marketplace-fallback-offers";
 
@@ -21,98 +22,12 @@ export interface CountryOption {
   kind: CountryOptionKind;
 }
 
-const localizedCountryLabels: Record<MarketplaceLocale, Partial<Record<string, string>>> = {
-  en: {},
-  de: {
-    eu: "Ganz Europa",
-    international: "International",
-    de: "Deutschland",
-    es: "Spanien",
-    it: "Italien",
-    fr: "Frankreich",
-    uk: "Vereinigtes Königreich",
-    nl: "Niederlande",
-    pl: "Polen",
-    pt: "Portugal",
-    be: "Belgien",
-    at: "Österreich",
-    ch: "Schweiz",
-    se: "Schweden",
-    dk: "Dänemark",
-    fi: "Finnland",
-    no: "Norwegen",
-    ie: "Irland",
-    cz: "Tschechien",
-    gr: "Griechenland",
-    ro: "Rumänien",
-    hu: "Ungarn",
-    si: "Slowenien",
-    sk: "Slowakei",
-    bg: "Bulgarien",
-    hr: "Kroatien",
-    ee: "Estland",
-    lv: "Lettland",
-    lt: "Litauen",
-    lu: "Luxemburg",
-    cy: "Zypern",
-    mt: "Malta",
-  },
-  es: {},
-  fr: {},
-  it: {},
-  pt: {},
-};
+const localizedCountryLabels = canonicalCountryLabels;
 
-const configuredCountryOptions: CountryOption[] = [
-  {
-    value: "eu",
-    label: "All Europe",
-    flag: "EU",
-    code: "EU",
-    legacyMarket: "eu",
-    currency: "EUR",
-    kind: "group",
-  },
-  {
-    value: "international",
-    label: "International",
-    flag: "INTL",
-    code: "INTL",
-    legacyMarket: "international",
-    currency: "Multi-currency",
-    kind: "group",
-  },
-  { value: "de", label: "Germany", flag: "DE", code: "DE", legacyMarket: "de", currency: "EUR", kind: "country" },
-  { value: "es", label: "Spain", flag: "ES", code: "ES", legacyMarket: "es", currency: "EUR", kind: "country" },
-  { value: "it", label: "Italy", flag: "IT", code: "IT", legacyMarket: "it", currency: "EUR", kind: "country" },
-  { value: "fr", label: "France", flag: "FR", code: "FR", legacyMarket: "fr", currency: "EUR", kind: "country" },
-  { value: "uk", label: "United Kingdom", flag: "UK", code: "UK", legacyMarket: "uk", currency: "GBP", kind: "country" },
-  { value: "nl", label: "Netherlands", flag: "NL", code: "NL", legacyMarket: "nl", currency: "EUR", kind: "country" },
-  { value: "pl", label: "Poland", flag: "PL", code: "PL", legacyMarket: "eu", currency: "PLN", kind: "country" },
-  { value: "pt", label: "Portugal", flag: "PT", code: "PT", legacyMarket: "pt", currency: "EUR", kind: "country" },
-  { value: "be", label: "Belgium", flag: "BE", code: "BE", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "at", label: "Austria", flag: "AT", code: "AT", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "ch", label: "Switzerland", flag: "CH", code: "CH", legacyMarket: "eu", currency: "CHF", kind: "country" },
-  { value: "se", label: "Sweden", flag: "SE", code: "SE", legacyMarket: "eu", currency: "SEK", kind: "country" },
-  { value: "dk", label: "Denmark", flag: "DK", code: "DK", legacyMarket: "eu", currency: "DKK", kind: "country" },
-  { value: "fi", label: "Finland", flag: "FI", code: "FI", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "no", label: "Norway", flag: "NO", code: "NO", legacyMarket: "eu", currency: "NOK", kind: "country" },
-  { value: "ie", label: "Ireland", flag: "IE", code: "IE", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "cz", label: "Czech Republic", flag: "CZ", code: "CZ", legacyMarket: "eu", currency: "CZK", kind: "country" },
-  { value: "gr", label: "Greece", flag: "GR", code: "GR", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "ro", label: "Romania", flag: "RO", code: "RO", legacyMarket: "eu", currency: "RON", kind: "country" },
-  { value: "hu", label: "Hungary", flag: "HU", code: "HU", legacyMarket: "eu", currency: "HUF", kind: "country" },
-  { value: "si", label: "Slovenia", flag: "SI", code: "SI", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "sk", label: "Slovakia", flag: "SK", code: "SK", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "bg", label: "Bulgaria", flag: "BG", code: "BG", legacyMarket: "eu", currency: "BGN", kind: "country" },
-  { value: "hr", label: "Croatia", flag: "HR", code: "HR", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "ee", label: "Estonia", flag: "EE", code: "EE", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "lv", label: "Latvia", flag: "LV", code: "LV", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "lt", label: "Lithuania", flag: "LT", code: "LT", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "lu", label: "Luxembourg", flag: "LU", code: "LU", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "cy", label: "Cyprus", flag: "CY", code: "CY", legacyMarket: "eu", currency: "EUR", kind: "country" },
-  { value: "mt", label: "Malta", flag: "MT", code: "MT", legacyMarket: "eu", currency: "EUR", kind: "country" },
-];
+const configuredCountryOptions: CountryOption[] = canonicalCountryOptions.map((option) => ({
+  ...option,
+  legacyMarket: option.value,
+}));
 
 const countryOptionMap = new Map(configuredCountryOptions.map((option) => [option.value, option]));
 

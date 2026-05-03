@@ -15,6 +15,7 @@ import type { UserProfile } from "@/lib/types";
 type SettingsSavePayload = {
   first_name: string | null;
   last_name: string | null;
+  preferred_locale: MarketplaceLocale;
   user_type: "personal" | "freelancer" | "business";
   selected_categories: string[];
   goals: string[];
@@ -80,6 +81,7 @@ export function DashboardProfileWorkspace({
           addLastName: "Nachname ergänzen",
           countryOfResidence: "Wohnsitzland",
           chooseCountry: "Land wählen",
+          preferredLanguage: "Sprache",
           profileType: "Profiltyp",
           marketScope: "Marktabdeckung",
           email: "E-Mail",
@@ -123,6 +125,7 @@ export function DashboardProfileWorkspace({
           addLastName: "Add last name",
           countryOfResidence: "Country of residence",
           chooseCountry: "Choose country",
+          preferredLanguage: "Language",
           profileType: "Profile type",
           marketScope: "Market scope",
           email: "Email",
@@ -155,6 +158,7 @@ export function DashboardProfileWorkspace({
   const username = email.split("@")[0];
   const [firstName, setFirstName] = useState(profile?.first_name ?? "");
   const [lastName, setLastName] = useState(profile?.last_name ?? "");
+  const [preferredLocale, setPreferredLocale] = useState<MarketplaceLocale>(profile?.preferred_locale ?? locale);
   const [homeCountry, setHomeCountry] = useState(profile?.home_country ?? "");
   const [userType, setUserType] = useState<UserProfile["user_type"]>(profile?.user_type ?? "personal");
   const [marketScope, setMarketScope] = useState<UserProfileMarketScope>(profile?.market_scope ?? "eu_fallback");
@@ -168,13 +172,14 @@ export function DashboardProfileWorkspace({
     () => ({
       first_name: firstName.trim() || null,
       last_name: lastName.trim() || null,
+      preferred_locale: preferredLocale,
       user_type: userType,
       selected_categories: selectedCategories,
       goals,
       home_country: homeCountry || null,
       market_scope: marketScope,
     }),
-    [firstName, goals, homeCountry, lastName, marketScope, selectedCategories, userType],
+    [firstName, goals, homeCountry, lastName, marketScope, preferredLocale, selectedCategories, userType],
   );
   const lastSavedPayloadRef = useRef(JSON.stringify(savePayload));
   const displayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ") || username;
@@ -189,6 +194,7 @@ export function DashboardProfileWorkspace({
     const nextPayload = {
       first_name: profile?.first_name ?? null,
       last_name: profile?.last_name ?? null,
+      preferred_locale: profile?.preferred_locale ?? locale,
       user_type: profile?.user_type ?? "personal",
       selected_categories: profile?.selected_categories ?? [],
       goals: profile?.goals ?? [],
@@ -198,6 +204,7 @@ export function DashboardProfileWorkspace({
 
     setFirstName(nextPayload.first_name ?? "");
     setLastName(nextPayload.last_name ?? "");
+    setPreferredLocale(nextPayload.preferred_locale);
     setHomeCountry(nextPayload.home_country ?? "");
     setUserType(nextPayload.user_type);
     setSelectedCategories(nextPayload.selected_categories);
@@ -205,12 +212,13 @@ export function DashboardProfileWorkspace({
     setMarketScope(nextPayload.market_scope);
     lastSavedPayloadRef.current = JSON.stringify(nextPayload);
     setSaveState("saved");
-  }, [profile]);
+  }, [locale, profile]);
 
   useEffect(() => {
     writePersistedProfileDraft(userId, {
       first_name: savePayload.first_name,
       last_name: savePayload.last_name,
+      preferred_locale: savePayload.preferred_locale,
       selected_categories: savePayload.selected_categories,
       goals: savePayload.goals,
       home_country: savePayload.home_country,
@@ -275,7 +283,7 @@ export function DashboardProfileWorkspace({
             </Tag>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                 {copy.firstName}
@@ -313,6 +321,23 @@ export function DashboardProfileWorkspace({
                 {countryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                {copy.preferredLanguage}
+              </span>
+              <select
+                value={preferredLocale}
+                onChange={(event) => setPreferredLocale(event.target.value as MarketplaceLocale)}
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+              >
+                {Object.entries(dictionary.locales).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
                   </option>
                 ))}
               </select>

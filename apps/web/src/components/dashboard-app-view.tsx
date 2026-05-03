@@ -23,6 +23,7 @@ import {
 import type { DashboardInsights } from "@/lib/dashboard";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
+import { switchLocalePath } from "@/lib/locale";
 import { getDashboardHref, type DashboardView } from "@/lib/dashboard-navigation";
 import { getUiCopy } from "@/lib/ui-copy";
 
@@ -38,6 +39,7 @@ const dashboardCategories: MarketplaceCategory[] = [
 type SettingsSavePayload = {
   first_name: string | null;
   last_name: string | null;
+  preferred_locale: "en" | "de" | "es" | "fr" | "it" | "pt";
   user_type: "personal" | "freelancer" | "business";
   selected_categories: string[];
   goals: string[];
@@ -68,6 +70,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
       await updateProfile({
         first_name: data.first_name,
         last_name: data.last_name,
+        preferred_locale: data.preferred_locale,
         user_type: data.user_type,
         selected_categories: data.selected_categories,
         goals: data.goals,
@@ -78,8 +81,12 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
       if (data.home_country) {
         preferences.setCountry(data.home_country);
       }
+      if (data.preferred_locale !== preferences.locale) {
+        preferences.setLanguage(data.preferred_locale);
+        router.replace(switchLocalePath(window.location.pathname, data.preferred_locale));
+      }
     },
-    [preferences, updateProfile],
+    [preferences, router, updateProfile],
   );
   const handleSignOut = useCallback(async () => {
     await signOut();
@@ -226,7 +233,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
         >
           <div className="grid gap-4 lg:grid-cols-3">
             {bestOffers.map((item, index) => (
-              <OfferCard key={item.offer.id} offer={item.offer} rank={index + 1} locale={preferences.locale} />
+              <OfferCard key={item.offer.id} offer={item.offer} rank={index + 1} locale={preferences.locale} variant="dark" />
             ))}
           </div>
         </DashboardSectionCard>
@@ -238,10 +245,10 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
         >
           <div className="grid gap-4 lg:grid-cols-2">
             {(watchedOffers.length > 0 ? watchedOffers : savedOffers).slice(0, 2).map((offer, index) => (
-              <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} />
+              <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} variant="dark" />
             ))}
             {watchedOffers.length === 0 && savedOffers.length === 0 ? (
-              <div className="rounded-[20px] border border-dashed border-line bg-white p-6 text-sm leading-relaxed text-ink-secondary">
+              <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.04] p-6 text-sm leading-relaxed text-slate-400">
                 Save or open offers to build your shortlist.
               </div>
             ) : null}
@@ -286,9 +293,9 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
                 { label: "Viewed", value: watchedOffers.length },
                 { label: "Suggestions", value: bestOffers.length },
               ].map((stat) => (
-                <div key={stat.label} className="metric-tile rounded-[22px] px-5 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{stat.label}</p>
-                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-ink">{stat.value}</p>
+                <div key={stat.label} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-md">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{stat.label}</p>
+                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-slate-100">{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -305,15 +312,15 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
               <Link
                 key={category}
                 href={dashboardHref(category)}
-                className="group metric-tile rounded-[22px] px-5 py-4 transition-all duration-200 hover:-translate-y-1 hover:border-[rgba(15,138,75,0.20)] hover:shadow-[0_18px_40px_rgba(10,14,10,0.08)]"
+                className="group rounded-[24px] border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-cyan-300/25 hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   {categoryCounts[category]} offers
                 </p>
-                <p className="mt-2 text-lg font-bold tracking-[-0.03em] text-ink">
+                <p className="mt-2 text-lg font-bold tracking-[-0.03em] text-slate-100">
                   {dictionary.categories[category]}
                 </p>
-                <p className="mt-3 text-sm font-semibold text-accent-emerald transition-colors group-hover:text-accent-emerald-strong">
+                <p className="mt-3 text-sm font-semibold text-cyan-200 transition-colors group-hover:text-cyan-100">
                   Explore {dictionary.categories[category].toLowerCase()} &rarr;
                 </p>
               </Link>

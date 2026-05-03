@@ -49,21 +49,11 @@ export function ProviderLinkButton({
     offer.affiliateLink ??
     offer.providerWebsiteUrl;
 
-  const affiliateParams = useMemo(() => ({
-    utm_source: "payn_web",
-    utm_medium: source,
-    utm_campaign: offer.category,
-    aff_offer_id: offer.id,
-    aff_provider: offer.providerName,
-    aff_country: country,
-  }), [source, offer.category, offer.id, offer.providerName, country]);
-
-  // Computed once — the fully-resolved HTTPS affiliate URL.
   const resolvedUrl = useMemo(() => {
     if (!rawUrl) return null;
-    const resolved = buildRedirectTarget({ rawUrl, affiliateParams });
+    const resolved = buildRedirectTarget({ rawUrl });
     return resolved.ok ? resolved.targetUrl : null;
-  }, [rawUrl, affiliateParams]);
+  }, [rawUrl]);
 
   useEffect(() => {
     if (!toast) return;
@@ -71,15 +61,19 @@ export function ProviderLinkButton({
     return () => window.clearTimeout(t);
   }, [toast]);
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!resolvedUrl) {
-      // No URL — block navigation and show error.
       e.preventDefault();
       setToast(unavailableMessage);
       return;
     }
-    // Navigation proceeds via the anchor's href + target="_blank".
-    // We only fire tracking here — it never blocks or delays the tab open.
+
+    const openedWindow = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+    if (!openedWindow) {
+      setToast(unavailableMessage);
+      return;
+    }
+
     trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
       ...buildWebAnalyticsProperties({
         category: offer.category,
@@ -131,19 +125,11 @@ export function ProviderLinkButton({
 
   return (
     <>
-      {/*
-        Using <a target="_blank"> instead of <button> + window.open.
-        Native anchor link clicks with target="_blank" are NEVER blocked
-        by browser popup blockers. window.open() from a JS handler can be.
-        Payn stays open in the current tab; provider opens in a new one.
-      */}
-      <a
-        href={resolvedUrl ?? "#"}
-        target="_blank"
-        rel="noopener noreferrer sponsored"
+      <button
+        type="button"
         onClick={handleClick}
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
-        aria-disabled={!resolvedUrl}
+        disabled={!resolvedUrl}
       >
         <svg
           width="16"
@@ -161,9 +147,8 @@ export function ProviderLinkButton({
           <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
         </svg>
         {label}
-      </a>
+      </button>
 
-      {/* Error toast — shown only when the provider URL is missing */}
       {toast ? (
         <div className="fixed bottom-5 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2.5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(17,24,39,0.22)]">
           {toast}

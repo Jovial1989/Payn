@@ -1,21 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight } from "next/font/google";
 import { Amplitude } from "@/amplitude";
+import { AppChrome } from "@/components/app-chrome";
 import { Providers } from "@/components/providers";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import "./globals.css";
-
-const bodyFont = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
-
-const displayFont = Inter_Tight({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Payn | Financial Marketplace Across Europe",
@@ -31,14 +19,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={preferences.locale}>
-      <Amplitude />
-      <body className={`${bodyFont.variable} ${displayFont.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
+        <Amplitude />
         <Providers
           initialLocale={preferences.locale}
           initialCountry={preferences.country}
           initialMarket={preferences.market}
         >
-          {children}
+          <AppChrome>{children}</AppChrome>
         </Providers>
       </body>
     </html>

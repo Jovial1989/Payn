@@ -4,11 +4,10 @@ import { supportedLocales, detectPreferencesFromAcceptLanguage, isSupportedLocal
 const PUBLIC_FILE = /\.(.*)$/;
 const SKIP_PREFIXES = ["/_next", "/api", "/auth", "/icon.svg", "/kyrylo.jpeg"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const activeLocale = request.headers.get("x-payn-locale");
 
-  // Skip static files, Next.js internals, and API routes
   if (
     PUBLIC_FILE.test(pathname) ||
     SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix))
@@ -16,7 +15,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if the first segment is a supported locale
   const segments = pathname.split("/").filter(Boolean);
   const firstSegment = segments[0];
 
@@ -25,7 +23,6 @@ export function middleware(request: NextRequest) {
   }
 
   if (firstSegment && isSupportedLocale(firstSegment)) {
-    // URL already has locale prefix — strip it and rewrite internally
     const locale = firstSegment;
     const restPath = "/" + segments.slice(1).join("/");
     const requestHeaders = new Headers(request.headers);
@@ -41,7 +38,6 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // No locale prefix — detect locale and redirect
   const cookieLocale = request.cookies.get("payn-locale")?.value;
   const detected = detectPreferencesFromAcceptLanguage(
     request.headers.get("accept-language"),

@@ -4,27 +4,30 @@
 
 @layer base {
   :root {
-    color-scheme: light;
-    --bg-base: #fafaf7;
-    --surface-base: #ffffff;
-    --surface-muted: #f2f4f1;
-    --surface-raised: #f7f8f5;
-    --surface-elevated: rgba(255, 255, 255, 0.88);
-    --surface-dark: #13181a;
-    --surface-dark-elevated: #1b2123;
-    --line-subtle: rgba(10, 14, 10, 0.09);
-    --line-strong: rgba(10, 14, 10, 0.14);
-    --ink-primary: #0a0e0a;
-    --ink-secondary: #5c5f5c;
-    --ink-tertiary: #8c8f8c;
-    --ink-inverse: #f5f7f3;
-    --emerald: #0fbe7b;
-    --emerald-strong: #0d9f67;
-    --emerald-soft: rgba(15, 190, 123, 0.12);
-    --emerald-glow: rgba(15, 190, 123, 0.2);
-    --shadow-soft: 0 12px 34px rgba(10, 14, 10, 0.05);
-    --shadow-hover: 0 24px 60px rgba(10, 14, 10, 0.1);
-    --shadow-floating: 0 32px 88px rgba(10, 14, 10, 0.12);
+    color-scheme: dark;
+    --font-body: "Inter", "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: "Inter Tight", "Inter", "Avenir Next Condensed", sans-serif;
+    --font-mono: "Geist Mono", "SFMono-Regular", "SF Mono", "Menlo", monospace;
+    --bg-base: #09090b;
+    --surface-base: rgba(255, 255, 255, 0.04);
+    --surface-muted: rgba(255, 255, 255, 0.03);
+    --surface-raised: rgba(255, 255, 255, 0.05);
+    --surface-elevated: rgba(24, 24, 27, 0.86);
+    --surface-dark: #09090b;
+    --surface-dark-elevated: #18181b;
+    --line-subtle: rgba(255, 255, 255, 0.1);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --ink-primary: #e2e8f0;
+    --ink-secondary: #94a3b8;
+    --ink-tertiary: #64748b;
+    --ink-inverse: #09090b;
+    --emerald: #22d3ee;
+    --emerald-strong: #06b6d4;
+    --emerald-soft: rgba(34, 211, 238, 0.12);
+    --emerald-glow: rgba(34, 211, 238, 0.2);
+    --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.24);
+    --shadow-hover: 0 26px 64px rgba(0, 0, 0, 0.34);
+    --shadow-floating: 0 36px 96px rgba(0, 0, 0, 0.42);
     --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
   }
@@ -39,10 +42,9 @@
   body {
     min-height: 100vh;
     background:
-      radial-gradient(circle at 8% 0%, rgba(15, 190, 123, 0.1), transparent 24%),
-      radial-gradient(circle at 100% 0%, rgba(10, 14, 10, 0.05), transparent 28%),
-      radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 34%),
-      linear-gradient(180deg, #fcfcf9 0%, #f6f7f2 48%, #f0f2ed 100%);
+      radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.12), transparent 24%),
+      radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.08), transparent 22%),
+      linear-gradient(180deg, #09090b 0%, #0f172a 48%, #09090b 100%);
     color: var(--ink-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -66,8 +68,8 @@
   }
 
   ::selection {
-    background: rgba(0, 0, 0, 0.08);
-    color: #000000;
+    background: rgba(34, 211, 238, 0.22);
+    color: #f8fafc;
   }
 }
 

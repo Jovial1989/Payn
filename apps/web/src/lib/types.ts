@@ -2,6 +2,7 @@ export interface UserProfile {
   user_id: string;
   first_name: string | null;
   last_name: string | null;
+  preferred_locale?: "en" | "de" | "es" | "fr" | "it" | "pt" | null;
   selected_categories: string[];
   home_country: string | null;
   market_scope?: "local_only" | "eu_fallback" | "all_europe" | null;

@@ -62,6 +62,8 @@ export interface MarketplaceOfferAttributes {
   availability?: "local" | "regional" | "eu_wide" | "international";
   searchTags?: string[];
   isPartner?: boolean;
+  affiliate?: boolean;
+  monetized?: boolean;
   supportedAssets?: MarketplaceInvestmentAssetId[];
   accessType?: MarketplaceInvestmentAccessType;
   estimatedCostLabel?: string;

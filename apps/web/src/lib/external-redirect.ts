@@ -1,30 +1,18 @@
-export function appendAffiliateParams(
-  rawUrl: string,
-  affiliateParams: Record<string, string | number | boolean | null | undefined>,
-) {
+export function normalizeRedirectTarget(rawUrl: string) {
   const parsed = new URL(rawUrl, window.location.origin);
   if (parsed.protocol === "http:") {
     parsed.protocol = "https:";
   }
-
-  Object.entries(affiliateParams).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      parsed.searchParams.set(key, String(value));
-    }
-  });
-
   return parsed.toString();
 }
 
 export function buildRedirectTarget({
   rawUrl,
-  affiliateParams,
 }: {
   rawUrl: string;
-  affiliateParams: Record<string, string | number | boolean | null | undefined>;
 }) {
   try {
-    const targetUrl = appendAffiliateParams(rawUrl, affiliateParams);
+    const targetUrl = normalizeRedirectTarget(rawUrl);
     const parsed = new URL(targetUrl);
 
     if (parsed.protocol !== "https:") {

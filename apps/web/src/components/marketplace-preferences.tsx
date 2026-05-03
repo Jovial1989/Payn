@@ -1,7 +1,7 @@
 "use client";
 
 import type { MarketplaceLocale, MarketplaceMarket } from "@payn/types";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   type CountryOption,
   getCountryCurrency,
@@ -11,6 +11,7 @@ import {
   resolveCountryFromLegacyMarket,
   resolveCountryLegacyMarket,
 } from "@/lib/countries";
+import { useAuth } from "@/hooks/use-auth";
 
 type MarketplacePreferencesContextValue = {
   country: string;
@@ -27,9 +28,40 @@ type MarketplacePreferencesContextValue = {
 };
 
 const MarketplacePreferencesContext = createContext<MarketplacePreferencesContextValue | null>(null);
+const guestPreferencesStorageKey = "payn:preferences";
 
 function persistPreference(key: string, value: string) {
   document.cookie = `${key}=${value}; path=/; max-age=31536000; samesite=lax`;
+}
+
+function canUseStorage() {
+  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+function readStoredGuestPreferences() {
+  if (!canUseStorage()) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(guestPreferencesStorageKey);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as { locale?: MarketplaceLocale; country?: string };
+    return typeof parsed === "object" && parsed ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredGuestPreferences(preferences: { locale: MarketplaceLocale; country: string }) {
+  if (!canUseStorage()) {
+    return;
+  }
+
+  window.localStorage.setItem(guestPreferencesStorageKey, JSON.stringify(preferences));
 }
 
 export function MarketplacePreferencesProvider({
@@ -43,16 +75,76 @@ export function MarketplacePreferencesProvider({
   initialCountry?: string;
   initialMarket?: MarketplaceMarket;
 }) {
+  const { user, profile, updateProfile } = useAuth();
   const normalizedInitialCountry = normalizeCountrySelection(
     initialCountry ?? resolveCountryFromLegacyMarket(initialMarket, initialLocale),
     initialLocale,
   );
   const [locale, setLocaleState] = useState(initialLocale);
   const [country, setCountryState] = useState(normalizedInitialCountry);
+  const hydratedRef = useRef(false);
   const market = resolveCountryLegacyMarket(country);
   const currency = getCountryCurrency(country);
   const countryLabel = getCountryOption(country, locale)?.label ?? country.toUpperCase();
   const availableCountries = getCountrySelectorOptions({ locale });
+
+  useEffect(() => {
+    if (hydratedRef.current) {
+      return;
+    }
+
+    hydratedRef.current = true;
+    const stored = readStoredGuestPreferences();
+    if (!stored) {
+      writeStoredGuestPreferences({ locale: initialLocale, country: normalizedInitialCountry });
+      return;
+    }
+
+    if (!initialCountry && stored.country) {
+      setCountryState(normalizeCountrySelection(stored.country, initialLocale));
+    }
+  }, [initialCountry, initialLocale, normalizedInitialCountry]);
+
+  useEffect(() => {
+    persistPreference("payn-locale", locale);
+    persistPreference("payn-country", country);
+    persistPreference("payn-market", market);
+    writeStoredGuestPreferences({ locale, country });
+    document.documentElement.lang = locale;
+  }, [country, locale, market]);
+
+  useEffect(() => {
+    if (!user || !profile) {
+      return;
+    }
+
+    const nextLocale = profile.preferred_locale ?? locale;
+    const nextCountry = profile.home_country
+      ? normalizeCountrySelection(profile.home_country, nextLocale)
+      : country;
+
+    if (nextLocale !== locale) {
+      setLocaleState(nextLocale);
+    }
+
+    if (profile.home_country && nextCountry !== country && !initialCountry) {
+      setCountryState(nextCountry);
+    }
+  }, [country, initialCountry, locale, profile, user]);
+
+  const syncProfile = useMemo(
+    () => async (next: { locale?: MarketplaceLocale; home_country?: string | null }) => {
+      if (!user) {
+        return;
+      }
+
+      await updateProfile({
+        preferred_locale: next.locale,
+        home_country: next.home_country,
+      });
+    },
+    [updateProfile, user],
+  );
 
   const value = {
     country,
@@ -65,16 +157,15 @@ export function MarketplacePreferencesProvider({
     setCountry: (nextCountry: string) => {
       const normalizedCountry = normalizeCountrySelection(nextCountry, locale);
       setCountryState(normalizedCountry);
-      persistPreference("payn-country", normalizedCountry);
-      persistPreference("payn-market", resolveCountryLegacyMarket(normalizedCountry));
+      void syncProfile({ home_country: normalizedCountry });
     },
     setLanguage: (nextLocale: MarketplaceLocale) => {
       setLocaleState(nextLocale);
-      persistPreference("payn-locale", nextLocale);
+      void syncProfile({ locale: nextLocale });
     },
     setLocale: (nextLocale: MarketplaceLocale) => {
       setLocaleState(nextLocale);
-      persistPreference("payn-locale", nextLocale);
+      void syncProfile({ locale: nextLocale });
     },
     setMarket: (nextMarket: MarketplaceMarket) => {
       const normalizedCountry = normalizeCountrySelection(
@@ -82,8 +173,7 @@ export function MarketplacePreferencesProvider({
         locale,
       );
       setCountryState(normalizedCountry);
-      persistPreference("payn-country", normalizedCountry);
-      persistPreference("payn-market", resolveCountryLegacyMarket(normalizedCountry));
+      void syncProfile({ home_country: normalizedCountry });
     },
   };
 
