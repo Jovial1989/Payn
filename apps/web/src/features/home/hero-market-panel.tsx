@@ -136,7 +136,7 @@ export function HeroMarketPanel({
             <Link
               key={cat}
               href={localePath(locale, categoryRoutes[cat])}
-              className="group flex items-center gap-2 rounded-[12px] border border-[#E8E8EA] bg-[#F7F7F9] px-3 py-2.5 text-ink transition-all duration-150 hover:border-black/20 hover:bg-black hover:text-white"
+              className="group flex items-center gap-2 rounded-[12px] border border-[#E8E8EA] bg-[#F7F7F9] px-3 py-2.5 text-ink transition-all duration-150 hover:border-accent-emerald/25 hover:bg-accent-emerald-soft hover:text-accent-emerald-strong"
             >
               <IntentChipIcon category={cat} />
               <span className="truncate text-[12px] font-semibold leading-none">

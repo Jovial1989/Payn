@@ -38,7 +38,7 @@ export function JourneyWidget({
 
       <div className="mt-4 h-2 rounded-full bg-[#ECEDEF]">
         <div
-          className="h-full rounded-full bg-black transition-[width] duration-300"
+          className="h-full rounded-full bg-accent-emerald transition-[width] duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -54,7 +54,7 @@ export function JourneyWidget({
               className={clsx(
                 "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold",
                 item.complete
-                  ? "border-black bg-black text-white"
+                  ? "border-accent-emerald bg-accent-emerald text-white"
                   : "border-[#DADCE0] bg-white text-ink-tertiary",
               )}
             >

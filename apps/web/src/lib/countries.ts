@@ -115,9 +115,10 @@ const localizedMarketScopeOptions: Record<
 };
 
 function localizeCountryOption(option: CountryOption, locale: MarketplaceLocale): CountryOption {
+  const labels = localizedCountryLabels[locale] ?? {};
   return {
     ...option,
-    label: localizedCountryLabels[locale][option.value] ?? option.label,
+    label: labels[option.value as MarketplaceMarket] ?? option.label,
     currency:
       locale === "de" && option.currency === "Multi-currency"
         ? "Mehrere Währungen"

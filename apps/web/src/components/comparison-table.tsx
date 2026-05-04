@@ -255,21 +255,21 @@ export function ComparisonTray({
 
   return (
     <div className="fixed inset-x-4 bottom-20 z-[80] md:inset-x-auto md:bottom-6 md:left-1/2 md:-translate-x-1/2">
-      <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-[24px] border border-line bg-black px-4 py-3 shadow-elevated md:w-auto md:rounded-full md:px-5">
-        <span className="text-sm font-semibold text-white">
+      <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-[24px] border border-line bg-white px-4 py-3 shadow-elevated md:w-auto md:rounded-full md:px-5">
+        <span className="text-sm font-semibold text-ink">
           {locale === "de" ? `${count} Angebote ausgewählt` : `${count} offers selected`}
         </span>
         <button
           type="button"
           onClick={onOpen}
-          className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-gray-100"
+          className="rounded-full bg-accent-emerald px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong"
         >
           {translateUiToken(locale, "Compare")}
         </button>
         <button
           type="button"
           onClick={onClear}
-          className="rounded-full px-3 py-2 text-sm font-medium text-white/60 transition-colors hover:text-white"
+          className="rounded-full px-3 py-2 text-sm font-medium text-ink-tertiary transition-colors hover:text-ink"
         >
           {copy.clear}
         </button>

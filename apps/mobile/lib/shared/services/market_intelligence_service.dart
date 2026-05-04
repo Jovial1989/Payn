@@ -21,8 +21,9 @@ class MarketIntelligenceService {
   Future<MarketIntelligenceSnapshot> snapshotFor({
     required MarketAsset asset,
     required ChartTimeRange range,
+    required String languageCode,
   }) async {
-    final cacheKey = '${asset.name}-${range.name}';
+    final cacheKey = '${asset.name}-${range.name}-$languageCode';
 
     try {
       final points = await _fetchSeries(asset, range);
@@ -38,6 +39,7 @@ class MarketIntelligenceService {
       final snapshot = _buildSnapshot(
         asset: asset,
         points: points,
+        languageCode: languageCode,
         trends:
             trends..sort(
               (left, right) =>
@@ -47,7 +49,8 @@ class MarketIntelligenceService {
       _cache[cacheKey] = snapshot;
       return snapshot;
     } catch (_) {
-      final fallback = _cache[cacheKey] ?? _buildFallbackSnapshot(asset, range);
+      final fallback =
+          _cache[cacheKey] ?? _buildFallbackSnapshot(asset, range, languageCode);
       _cache[cacheKey] = fallback;
       return fallback;
     }
@@ -134,19 +137,21 @@ class MarketIntelligenceService {
     required MarketAsset asset,
     required List<SeriesPoint> points,
     required List<MarketTrendItem> trends,
+    required String languageCode,
   }) {
     final changePercent = _changePercent(points);
     final volatility = _volatility(points);
+    final assetLabel = _assetLabel(asset, languageCode);
     final insights = <MarketInsight>[
       MarketInsight(
         title:
             changePercent >= 2.5
-                ? 'Strong upward trend'
+                ? _text(languageCode, 'Strong upward trend', 'Starker Aufwärtstrend', 'Tendencia alcista fuerte')
                 : changePercent <= -2.5
-                ? 'Potential correction'
-                : 'Trend is stabilizing',
+                ? _text(languageCode, 'Potential correction', 'Mögliche Korrektur', 'Posible corrección')
+                : _text(languageCode, 'Trend is stabilizing', 'Trend stabilisiert sich', 'La tendencia se estabiliza'),
         body:
-            'Momentum across ${asset.label} is ${changePercent >= 0 ? 'positive' : 'under pressure'} over the selected period.',
+            _marketMomentumBody(languageCode, assetLabel, changePercent >= 0),
         tone:
             changePercent >= 2.5
                 ? InsightTone.positive
@@ -157,35 +162,38 @@ class MarketIntelligenceService {
       MarketInsight(
         title:
             volatility >= 2.3
-                ? 'Volatility increasing'
-                : 'Volatility contained',
+                ? _text(languageCode, 'Volatility increasing', 'Volatilität nimmt zu', 'La volatilidad aumenta')
+                : _text(languageCode, 'Volatility contained', 'Volatilität bleibt begrenzt', 'Volatilidad contenida'),
         body:
             volatility >= 2.3
-                ? 'Price swings are widening, which can change entry timing.'
-                : 'Price moves remain comparatively controlled right now.',
+                ? _text(languageCode, 'Price swings are widening, which can change entry timing.', 'Die Kursschwankungen weiten sich aus, was den Einstiegszeitpunkt verändern kann.', 'Los movimientos de precio se amplían, lo que puede cambiar el momento de entrada.')
+                : _text(languageCode, 'Price moves remain comparatively controlled right now.', 'Die Kursbewegungen bleiben aktuell vergleichsweise kontrolliert.', 'Los movimientos de precio siguen relativamente controlados por ahora.'),
         tone: volatility >= 2.3 ? InsightTone.warning : InsightTone.neutral,
       ),
       MarketInsight(
         title:
             trends.first.asset == asset && trends.first.changePercent > 0
-                ? 'Leading relative move'
-                : 'Relative performance mixed',
+                ? _text(languageCode, 'Leading relative move', 'Führende relative Bewegung', 'Movimiento relativo líder')
+                : _text(languageCode, 'Relative performance mixed', 'Relative Entwicklung gemischt', 'Rendimiento relativo mixto'),
         body:
-            'Compare ${asset.label} against nearby benchmarks before committing capital.',
+            _compareBenchmarksBody(languageCode, assetLabel),
         tone: InsightTone.neutral,
       ),
     ];
 
     final recommendations = <String>[
-      if (volatility >= 2.3) 'High volatility warning',
-      if (changePercent >= 3.5) 'Consider diversification',
+      if (volatility >= 2.3)
+        _text(languageCode, 'High volatility warning', 'Warnung vor hoher Volatilität', 'Aviso de alta volatilidad'),
+      if (changePercent >= 3.5)
+        _text(languageCode, 'Consider diversification', 'Diversifikation erwägen', 'Considera diversificar'),
       if (asset == MarketAsset.eurUsd && volatility < 1.2)
-        'Low risk profile match',
+        _text(languageCode, 'Low risk profile match', 'Passend für ein niedriges Risikoprofil', 'Encaja con un perfil de bajo riesgo'),
       if (asset == MarketAsset.btc && volatility >= 2.3)
-        'Keep position sizing tight',
+        _text(languageCode, 'Keep position sizing tight', 'Positionsgröße eng begrenzen', 'Mantén ajustado el tamaño de la posición'),
       if (asset == MarketAsset.sp500 && changePercent > 0)
-        'Momentum supports staggered entry',
-      if (asset == MarketAsset.gold) 'Use as defensive exposure',
+        _text(languageCode, 'Momentum supports staggered entry', 'Momentum spricht für einen gestaffelten Einstieg', 'El momentum favorece una entrada escalonada'),
+      if (asset == MarketAsset.gold)
+        _text(languageCode, 'Use as defensive exposure', 'Als defensive Beimischung nutzen', 'Úsalo como exposición defensiva'),
     ];
 
     return MarketIntelligenceSnapshot(
@@ -197,7 +205,9 @@ class MarketIntelligenceService {
       insights: insights,
       recommendations:
           recommendations.isEmpty
-              ? const <String>['Monitor price action before making a move']
+              ? <String>[
+                _text(languageCode, 'Monitor price action before making a move', 'Beobachte die Kursbewegung, bevor du handelst', 'Vigila la acción del precio antes de moverte'),
+              ]
               : recommendations.take(3).toList(),
     );
   }
@@ -205,6 +215,7 @@ class MarketIntelligenceService {
   MarketIntelligenceSnapshot _buildFallbackSnapshot(
     MarketAsset asset,
     ChartTimeRange range,
+    String languageCode,
   ) {
     final points = _fallbackSeries(asset, range);
     final trends =
@@ -231,7 +242,12 @@ class MarketIntelligenceService {
             (left, right) => right.changePercent.compareTo(left.changePercent),
           );
 
-    return _buildSnapshot(asset: asset, points: points, trends: trends);
+    return _buildSnapshot(
+      asset: asset,
+      points: points,
+      trends: trends,
+      languageCode: languageCode,
+    );
   }
 
   List<SeriesPoint> _fallbackSeries(MarketAsset asset, ChartTimeRange range) {
@@ -341,6 +357,59 @@ class MarketIntelligenceService {
         return value.toStringAsFixed(0);
       case MarketAsset.eurUsd:
         return value.toStringAsFixed(4);
+    }
+  }
+
+  String _text(String languageCode, String en, String de, String es) {
+    switch (languageCode) {
+      case 'de':
+        return de;
+      case 'es':
+        return es;
+      case 'en':
+      default:
+        return en;
+    }
+  }
+
+  String _assetLabel(MarketAsset asset, String languageCode) {
+    switch (asset) {
+      case MarketAsset.btc:
+        return 'BTC';
+      case MarketAsset.sp500:
+        return _text(languageCode, 'S&P 500', 'S&P 500', 'S&P 500');
+      case MarketAsset.eurUsd:
+        return 'EUR/USD';
+      case MarketAsset.gold:
+        return _text(languageCode, 'Gold', 'Gold', 'Oro');
+    }
+  }
+
+  String _marketMomentumBody(
+    String languageCode,
+    String assetLabel,
+    bool positive,
+  ) {
+    switch (languageCode) {
+      case 'de':
+        return 'Das Momentum bei $assetLabel ist im gewählten Zeitraum ${positive ? 'positiv' : 'unter Druck'}.';
+      case 'es':
+        return 'El impulso en $assetLabel es ${positive ? 'positivo' : 'presionado'} durante el periodo seleccionado.';
+      case 'en':
+      default:
+        return 'Momentum across $assetLabel is ${positive ? 'positive' : 'under pressure'} over the selected period.';
+    }
+  }
+
+  String _compareBenchmarksBody(String languageCode, String assetLabel) {
+    switch (languageCode) {
+      case 'de':
+        return 'Vergleiche $assetLabel mit nahen Benchmarks, bevor du Kapital bindest.';
+      case 'es':
+        return 'Compara $assetLabel con referencias cercanas antes de comprometer capital.';
+      case 'en':
+      default:
+        return 'Compare $assetLabel against nearby benchmarks before committing capital.';
     }
   }
 }

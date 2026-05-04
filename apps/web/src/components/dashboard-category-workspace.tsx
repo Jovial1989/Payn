@@ -321,7 +321,7 @@ function getLoanEmploymentBoost(offer: MarketplaceOffer, employmentStatus: LoanE
 
 function getCompareToggleClassName(selected: boolean) {
   return selected
-    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-black bg-black px-3 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-gray-800 active:scale-[0.97] sm:w-auto"
+    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-accent-emerald bg-accent-emerald px-3 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-accent-emerald-strong active:scale-[0.97] sm:w-auto"
     : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-transparent px-3 py-2 text-sm font-semibold text-ink-secondary transition-all duration-150 hover:border-line-strong hover:text-ink active:scale-[0.97] sm:w-auto";
 }
 
@@ -491,11 +491,11 @@ function InputField({
 }
 
 function fieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-accent-emerald/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px]";
 }
 
 function amountFieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-[22px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px] sm:text-[26px]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-[22px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-accent-emerald/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px] sm:text-[26px]";
 }
 
 function getCurrencyFlag(code: string) {
@@ -1677,7 +1677,7 @@ export function DashboardCategoryWorkspace({
                         type="button"
                         onClick={() => setInsuranceType(type)}
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                          insuranceType === type ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
+                          insuranceType === type ? "bg-accent-emerald text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
                         }`}
                       >
                         {getInsuranceTypeLabel(type, locale)}
@@ -1765,7 +1765,7 @@ export function DashboardCategoryWorkspace({
                         type="button"
                         onClick={() => setActivityFilter(item)}
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                          activityFilter === item ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
+                          activityFilter === item ? "bg-accent-emerald text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
                         }`}
                       >
                         {item === "all" ? copy.any : normalizeDisplayText(item)}
@@ -1804,7 +1804,7 @@ export function DashboardCategoryWorkspace({
 
           {topResult ? (
             <div className="flex shrink-0 items-center gap-2.5 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3">
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-emerald text-[10px] font-bold text-white">
                 1
               </span>
               <p className="text-sm text-ink-secondary">

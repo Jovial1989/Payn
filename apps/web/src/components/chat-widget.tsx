@@ -297,7 +297,7 @@ export function ChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-subtle transition-all duration-200 hover:bg-gray-800 sm:h-12 sm:w-12 ${
+        className={`fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent-emerald shadow-subtle transition-all duration-200 hover:bg-accent-emerald-strong sm:h-12 sm:w-12 ${
           open && isSheetLayout ? "pointer-events-none scale-95 opacity-0" : "opacity-100"
         }`}
         style={launcherStyle}
@@ -357,7 +357,7 @@ export function ChatWidget() {
               className="flex items-center gap-3 border-b border-line px-4 py-3 sm:px-5 sm:py-4"
               style={isSheetLayout ? { paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.875rem)" } : undefined}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-black">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent-emerald">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2a4 4 0 014 4v1a1 1 0 001 1h1a4 4 0 010 8h-1a1 1 0 00-1 1v1a4 4 0 01-8 0v-1a1 1 0 00-1-1H6a4 4 0 010-8h1a1 1 0 001-1V6a4 4 0 014-4z" />
                 </svg>
@@ -440,7 +440,7 @@ export function ChatWidget() {
                       <div
                         className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 [overflow-wrap:anywhere] ${
                           msg.role === "user"
-                            ? "bg-black text-white"
+                            ? "bg-accent-emerald text-white"
                             : "bg-bg-surface text-ink"
                         } whitespace-pre-wrap break-words`}
                       >
@@ -511,7 +511,7 @@ export function ChatWidget() {
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-black text-white transition-colors hover:bg-gray-800 disabled:opacity-30"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-emerald text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-30"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2L7 9M14 2l-5 12-2-5-5-2 12-5z" />

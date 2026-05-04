@@ -703,8 +703,8 @@ export function InvestmentIntelligenceBlock({
                     className={clsx(
                       "rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
                       resolvedAssetId === asset.id
-                        ? "border-black bg-black text-white"
-                        : "border-[#E7E7E9] bg-[#F7F7F8] text-ink-secondary hover:border-black/10 hover:text-ink",
+                        ? "border-accent-emerald bg-accent-emerald text-white"
+                        : "border-[#E7E7E9] bg-[#F7F7F8] text-ink-secondary hover:border-accent-emerald/20 hover:text-ink",
                     )}
                   >
                     {asset.label}
@@ -720,7 +720,7 @@ export function InvestmentIntelligenceBlock({
                     className={clsx(
                       "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
                       timeframe === item.id
-                        ? "bg-[#111111] text-white"
+                        ? "bg-accent-emerald text-white"
                         : "bg-[#F5F5F7] text-ink-secondary hover:text-ink",
                     )}
                   >

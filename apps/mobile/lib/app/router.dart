@@ -123,7 +123,7 @@ GoRouter createRouter(AppController controller) {
       return Scaffold(
         body: Center(
           child: Text(
-            AppLocalizations.of(context)?.routerError ?? 'Page not found.',
+            AppLocalizations.of(context)?.routerError ?? '',
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),

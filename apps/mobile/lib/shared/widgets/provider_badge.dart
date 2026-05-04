@@ -88,6 +88,26 @@ const Map<String, ProviderBrand> _providerBrands = <String, ProviderBrand>{
     background: Color(0xFF1D3B6A),
     foreground: Colors.white,
   ),
+  'Kraken': ProviderBrand(
+    mark: 'K',
+    background: Color(0xFF5B5DE8),
+    foreground: Colors.white,
+  ),
+  'Iuvo Group': ProviderBrand(
+    mark: 'IV',
+    background: Color(0xFF1266CC),
+    foreground: Colors.white,
+  ),
+  'Trezor': ProviderBrand(
+    mark: 'TZ',
+    background: Color(0xFF0F172A),
+    foreground: Colors.white,
+  ),
+  'Linxea': ProviderBrand(
+    mark: 'LX',
+    background: Color(0xFF0E7C66),
+    foreground: Colors.white,
+  ),
   'eToro': ProviderBrand(
     mark: 'ET',
     background: Color(0xFF6CC24A),
@@ -174,10 +194,18 @@ class ProviderBadge extends StatelessWidget {
 
     return Hero(
       tag: heroTag!,
-      flightShuttleBuilder:
-          (context, animation, flightDirection, fromContext, toContext) {
-            return ScaleTransition(scale: animation.drive(Tween<double>(begin: 0.96, end: 1)), child: badge);
-          },
+      flightShuttleBuilder: (
+        context,
+        animation,
+        flightDirection,
+        fromContext,
+        toContext,
+      ) {
+        return ScaleTransition(
+          scale: animation.drive(Tween<double>(begin: 0.96, end: 1)),
+          child: badge,
+        );
+      },
       child: badge,
     );
   }
@@ -186,7 +214,7 @@ class ProviderBadge extends StatelessWidget {
 Future<void> showProviderHandoffSheet(
   BuildContext context, {
   required PaynOffer offer,
-}) {
+}) async {
   final controller = AppScope.of(context);
   final trackedUri = _buildTrackedProviderUri(
     offer: offer,
@@ -212,20 +240,24 @@ Future<void> showProviderHandoffSheet(
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.providerLinkUnavailableSnackbar)),
     );
-    return Future<void>.value();
+    return;
   }
 
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    builder:
-        (dialogContext) => _ProviderRedirectOverlay(
-          providerName: offer.providerName,
-          uri: trackedUri,
-        ),
+  final result = await LinkHandlerService.open(trackedUri, context: context);
+  if (!context.mounted || result.success) {
+    return;
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        result.copiedToClipboard
+            ? context.l10n.providerLinkCopied
+            : (result.message ?? context.l10n.providerLinkUnavailableSnackbar),
+      ),
+    ),
   );
 }
-
 
 Uri? _buildTrackedProviderUri({
   required PaynOffer offer,
@@ -243,20 +275,8 @@ Uri? _buildTrackedProviderUri({
 
   final normalizedUri =
       uri.scheme == 'http' ? uri.replace(scheme: 'https') : uri;
-
-  return normalizedUri.replace(
-    queryParameters: <String, String>{
-      ...normalizedUri.queryParameters,
-      'utm_source': 'payn_app',
-      'utm_medium': 'mobile_handoff',
-      'utm_campaign': offer.category.name,
-      'aff_offer_id': offer.id,
-      'aff_provider': offer.providerName,
-      'aff_market': marketName,
-    },
-  );
+  return normalizedUri;
 }
-
 
 class _ProviderRedirectOverlay extends StatefulWidget {
   const _ProviderRedirectOverlay({
@@ -291,13 +311,21 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
 
   Future<void> _launchProvider() async {
     _autoCloseTimer?.cancel();
-    if (mounted) setState(() { _launching = true; _error = null; });
+    if (mounted) {
+      setState(() {
+        _launching = true;
+        _error = null;
+      });
+    }
 
     final uri = widget.uri;
     if (uri == null) {
       if (!mounted) return;
       final msg = context.l10n.providerLinkUnavailable;
-      setState(() { _launching = false; _error = msg; });
+      setState(() {
+        _launching = false;
+        _error = msg;
+      });
       return;
     }
 
@@ -315,9 +343,10 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     final l10n = context.l10n;
     setState(() {
       _launching = false;
-      _error = result.copiedToClipboard
-          ? l10n.providerLinkCopied
-          : (result.message ?? l10n.providerLinkUnavailable);
+      _error =
+          result.copiedToClipboard
+              ? l10n.providerLinkCopied
+              : (result.message ?? l10n.providerLinkUnavailable);
     });
   }
 
@@ -401,7 +430,9 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  l10n.providerOpeningTitle(widget.providerName),
+                                  l10n.providerOpeningTitle(
+                                    widget.providerName,
+                                  ),
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontSize: 22,
                                   ),
@@ -443,7 +474,8 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
                         children: <Widget>[
                           Expanded(
                             child: FilledButton(
-                              onPressed: widget.uri == null ? null : _openManualLink,
+                              onPressed:
+                                  widget.uri == null ? null : _openManualLink,
                               child: Text(l10n.providerOpenButton),
                             ),
                           ),

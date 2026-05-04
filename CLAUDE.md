@@ -26,47 +26,47 @@ Payn is a European fintech marketplace. React + Next.js 16 + Tailwind 3 web app 
 
 ## Design Token System
 
-### Color Palette
+### Color Palette (Light Theme)
 ```
-Background layers:
-  --bg-deep:      #040907    (page background)
-  --bg-base:      #070E0B    (main canvas)
-  --bg-elevated:  #0C1A15    (cards, panels)
-  --bg-surface:   #111F1A    (interactive surfaces)
-  --bg-overlay:   #162A23    (hover states, modals)
+Backgrounds (CSS vars in globals.css):
+  --bg-base:          #ffffff         (page / html background)
+  --surface-base:     #ffffff         (cards, panels)
+  --surface-muted:    #f5f7f4         (secondary surfaces, pill-chips)
 
-Primary (emerald):
-  --primary-400:  #34D399    (highlights, accents)
-  --primary-500:  #10B981    (primary actions)
-  --primary-600:  #059669    (hover states)
-  --primary-700:  #047857    (active/pressed)
-
-Secondary (teal):
-  --secondary-400: #2DD4BF
-  --secondary-500: #14B8A6
-  --secondary-600: #0D9488
+Emerald accent:
+  --emerald:          #0f8a4b         (primary actions, active states)
+  --emerald-strong:   #0b6d3b         (hover states)
+  --emerald-soft:     #ddf4e7         (tinted backgrounds)
 
 Text:
-  --text-primary:   #F0FDF4
-  --text-secondary: #94A3B8
-  --text-tertiary:  #64748B
+  --ink-primary:      #111827         (headings, primary text)
+  --ink-secondary:    #4b5563         (body text)
+  --ink-tertiary:     #8a94a6         (labels, captions)
+  --ink-inverse:      #ffffff         (text on emerald)
 
 Borders:
-  --border-subtle:  rgba(255, 255, 255, 0.06)
-  --border-default: rgba(255, 255, 255, 0.10)
-  --border-active:  rgba(16, 185, 129, 0.4)
+  --line-subtle:      rgba(17, 24, 39, 0.08)
+  --line-strong:      rgba(17, 24, 39, 0.14)
 ```
 
-### Typography Scale
-- Display: 56px / 700 / -0.03em (hero headlines)
-- H1: 40px / 700 / -0.025em (page titles)
-- H2: 28px / 600 / -0.02em (section titles)
-- H3: 20px / 600 / -0.015em (card titles)
-- Body: 16px / 400 / normal (paragraphs)
-- Small: 14px / 400 / normal (secondary text)
-- Caption: 12px / 500 / 0.04em uppercase (labels, eyebrows)
+Tailwind tokens (tailwind.config.ts):
+- `bg-white` / `bg-bg-surface` (#F5F7F4) / `bg-bg-overlay` (#EEF2EE)
+- `text-ink` / `text-ink-secondary` / `text-ink-tertiary`
+- `border-line` / `border-line-strong` / `border-line-active`
+- `bg-accent-emerald-soft` + `text-accent-emerald-strong` (tinted emerald)
+- `bg-accent-emerald` (#0F8A4B) for primary buttons/badges
+- `bg-accent-blue` + `text-accent-blue-text` (blue tags)
+- `bg-accent-orange` + `text-accent-orange-text` (orange tags)
 
-Font stack: Inter, -apple-system, BlinkMacSystemFont, sans-serif
+### Typography Scale
+- display: 4rem / 800 / -0.04em (hero headlines)
+- h1: 2.75rem / 800 / -0.035em (page titles)
+- h2: 2rem / 700 / -0.025em (section titles)
+- h3: 1.25rem / 700 / -0.015em (card titles)
+- body: 16px / 400 / normal (paragraphs)
+- caption: 0.75rem / 600 / 0.04em uppercase (labels, eyebrows)
+
+Font stack: Manrope, -apple-system, BlinkMacSystemFont, sans-serif
 
 ### Spacing Scale
 4px base: 1(4), 2(8), 3(12), 4(16), 5(20), 6(24), 8(32), 10(40), 12(48), 16(64), 20(80), 24(96)
@@ -75,15 +75,15 @@ Font stack: Inter, -apple-system, BlinkMacSystemFont, sans-serif
 - sm: 8px (tags, small elements)
 - md: 12px (buttons, inputs)
 - lg: 16px (cards)
-- xl: 20px (panels, sections)
-- 2xl: 24px (hero containers)
+- xl: 20–24px (panels, sections)
+- 2xl: 28–40px (hero containers)
 
-### Elevation
-- Level 0: none (flat)
-- Level 1: 0 1px 2px rgba(0,0,0,0.3) (subtle lift)
-- Level 2: 0 4px 12px rgba(0,0,0,0.4) (cards)
-- Level 3: 0 8px 24px rgba(0,0,0,0.5) (elevated panels)
-- Glow: 0 0 20px rgba(16,185,129,0.15) (primary actions)
+### Elevation (light-theme shadows)
+- subtle:     shadow-subtle → 0 8px 20px rgba(15,23,32,0.04)
+- card:       shadow-card → 0 10px 30px rgba(15,23,32,0.05)
+- elevated:   shadow-elevated → 0 18px 48px rgba(15,23,32,0.08)
+- card-hover: shadow-card-hover → 0 22px 56px rgba(15,23,32,0.10)
+- glow:       0 18px 36px rgba(15,138,75,0.24) (emerald CTA)
 
 ## Styling Rules
 - IMPORTANT: Use Tailwind utility classes

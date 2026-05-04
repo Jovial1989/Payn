@@ -39,6 +39,13 @@ extension ProfileTypeLabel on ProfileType {
 class PaynMetric {
   const PaynMetric({required this.label, required this.value});
 
+  factory PaynMetric.fromJson(Map<String, dynamic> json) {
+    return PaynMetric(
+      label: (json['label'] as String? ?? '').trim(),
+      value: (json['value'] as String? ?? '').trim(),
+    );
+  }
+
   final String label;
   final String value;
 }
@@ -52,8 +59,29 @@ class PaynOfferAttributes {
     this.maxTermMonths,
     this.feeProfile,
     this.availability,
+    this.affiliate = false,
+    this.monetized = false,
     this.searchTags = const <String>[],
   });
+
+  factory PaynOfferAttributes.fromJson(Map<String, dynamic>? json) {
+    final data = json ?? <String, dynamic>{};
+    return PaynOfferAttributes(
+      subtype: data['subtype'] as String?,
+      minAmount: (data['minAmount'] as num?)?.toInt(),
+      maxAmount: (data['maxAmount'] as num?)?.toInt(),
+      minTermMonths: (data['minTermMonths'] as num?)?.toInt(),
+      maxTermMonths: (data['maxTermMonths'] as num?)?.toInt(),
+      feeProfile: data['feeProfile'] as String?,
+      availability: data['availability'] as String?,
+      affiliate: data['affiliate'] as bool? ?? false,
+      monetized: data['monetized'] as bool? ?? false,
+      searchTags:
+          (data['searchTags'] as List<dynamic>? ?? const <dynamic>[])
+              .map((value) => value.toString())
+              .toList(),
+    );
+  }
 
   final String? subtype;
   final int? minAmount;
@@ -62,6 +90,8 @@ class PaynOfferAttributes {
   final int? maxTermMonths;
   final String? feeProfile;
   final String? availability;
+  final bool affiliate;
+  final bool monetized;
   final List<String> searchTags;
 }
 
@@ -84,6 +114,40 @@ class PaynOffer {
     this.attributes = const PaynOfferAttributes(),
   });
 
+  factory PaynOffer.fromJson(Map<String, dynamic> json) {
+    return PaynOffer(
+      id: (json['id'] as String? ?? '').trim(),
+      slug: (json['slug'] as String? ?? '').trim(),
+      category:
+          _categoryFromName(json['category'] as String?) ?? PaynCategory.loans,
+      countryCodes:
+          (json['countryCodes'] as List<dynamic>? ?? const <dynamic>[])
+              .map((value) => value.toString())
+              .toList(),
+      providerMark: (json['providerMark'] as String? ?? '').trim(),
+      providerName: (json['providerName'] as String? ?? '').trim(),
+      title: (json['title'] as String? ?? '').trim(),
+      subtitle: (json['subtitle'] as String? ?? '').trim(),
+      metrics:
+          (json['metrics'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<Map>()
+              .map((value) => PaynMetric.fromJson(Map<String, dynamic>.from(value)))
+              .toList(),
+      bestFor:
+          (json['bestFor'] as List<dynamic>? ?? const <dynamic>[])
+              .map((value) => value.toString())
+              .toList(),
+      providerWebsiteUrl: (json['providerWebsiteUrl'] as String? ?? '').trim(),
+      affiliateLink: (json['affiliateLink'] as String? ?? '').trim(),
+      affiliatePriorityScore:
+          (json['affiliatePriorityScore'] as num?)?.toDouble() ?? 0,
+      updatedAt: (json['updatedAt'] as String? ?? '').trim(),
+      attributes: PaynOfferAttributes.fromJson(
+        json['attributes'] as Map<String, dynamic>?,
+      ),
+    );
+  }
+
   final String id;
   final String slug;
   final PaynCategory category;
@@ -99,6 +163,98 @@ class PaynOffer {
   final double affiliatePriorityScore;
   final String updatedAt;
   final PaynOfferAttributes attributes;
+}
+
+class CatalogLanguageOption {
+  const CatalogLanguageOption({
+    required this.code,
+    required this.native,
+  });
+
+  factory CatalogLanguageOption.fromJson(Map<String, dynamic> json) {
+    return CatalogLanguageOption(
+      code: (json['code'] as String? ?? '').trim(),
+      native: (json['native'] as String? ?? '').trim(),
+    );
+  }
+
+  final String code;
+  final String native;
+}
+
+class CatalogCountryOption {
+  const CatalogCountryOption({
+    required this.value,
+    required this.label,
+    required this.flag,
+    required this.code,
+    required this.currency,
+    required this.kind,
+    required this.labels,
+  });
+
+  factory CatalogCountryOption.fromJson(Map<String, dynamic> json) {
+    return CatalogCountryOption(
+      value: (json['value'] as String? ?? '').trim(),
+      label: (json['label'] as String? ?? '').trim(),
+      flag: (json['flag'] as String? ?? '').trim(),
+      code: (json['code'] as String? ?? '').trim(),
+      currency: (json['currency'] as String? ?? '').trim(),
+      kind: (json['kind'] as String? ?? 'country').trim(),
+      labels:
+          (json['labels'] as Map<String, dynamic>? ?? const <String, dynamic>{})
+              .map((key, value) => MapEntry(key, value.toString())),
+    );
+  }
+
+  final String value;
+  final String label;
+  final String flag;
+  final String code;
+  final String currency;
+  final String kind;
+  final Map<String, String> labels;
+}
+
+class MarketplaceCatalogManifest {
+  const MarketplaceCatalogManifest({
+    required this.generatedAt,
+    required this.languages,
+    required this.countries,
+    required this.categories,
+    required this.offers,
+  });
+
+  factory MarketplaceCatalogManifest.fromJson(Map<String, dynamic> json) {
+    return MarketplaceCatalogManifest(
+      generatedAt: (json['generatedAt'] as String? ?? '').trim(),
+      languages:
+          (json['languages'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<Map>()
+              .map((value) => CatalogLanguageOption.fromJson(Map<String, dynamic>.from(value)))
+              .toList(),
+      countries:
+          (json['countries'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<Map>()
+              .map((value) => CatalogCountryOption.fromJson(Map<String, dynamic>.from(value)))
+              .toList(),
+      categories:
+          (json['categories'] as List<dynamic>? ?? const <dynamic>[])
+              .map((value) => value.toString())
+              .toList(),
+      offers:
+          (json['offers'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<Map>()
+              .map((value) => PaynOffer.fromJson(Map<String, dynamic>.from(value)))
+              .toList(),
+    );
+  }
+
+  final String generatedAt;
+  final List<CatalogLanguageOption> languages;
+  final List<CatalogCountryOption> countries;
+  final List<String> categories;
+  final List<PaynOffer> offers;
 }
 
 class ExploreFilters {
@@ -287,6 +443,8 @@ PaynMarket? _marketFromName(String? value) {
   }
   return null;
 }
+
+PaynMarket? paynMarketFromCode(String? value) => _marketFromName(value);
 
 ProfileType? _profileTypeFromName(String? value) {
   for (final type in ProfileType.values) {

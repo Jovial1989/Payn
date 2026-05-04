@@ -45,7 +45,7 @@ export function InsightsPanel({
         <div className="mt-3 grid gap-2">
           {tips.map((tip) => (
             <div key={tip} className="flex items-start gap-2 text-sm text-ink-secondary">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-black" />
+              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent-emerald" />
               <span>{tip}</span>
             </div>
           ))}

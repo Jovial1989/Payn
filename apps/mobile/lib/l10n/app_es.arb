@@ -22,6 +22,9 @@
   "localeEnglish": "Inglés",
   "localeGerman": "Alemán",
   "localeSpanish": "Español",
+  "localeFrench": "Francés",
+  "localeItalian": "Italiano",
+  "localePortuguese": "Portugués",
   "homeLiveRanking": "Ranking en vivo",
   "homeHeroTitle": "Mejores opciones para ti",
   "homeTopPicksTitle": "Mejores coincidencias de hoy",
@@ -121,7 +124,7 @@
   "localeGateContinue": "Continuar",
   "localeGateSettingsHint": "Puedes cambiarlo en cualquier momento desde tu perfil.",
   "exploreLiveRanking": "Ranking en vivo",
-  "exploreBestOptions": "Mejores opciones para ti",
+  "exploreBestOptions": "¿Qué necesitas?",
   "exploreRankedOffersInMarket": "{count} ofertas clasificadas en {market}",
   "@exploreRankedOffersInMarket": {
     "placeholders": {
@@ -143,10 +146,37 @@
   "exploreNoOffersTitle": "Ninguna oferta coincide con tus filtros",
   "exploreNoOffersDescription": "Prueba a borrar los filtros o cambiar de categoría.",
   "exploreClearFilters": "Borrar filtros",
+  "exploreFiltersTitle": "Filtros",
+  "exploreMarketLabel": "Mercado",
+  "exploreProviderLabel": "Proveedor",
+  "exploreFeatureLabel": "Característica",
+  "exploreSubtypeLabel": "Subtipo",
+  "exploreAmountLabel": "Importe {amount}",
+  "@exploreAmountLabel": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "exploreTermLabel": "Plazo {months} meses",
+  "@exploreTermLabel": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreApply": "Aplicar",
+  "exploreMarketIntelligenceTitle": "Inteligencia de mercado",
+  "exploreMarketIntelligenceSubtitle": "Sigue el contexto del mercado en vivo antes de pasar a productos de inversión.",
   "offerDecisionReviewed": "Revisado",
   "offerOnRequest": "A consultar",
   "offerSave": "Guardar",
   "offerSaved": "Guardado",
+  "offerUnavailable": "La oferta ya no está disponible.",
+  "offerStrongMatch": "Buena coincidencia",
+  "offerRatesTitle": "Condiciones",
+  "offerBenefitsTitle": "Ventajas",
+  "offerTradeoffsTitle": "Compensaciones",
   "navHome": "Inicio",
   "navExplore": "Explorar",
   "navSaved": "Guardado",
@@ -193,6 +223,27 @@
   "providerLinkUnavailable": "Este enlace no está disponible.",
   "providerLinkCopied": "No se pudo abrir. URL copiada al portapapeles.",
   "providerLinkUnavailableSnackbar": "Este enlace del proveedor no está disponible ahora.",
+  "interestTravel": "Viajes",
+  "interestSavings": "Ahorro",
+  "interestCrypto": "Cripto",
+  "interestInternationalTransfers": "Transferencias internacionales",
+  "interestInvesting": "Inversión",
+  "interestInsurance": "Seguros",
+  "interestEverydayBanking": "Banca diaria",
+  "exploreSortBestMatch": "Mejor coincidencia",
+  "exploreSortLowestFee": "Menor comisión",
+  "exploreSortFastest": "Más rápido",
+  "exploreSortRecommended": "Recomendado",
+  "exploreMarketDataUnavailable": "Los datos de mercado no están disponibles temporalmente. Prueba con otro activo.",
+  "exploreMarketTrendsTitle": "Tendencias",
+  "exploreMarketInsightsTitle": "Ideas de IA",
+  "exploreMarketRecommendationsTitle": "Acciones recomendadas",
+  "marketAssetSp500": "S&P 500",
+  "marketAssetGold": "Oro",
+  "marketAssetPriceSpot": "Precio spot",
+  "marketAssetPriceIndex": "Nivel del índice",
+  "marketAssetPriceFx": "Tipo FX",
+  "marketAssetPriceFutures": "Precio de futuros",
   "splashTagline": "Claridad para tu dinero",
   "routerError": "No pudimos abrir esa ruta."
 }

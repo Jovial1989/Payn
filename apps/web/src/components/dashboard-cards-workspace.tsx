@@ -186,7 +186,7 @@ function InputField({
 }
 
 function fieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm text-ink outline-none transition-colors focus:border-black/15 focus:bg-white";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald/15 focus:bg-white";
 }
 
 function tagForResult(args: {
@@ -656,7 +656,7 @@ export function DashboardCardsWorkspace({
                   type="button"
                   onClick={() => setCardType(item)}
                   className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    cardType === item ? "bg-black text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
+                    cardType === item ? "bg-accent-emerald text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
                   }`}
                 >
                   {item === "all" ? copy.all : item === "credit" ? copy.credit : copy.debit}
@@ -768,7 +768,7 @@ export function DashboardCardsWorkspace({
                     }
                     className={
                       compareSelection.includes(row.offer.id)
-                        ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-black bg-white px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface sm:w-auto"
+                        ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-accent-emerald/30 bg-accent-emerald-soft px-3 py-2 text-sm font-semibold text-accent-emerald-strong transition-colors hover:bg-accent-emerald-soft sm:w-auto"
                         : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:text-ink sm:w-auto"
                     }
                   >

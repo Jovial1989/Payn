@@ -270,7 +270,7 @@ export function DashboardProfileWorkspace({
         <div className="grid gap-5">
           <div className="flex flex-col gap-4 rounded-[22px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black text-sm font-bold text-white">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-emerald text-sm font-bold text-white">
                 {initials}
               </div>
               <div>
@@ -292,7 +292,7 @@ export function DashboardProfileWorkspace({
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 placeholder={copy.addFirstName}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               />
             </label>
 
@@ -304,7 +304,7 @@ export function DashboardProfileWorkspace({
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
                 placeholder={copy.addLastName}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               />
             </label>
 
@@ -315,7 +315,7 @@ export function DashboardProfileWorkspace({
               <select
                 value={homeCountry}
                 onChange={(event) => setHomeCountry(event.target.value)}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               >
                 <option value="">{copy.chooseCountry}</option>
                 {countryOptions.map((option) => (
@@ -333,7 +333,7 @@ export function DashboardProfileWorkspace({
               <select
                 value={preferredLocale}
                 onChange={(event) => setPreferredLocale(event.target.value as MarketplaceLocale)}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               >
                 {Object.entries(dictionary.locales).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -350,7 +350,7 @@ export function DashboardProfileWorkspace({
               <select
                 value={userType}
                 onChange={(event) => setUserType(event.target.value as UserProfile["user_type"])}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-black/15 focus:bg-white"
+                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               >
                 {userTypes.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -374,12 +374,12 @@ export function DashboardProfileWorkspace({
                     onClick={() => setMarketScope(option.value)}
                     className={`rounded-[16px] border px-4 py-3 text-left transition-colors ${
                       marketScope === option.value
-                        ? "border-black bg-black text-white"
+                        ? "border-accent-emerald bg-accent-emerald text-white"
                         : "border-[#EAEAEA] bg-[#F7F7F8] text-ink-secondary hover:bg-white hover:text-ink"
                     }`}
                   >
                     <span className="block text-sm font-semibold">{option.label}</span>
-                    <span className={`mt-1 block text-xs ${marketScope === option.value ? "text-white/72" : "text-ink-tertiary"}`}>
+                    <span className={`mt-1 block text-xs ${marketScope === option.value ? "text-white/80" : "text-ink-tertiary"}`}>
                       {option.description}
                     </span>
                   </button>
@@ -409,7 +409,7 @@ export function DashboardProfileWorkspace({
                     onClick={() => toggleValue(selectedCategories, category, setSelectedCategories)}
                     className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
                       selectedCategories.includes(category)
-                        ? "border-black bg-black text-white"
+                        ? "border-accent-emerald bg-accent-emerald text-white"
                         : "border-[#EAEAEA] bg-[#F7F7F8] text-ink-secondary hover:bg-white hover:text-ink"
                     }`}
                   >
@@ -431,7 +431,7 @@ export function DashboardProfileWorkspace({
                     onClick={() => toggleValue(goals, goal, setGoals)}
                     className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
                       goals.includes(goal)
-                        ? "border-black bg-black text-white"
+                        ? "border-accent-emerald bg-accent-emerald text-white"
                         : "border-[#EAEAEA] bg-[#F7F7F8] text-ink-secondary hover:bg-white hover:text-ink"
                     }`}
                   >

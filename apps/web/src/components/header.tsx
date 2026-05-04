@@ -83,16 +83,16 @@ export function Header({
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/86 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-line bg-white/92 backdrop-blur-xl">
       <div className="mx-auto flex min-h-[64px] max-w-[1240px] items-center justify-between gap-3 px-4 py-3 sm:px-5 lg:min-h-[72px] lg:gap-4 lg:px-8">
         <div className="flex min-w-0 items-center gap-4 lg:gap-8">
           <Link href={localePath(locale, "/")} className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 shadow-[0_0_28px_rgba(34,211,238,0.16)]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-accent-emerald/15 bg-accent-emerald-soft shadow-[0_10px_24px_rgba(15,138,75,0.10)]">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 12L8 4L12 12" stroke="#e2f8ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M4 12L8 4L12 12" stroke="#0F8A4B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-100">Payn</span>
+            <span className="text-lg font-bold tracking-tight text-ink">Payn</span>
           </Link>
 
           <nav className="hidden items-center gap-6 lg:flex">
@@ -113,7 +113,7 @@ export function Header({
                   data-active={resolvedActivePage === key}
                   className={clsx(
                     "nav-link inline-flex items-center gap-2 pb-1 text-sm font-medium",
-                    resolvedActivePage === key ? "text-slate-100" : "text-slate-400 hover:text-slate-100",
+                    resolvedActivePage === key ? "text-ink" : "text-ink-secondary hover:text-ink",
                   )}
                 >
                   {label}
@@ -124,15 +124,15 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden items-center rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 shadow-[0_16px_36px_rgba(0,0,0,0.18)] lg:flex">
+          <div className="hidden items-center rounded-full border border-line bg-white px-2 py-1 shadow-subtle lg:flex">
             <label className="relative flex items-center gap-2 pl-2 pr-6">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                 {dictionary.nav.country}
               </span>
               <select
                 value={preferences.country}
                 onChange={(event) => handleCountryChange(event.target.value)}
-                className="appearance-none bg-transparent text-sm font-medium text-slate-100 outline-none"
+                className="appearance-none bg-transparent text-sm font-medium text-ink outline-none"
                 aria-label={dictionary.nav.country}
               >
                 {preferences.availableCountries.map((option) => (
@@ -147,22 +147,22 @@ export function Header({
                 viewBox="0 0 12 12"
                 fill="none"
                 aria-hidden="true"
-                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-slate-500"
+                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-ink-tertiary"
               >
                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </label>
 
-            <span className="mx-1 h-5 w-px bg-white/10" />
+            <span className="mx-1 h-5 w-px bg-line" />
 
             <label className="relative flex items-center gap-2 pl-2 pr-6">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                 {dictionary.nav.language}
               </span>
               <select
                 value={preferences.locale}
                 onChange={(event) => handleLocaleChange(event.target.value as MarketplaceLocale)}
-                className="appearance-none bg-transparent text-sm font-medium text-slate-100 outline-none"
+                className="appearance-none bg-transparent text-sm font-medium text-ink outline-none"
                 aria-label={dictionary.nav.language}
               >
                 {Object.entries(dictionary.locales).map(([value, label]) => (
@@ -177,7 +177,7 @@ export function Header({
                 viewBox="0 0 12 12"
                 fill="none"
                 aria-hidden="true"
-                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-slate-500"
+                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-ink-tertiary"
               >
                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -190,11 +190,11 @@ export function Header({
             className={clsx(
               "hidden items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors lg:inline-flex",
               isSignedIn
-                ? "border-cyan-400/25 bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18"
-                : "border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]",
+                ? "border-accent-emerald/25 bg-accent-emerald-soft text-accent-emerald-strong hover:bg-accent-emerald-soft/80"
+                : "border-line bg-white text-ink hover:bg-bg-surface",
             )}
           >
-            <span className={clsx("text-[10px] font-semibold uppercase tracking-[0.16em]", isSignedIn ? "text-cyan-200/70" : "text-slate-500")}>
+            <span className={clsx("text-[10px] font-semibold uppercase tracking-[0.16em]", isSignedIn ? "text-accent-emerald" : "text-ink-tertiary")}>
               {authStateLabel}
             </span>
             <span>{isSignedIn ? uiCopy.dashboard.navItems.dashboard.label : dictionary.nav.signIn}</span>
@@ -203,7 +203,7 @@ export function Header({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-white/[0.06] lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink lg:hidden"
             aria-label={mobileMenuOpen ? uiCopy.header.closeMenuLabel : uiCopy.header.openMenuLabel}
           >
             {mobileMenuOpen ? (
@@ -220,7 +220,7 @@ export function Header({
       </div>
 
       {mobileMenuOpen && (
-        <div className="border-t border-white/10 bg-zinc-950/95 px-4 pb-4 pt-3 sm:px-5 lg:hidden">
+        <div className="border-t border-line bg-white/95 px-4 pb-4 pt-3 shadow-card sm:px-5 lg:hidden">
           <nav className="grid gap-1">
             {navKeys.map((key) => {
               const label =
@@ -240,8 +240,8 @@ export function Header({
                   className={clsx(
                     "pressable inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     resolvedActivePage === key
-                      ? "bg-white/[0.08] text-slate-100"
-                      : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100",
+                      ? "bg-bg-surface text-ink"
+                      : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
                   )}
                 >
                   {label}
@@ -250,13 +250,13 @@ export function Header({
             })}
           </nav>
 
-          <div className="mt-4 rounded-[26px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="mt-4 rounded-[26px] border border-line bg-white p-4 shadow-subtle">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                   {authStateLabel}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-ink-secondary">
                   {preferences.countryLabel}
                 </p>
               </div>
@@ -269,8 +269,8 @@ export function Header({
                 className={clsx(
                   "rounded-full px-4 py-2 text-sm font-medium transition-colors",
                   isSignedIn
-                    ? "bg-cyan-400/12 text-cyan-100 hover:bg-cyan-400/18"
-                    : "border border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]",
+                    ? "bg-accent-emerald-soft text-accent-emerald-strong hover:bg-accent-emerald-soft/80"
+                    : "border border-line bg-white text-ink hover:bg-bg-surface",
                 )}
               >
                 {isSignedIn ? uiCopy.dashboard.navItems.dashboard.label : dictionary.nav.signIn}
@@ -279,13 +279,13 @@ export function Header({
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="grid gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                   {dictionary.nav.country}
                 </span>
                 <select
                   value={preferences.country}
                   onChange={(event) => handleCountryChange(event.target.value)}
-                  className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-slate-100 outline-none"
+                  className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none"
                 >
                   {preferences.availableCountries.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -296,13 +296,13 @@ export function Header({
               </label>
 
               <label className="grid gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                   {dictionary.nav.language}
                 </span>
                 <select
                   value={preferences.locale}
                   onChange={(event) => handleLocaleChange(event.target.value as MarketplaceLocale)}
-                  className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-slate-100 outline-none"
+                  className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none"
                 >
                   {Object.entries(dictionary.locales).map(([value, label]) => (
                     <option key={value} value={value}>

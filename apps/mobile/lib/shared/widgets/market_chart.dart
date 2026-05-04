@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 
@@ -86,7 +87,7 @@ class MarketChart extends StatelessWidget {
                             : (maxValue - minValue) / 2,
                     getTitlesWidget:
                         (value, meta) => Text(
-                          _formatYAxis(value),
+                          _formatYAxis(context, value),
                           style: theme.textTheme.labelMedium,
                         ),
                   ),
@@ -104,7 +105,11 @@ class MarketChart extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          _formatXAxis(lines.first.points[index].time, range),
+                          _formatXAxis(
+                            context,
+                            lines.first.points[index].time,
+                            range,
+                          ),
                           style: theme.textTheme.labelMedium,
                         ),
                       );
@@ -230,7 +235,7 @@ class MarketChart extends StatelessWidget {
     );
   }
 
-  String _formatYAxis(double value) {
+  String _formatYAxis(BuildContext context, double value) {
     if (value.abs() >= 1000) {
       return '${(value / 1000).toStringAsFixed(1)}k';
     }
@@ -240,19 +245,19 @@ class MarketChart extends StatelessWidget {
     return value.toStringAsFixed(0);
   }
 
-  String _formatXAxis(DateTime time, ChartTimeRange range) {
+  String _formatXAxis(
+    BuildContext context,
+    DateTime time,
+    ChartTimeRange range,
+  ) {
+    final localeName = Localizations.localeOf(context).toLanguageTag();
     switch (range) {
       case ChartTimeRange.day:
         return '${time.hour.toString().padLeft(2, '0')}:00';
       case ChartTimeRange.week:
-        return _weekdayLabel(time.weekday);
+        return DateFormat.E(localeName).format(time);
       case ChartTimeRange.month:
-        return '${time.month}/${time.day}';
+        return DateFormat.Md(localeName).format(time);
     }
-  }
-
-  String _weekdayLabel(int weekday) {
-    const labels = <String>['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return labels[(weekday - 1).clamp(0, labels.length - 1)];
   }
 }

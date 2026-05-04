@@ -66,7 +66,7 @@ export function UserTypeOnboardingCard({
               className={[
                 "rounded-[24px] border p-5 text-left transition-all",
                 active
-                  ? "border-black bg-black/[0.03]"
+                  ? "border-accent-emerald/30 bg-accent-emerald-soft"
                   : "border-line bg-white hover:border-line-strong hover:bg-bg-surface/60",
               ].join(" ")}
             >
@@ -82,7 +82,7 @@ export function UserTypeOnboardingCard({
           type="button"
           onClick={handleComplete}
           disabled={saving}
-          className="h-11 rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+          className="h-11 rounded-full bg-accent-emerald px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-50"
         >
           {saving ? uiCopy.dashboard.savingPreferences : completeLabel ?? uiCopy.auth.onboardingCompleteLabel}
         </button>

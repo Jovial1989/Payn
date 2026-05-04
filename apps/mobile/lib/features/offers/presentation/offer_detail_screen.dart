@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
-import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 
@@ -29,12 +29,13 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final offer = controller.offerById(widget.offerId);
 
     if (offer == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Offer no longer available.')),
+        body: Center(child: Text(l10n.offerUnavailable)),
       );
     }
 
@@ -46,7 +47,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(offer.category.label),
+        title: Text(offer.category.localizedLabel(l10n)),
         actions: <Widget>[
           IconButton(
             onPressed: () {
@@ -69,7 +70,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
             },
             style: FilledButton.styleFrom(minimumSize: const Size(0, 56)),
             icon: const Icon(Icons.lock_outline_rounded, size: 16),
-            label: const Text('Check my rate'),
+            label: Text(l10n.offerCtaCheckRate),
           ),
         ),
       ),
@@ -126,7 +127,8 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  primaryMetric?.label.toUpperCase() ?? offer.category.label.toUpperCase(),
+                  primaryMetric?.label.toUpperCase() ??
+                      offer.category.localizedLabel(l10n).toUpperCase(),
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontSize: 10,
                     letterSpacing: 1.7,
@@ -135,7 +137,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  primaryMetric?.value ?? 'On request',
+                  primaryMetric?.value ?? l10n.offerOnRequest,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontSize: 40,
                     fontWeight: FontWeight.w800,
@@ -157,7 +159,10 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   runSpacing: 8,
                   children: <Widget>[
                     _Badge(
-                      label: ranked.score >= 110 ? 'Best option' : 'Strong match',
+                      label:
+                          ranked.score >= 110
+                              ? l10n.compareBestOption
+                              : l10n.offerStrongMatch,
                       bg:
                           ranked.score >= 110
                               ? PaynColors.positiveSurface
@@ -168,7 +173,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                               : PaynColors.accent,
                     ),
                     _Badge(
-                      label: offer.category.label,
+                      label: offer.category.localizedLabel(l10n),
                       bg: PaynColors.surfaceDim,
                       fg: PaynColors.textSecondary,
                     ),
@@ -179,7 +184,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
           ),
           const SizedBox(height: 20),
           _SectionCard(
-            title: 'Rates',
+            title: l10n.offerRatesTitle,
             child: Column(
               children:
                   offer.metrics
@@ -218,7 +223,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
           if (reasons.isNotEmpty) ...<Widget>[
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Benefits',
+              title: l10n.offerBenefitsTitle,
               child: Column(
                 children:
                     reasons
@@ -255,7 +260,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
           ],
           const SizedBox(height: 16),
           _SectionCard(
-            title: 'Tradeoffs',
+            title: l10n.offerTradeoffsTitle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[

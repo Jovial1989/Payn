@@ -57,6 +57,10 @@ function formatAmountLabel(value: number, locale: MarketplaceLocale, currency: s
   return formatter.format(value);
 }
 
+function getPurposeLabel(category: ExplorerCategory, dictionary: ReturnType<typeof getDictionary>) {
+  return category === "all" ? dictionary.explorer.topResults : dictionary.categories[category];
+}
+
 function buildEmptySuggestions(selectedCategory: ExplorerCategory, locale: MarketplaceLocale) {
   const dictionary = getDictionary(locale);
   return [
@@ -115,6 +119,7 @@ export function MarketplaceExplorer({
       : dictionary.categoryDescriptions[selectedCategory];
   const isFiltering = deferredQuery !== filters.query || isPending;
   const emptySuggestions = buildEmptySuggestions(selectedCategory, preferences.locale);
+  const currency = getCountryCurrency(preferences.country);
   const summaryChips = useMemo(
     () =>
       [
@@ -219,7 +224,82 @@ export function MarketplaceExplorer({
             </div>
           </div>
 
-          <div className="surface-panel sticky top-[76px] z-20 -mx-2 rounded-[30px] p-2 sm:mx-0">
+          <div className="grid gap-3 rounded-[28px] border border-line bg-white p-4 shadow-[0_18px_50px_rgba(17,24,39,0.06)] md:grid-cols-[1.25fr_1fr_1fr_1fr]">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-tertiary">
+                {dictionary.home.needsTitle}
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(event) => updateCategory(event.target.value as ExplorerCategory)}
+                className="mt-2 h-12 w-full rounded-2xl border border-line bg-bg-surface px-3 text-sm font-bold text-ink outline-none transition-colors focus:border-accent-emerald"
+              >
+                {explorerCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category === "all" ? dictionary.explorer.topResults : dictionary.categories[category]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-tertiary">
+                {dictionary.filters.amountLabel}
+              </label>
+              <div className="mt-2 rounded-2xl border border-line bg-bg-surface px-3 py-2">
+                <div className="flex items-center justify-between text-sm font-bold text-ink">
+                  <span>{formatAmountLabel(filters.amount, preferences.locale, currency)}</span>
+                  <span className="text-xs text-ink-tertiary">{currency}</span>
+                </div>
+                <input
+                  type="range"
+                  min={1000}
+                  max={80000}
+                  step={1000}
+                  value={filters.amount}
+                  onChange={(event) => {
+                    setFilters((current) => ({ ...current, amount: Number(event.target.value) }));
+                    setVisibleCount(PAGE_SIZE);
+                  }}
+                  className="mt-1 w-full [accent-color:var(--emerald)]"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-tertiary">
+                {dictionary.filters.termLabel}
+              </label>
+              <select
+                value={filters.term}
+                onChange={(event) => {
+                  setFilters((current) => ({ ...current, term: Number(event.target.value) }));
+                  setVisibleCount(PAGE_SIZE);
+                }}
+                className="mt-2 h-12 w-full rounded-2xl border border-line bg-bg-surface px-3 text-sm font-bold text-ink outline-none transition-colors focus:border-accent-emerald"
+              >
+                {[6, 12, 24, 36, 48, 60, 72, 84].map((term) => (
+                  <option key={term} value={term}>{term} {uiCopy.common.months}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-tertiary">
+                {dictionary.filters.countryLabel}
+              </label>
+              <select
+                value={preferences.country}
+                onChange={(event) => updateCountry(event.target.value)}
+                className="mt-2 h-12 w-full rounded-2xl border border-line bg-bg-surface px-3 text-sm font-bold text-ink outline-none transition-colors focus:border-accent-emerald"
+              >
+                {preferences.availableCountries.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="surface-panel sticky top-[76px] z-20 -mx-2 rounded-[24px] p-2 sm:mx-0 sm:rounded-[30px]">
             {/* Category tabs */}
             <div className="flex snap-x gap-2 overflow-x-auto pb-1">
               {explorerCategories.map((category) => {
@@ -240,7 +320,7 @@ export function MarketplaceExplorer({
                     <span
                       className={clsx(
                         "rounded-full px-2 py-0.5 text-[11px]",
-                        selectedCategory === category ? "bg-white/15 text-white" : "bg-bg-surface text-ink-tertiary",
+                        selectedCategory === category ? "bg-accent-emerald-soft text-accent-emerald-strong" : "bg-bg-surface text-ink-tertiary",
                       )}
                     >
                       {roundOfferCount(count)}
@@ -261,7 +341,7 @@ export function MarketplaceExplorer({
               <select
                 value={preferences.country}
                 onChange={(event) => updateCountry(event.target.value)}
-                className="h-10 rounded-full border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald"
+                className="hidden h-10 rounded-full border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald sm:block"
               >
                 {preferences.availableCountries.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -282,7 +362,8 @@ export function MarketplaceExplorer({
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M2 4h12M4 8h8M6 12h4" />
                 </svg>
-                {dictionary.explorer.filtersButton}
+                <span className="hidden sm:inline">{dictionary.explorer.filtersButton}</span>
+                <span className="sm:hidden">{dictionary.explorer.filtersButton}</span>
               </button>
             </div>
 
@@ -301,9 +382,37 @@ export function MarketplaceExplorer({
               ))}
             </div>
 
-            {/* Collapsible advanced filters */}
-            {filtersOpen && (
-              <div className="mt-2 grid gap-2 border-t border-line pt-2 md:grid-cols-2 xl:grid-cols-4">
+            {/* Primary filters */}
+            <div
+              className={clsx(
+                "mt-2 gap-2 border-t border-line pt-2 md:grid md:grid-cols-2 xl:grid-cols-4",
+                filtersOpen
+                  ? "fixed inset-x-3 bottom-3 z-[70] grid max-h-[78dvh] overflow-auto rounded-[28px] border border-line bg-white p-3 shadow-elevated md:static md:max-h-none md:overflow-visible md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+                  : "hidden md:grid",
+              )}
+            >
+                {filtersOpen ? (
+                  <div className="mb-1 flex items-center justify-between md:hidden">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-tertiary">
+                        {dictionary.explorer.filtersButton}
+                      </p>
+                      <p className="text-sm font-bold text-ink">
+                        {getPurposeLabel(selectedCategory, dictionary)} · {formatAmountLabel(filters.amount, preferences.locale, currency)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-bg-surface text-ink-secondary"
+                      aria-label="Close filters"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                        <path d="M4 4l8 8M12 4l-8 8" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : null}
                 <select
                   value={filters.provider}
                   onChange={(event) => setFilters((current) => ({ ...current, provider: event.target.value }))}
@@ -370,19 +479,22 @@ export function MarketplaceExplorer({
 
                 <button
                   type="button"
-                  onClick={() => { setFilters(defaultMarketplaceFilters); setVisibleCount(PAGE_SIZE); }}
+                  onClick={() => {
+                    setFilters(defaultMarketplaceFilters);
+                    setVisibleCount(PAGE_SIZE);
+                    setFiltersOpen(false);
+                  }}
                   className={buttonStyles({ variant: "ghost", size: "md" })}
                 >
                   {dictionary.filters.reset}
                 </button>
               </div>
-            )}
           </div>
 
         </div>
       </section>
 
-      <section className="grid gap-5 rounded-[36px] bg-[linear-gradient(180deg,rgba(255,255,255,0.45)_0%,rgba(245,247,244,0.92)_100%)] p-4 sm:p-5">
+      <section className="grid gap-5 rounded-[36px] bg-bg-surface p-4 sm:p-5">
         {selectedCategory === "investments" ? (
           <InvestmentIntelligenceBlock locale={preferences.locale} />
         ) : null}

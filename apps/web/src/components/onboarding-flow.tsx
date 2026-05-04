@@ -175,7 +175,7 @@ export function OnboardingFlow({
           </div>
           <div className="mt-3 h-1 w-full rounded-full bg-bg-surface">
             <div
-              className="h-1 rounded-full bg-black transition-all duration-300"
+              className="h-1 rounded-full bg-accent-emerald transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -198,14 +198,14 @@ export function OnboardingFlow({
                     onClick={() => toggleItem("categories", cat.id)}
                     className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
                       selected
-                        ? "border-black bg-black/[0.03]"
+                        ? "border-accent-emerald/30 bg-accent-emerald-soft"
                         : "border-line hover:border-line-strong"
                     }`}
                   >
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
                         selected
-                          ? "bg-black text-white"
+                          ? "bg-accent-emerald text-white"
                           : "bg-bg-surface text-ink-secondary"
                       }`}
                     >
@@ -245,14 +245,14 @@ export function OnboardingFlow({
                     onClick={() => setData((prev) => ({ ...prev, homeCountry: country.value }))}
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
                       selected
-                        ? "border-black bg-black/[0.03]"
+                        ? "border-accent-emerald/30 bg-accent-emerald-soft"
                         : "border-line hover:border-line-strong"
                     }`}
                   >
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
                         selected
-                          ? "bg-black text-white"
+                          ? "bg-accent-emerald text-white"
                           : "bg-bg-surface text-ink-secondary"
                       }`}
                     >
@@ -260,7 +260,7 @@ export function OnboardingFlow({
                     </div>
                     <span className="text-sm font-medium text-ink">{country.label}</span>
                     {selected && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="ml-auto text-black">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="ml-auto text-accent-emerald">
                         <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
@@ -288,13 +288,13 @@ export function OnboardingFlow({
                     onClick={() => toggleItem("goals", goal.id)}
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
                       selected
-                        ? "border-black bg-black/[0.03]"
+                        ? "border-accent-emerald/30 bg-accent-emerald-soft"
                         : "border-line hover:border-line-strong"
                     }`}
                   >
                     <div
                       className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                        selected ? "bg-black" : "border border-line"
+                        selected ? "bg-accent-emerald" : "border border-line"
                       }`}
                     >
                       {selected && (
@@ -340,7 +340,7 @@ export function OnboardingFlow({
                     onClick={() => setData((prev) => ({ ...prev, userType: type.id }))}
                     className={`rounded-2xl border p-5 text-left transition-all ${
                       selected
-                        ? "border-black bg-black/[0.03]"
+                        ? "border-accent-emerald/30 bg-accent-emerald-soft"
                         : "border-line hover:border-line-strong"
                     }`}
                   >
@@ -388,7 +388,7 @@ export function OnboardingFlow({
               type="button"
               disabled={!canProceed()}
               onClick={() => setStep((s) => s + 1)}
-              className="h-11 rounded-full bg-black px-7 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-30"
+              className="h-11 rounded-full bg-accent-emerald px-7 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-30"
             >
               {copy.continue}
             </button>
@@ -397,7 +397,7 @@ export function OnboardingFlow({
               type="button"
               disabled={saving || !canProceed()}
               onClick={handleFinish}
-              className="h-11 rounded-full bg-black px-7 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-30"
+              className="h-11 rounded-full bg-accent-emerald px-7 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-30"
             >
               {saving ? copy.saving : copy.recommendations}
             </button>

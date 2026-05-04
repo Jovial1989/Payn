@@ -8,6 +8,7 @@ class DashboardAnalyticsService {
     required int savedCount,
     required int compareCount,
     required int recentCount,
+    required String languageCode,
   }) {
     final now = DateTime.now();
     final points = range.pointCount;
@@ -76,16 +77,50 @@ class DashboardAnalyticsService {
       clickThroughRate: clickThroughRate,
       savedOffers: savedCount,
       changePercent: changePercent,
-      insight:
-          'Your activity increased by ${changePercent.abs().round()}% this ${range == ChartTimeRange.day
-              ? 'day'
-              : range == ChartTimeRange.week
-              ? 'week'
-              : 'month'}.',
+      insight: _activityInsight(
+        changePercent: changePercent,
+        range: range,
+        languageCode: languageCode,
+      ),
       views: views,
       clicks: clicks,
       saves: saves,
     );
+  }
+
+  String _activityInsight({
+    required double changePercent,
+    required ChartTimeRange range,
+    required String languageCode,
+  }) {
+    final percent = changePercent.abs().round();
+    switch (languageCode) {
+      case 'de':
+        final window =
+            range == ChartTimeRange.day
+                ? 'Tag'
+                : range == ChartTimeRange.week
+                ? 'Woche'
+                : 'Monat';
+        return 'Deine Aktivität hat sich in diesem $window um $percent % verändert.';
+      case 'es':
+        final window =
+            range == ChartTimeRange.day
+                ? 'día'
+                : range == ChartTimeRange.week
+                ? 'semana'
+                : 'mes';
+        return 'Tu actividad cambió un $percent % este $window.';
+      case 'en':
+      default:
+        final window =
+            range == ChartTimeRange.day
+                ? 'day'
+                : range == ChartTimeRange.week
+                ? 'week'
+                : 'month';
+        return 'Your activity changed by $percent% this $window.';
+    }
   }
 
   DateTime _timeForRange(

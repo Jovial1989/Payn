@@ -136,7 +136,7 @@ export function AuthModal({
                 setSuccess(false);
                 setError(null);
               }}
-              className="mt-6 h-11 w-full rounded-full bg-black text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+              className="mt-6 h-11 w-full rounded-full bg-accent-emerald text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong"
             >
               {uiCopy.auth.goToSignIn}
             </button>
@@ -144,7 +144,7 @@ export function AuthModal({
         ) : (
           <>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-emerald">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -188,7 +188,7 @@ export function AuthModal({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={uiCopy.auth.emailPlaceholder}
                   disabled={loading}
-                  className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-50"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-accent-emerald/30 focus:outline-none focus:ring-2 focus:ring-accent-emerald/10 disabled:opacity-50"
                 />
               </div>
               <div>
@@ -205,7 +205,7 @@ export function AuthModal({
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={mode === "sign-up" ? uiCopy.auth.signupPasswordPlaceholder : uiCopy.auth.loginPasswordPlaceholder}
                   disabled={loading}
-                  className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-50"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-accent-emerald/30 focus:outline-none focus:ring-2 focus:ring-accent-emerald/10 disabled:opacity-50"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export function AuthModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="h-11 w-full rounded-full bg-black text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+                className="h-11 w-full rounded-full bg-accent-emerald text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

@@ -161,7 +161,7 @@ export function FilterPanel({
                 className={clsx(
                   "flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-all duration-200",
                   filters.purpose === option
-                    ? "border-black bg-black/[0.03] font-medium text-ink"
+                    ? "border-accent-emerald/30 bg-accent-emerald-soft font-medium text-accent-emerald-strong"
                     : "border-line bg-white text-ink-secondary hover:border-line-strong hover:text-ink",
                 )}
               >
@@ -184,7 +184,7 @@ export function FilterPanel({
             id="provider"
             value={filters.provider ?? ""}
             onChange={(e) => update({ provider: e.target.value || null })}
-            className="h-11 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink transition-colors focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
+            className="h-11 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink transition-colors focus:border-accent-emerald/30 focus:outline-none focus:ring-2 focus:ring-accent-emerald/10"
           >
             <option value="">{messages.filters.allProviders}</option>
             {providers.map((p) => (

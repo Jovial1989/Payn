@@ -22,6 +22,9 @@
   "localeEnglish": "Englisch",
   "localeGerman": "Deutsch",
   "localeSpanish": "Spanisch",
+  "localeFrench": "Französisch",
+  "localeItalian": "Italienisch",
+  "localePortuguese": "Portugiesisch",
   "homeLiveRanking": "Live-Ranking",
   "homeHeroTitle": "Beste Optionen für dich",
   "homeTopPicksTitle": "Beste Treffer heute",
@@ -121,7 +124,7 @@
   "localeGateContinue": "Weiter",
   "localeGateSettingsHint": "Du kannst das jederzeit in deinem Profil ändern.",
   "exploreLiveRanking": "Live-Ranking",
-  "exploreBestOptions": "Beste Optionen für dich",
+  "exploreBestOptions": "Was brauchst du?",
   "exploreRankedOffersInMarket": "{count} bewertete Angebote in {market}",
   "@exploreRankedOffersInMarket": {
     "placeholders": {
@@ -143,10 +146,37 @@
   "exploreNoOffersTitle": "Keine Angebote passen zu deinen Filtern",
   "exploreNoOffersDescription": "Versuche, Filter zu löschen oder die Kategorie zu wechseln.",
   "exploreClearFilters": "Filter löschen",
+  "exploreFiltersTitle": "Filter",
+  "exploreMarketLabel": "Markt",
+  "exploreProviderLabel": "Anbieter",
+  "exploreFeatureLabel": "Merkmal",
+  "exploreSubtypeLabel": "Untertyp",
+  "exploreAmountLabel": "Betrag {amount}",
+  "@exploreAmountLabel": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "exploreTermLabel": "Laufzeit {months} Monate",
+  "@exploreTermLabel": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreApply": "Anwenden",
+  "exploreMarketIntelligenceTitle": "Marktintelligenz",
+  "exploreMarketIntelligenceSubtitle": "Beobachte den Live-Marktkontext, bevor du in Investmentprodukte wechselst.",
   "offerDecisionReviewed": "Geprüft",
   "offerOnRequest": "Auf Anfrage",
   "offerSave": "Speichern",
   "offerSaved": "Gespeichert",
+  "offerUnavailable": "Dieses Angebot ist nicht mehr verfügbar.",
+  "offerStrongMatch": "Starker Treffer",
+  "offerRatesTitle": "Konditionen",
+  "offerBenefitsTitle": "Vorteile",
+  "offerTradeoffsTitle": "Abwägungen",
   "navHome": "Start",
   "navExplore": "Entdecken",
   "navSaved": "Gespeichert",
@@ -193,6 +223,27 @@
   "providerLinkUnavailable": "Dieser Link ist nicht verfügbar.",
   "providerLinkCopied": "Konnte nicht automatisch öffnen. Link kopiert.",
   "providerLinkUnavailableSnackbar": "Dieser Anbieterlink ist gerade nicht verfügbar.",
+  "interestTravel": "Reisen",
+  "interestSavings": "Sparen",
+  "interestCrypto": "Krypto",
+  "interestInternationalTransfers": "Internationale Überweisungen",
+  "interestInvesting": "Investieren",
+  "interestInsurance": "Versicherung",
+  "interestEverydayBanking": "Alltägliches Banking",
+  "exploreSortBestMatch": "Beste Übereinstimmung",
+  "exploreSortLowestFee": "Niedrigste Gebühr",
+  "exploreSortFastest": "Am schnellsten",
+  "exploreSortRecommended": "Empfohlen",
+  "exploreMarketDataUnavailable": "Marktdaten sind vorübergehend nicht verfügbar. Versuche einen anderen Vermögenswert.",
+  "exploreMarketTrendsTitle": "Trends",
+  "exploreMarketInsightsTitle": "KI-Einblicke",
+  "exploreMarketRecommendationsTitle": "Empfohlene Aktionen",
+  "marketAssetSp500": "S&P 500",
+  "marketAssetGold": "Gold",
+  "marketAssetPriceSpot": "Spotpreis",
+  "marketAssetPriceIndex": "Indexstand",
+  "marketAssetPriceFx": "FX-Kurs",
+  "marketAssetPriceFutures": "Futures-Preis",
   "splashTagline": "Transparenz für deine Finanzen",
   "routerError": "Diese Seite konnte nicht geöffnet werden."
 }

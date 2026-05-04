@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
+import 'package:payn_mobile/core/localization/supported_languages.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
+import 'package:payn_mobile/shared/widgets/selection_bottom_sheet.dart';
 
 class LocaleGateScreen extends StatefulWidget {
   const LocaleGateScreen({super.key});
@@ -21,8 +23,22 @@ class LocaleGateScreen extends StatefulWidget {
 class _LocaleGateScreenState extends State<LocaleGateScreen> {
   PaynMarket? _selectedMarket;
   _AppLanguage? _selectedLanguage;
+  bool _initialized = false;
 
   bool get _ready => _selectedMarket != null && _selectedLanguage != null;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) {
+      return;
+    }
+
+    final controller = AppScope.of(context);
+    _selectedMarket = controller.preferences.market;
+    _selectedLanguage = _languageForCode(controller.preferences.languageCode);
+    _initialized = true;
+  }
 
   Future<void> _handleContinue() async {
     if (!_ready) return;
@@ -40,6 +56,13 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final selectedMarketValue = _selectedMarket?.localizedLabel(l10n);
+    String? selectedLanguageValue;
+    final selectedLanguage = _selectedLanguage;
+    if (selectedLanguage != null) {
+      selectedLanguageValue =
+          '${selectedLanguage.native} — ${selectedLanguage.localizedLabel(l10n)}';
+    }
 
     return Scaffold(
       backgroundColor: PaynColors.background,
@@ -115,10 +138,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               _SelectorField(
                 label: l10n.localeGateRegion,
                 hint: l10n.localeGateSelectCountry,
-                value:
-                    _selectedMarket == null
-                        ? null
-                        : _marketLabel(_selectedMarket!),
+                value: selectedMarketValue,
                 onTap: () => _showMarketPicker(context),
               ),
 
@@ -128,10 +148,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               _SelectorField(
                 label: l10n.localeGateLanguage,
                 hint: l10n.localeGateSelectLanguage,
-                value:
-                    _selectedLanguage == null
-                        ? null
-                        : '${_selectedLanguage!.native} — ${_selectedLanguage!.label}',
+                value: selectedLanguageValue,
                 onTap: () => _showLanguagePicker(context),
               ),
 
@@ -180,93 +197,73 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
   }
 
   void _showMarketPicker(BuildContext context) {
-    showModalBottomSheet<void>(
+    final controller = AppScope.of(context);
+    showPaynSelectionBottomSheet<PaynMarket>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: PaynColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return _PickerSheet(
-          title: context.l10n.localeGateSelectCountry,
-          items:
-              _supportedMarkets.map((entry) {
-                return _PickerItem(
-                  value: entry.market,
-                  flag: entry.flag,
-                  label: entry.label,
-                  selected: _selectedMarket == entry.market,
+      title: context.l10n.localeGateSelectCountry,
+      options:
+          controller.availableMarkets.map((market) {
+                final entry = _supportedMarkets.firstWhere(
+                  (item) => item.market == market,
+                  orElse: () => _MarketEntry(market: market, flag: market == PaynMarket.international ? '🌍' : market == PaynMarket.eu ? '🇪🇺' : market.name.toUpperCase()),
+                );
+                return SelectionSheetOption<PaynMarket>(
+                  value: market,
+                  leading: entry.flag,
+                  label: market.localizedLabel(context.l10n),
+                  selected: _selectedMarket == market,
                 );
               }).toList(),
-          onSelect: (value) {
-            HapticFeedback.selectionClick();
-            final market = value as PaynMarket;
-            final controller = AppScope.of(context);
-            unawaited(
-              controller.analytics.track(
-                AnalyticsEvents.regionSelected,
-                properties: controller.analytics.buildDefaultProperties(
-                  preferences: controller.preferences,
-                  loggedIn: controller.isAuthenticated,
-                  country: market.name,
-                  language:
-                      _selectedLanguage?.code ??
-                      controller.preferences.languageCode,
-                ),
-              ),
-            );
-            setState(() => _selectedMarket = market);
-            Navigator.of(ctx).pop();
-          },
+      onSelected: (market) {
+        HapticFeedback.selectionClick();
+        unawaited(
+          controller.analytics.track(
+            AnalyticsEvents.regionSelected,
+            properties: controller.analytics.buildDefaultProperties(
+              preferences: controller.preferences,
+              loggedIn: controller.isAuthenticated,
+              country: market.name,
+              language:
+                  _selectedLanguage?.code ?? controller.preferences.languageCode,
+            ),
+          ),
         );
+        setState(() => _selectedMarket = market);
       },
     );
   }
 
   void _showLanguagePicker(BuildContext context) {
-    showModalBottomSheet<void>(
+    final controller = AppScope.of(context);
+    showPaynSelectionBottomSheet<_AppLanguage>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: PaynColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return _PickerSheet(
-          title: context.l10n.localeGateSelectLanguage,
-          items:
-              _languages.map((lang) {
-                return _PickerItem(
-                  value: lang,
-                  flag: lang.flag,
-                  label: '${lang.native} — ${lang.label}',
-                  selected: _selectedLanguage == lang,
-                );
-              }).toList(),
-          onSelect: (value) {
-            HapticFeedback.selectionClick();
-            final language = value as _AppLanguage;
-            final controller = AppScope.of(context);
-            unawaited(
-              controller.analytics.track(
-                AnalyticsEvents.languageSelected,
-                properties: controller.analytics.buildDefaultProperties(
-                  preferences: controller.preferences,
-                  loggedIn: controller.isAuthenticated,
-                  country:
-                      _selectedMarket?.name ??
-                      controller.preferences.market.name,
-                  language: language.code,
-                ),
-              ),
+      title: context.l10n.localeGateSelectLanguage,
+      options:
+          controller.availableLanguages.map((item) {
+            final language = _languageForCode(item.code) ?? _AppLanguage(code: item.code, native: item.native, flag: '');
+            return SelectionSheetOption<_AppLanguage>(
+              value: language,
+              leading: language.flag,
+              label:
+                  '${language.native} — ${language.localizedLabel(context.l10n)}',
+              selected: _selectedLanguage?.code == language.code,
             );
-            setState(() => _selectedLanguage = language);
-            Navigator.of(ctx).pop();
-          },
+          }).toList(),
+      onSelected: (language) async {
+        HapticFeedback.selectionClick();
+        unawaited(
+          controller.analytics.track(
+            AnalyticsEvents.languageSelected,
+            properties: controller.analytics.buildDefaultProperties(
+              preferences: controller.preferences,
+              loggedIn: controller.isAuthenticated,
+              country: _selectedMarket?.name ?? controller.preferences.market.name,
+              language: language.code,
+            ),
+          ),
         );
+        setState(() => _selectedLanguage = language);
+        await controller.setLocale(language.code);
       },
     );
   }
@@ -280,180 +277,66 @@ class _MarketEntry {
   const _MarketEntry({
     required this.market,
     required this.flag,
-    required this.label,
   });
   final PaynMarket market;
   final String flag;
-  final String label;
 }
 
 const _supportedMarkets = <_MarketEntry>[
-  _MarketEntry(market: PaynMarket.de, flag: '🇩🇪', label: 'Germany'),
-  _MarketEntry(market: PaynMarket.es, flag: '🇪🇸', label: 'Spain'),
-  _MarketEntry(market: PaynMarket.it, flag: '🇮🇹', label: 'Italy'),
-  _MarketEntry(market: PaynMarket.fr, flag: '🇫🇷', label: 'France'),
-  _MarketEntry(market: PaynMarket.uk, flag: '🇬🇧', label: 'United Kingdom'),
-  _MarketEntry(market: PaynMarket.nl, flag: '🇳🇱', label: 'Netherlands'),
-  _MarketEntry(market: PaynMarket.pt, flag: '🇵🇹', label: 'Portugal'),
-  _MarketEntry(market: PaynMarket.eu, flag: '🇪🇺', label: 'All Europe'),
-  _MarketEntry(
-    market: PaynMarket.international,
-    flag: '🌍',
-    label: 'International',
-  ),
+  _MarketEntry(market: PaynMarket.de, flag: '🇩🇪'),
+  _MarketEntry(market: PaynMarket.es, flag: '🇪🇸'),
+  _MarketEntry(market: PaynMarket.it, flag: '🇮🇹'),
+  _MarketEntry(market: PaynMarket.fr, flag: '🇫🇷'),
+  _MarketEntry(market: PaynMarket.uk, flag: '🇬🇧'),
+  _MarketEntry(market: PaynMarket.nl, flag: '🇳🇱'),
+  _MarketEntry(market: PaynMarket.pt, flag: '🇵🇹'),
+  _MarketEntry(market: PaynMarket.eu, flag: '🇪🇺'),
+  _MarketEntry(market: PaynMarket.international, flag: '🌍'),
 ];
-
-String _marketLabel(PaynMarket market) {
-  return _supportedMarkets.firstWhere((e) => e.market == market).label;
-}
 
 class _AppLanguage {
   const _AppLanguage({
     required this.code,
-    required this.label,
     required this.native,
     required this.flag,
   });
   final String code;
-  final String label;
   final String native;
   final String flag;
-}
 
-const _languages = <_AppLanguage>[
-  _AppLanguage(code: 'en', label: 'English', native: 'English', flag: '🇬🇧'),
-  _AppLanguage(code: 'de', label: 'German', native: 'Deutsch', flag: '🇩🇪'),
-  _AppLanguage(code: 'es', label: 'Spanish', native: 'Español', flag: '🇪🇸'),
-  _AppLanguage(code: 'fr', label: 'French', native: 'Français', flag: '🇫🇷'),
-  _AppLanguage(code: 'it', label: 'Italian', native: 'Italiano', flag: '🇮🇹'),
-  _AppLanguage(
-    code: 'pt',
-    label: 'Portuguese',
-    native: 'Português',
-    flag: '🇵🇹',
-  ),
-];
-
-// ─────────────────────────────────────────────────
-// Shared picker sheet
-// ─────────────────────────────────────────────────
-
-class _PickerItem {
-  const _PickerItem({
-    required this.value,
-    required this.flag,
-    required this.label,
-    required this.selected,
-  });
-  final Object value;
-  final String flag;
-  final String label;
-  final bool selected;
-}
-
-class _PickerSheet extends StatelessWidget {
-  const _PickerSheet({
-    required this.title,
-    required this.items,
-    required this.onSelect,
-  });
-  final String title;
-  final List<_PickerItem> items;
-  final void Function(Object value) onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) {
-        return Column(
-          children: <Widget>[
-            const SizedBox(height: 12),
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: PaynColors.outline,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(title, style: theme.textTheme.titleLarge),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return _PickerRow(
-                    item: item,
-                    onTap: () => onSelect(item.value),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  String localizedLabel(dynamic l10n) {
+    switch (code) {
+      case 'de':
+        return l10n.localeGerman;
+      case 'es':
+        return l10n.localeSpanish;
+      case 'fr':
+        return l10n.localeFrench;
+      case 'it':
+        return l10n.localeItalian;
+      case 'pt':
+        return l10n.localePortuguese;
+      case 'en':
+      default:
+        return l10n.localeEnglish;
+    }
   }
 }
 
-class _PickerRow extends StatelessWidget {
-  const _PickerRow({required this.item, required this.onTap});
-  final _PickerItem item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        margin: const EdgeInsets.only(bottom: 4),
-        decoration: BoxDecoration(
-          color: item.selected ? PaynColors.text : PaynColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: item.selected ? PaynColors.text : PaynColors.outline,
+final List<_AppLanguage> _languages =
+    supportedLanguageOptions
+        .map(
+          (language) => _AppLanguage(
+            code: language.code,
+            native: language.native,
+            flag: language.flag ?? '',
           ),
-        ),
-        child: Row(
-          children: <Widget>[
-            Text(item.flag, style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                item.label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: item.selected ? PaynColors.surface : PaynColors.text,
-                ),
-              ),
-            ),
-            if (item.selected)
-              const Icon(
-                Icons.check_rounded,
-                size: 18,
-                color: PaynColors.surface,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+        )
+        .toList(growable: false);
+
+_AppLanguage? _languageForCode(String code) {
+  final normalized = normalizeSupportedLanguageCode(code);
+  return _languages.where((language) => language.code == normalized).firstOrNull;
 }
 
 // ─────────────────────────────────────────────────

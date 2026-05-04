@@ -67,7 +67,7 @@ export function LocaleGate() {
       <div className="relative w-full max-w-md rounded-[28px] border border-[#EAEAEA] bg-white p-8 shadow-[0_24px_64px_rgba(0,0,0,0.18)]">
         {/* Logo mark */}
         <div className="mb-7 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-emerald">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path
                 d="M4 12L8 4L12 12"
@@ -98,7 +98,7 @@ export function LocaleGate() {
               <select
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
-                className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] focus:ring-0"
+                className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-accent-emerald/30 focus:shadow-[0_0_0_3px_rgba(15,138,75,0.10)] focus:ring-0"
               >
                 <option value="" disabled>
                   {messages.localeGate.regionPlaceholder}
@@ -122,7 +122,7 @@ export function LocaleGate() {
               <select
                 value={selectedLocale}
                 onChange={(e) => setSelectedLocale(e.target.value as MarketplaceLocale)}
-                className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] focus:ring-0"
+                className="h-[52px] w-full appearance-none rounded-[16px] border border-[#EAEAEA] bg-white pl-4 pr-10 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 focus:border-accent-emerald/30 focus:shadow-[0_0_0_3px_rgba(15,138,75,0.10)] focus:ring-0"
               >
                 <option value="" disabled>
                   {messages.localeGate.languagePlaceholder}
@@ -143,7 +143,7 @@ export function LocaleGate() {
           type="button"
           onClick={handleContinue}
           disabled={!ready}
-          className="mt-6 h-[52px] w-full rounded-[16px] bg-black text-sm font-semibold text-white transition-all duration-200 hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-35"
+          className="mt-6 h-[52px] w-full rounded-[16px] bg-accent-emerald text-sm font-semibold text-white transition-all duration-200 hover:bg-accent-emerald-strong disabled:cursor-not-allowed disabled:opacity-35"
         >
           {messages.localeGate.continue}
         </button>

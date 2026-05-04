@@ -46,12 +46,12 @@ export function ExplorePageContent({
         </div>
       </section>
 
-      <section className="rounded-[32px] border border-line bg-[#101717] p-6 text-white shadow-card sm:p-8">
+      <section className="rounded-[32px] border border-line bg-white p-6 text-ink shadow-card sm:p-8">
         <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">{copy.explorePromo.mobileEyebrow}</p>
-            <h2 className="mt-3 text-h2 text-white">{copy.explorePromo.mobileTitle}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/70">
+          <div className="rounded-[28px] border border-line bg-bg-surface p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.explorePromo.mobileEyebrow}</p>
+            <h2 className="mt-3 text-h2 text-ink">{copy.explorePromo.mobileTitle}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
               {copy.explorePromo.mobileDescription}
             </p>
           </div>
@@ -59,13 +59,13 @@ export function ExplorePageContent({
           <div>
             <div className="grid gap-3">
               {copy.explorePromo.mobileBullets.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-2xl bg-white/[0.04] px-4 py-3">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-emerald-300">
+                <div key={item} className="flex items-start gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-subtle">
+                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-emerald-soft">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-accent-emerald">
                       <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <p className="text-sm leading-relaxed text-white/80">{item}</p>
+                  <p className="text-sm leading-relaxed text-ink-secondary">{item}</p>
                 </div>
               ))}
             </div>

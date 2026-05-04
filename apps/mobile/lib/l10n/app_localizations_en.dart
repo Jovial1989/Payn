@@ -334,7 +334,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreLiveRanking => 'Live ranking';
 
   @override
-  String get exploreBestOptions => 'Best options for you';
+  String get exploreBestOptions => 'What do you need?';
 
   @override
   String exploreRankedOffersInMarket(int count, Object market) {
@@ -366,6 +366,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreClearFilters => 'Clear filters';
 
   @override
+  String get exploreFiltersTitle => 'Filters';
+
+  @override
+  String get exploreMarketLabel => 'Market';
+
+  @override
+  String get exploreProviderLabel => 'Provider';
+
+  @override
+  String get exploreFeatureLabel => 'Feature';
+
+  @override
+  String get exploreSubtypeLabel => 'Subtype';
+
+  @override
+  String exploreAmountLabel(Object amount) {
+    return 'Amount $amount';
+  }
+
+  @override
+  String exploreTermLabel(int months) {
+    return 'Term $months months';
+  }
+
+  @override
+  String get exploreApply => 'Apply';
+
+  @override
+  String get exploreMarketIntelligenceTitle => 'Market intelligence';
+
+  @override
+  String get exploreMarketIntelligenceSubtitle =>
+      'Track live market context before moving into investment products.';
+
+  @override
   String get offerDecisionReviewed => 'Reviewed';
 
   @override
@@ -376,6 +411,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get offerSaved => 'Saved';
+
+  @override
+  String get offerUnavailable => 'Offer no longer available.';
+
+  @override
+  String get offerStrongMatch => 'Strong match';
+
+  @override
+  String get offerRatesTitle => 'Rates';
+
+  @override
+  String get offerBenefitsTitle => 'Benefits';
+
+  @override
+  String get offerTradeoffsTitle => 'Tradeoffs';
 
   @override
   String get navHome => 'Home';
@@ -398,7 +448,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeActivityTitle => 'Your financial activity';
 
   @override
-  String get homeActivitySubtitle => 'Track views, shortlist momentum, and clicks over time.';
+  String get homeActivitySubtitle =>
+      'Track views, shortlist momentum, and clicks over time.';
 
   @override
   String get homeActivityTotalViews => 'Total views';
@@ -461,7 +512,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offerDetailsPlatform => 'Platform details';
 
   @override
-  String providerOpeningTitle(Object provider) => 'Opening $provider';
+  String providerOpeningTitle(Object provider) {
+    return 'Opening $provider';
+  }
 
   @override
   String get providerLeavingDescription => 'You are leaving Payn to continue';
@@ -482,10 +535,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerLinkUnavailable => 'Provider link is unavailable.';
 
   @override
-  String get providerLinkCopied => 'Could not open automatically. URL copied to clipboard.';
+  String get providerLinkCopied =>
+      'Could not open automatically. URL copied to clipboard.';
 
   @override
-  String get providerLinkUnavailableSnackbar => 'This provider link is unavailable right now.';
+  String get providerLinkUnavailableSnackbar =>
+      'This provider link is unavailable right now.';
+
+  @override
+  String get interestTravel => 'Travel';
+
+  @override
+  String get interestSavings => 'Savings';
+
+  @override
+  String get interestCrypto => 'Crypto';
+
+  @override
+  String get interestInternationalTransfers => 'International transfers';
+
+  @override
+  String get interestInvesting => 'Investing';
+
+  @override
+  String get interestInsurance => 'Insurance';
+
+  @override
+  String get interestEverydayBanking => 'Everyday banking';
+
+  @override
+  String get exploreSortBestMatch => 'Best match';
+
+  @override
+  String get exploreSortLowestFee => 'Lowest fee';
+
+  @override
+  String get exploreSortFastest => 'Fastest';
+
+  @override
+  String get exploreSortRecommended => 'Recommended';
+
+  @override
+  String get exploreMarketDataUnavailable =>
+      'Market data is temporarily unavailable. Try another asset.';
+
+  @override
+  String get exploreMarketTrendsTitle => 'Trends';
+
+  @override
+  String get exploreMarketInsightsTitle => 'AI insights';
+
+  @override
+  String get exploreMarketRecommendationsTitle => 'Recommended actions';
+
+  @override
+  String get marketAssetSp500 => 'S&P 500';
+
+  @override
+  String get marketAssetGold => 'Gold';
+
+  @override
+  String get marketAssetPriceSpot => 'Spot price';
+
+  @override
+  String get marketAssetPriceIndex => 'Index level';
+
+  @override
+  String get marketAssetPriceFx => 'FX rate';
+
+  @override
+  String get marketAssetPriceFutures => 'Futures price';
 
   @override
   String get splashTagline => 'Move money with more clarity';

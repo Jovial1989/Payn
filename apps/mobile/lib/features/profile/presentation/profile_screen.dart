@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
+import 'package:payn_mobile/core/localization/supported_languages.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
@@ -11,6 +12,7 @@ import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
+import 'package:payn_mobile/shared/widgets/selection_bottom_sheet.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -70,7 +72,10 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _SettingRow(
                   label: l10n.profileLanguage,
-                  value: _languageLabel(preferences.languageCode),
+                  value: _languageLabel(
+                    normalizeSupportedLanguageCode(preferences.languageCode),
+                    l10n,
+                  ),
                   icon: Icons.translate_rounded,
                   onTap: () => _showLanguageSheet(context, controller),
                 ),
@@ -96,7 +101,7 @@ class ProfileScreen extends StatelessWidget {
                     final selected = preferences.interests.contains(entry.key);
                     return FilterChip(
                       selected: selected,
-                      label: Text(entry.value),
+                      label: Text(localizedInterestLabel(entry.key, context.l10n)),
                       onSelected: (_) {
                         final next = List<String>.from(preferences.interests);
                         if (selected) {
@@ -186,29 +191,22 @@ class ProfileScreen extends StatelessWidget {
     dynamic controller,
   ) async {
     final preferences = controller.preferences;
-    await showModalBottomSheet<void>(
+    await showPaynSelectionBottomSheet<PaynMarket>(
       context: context,
-      useSafeArea: true,
-      builder:
-          (sheetContext) => _SelectionSheet<PaynMarket>(
-            title: context.l10n.profileChooseRegion,
-            options:
-                PaynMarket.values
-                    .map(
-                      (market) => _SelectionOption<PaynMarket>(
-                        value: market,
-                        label: market.localizedLabel(context.l10n),
-                        selected: preferences.market == market,
-                      ),
-                    )
-                    .toList(),
-            onSelected: (market) {
-              controller.updatePreferences(
-                preferences.copyWith(market: market),
-              );
-              Navigator.of(sheetContext).pop();
-            },
-          ),
+      title: context.l10n.profileChooseRegion,
+      options:
+          controller.availableMarkets
+              .map(
+                (market) => SelectionSheetOption<PaynMarket>(
+                  value: market,
+                  label: market.localizedLabel(context.l10n),
+                  selected: preferences.market == market,
+                ),
+              )
+              .toList(),
+      onSelected: (market) async {
+        await controller.setMarket(market);
+      },
     );
   }
 
@@ -217,37 +215,32 @@ class ProfileScreen extends StatelessWidget {
     dynamic controller,
   ) async {
     final preferences = controller.preferences;
-    await showModalBottomSheet<void>(
+    await showPaynSelectionBottomSheet<String>(
       context: context,
-      useSafeArea: true,
-      builder:
-          (sheetContext) => _SelectionSheet<String>(
-            title: context.l10n.profileChooseLanguage,
-            options:
-                _languages
-                    .map(
-                      (language) => _SelectionOption<String>(
-                        value: language.code,
-                        label: '${language.native} - ${language.label}',
-                        selected: preferences.languageCode == language.code,
-                      ),
-                    )
-                    .toList(),
-            onSelected: (code) {
-              controller.updatePreferences(
-                preferences.copyWith(languageCode: code),
-              );
-              Navigator.of(sheetContext).pop();
-            },
-          ),
+      title: context.l10n.profileChooseLanguage,
+      options:
+          controller.availableLanguages
+              .map(
+                (language) => SelectionSheetOption<String>(
+                  value: language.code,
+                  label: _languageLabel(language.code, context.l10n),
+                  selected:
+                      normalizeSupportedLanguageCode(preferences.languageCode) ==
+                      language.code,
+                ),
+              )
+              .toList(),
+      onSelected: (code) async {
+        await controller.setLocale(code);
+      },
     );
   }
 
-  String _languageLabel(String code) {
+  String _languageLabel(String code, dynamic l10n) {
     final match =
-        _languages.where((language) => language.code == code).firstOrNull;
+        supportedLanguageOptions.where((language) => language.code == code).firstOrNull;
     if (match == null) return code.toUpperCase();
-    return '${match.native} - ${match.label}';
+    return '${match.native} - ${match.localizedLabel(l10n)}';
   }
 }
 
@@ -443,97 +436,32 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _SelectionSheet<T> extends StatelessWidget {
-  const _SelectionSheet({
-    required this.title,
-    required this.options,
-    required this.onSelected,
-  });
+class _LanguageOption {
+  const _LanguageOption(this.code, this.native);
 
-  final String title;
-  final List<_SelectionOption<T>> options;
-  final ValueChanged<T> onSelected;
+  final String code;
+  final String native;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(title, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 14),
-          ...options.map(
-            (option) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Material(
-                color:
-                    option.selected
-                        ? PaynColors.accentSurface
-                        : PaynColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(18),
-                child: InkWell(
-                  onTap: () => onSelected(option.value),
-                  borderRadius: BorderRadius.circular(18),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            option.label,
-                            style: theme.textTheme.labelLarge,
-                          ),
-                        ),
-                        if (option.selected)
-                          const Icon(
-                            Icons.check_rounded,
-                            color: PaynColors.accent,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String localizedLabel(dynamic l10n) {
+    switch (code) {
+      case 'de':
+        return l10n.localeGerman;
+      case 'es':
+        return l10n.localeSpanish;
+      case 'fr':
+        return l10n.localeFrench;
+      case 'it':
+        return l10n.localeItalian;
+      case 'pt':
+        return l10n.localePortuguese;
+      case 'en':
+      default:
+        return l10n.localeEnglish;
+    }
   }
 }
 
-class _SelectionOption<T> {
-  const _SelectionOption({
-    required this.value,
-    required this.label,
-    required this.selected,
-  });
-
-  final T value;
-  final String label;
-  final bool selected;
-}
-
-class _LanguageOption {
-  const _LanguageOption(this.code, this.label, this.native);
-
-  final String code;
-  final String label;
-  final String native;
-}
-
-const List<_LanguageOption> _languages = <_LanguageOption>[
-  _LanguageOption('en', 'English', 'English'),
-  _LanguageOption('de', 'German', 'Deutsch'),
-  _LanguageOption('es', 'Spanish', 'Espanol'),
-  _LanguageOption('fr', 'French', 'Francais'),
-  _LanguageOption('it', 'Italian', 'Italiano'),
-  _LanguageOption('pt', 'Portuguese', 'Portugues'),
-];
+final List<_LanguageOption> _languages =
+    supportedLanguageOptions
+        .map((language) => _LanguageOption(language.code, language.native))
+        .toList(growable: false);

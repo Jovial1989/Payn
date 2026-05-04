@@ -124,7 +124,7 @@
   "localeGateContinue": "Continue",
   "localeGateSettingsHint": "You can change this at any time from your profile.",
   "exploreLiveRanking": "Live ranking",
-  "exploreBestOptions": "What do you need?",
+  "exploreBestOptions": "De quoi avez-vous besoin ?",
   "exploreRankedOffersInMarket": "{count} ranked offers in {market}",
   "@exploreRankedOffersInMarket": {
     "placeholders": {

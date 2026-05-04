@@ -233,7 +233,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
         >
           <div className="grid gap-4 lg:grid-cols-3">
             {bestOffers.map((item, index) => (
-              <OfferCard key={item.offer.id} offer={item.offer} rank={index + 1} locale={preferences.locale} variant="dark" />
+              <OfferCard key={item.offer.id} offer={item.offer} rank={index + 1} locale={preferences.locale} />
             ))}
           </div>
         </DashboardSectionCard>
@@ -245,10 +245,10 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
         >
           <div className="grid gap-4 lg:grid-cols-2">
             {(watchedOffers.length > 0 ? watchedOffers : savedOffers).slice(0, 2).map((offer, index) => (
-              <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} variant="dark" />
+              <OfferCard key={offer.id} offer={offer} rank={index + 1} locale={preferences.locale} />
             ))}
             {watchedOffers.length === 0 && savedOffers.length === 0 ? (
-              <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.04] p-6 text-sm leading-relaxed text-slate-400">
+              <div className="rounded-[24px] border border-dashed border-line bg-bg-surface p-6 text-sm leading-relaxed text-ink-secondary">
                 Save or open offers to build your shortlist.
               </div>
             ) : null}
@@ -293,9 +293,9 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
                 { label: "Viewed", value: watchedOffers.length },
                 { label: "Suggestions", value: bestOffers.length },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-md">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{stat.label}</p>
-                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-slate-100">{stat.value}</p>
+                <div key={stat.label} className="rounded-[24px] border border-line bg-white px-5 py-4 shadow-card">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{stat.label}</p>
+                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-ink">{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -312,15 +312,15 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
               <Link
                 key={category}
                 href={dashboardHref(category)}
-                className="group rounded-[24px] border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-cyan-300/25 hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
+                className="group rounded-[24px] border border-line bg-white px-5 py-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-accent-emerald/20 hover:shadow-elevated"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                   {categoryCounts[category]} offers
                 </p>
-                <p className="mt-2 text-lg font-bold tracking-[-0.03em] text-slate-100">
+                <p className="mt-2 text-lg font-bold tracking-[-0.03em] text-ink">
                   {dictionary.categories[category]}
                 </p>
-                <p className="mt-3 text-sm font-semibold text-cyan-200 transition-colors group-hover:text-cyan-100">
+                <p className="mt-3 text-sm font-semibold text-accent-emerald transition-colors group-hover:text-accent-emerald-strong">
                   Explore {dictionary.categories[category].toLowerCase()} &rarr;
                 </p>
               </Link>

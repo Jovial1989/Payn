@@ -31,6 +31,7 @@ export function ProviderLinkButton({
   const { country, language } = useMarketplacePreferences();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [toast, setToast] = useState<string | null>(null);
+  const [opening, setOpening] = useState(false);
   const unavailableMessage =
     language === "de"
       ? "Dieser Anbieterlink ist derzeit nicht verfügbar."
@@ -62,13 +63,17 @@ export function ProviderLinkButton({
   }, [toast]);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (opening) return;
+
     if (!resolvedUrl) {
-      e.preventDefault();
       setToast(unavailableMessage);
       return;
     }
 
+    setOpening(true);
     const openedWindow = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+    window.setTimeout(() => setOpening(false), 700);
     if (!openedWindow) {
       setToast(unavailableMessage);
       return;
@@ -129,7 +134,7 @@ export function ProviderLinkButton({
         type="button"
         onClick={handleClick}
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
-        disabled={!resolvedUrl}
+        disabled={!resolvedUrl || opening}
       >
         <svg
           width="16"

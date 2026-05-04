@@ -145,11 +145,11 @@ function formatCurrency(locale: MarketplaceLocale, value: number, currency = "EU
 }
 
 function fieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-accent-emerald/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px]";
 }
 
 function amountFieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-[22px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-black/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px] sm:text-[26px]";
+  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-white px-4 text-[22px] font-bold tracking-[-0.05em] text-ink shadow-[0_8px_24px_rgba(17,24,39,0.04)] outline-none transition-all duration-200 focus:-translate-y-0.5 focus:border-accent-emerald/15 focus:bg-[#FCFCFD] focus:shadow-[0_14px_30px_rgba(17,24,39,0.08)] sm:h-14 sm:rounded-[20px] sm:text-[26px]";
 }
 
 function MiniField({
@@ -1128,7 +1128,7 @@ export function DashboardDiscoverWorkspace({
               className={clsx(
                 "group rounded-[28px] border px-5 py-5 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.985]",
                 selectedGoal === goal
-                  ? "border-black bg-[#111111] text-white"
+                  ? "border-accent-emerald bg-accent-emerald text-white"
                   : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
               )}
             >
@@ -1136,14 +1136,14 @@ export function DashboardDiscoverWorkspace({
                 <CategoryIcon
                   category={goal}
                   size="lg"
-                  className={selectedGoal === goal ? "border-white/10 bg-white/10 text-white shadow-none" : ""}
+                  className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
                 />
                 <div className="min-w-0">
                   <p className="text-base font-semibold tracking-[-0.02em]">{getGoalLabel(locale, goal)}</p>
                   <p
                     className={clsx(
                       "mt-2 max-w-[22rem] text-sm leading-relaxed",
-                      selectedGoal === goal ? "text-white/72" : "text-ink-secondary",
+                      selectedGoal === goal ? "text-white/80" : "text-ink-secondary",
                     )}
                   >
                     {getGoalDescription(locale, goal)}

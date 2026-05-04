@@ -109,43 +109,47 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return AppScope(
       controller: widget.controller,
-      child: MaterialApp.router(
-        title: 'Payn',
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.light,
-        theme: buildAppTheme(),
-        darkTheme: buildAppTheme(),
-        locale: Locale(widget.controller.preferences.languageCode),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        routerConfig: widget._router,
-        localeResolutionCallback: (locale, supportedLocales) {
-          if (locale == null) {
-            return const Locale('en');
-          }
-          for (final supported in supportedLocales) {
-            if (supported.languageCode == locale.languageCode) {
-              return supported;
-            }
-          }
-          return const Locale('en');
-        },
-        // Wrap every page in the splash overlay so it fades from app launch.
-        builder: (context, child) {
-          return Stack(
-            children: <Widget>[
-              child ?? _SplashScreen(scale: _splashScale),
-              if (!_splashDone)
-                FadeTransition(
-                  opacity: ReverseAnimation(_splashOpacity),
-                  child: _SplashScreen(scale: _splashScale),
-                ),
+      child: AnimatedBuilder(
+        animation: widget.controller,
+        builder: (context, _) {
+          return MaterialApp.router(
+            title: 'Payn',
+            debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.light,
+            theme: buildAppTheme(),
+            darkTheme: buildAppTheme(),
+            locale: Locale(widget.controller.languageCode),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
+            routerConfig: widget._router,
+            localeResolutionCallback: (locale, supportedLocales) {
+              if (locale == null) {
+                return const Locale('en');
+              }
+              for (final supported in supportedLocales) {
+                if (supported.languageCode == locale.languageCode) {
+                  return supported;
+                }
+              }
+              return const Locale('en');
+            },
+            builder: (context, child) {
+              return Stack(
+                children: <Widget>[
+                  child ?? _SplashScreen(scale: _splashScale),
+                  if (!_splashDone)
+                    FadeTransition(
+                      opacity: ReverseAnimation(_splashOpacity),
+                      child: _SplashScreen(scale: _splashScale),
+                    ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -206,7 +210,7 @@ class _SplashScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          AppLocalizations.of(context)?.splashTagline ?? 'Move money with more clarity',
+          AppLocalizations.of(context)?.splashTagline ?? '',
           style: const TextStyle(
             fontFamily: 'Manrope',
             fontSize: 13,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:payn_mobile/core/localization/supported_languages.dart';
 import 'package:payn_mobile/core/storage/local_store.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
@@ -10,6 +11,7 @@ import 'package:payn_mobile/shared/services/dashboard_analytics_service.dart';
 import 'package:payn_mobile/shared/services/local_auth_repository.dart';
 import 'package:payn_mobile/shared/services/local_marketplace_repository.dart';
 import 'package:payn_mobile/shared/services/market_intelligence_service.dart';
+import 'package:payn_mobile/shared/services/marketplace_catalog_service.dart';
 
 class AppController extends ChangeNotifier {
   AppController({
@@ -19,6 +21,7 @@ class AppController extends ChangeNotifier {
     required this.analytics,
     required this.dashboardAnalyticsService,
     required this.marketIntelligenceService,
+    required this.catalogService,
   });
 
   static const String _preferencesKey = 'payn.mobile.preferences';
@@ -26,6 +29,7 @@ class AppController extends ChangeNotifier {
   static const String _recentKey = 'payn.mobile.recent';
   static const String _compareKey = 'payn.mobile.compare';
   static const String _localeGateKey = 'payn.mobile.locale_gate_done';
+  static const String _catalogKey = 'payn.mobile.catalog_manifest';
 
   final LocalStore store;
   final LocalAuthRepository authRepository;
@@ -33,6 +37,7 @@ class AppController extends ChangeNotifier {
   final AnalyticsService analytics;
   final DashboardAnalyticsService dashboardAnalyticsService;
   final MarketIntelligenceService marketIntelligenceService;
+  final MarketplaceCatalogService catalogService;
 
   UserSession _session = const UserSession.guest();
   ProfilePreferences _preferences = ProfilePreferences.defaults();
@@ -42,6 +47,7 @@ class AppController extends ChangeNotifier {
   List<String> _recentOfferIds = <String>[];
   List<String> _compareOfferIds = <String>[];
   bool _localeGateDone = false;
+  MarketplaceCatalogManifest? _catalogManifest;
 
   UserSession get session => _session;
   ProfilePreferences get preferences => _preferences;
@@ -49,6 +55,30 @@ class AppController extends ChangeNotifier {
   PaynCategory? get selectedExploreCategory => _selectedExploreCategory;
   bool get isAuthenticated => _session.isAuthenticated;
   bool get localeGateDone => _localeGateDone;
+  String get languageCode => _preferences.languageCode;
+  MarketplaceCatalogManifest? get catalogManifest => _catalogManifest;
+  List<CatalogLanguageOption> get availableLanguages =>
+      _catalogManifest?.languages ??
+      const <CatalogLanguageOption>[
+        CatalogLanguageOption(code: 'en', native: 'English'),
+        CatalogLanguageOption(code: 'de', native: 'Deutsch'),
+        CatalogLanguageOption(code: 'es', native: 'Espanol'),
+        CatalogLanguageOption(code: 'fr', native: 'Francais'),
+        CatalogLanguageOption(code: 'it', native: 'Italiano'),
+        CatalogLanguageOption(code: 'pt', native: 'Portugues'),
+      ];
+  List<PaynMarket> get availableMarkets {
+    final countries =
+        _catalogManifest?.countries ?? const <CatalogCountryOption>[];
+    final values = <PaynMarket>[];
+    for (final country in countries) {
+      final market = paynMarketFromCode(country.value);
+      if (market != null && !values.contains(market)) {
+        values.add(market);
+      }
+    }
+    return values.isEmpty ? PaynMarket.values : values;
+  }
 
   Future<void> restore() async {
     _session = await authRepository.restoreSession();
@@ -58,6 +88,11 @@ class AppController extends ChangeNotifier {
       try {
         _preferences = ProfilePreferences.fromJson(
           jsonDecode(rawPreferences) as Map<String, dynamic>,
+        );
+        _preferences = _preferences.copyWith(
+          languageCode: normalizeSupportedLanguageCode(
+            _preferences.languageCode,
+          ),
         );
       } catch (_) {
         _preferences = ProfilePreferences.defaults();
@@ -73,9 +108,48 @@ class AppController extends ChangeNotifier {
 
     final localeGateRaw = await store.readString(_localeGateKey);
     _localeGateDone = localeGateRaw == '1';
+    await _restoreCatalogManifest();
     await analytics.setUserId(_session.isAuthenticated ? _session.email : null);
 
     notifyListeners();
+  }
+
+  Future<void> _restoreCatalogManifest() async {
+    final cachedCatalog = await store.readString(_catalogKey);
+    if (cachedCatalog != null && cachedCatalog.isNotEmpty) {
+      try {
+        _catalogManifest = MarketplaceCatalogManifest.fromJson(
+          jsonDecode(cachedCatalog) as Map<String, dynamic>,
+        );
+        marketplaceRepository.replaceOffers(_catalogManifest!.offers);
+      } catch (_) {}
+    }
+
+    try {
+      final manifest = await catalogService.fetchCatalog();
+      _catalogManifest = manifest;
+      marketplaceRepository.replaceOffers(manifest.offers);
+      await store.saveString(
+        _catalogKey,
+        catalogService.encodeCatalog(manifest),
+      );
+    } catch (_) {
+      _catalogManifest ??= MarketplaceCatalogManifest(
+        generatedAt: DateTime.now().toUtc().toIso8601String(),
+        languages: availableLanguages,
+        countries: const <CatalogCountryOption>[],
+        categories: const <String>[
+          'loans',
+          'cards',
+          'transfers',
+          'exchange',
+          'insurance',
+          'investments',
+        ],
+        offers: marketplaceRepository.fallbackOffers,
+      );
+      marketplaceRepository.replaceOffers(_catalogManifest!.offers);
+    }
   }
 
   Future<void> completeLocaleGate({
@@ -83,19 +157,33 @@ class AppController extends ChangeNotifier {
     required String language,
   }) async {
     _preferences = _preferences.copyWith(
-      languageCode: language,
+      languageCode: normalizeSupportedLanguageCode(language),
       market: market,
     );
     _localeGateDone = true;
+    notifyListeners();
     await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
     await store.saveString(_localeGateKey, '1');
-    notifyListeners();
   }
 
   Future<void> updatePreferences(ProfilePreferences next) async {
-    _preferences = next;
-    await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
+    _preferences = next.copyWith(
+      languageCode: normalizeSupportedLanguageCode(next.languageCode),
+    );
     notifyListeners();
+    await store.saveString(_preferencesKey, jsonEncode(_preferences.toJson()));
+  }
+
+  Future<void> setLocale(String languageCode) {
+    return updatePreferences(
+      _preferences.copyWith(
+        languageCode: normalizeSupportedLanguageCode(languageCode),
+      ),
+    );
+  }
+
+  Future<void> setMarket(PaynMarket market) {
+    return updatePreferences(_preferences.copyWith(market: market));
   }
 
   void setExploreCategory(PaynCategory? category) {
@@ -167,7 +255,7 @@ class AppController extends ChangeNotifier {
       return true;
     }
 
-    if (!_savedOfferIds.contains(offerId) || _compareOfferIds.length >= 3) {
+    if (_compareOfferIds.length >= 3) {
       return false;
     }
 
@@ -344,6 +432,7 @@ class AppController extends ChangeNotifier {
     return marketplaceRepository.buildTrendSignals(
       market: _preferences.market,
       savedOfferIds: _savedOfferIds,
+      languageCode: _preferences.languageCode,
     );
   }
 
@@ -394,8 +483,10 @@ class AppController extends ChangeNotifier {
     return count;
   }
 
-  String tradeoffFor(PaynOffer offer) =>
-      marketplaceRepository.tradeoffFor(offer);
+  String tradeoffFor(PaynOffer offer) => marketplaceRepository.tradeoffFor(
+    offer,
+    languageCode: _preferences.languageCode,
+  );
 
   RankedOffer rankedOfferFor(PaynOffer offer, {bool? personalize}) {
     return marketplaceRepository.rankOffer(
@@ -405,6 +496,7 @@ class AppController extends ChangeNotifier {
       personalize: personalize ?? isAuthenticated,
       savedOfferIds: _savedOfferIds,
       recentOfferIds: _recentOfferIds,
+      languageCode: _preferences.languageCode,
     );
   }
 
@@ -418,6 +510,7 @@ class AppController extends ChangeNotifier {
       savedCount: savedCount,
       compareCount: compareCount,
       recentCount: recentOffers.length,
+      languageCode: _preferences.languageCode,
     );
   }
 
@@ -425,7 +518,11 @@ class AppController extends ChangeNotifier {
     required MarketAsset asset,
     required ChartTimeRange range,
   }) {
-    return marketIntelligenceService.snapshotFor(asset: asset, range: range);
+    return marketIntelligenceService.snapshotFor(
+      asset: asset,
+      range: range,
+      languageCode: _preferences.languageCode,
+    );
   }
 
   List<RankedOffer> _rankOffers({
@@ -453,6 +550,7 @@ class AppController extends ChangeNotifier {
                 personalize: personalize ?? isAuthenticated,
                 savedOfferIds: _savedOfferIds,
                 recentOfferIds: _recentOfferIds,
+                languageCode: _preferences.languageCode,
               ),
             )
             .toList()

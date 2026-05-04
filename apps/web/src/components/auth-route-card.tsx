@@ -147,7 +147,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={localePath(locale, "/login")}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-accent-emerald px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong"
           >
             {uiCopy.auth.goToSignIn}
           </Link>
@@ -188,7 +188,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
               onChange={(event) => setEmail(event.target.value)}
               placeholder={uiCopy.auth.emailPlaceholder}
               disabled={submitting}
-              className="h-12 rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-black disabled:opacity-60"
+              className="h-12 rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald disabled:opacity-60"
             />
           </label>
 
@@ -203,7 +203,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
               onChange={(event) => setPassword(event.target.value)}
               placeholder={mode === "signup" ? uiCopy.auth.signupPasswordPlaceholder : uiCopy.auth.loginPasswordPlaceholder}
               disabled={submitting}
-              className="h-12 rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-black disabled:opacity-60"
+              className="h-12 rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald disabled:opacity-60"
             />
           </label>
 
@@ -216,7 +216,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 h-12 rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+            className="mt-2 h-12 rounded-full bg-accent-emerald px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-50"
           >
             {submitting
               ? mode === "login"

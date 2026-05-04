@@ -25,7 +25,7 @@ const HERO_CARDS = [
     metricLabel: "FX Spread",
     metricValue: "0.41%",
     badge: "Best Value",
-    badgeStyle: { background: "rgba(16,185,129,0.18)", color: "#34d399" } as React.CSSProperties,
+    badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
     dotColor: "bg-emerald-400",
     floatClass: "floating-layer",
     posClass: "left-0 top-0",
@@ -40,7 +40,7 @@ const HERO_CARDS = [
     metricLabel: "Cashback",
     metricValue: "1%",
     badge: "Travel Pick",
-    badgeStyle: { background: "rgba(99,102,241,0.18)", color: "#a5b4fc" } as React.CSSProperties,
+    badgeStyle: { background: "#EEF2FF", color: "#3730A3" } as React.CSSProperties,
     dotColor: "bg-indigo-400",
     floatClass: "floating-layer-delayed",
     posClass: "right-0 top-[96px]",
@@ -55,7 +55,7 @@ const HERO_CARDS = [
     metricLabel: "Annual rate",
     metricValue: "4.00%",
     badge: "Top Return",
-    badgeStyle: { background: "rgba(16,185,129,0.18)", color: "#34d399" } as React.CSSProperties,
+    badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
     dotColor: "bg-emerald-400",
     floatClass: "floating-layer",
     posClass: "left-[16px] bottom-0",
@@ -175,7 +175,7 @@ function AppWaitlistModal({ onClose, strings }: { onClose: () => void; strings: 
         <button type="button" onClick={onClose} className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F4F5] text-ink-tertiary transition-colors hover:bg-[#E8E8EA] hover:text-ink" aria-label="Close">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         </button>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-black px-3 py-1 text-[11px] font-semibold text-white">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-emerald px-3 py-1 text-[11px] font-semibold text-white">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />{strings.badge}
         </span>
         <h3 className="mt-4 text-[1.2rem] font-bold tracking-[-0.025em] text-[#0D0D0D]">{strings.title}</h3>
@@ -184,9 +184,9 @@ function AppWaitlistModal({ onClose, strings }: { onClose: () => void; strings: 
           <div className="mt-6 rounded-[16px] bg-emerald-50 px-4 py-4 text-sm font-medium text-emerald-800">{message}</div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 grid gap-3">
-            <input type="email" required autoComplete="email" placeholder={strings.placeholder} value={email} onChange={(e) => setEmail(e.target.value)} disabled={status === "loading"} className="h-[52px] w-full rounded-[16px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 placeholder:text-[#9AA0A6] focus:border-black/20 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] disabled:opacity-60" />
+            <input type="email" required autoComplete="email" placeholder={strings.placeholder} value={email} onChange={(e) => setEmail(e.target.value)} disabled={status === "loading"} className="h-[52px] w-full rounded-[16px] border border-[#EAEAEA] bg-white px-4 text-sm font-medium text-[#0D0D0D] outline-none transition-all duration-200 placeholder:text-[#9AA0A6] focus:border-accent-emerald/30 focus:shadow-[0_0_0_3px_rgba(15,138,75,0.10)] disabled:opacity-60" />
             {message && status === "error" && <p className="text-xs text-red-600">{message}</p>}
-            <button type="submit" disabled={status === "loading"} className="h-[52px] w-full rounded-[16px] bg-black text-sm font-semibold text-white transition-all hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="submit" disabled={status === "loading"} className="h-[52px] w-full rounded-[16px] bg-accent-emerald text-sm font-semibold text-white transition-all hover:bg-accent-emerald-strong disabled:cursor-not-allowed disabled:opacity-40">
               {status === "loading" ? strings.submitting : strings.submit}
             </button>
           </form>
@@ -225,34 +225,34 @@ export function HomePage() {
       ══════════════════════════════════════════════════════════ */}
       <MotionReveal
         as="section"
-        className="relative overflow-hidden rounded-[40px] border border-white/10 bg-zinc-950 px-6 py-10 shadow-[0_30px_100px_rgba(0,0,0,0.5)] sm:px-8 sm:py-12 lg:px-12 lg:py-16"
+        className="relative overflow-hidden rounded-[40px] border border-line bg-white px-6 py-10 shadow-elevated sm:px-8 sm:py-12 lg:px-12 lg:py-16"
       >
         {/* Background layers */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.16),transparent_36%),radial-gradient(ellipse_at_80%_0%,rgba(34,211,238,0.10),transparent_28%),linear-gradient(180deg,rgba(9,9,11,0.97),rgba(9,9,11,0.92))]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(15,138,75,0.10),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,247,244,0.94))]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(17,24,39,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(17,24,39,0.035)_1px,transparent_1px)] bg-[size:40px_40px] opacity-40" />
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
 
           {/* ── Left: copy ── */}
           <div className="relative z-10 flex flex-col justify-center">
             {/* Eyebrow */}
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-emerald/20 bg-accent-emerald-soft px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
               {dictionary.home.heroEyebrowShort}
             </div>
 
             {/* Headline */}
-            <h1 className="mt-6 max-w-[16ch] text-[2.6rem] font-extrabold leading-[0.9] tracking-[-0.06em] text-slate-50 sm:text-[3.6rem] lg:text-[4.4rem]">
+            <h1 className="mt-6 max-w-[16ch] text-[2.6rem] font-extrabold leading-[0.9] tracking-[-0.06em] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
               {dictionary.home.heroHeadline.split("You won't.").length > 1 ? (
                 <>
                   {dictionary.home.heroHeadline.split("You won't.")[0]}
-                  <span className="text-emerald-400">You won&apos;t.</span>
+                  <span className="text-accent-emerald">You won&apos;t.</span>
                 </>
               ) : dictionary.home.heroHeadline}
             </h1>
 
             {/* Subheadline */}
-            <p className="mt-5 max-w-[36ch] text-[16px] leading-7 text-slate-400 sm:text-[18px]">
+            <p className="mt-5 max-w-[36ch] text-[16px] leading-7 text-ink-secondary sm:text-[18px]">
               {dictionary.home.heroSubtitleShort}
             </p>
 
@@ -269,7 +269,7 @@ export function HomePage() {
               </Link>
               <Link
                 href={authHref}
-                className={`${buttonStyles({ variant: "ghost", size: "lg" })} border border-white/10 text-slate-300 hover:bg-white/[0.04] hover:text-white`}
+                className={buttonStyles({ variant: "secondary", size: "lg" })}
               >
                 {dictionary.home.heroCtaSecondary}
               </Link>
@@ -284,9 +284,9 @@ export function HomePage() {
               ].map((pill) => (
                 <span
                   key={pill.text}
-                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500"
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-tertiary"
                 >
-                  {pill.icon && <span className="text-[10px] text-emerald-400">{pill.icon}</span>}
+                  {pill.icon && <span className="text-[10px] text-accent-emerald">{pill.icon}</span>}
                   {pill.text}
                 </span>
               ))}
@@ -296,13 +296,12 @@ export function HomePage() {
           {/* ── Right: floating offer preview cards ── */}
           <div className="relative z-10 hidden min-h-[400px] lg:block">
             {/* Background glows */}
-            <div className="pointer-events-none absolute right-6 top-12 h-56 w-56 rounded-full bg-emerald-500/8 blur-3xl" />
-            <div className="pointer-events-none absolute left-2 bottom-6 h-40 w-40 rounded-full bg-cyan-400/8 blur-3xl" />
+            <div className="pointer-events-none absolute right-6 top-12 h-56 w-56 rounded-full bg-accent-emerald/10 blur-3xl" />
 
             {HERO_CARDS.map((card) => (
               <div
                 key={card.key}
-                className={`${card.floatClass} motion-card absolute w-[204px] rounded-[22px] border border-white/10 bg-white/[0.05] p-4 shadow-[0_22px_54px_rgba(0,0,0,0.5)] backdrop-blur-md ${card.posClass}`}
+                className={`${card.floatClass} motion-card absolute w-[204px] rounded-[22px] border border-line bg-white p-4 shadow-card ${card.posClass}`}
                 style={{ ["--motion-delay" as string]: card.motionDelay }}
               >
                 <div className="flex items-center gap-2.5">
@@ -313,15 +312,15 @@ export function HomePage() {
                     {card.initials}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-[10px] text-slate-500">{card.category}</p>
-                    <p className="truncate text-[13px] font-bold leading-tight text-slate-50">{card.provider}</p>
+                    <p className="truncate text-[10px] text-ink-tertiary">{card.category}</p>
+                    <p className="truncate text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
                   </div>
                 </div>
                 <div className="mt-3">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
                     {card.metricLabel}
                   </p>
-                  <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-slate-50">
+                  <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
                     {card.metricValue}
                   </p>
                 </div>
@@ -336,8 +335,8 @@ export function HomePage() {
             ))}
 
             {/* Live signal pill */}
-            <div className="absolute right-0 bottom-0 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-2 text-[11px] font-semibold text-slate-400 backdrop-blur-md">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            <div className="absolute bottom-0 right-0 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-[11px] font-semibold text-ink-secondary shadow-subtle">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
               Live rates · updated daily
             </div>
           </div>
@@ -357,16 +356,16 @@ export function HomePage() {
       <MotionReveal
         as="section"
         delay={120}
-        className="section-shell border border-white/10 bg-white/[0.03] p-5 backdrop-blur-md sm:p-6 lg:p-8"
+        className="section-shell p-5 sm:p-6 lg:p-8"
       >
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-caption uppercase tracking-[0.28em] text-slate-500">
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.home.howItWorksEyebrow}
             </p>
-            <h2 className="mt-3 text-h2 text-slate-50">{dictionary.home.howItWorksTitle}</h2>
-            <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-slate-400">
+            <h2 className="mt-3 text-h2 text-ink">{dictionary.home.howItWorksTitle}</h2>
+            <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-ink-secondary">
               Pick a category and we&apos;ll show you the best options for your country.
             </p>
           </div>
@@ -381,20 +380,20 @@ export function HomePage() {
             <Link
               key={item.category}
               href={localePath(locale, `/${item.category}`)}
-              className="group flex flex-col gap-3 rounded-[20px] border border-white/10 bg-white/[0.03] p-4 transition-all duration-200 hover:border-emerald-500/25 hover:bg-white/[0.06]"
+              className="group flex flex-col gap-3 rounded-[20px] border border-line bg-white p-4 shadow-subtle transition-all duration-200 hover:border-accent-emerald/25 hover:bg-bg-surface"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.08] text-slate-400 transition-colors duration-200 group-hover:border-emerald-500/20 group-hover:bg-emerald-500/10 group-hover:text-emerald-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] border border-line bg-bg-surface text-ink-secondary transition-colors duration-200 group-hover:border-accent-emerald/20 group-hover:bg-accent-emerald-soft group-hover:text-accent-emerald">
                 <IntentIcon category={item.category} />
               </div>
               <div>
-                <p className="text-[14px] font-bold leading-tight tracking-[-0.02em] text-slate-50">
+                <p className="text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink">
                   {item.headline}
                 </p>
-                <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+                <p className="mt-1 text-[12px] leading-relaxed text-ink-tertiary">
                   {item.descriptions[locale] ?? item.descriptions.en}
                 </p>
               </div>
-              <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-accent-emerald opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 Compare
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                   <path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -408,32 +407,32 @@ export function HomePage() {
         <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
           {["Pick a category", "Your country auto-applied", "See best offer"].map((label, i) => (
             <span key={label} className="flex items-center gap-2.5">
-              {i > 0 && <span className="text-slate-700">→</span>}
-              <span className="flex items-center gap-1.5 text-[12px] text-slate-600">
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-white/10 text-slate-500"}`}>
+              {i > 0 && <span className="text-ink-tertiary">→</span>}
+              <span className="flex items-center gap-1.5 text-[12px] text-ink-tertiary">
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? "bg-accent-emerald-soft text-accent-emerald-strong" : "bg-bg-surface text-ink-tertiary"}`}>
                   {i + 1}
                 </span>
                 {label}
               </span>
             </span>
           ))}
-          <span className="ml-auto text-[12px] text-slate-600">{dictionary.home.noAccountRequired}</span>
+          <span className="ml-auto text-[12px] text-ink-tertiary">{dictionary.home.noAccountRequired}</span>
         </div>
 
         {/* Divider */}
-        <div className="my-8 border-t border-white/10" />
+        <div className="my-8 border-t border-line" />
 
         {/* Why Payn */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-caption uppercase tracking-[0.28em] text-slate-500">
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.home.whyPaynEyebrow}
             </p>
-            <h2 className="mt-3 text-h2 text-slate-50">{dictionary.home.whyPaynTitle}</h2>
+            <h2 className="mt-3 text-h2 text-ink">{dictionary.home.whyPaynTitle}</h2>
           </div>
           <Link
             href={localePath(locale, "/ranking")}
-            className="shrink-0 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-100"
+            className="shrink-0 text-sm font-semibold text-ink-tertiary transition-colors hover:text-accent-emerald-strong"
           >
             {dictionary.home.howWeRankOffers} &rarr;
           </Link>
@@ -443,13 +442,13 @@ export function HomePage() {
           {whyPaynCards.slice(0, 3).map((point, index) => (
             <div
               key={point.title}
-              className="flex h-full flex-col rounded-[26px] border border-white/10 bg-white/[0.04] px-5 py-5 backdrop-blur-md"
+              className="flex h-full flex-col rounded-[26px] border border-line bg-white px-5 py-5 shadow-subtle"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.08] text-slate-100">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] border border-line bg-bg-surface text-ink">
                 {whyPaynIcons[index] ?? whyPaynIcons[0]}
               </div>
-              <p className="mt-4 text-[15px] font-semibold tracking-[-0.02em] text-slate-100">{point.title}</p>
-              <p className="mt-2 text-[13px] leading-6 text-slate-400">{point.description}</p>
+              <p className="mt-4 text-[15px] font-semibold tracking-[-0.02em] text-ink">{point.title}</p>
+              <p className="mt-2 text-[13px] leading-6 text-ink-secondary">{point.description}</p>
             </div>
           ))}
         </div>
@@ -458,29 +457,29 @@ export function HomePage() {
       {/* ══════════════════════════════════════════════════════════
           MOBILE APP PROMO
       ══════════════════════════════════════════════════════════ */}
-      <MotionReveal as="section" delay={180} className="overflow-hidden rounded-[32px] bg-[#0A0D0C]">
+      <MotionReveal as="section" delay={180} className="overflow-hidden rounded-[32px] border border-line bg-white shadow-card">
         <div className="grid lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="flex flex-col justify-center px-6 py-10 sm:px-8 lg:px-12 lg:py-14">
             <WaitlistBadge badge={dictionary.home.mobile.badge} />
-            <h2 className="mt-5 text-[1.65rem] font-bold leading-tight tracking-[-0.03em] text-white sm:text-[2rem]">
+            <h2 className="mt-5 text-[1.65rem] font-bold leading-tight tracking-[-0.03em] text-ink sm:text-[2rem]">
               {dictionary.home.mobile.heading}
             </h2>
-            <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-white/50">
+            <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-ink-secondary">
               {dictionary.home.mobile.subtitle}
             </p>
             <div className="mt-5 flex items-center gap-2.5">
-              <span className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold text-white/40">
-                <svg width="10" height="12" viewBox="0 0 22 26" fill="white" className="opacity-60">
+              <span className="flex items-center gap-1.5 rounded-full border border-line bg-bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink-secondary">
+                <svg width="10" height="12" viewBox="0 0 22 26" fill="currentColor" className="opacity-70">
                   <path d="M18.128 13.784c-.029-3.223 2.639-4.791 2.761-4.864-1.511-2.203-3.853-2.504-4.676-2.528-1.967-.207-3.875 1.177-4.877 1.177-1.016 0-2.543-1.157-4.199-1.123-2.121.034-4.112 1.263-5.199 3.188-2.255 3.886-.576 9.6 1.584 12.757 1.086 1.553 2.355 3.287 4.012 3.226 1.625-.067 2.232-1.036 4.193-1.036 1.943 0 2.513 1.036 4.207.997 1.744-.028 2.842-1.56 3.89-3.127 1.255-1.78 1.759-3.533 1.779-3.623-.041-.014-3.387-1.291-3.424-5.149zM14.928 3.306C15.819 2.207 16.424.756 16.26-.001c-1.244.052-2.79.852-3.684 1.907-.793.935-1.505 2.468-1.319 3.907 1.403.108 2.849-.7 3.671-2.507z" />
                 </svg>
                 iOS
               </span>
-              <span className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold text-white/40">
-                <svg width="10" height="11" viewBox="0 0 20 22" fill="none" className="opacity-60">
-                  <path d="M1.22.345C.96.625.81 1.065.81 1.635v18.73c0 .57.15 1.01.41 1.29l.07.065 10.5-10.5v-.24L1.29.28l-.07.065z" fill="white" />
-                  <path d="M15.3 14.72l-3.51-3.5v-.24l3.51-3.5.08.045 4.16 2.36c1.19.675 1.19 1.78 0 2.46l-4.16 2.36-.08.02z" fill="white" />
-                  <path d="M15.38 14.7L11.79 11.11 1.22 21.655c.39.415 1.04.465 1.77.05l12.39-7.005z" fill="white" />
-                  <path d="M15.38 7.52L2.99.515C2.26.1 1.61.145 1.22.56L11.79 11.11l3.59-3.59z" fill="white" />
+              <span className="flex items-center gap-1.5 rounded-full border border-line bg-bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink-secondary">
+                <svg width="10" height="11" viewBox="0 0 20 22" fill="none" className="opacity-70">
+                  <path d="M1.22.345C.96.625.81 1.065.81 1.635v18.73c0 .57.15 1.01.41 1.29l.07.065 10.5-10.5v-.24L1.29.28l-.07.065z" fill="currentColor" />
+                  <path d="M15.3 14.72l-3.51-3.5v-.24l3.51-3.5.08.045 4.16 2.36c1.19.675 1.19 1.78 0 2.46l-4.16 2.36-.08.02z" fill="currentColor" />
+                  <path d="M15.38 14.7L11.79 11.11 1.22 21.655c.39.415 1.04.465 1.77.05l12.39-7.005z" fill="currentColor" />
+                  <path d="M15.38 7.52L2.99.515C2.26.1 1.61.145 1.22.56L11.79 11.11l3.59-3.59z" fill="currentColor" />
                 </svg>
                 Android
               </span>
@@ -489,13 +488,13 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => setAppPromoOpen(true)}
-                className="inline-flex h-11 items-center rounded-full bg-white px-6 text-[13px] font-semibold text-black transition-all hover:bg-white/90 active:scale-[0.98]"
+                className="inline-flex h-11 items-center rounded-full bg-accent-emerald px-6 text-[13px] font-semibold text-white transition-all hover:bg-accent-emerald-strong active:scale-[0.98]"
               >
                 {dictionary.home.mobile.joinWishlist}
               </button>
               <Link
                 href={localePath(locale, "/waitlist")}
-                className="inline-flex h-11 items-center rounded-full border border-white/[0.14] px-6 text-[13px] font-semibold text-white/60 transition-all hover:border-white/25 hover:text-white/90"
+                className="inline-flex h-11 items-center rounded-full border border-line bg-bg-surface px-6 text-[13px] font-semibold text-ink-secondary transition-all hover:text-ink"
               >
                 {dictionary.home.mobile.learnMore}
               </Link>
@@ -504,8 +503,8 @@ export function HomePage() {
 
           <div className="flex items-end justify-center overflow-hidden px-6 pb-0 pt-8 lg:items-center lg:py-6 lg:pr-12">
             {/* Compact offer preview instead of blueprint */}
-            <div className="w-full max-w-[320px] rounded-[24px] border border-white/10 bg-white/[0.03] p-5 backdrop-blur-md">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Your shortlist</p>
+            <div className="w-full max-w-[320px] rounded-[24px] border border-line bg-bg-surface p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">Your shortlist</p>
               <div className="mt-4 grid gap-3">
                 {[
                   { name: "Wise", cat: "Transfer", val: "0.41%", tag: "Best FX" },
@@ -514,25 +513,25 @@ export function HomePage() {
                 ].map((item, i) => (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between rounded-[14px] border border-white/10 bg-white/[0.04] px-3.5 py-3"
+                    className="flex items-center justify-between rounded-[14px] border border-line bg-white px-3.5 py-3"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white/10 text-[10px] font-bold text-slate-300">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-accent-emerald-soft text-[10px] font-bold text-accent-emerald-strong">
                         {i + 1}
                       </span>
                       <div>
-                        <p className="text-[12px] font-bold text-slate-100">{item.name}</p>
-                        <p className="text-[10px] text-slate-500">{item.cat}</p>
+                        <p className="text-[12px] font-bold text-ink">{item.name}</p>
+                        <p className="text-[10px] text-ink-tertiary">{item.cat}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[13px] font-bold tabular-nums text-slate-50">{item.val}</p>
-                      <p className="text-[10px] text-emerald-400">{item.tag}</p>
+                      <p className="text-[13px] font-bold tabular-nums text-ink">{item.val}</p>
+                      <p className="text-[10px] text-accent-emerald">{item.tag}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-center text-[11px] text-slate-600">Syncs to mobile automatically</p>
+              <p className="mt-3 text-center text-[11px] text-ink-tertiary">Syncs to mobile automatically</p>
             </div>
           </div>
         </div>

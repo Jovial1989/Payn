@@ -4,8 +4,19 @@ import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 
 class LocalMarketplaceRepository {
+  List<PaynOffer> _catalogOffers = List<PaynOffer>.from(_fallbackOffers);
+
+  void replaceOffers(List<PaynOffer> offers) {
+    if (offers.isEmpty) {
+      return;
+    }
+    _catalogOffers = List<PaynOffer>.from(offers);
+  }
+
+  List<PaynOffer> get fallbackOffers => List<PaynOffer>.from(_fallbackOffers);
+
   List<PaynOffer> offersForMarket(PaynMarket market, {PaynCategory? category}) {
-    return _offers.where((offer) {
+    return _catalogOffers.where((offer) {
       if (!_matchesMarket(offer, market)) {
         return false;
       }
@@ -19,7 +30,7 @@ class LocalMarketplaceRepository {
   }
 
   PaynOffer? offerById(String id) {
-    for (final offer in _offers) {
+    for (final offer in _catalogOffers) {
       if (offer.id == id) {
         return offer;
       }
@@ -124,6 +135,7 @@ class LocalMarketplaceRepository {
     required bool personalize,
     required List<String> savedOfferIds,
     required List<String> recentOfferIds,
+    required String languageCode,
   }) {
     final directMarketMatch = _isDirectMarketMatch(offer, market);
     final saved = savedOfferIds.contains(offer.id);
@@ -140,8 +152,8 @@ class LocalMarketplaceRepository {
 
     final reasons = <String>[
       directMarketMatch
-          ? 'Strong coverage for ${marketDefinitions[market]!.label}'
-          : 'Visible across European comparison flows',
+          ? _directMarketReason(market, languageCode)
+          : _regionalVisibilityReason(languageCode),
       offer.bestFor.first,
     ];
 
@@ -153,7 +165,7 @@ class LocalMarketplaceRepository {
       final categoryIndex = orderedCategories.indexOf(offer.category);
       if (categoryIndex != -1) {
         score += math.max(0, 12 - categoryIndex * 2);
-        reasons.add('Matches your ${offer.category.label.toLowerCase()} focus');
+        reasons.add(_categoryFocusReason(offer.category, languageCode));
       }
 
       for (final interest in preferences.interests) {
@@ -163,36 +175,38 @@ class LocalMarketplaceRepository {
           (keyword) => haystack.contains(keyword.toLowerCase()),
         )) {
           score += 6;
-          reasons.add('Aligned with ${interestLabels[interest] ?? interest}');
+          reasons.add(_interestAlignmentReason(interest, languageCode));
           break;
         }
       }
 
       if (recentProvider) {
         score += 3;
-        reasons.add('Close to providers you reviewed recently');
+        reasons.add(_recentProviderReason(languageCode));
       }
     }
 
     if (saved) {
-      reasons.add('Already in your shortlist');
+      reasons.add(_savedReason(languageCode));
     }
 
-    if (recent && !reasons.contains('Continue where you left off')) {
-      reasons.add('Continue where you left off');
+    final continueReason = _continueReason(languageCode);
+    if (recent && !reasons.contains(continueReason)) {
+      reasons.add(continueReason);
     }
 
     return RankedOffer(
       offer: offer,
       score: score,
       reasons: reasons.take(3).toList(),
-      tradeoff: tradeoffFor(offer),
+      tradeoff: tradeoffFor(offer, languageCode: languageCode),
     );
   }
 
   List<TrendSignal> buildTrendSignals({
     required PaynMarket market,
     required List<String> savedOfferIds,
+    required String languageCode,
   }) {
     final categoryCounts =
         countOffersByCategory(market).entries.toList()
@@ -210,45 +224,353 @@ class LocalMarketplaceRepository {
 
     return <TrendSignal>[
       TrendSignal(
-        label: 'Market depth',
-        value: '${topCategory.value} ${topCategory.key.label.toLowerCase()}',
-        detail:
-            '${topCategory.key.label} lead discovery in ${marketDefinitions[market]!.label}.',
+        label: _marketDepthLabel(languageCode),
+        value: _marketDepthValue(
+          count: topCategory.value,
+          category: topCategory.key,
+          languageCode: languageCode,
+        ),
+        detail: _marketDepthDetail(
+          market: market,
+          category: topCategory.key,
+          languageCode: languageCode,
+        ),
       ),
       TrendSignal(
-        label: 'Provider coverage',
-        value: '${providers.length} providers',
-        detail:
-            'Recognizable institutions stay visible across the shortlist flow.',
+        label: _providerCoverageLabel(languageCode),
+        value: _providerCoverageValue(providers.length, languageCode),
+        detail: _providerCoverageDetail(languageCode),
       ),
       TrendSignal(
-        label: 'Decision pressure',
-        value:
-            topTransfer.isNotEmpty
-                ? 'Transfers and FX active'
-                : 'Broader market steady',
+        label: _decisionPressureLabel(languageCode),
+        value: _decisionPressureValue(
+          topTransfer.isNotEmpty,
+          languageCode,
+        ),
         detail:
             savedOfferIds.isEmpty
-                ? 'Save offers to keep a tighter mobile shortlist.'
-                : 'Your shortlist is ready for side-by-side comparison.',
+                ? _decisionPressureEmptyDetail(languageCode)
+                : _decisionPressureReadyDetail(languageCode),
       ),
     ];
   }
 
-  String tradeoffFor(PaynOffer offer) {
+  String tradeoffFor(PaynOffer offer, {required String languageCode}) {
     switch (offer.category) {
       case PaynCategory.loans:
-        return 'Final pricing can still move with eligibility, income checks, and repayment profile.';
+        return switch (languageCode) {
+          'de' => 'Die endgültige Preisgestaltung kann sich durch Bonität, Einkommensprüfung und Rückzahlungsprofil noch ändern.',
+          'es' => 'El precio final aún puede variar según elegibilidad, ingresos y perfil de devolución.',
+          _ => 'Final pricing can still move with eligibility, income checks, and repayment profile.',
+        };
       case PaynCategory.cards:
-        return 'The strongest travel perks usually come with a recurring plan fee or stricter usage pattern.';
+        return switch (languageCode) {
+          'de' => 'Die stärksten Reisevorteile gehen oft mit einer laufenden Gebühr oder strengeren Nutzungsbedingungen einher.',
+          'es' => 'Las mejores ventajas de viaje suelen venir con una cuota recurrente o condiciones de uso más estrictas.',
+          _ => 'The strongest travel perks usually come with a recurring plan fee or stricter usage pattern.',
+        };
       case PaynCategory.transfers:
-        return 'The cheapest route is not always the fastest, especially across payout methods.';
+        return switch (languageCode) {
+          'de' => 'Der günstigste Weg ist nicht immer der schnellste, besonders über verschiedene Auszahlungsarten hinweg.',
+          'es' => 'La ruta más barata no siempre es la más rápida, especialmente entre distintos métodos de pago.',
+          _ => 'The cheapest route is not always the fastest, especially across payout methods.',
+        };
       case PaynCategory.exchange:
-        return 'Headline rates can still hide limits, weekend markups, or corridor-specific spreads.';
+        return switch (languageCode) {
+          'de' => 'Beworbene Kurse können weiterhin Limits, Wochenendaufschläge oder corridor-spezifische Spreads verbergen.',
+          'es' => 'Los tipos anunciados aún pueden ocultar límites, recargos de fin de semana o diferenciales por corredor.',
+          _ => 'Headline rates can still hide limits, weekend markups, or corridor-specific spreads.',
+        };
       case PaynCategory.insurance:
-        return 'Premiums and cover depth can change with health, age, travel pattern, or vehicle profile.';
+        return switch (languageCode) {
+          'de' => 'Prämien und Deckungstiefe können sich je nach Gesundheit, Alter, Reiseprofil oder Fahrzeugprofil ändern.',
+          'es' => 'Las primas y la cobertura pueden cambiar según salud, edad, patrón de viaje o perfil del vehículo.',
+          _ => 'Premiums and cover depth can change with health, age, travel pattern, or vehicle profile.',
+        };
       case PaynCategory.investments:
-        return 'Low fees do not remove market risk, platform complexity, or custody tradeoffs.';
+        return switch (languageCode) {
+          'de' => 'Niedrige Gebühren beseitigen weder Marktrisiko noch Plattformkomplexität oder Verwahrungsabwägungen.',
+          'es' => 'Las comisiones bajas no eliminan el riesgo de mercado, la complejidad de la plataforma ni las compensaciones de custodia.',
+          _ => 'Low fees do not remove market risk, platform complexity, or custody tradeoffs.',
+        };
+    }
+  }
+
+  String _directMarketReason(PaynMarket market, String languageCode) {
+    final marketLabel = _marketLabel(market, languageCode);
+    return switch (languageCode) {
+      'de' => 'Starke Abdeckung für $marketLabel',
+      'es' => 'Cobertura sólida para $marketLabel',
+      _ => 'Strong coverage for $marketLabel',
+    };
+  }
+
+  String _regionalVisibilityReason(String languageCode) => switch (languageCode) {
+    'de' => 'In europäischen Vergleichsflüssen sichtbar',
+    'es' => 'Visible en comparativas europeas',
+    _ => 'Visible across European comparison flows',
+  };
+
+  String _categoryFocusReason(PaynCategory category, String languageCode) {
+    final categoryLabel = _categoryLabel(category, languageCode).toLowerCase();
+    return switch (languageCode) {
+      'de' => 'Passt zu deinem Fokus auf $categoryLabel',
+      'es' => 'Encaja con tu foco en $categoryLabel',
+      _ => 'Matches your $categoryLabel focus',
+    };
+  }
+
+  String _interestAlignmentReason(String interest, String languageCode) {
+    final interestLabel = _interestLabel(interest, languageCode);
+    return switch (languageCode) {
+      'de' => 'Passt zu $interestLabel',
+      'es' => 'Alineado con $interestLabel',
+      _ => 'Aligned with $interestLabel',
+    };
+  }
+
+  String _recentProviderReason(String languageCode) => switch (languageCode) {
+    'de' => 'Nahe an Anbietern, die du zuletzt geprüft hast',
+    'es' => 'Cerca de proveedores que revisaste recientemente',
+    _ => 'Close to providers you reviewed recently',
+  };
+
+  String _savedReason(String languageCode) => switch (languageCode) {
+    'de' => 'Bereits in deiner Shortlist',
+    'es' => 'Ya está en tu lista corta',
+    _ => 'Already in your shortlist',
+  };
+
+  String _continueReason(String languageCode) => switch (languageCode) {
+    'de' => 'Dort weitermachen, wo du aufgehört hast',
+    'es' => 'Continúa donde lo dejaste',
+    _ => 'Continue where you left off',
+  };
+
+  String _marketDepthLabel(String languageCode) => switch (languageCode) {
+    'de' => 'Markttiefe',
+    'es' => 'Profundidad del mercado',
+    _ => 'Market depth',
+  };
+
+  String _marketDepthValue({
+    required int count,
+    required PaynCategory category,
+    required String languageCode,
+  }) => '$count ${_categoryLabel(category, languageCode).toLowerCase()}';
+
+  String _marketDepthDetail({
+    required PaynMarket market,
+    required PaynCategory category,
+    required String languageCode,
+  }) {
+    final categoryLabel = _categoryLabel(category, languageCode);
+    final marketLabel = _marketLabel(market, languageCode);
+    return switch (languageCode) {
+      'de' => '$categoryLabel prägen die Entdeckung in $marketLabel.',
+      'es' => '$categoryLabel lideran el descubrimiento en $marketLabel.',
+      _ => '$categoryLabel lead discovery in $marketLabel.',
+    };
+  }
+
+  String _providerCoverageLabel(String languageCode) => switch (languageCode) {
+    'de' => 'Anbieterabdeckung',
+    'es' => 'Cobertura de proveedores',
+    _ => 'Provider coverage',
+  };
+
+  String _providerCoverageValue(int count, String languageCode) => switch (languageCode) {
+    'de' => '$count Anbieter',
+    'es' => '$count proveedores',
+    _ => '$count providers',
+  };
+
+  String _providerCoverageDetail(String languageCode) => switch (languageCode) {
+    'de' => 'Bekannte Institute bleiben im gesamten Shortlist-Fluss sichtbar.',
+    'es' => 'Las instituciones reconocidas siguen visibles en todo el flujo de shortlist.',
+    _ => 'Recognizable institutions stay visible across the shortlist flow.',
+  };
+
+  String _decisionPressureLabel(String languageCode) => switch (languageCode) {
+    'de' => 'Entscheidungsdruck',
+    'es' => 'Presión de decisión',
+    _ => 'Decision pressure',
+  };
+
+  String _decisionPressureValue(bool transferActive, String languageCode) {
+    if (transferActive) {
+      return switch (languageCode) {
+        'de' => 'Transfers und FX aktiv',
+        'es' => 'Transferencias y FX activas',
+        _ => 'Transfers and FX active',
+      };
+    }
+
+    return switch (languageCode) {
+      'de' => 'Breiter Markt stabil',
+      'es' => 'Mercado general estable',
+      _ => 'Broader market steady',
+    };
+  }
+
+  String _decisionPressureEmptyDetail(String languageCode) => switch (languageCode) {
+    'de' => 'Speichere Angebote, um deine mobile Shortlist enger zu halten.',
+    'es' => 'Guarda ofertas para mantener una shortlist móvil más enfocada.',
+    _ => 'Save offers to keep a tighter mobile shortlist.',
+  };
+
+  String _decisionPressureReadyDetail(String languageCode) => switch (languageCode) {
+    'de' => 'Deine Shortlist ist bereit für den direkten Vergleich.',
+    'es' => 'Tu shortlist está lista para una comparación lado a lado.',
+    _ => 'Your shortlist is ready for side-by-side comparison.',
+  };
+
+  String _marketLabel(PaynMarket market, String languageCode) {
+    switch (market) {
+      case PaynMarket.eu:
+        return switch (languageCode) {
+          'de' => 'Ganz Europa',
+          'es' => 'Toda Europa',
+          _ => 'All Europe',
+        };
+      case PaynMarket.international:
+        return switch (languageCode) {
+          'de' => 'International',
+          'es' => 'Internacional',
+          _ => 'International',
+        };
+      case PaynMarket.de:
+        return switch (languageCode) {
+          'de' => 'Deutschland',
+          'es' => 'Alemania',
+          _ => 'Germany',
+        };
+      case PaynMarket.es:
+        return switch (languageCode) {
+          'de' => 'Spanien',
+          'es' => 'España',
+          _ => 'Spain',
+        };
+      case PaynMarket.uk:
+        return switch (languageCode) {
+          'de' => 'Vereinigtes Königreich',
+          'es' => 'Reino Unido',
+          _ => 'United Kingdom',
+        };
+      case PaynMarket.fr:
+        return switch (languageCode) {
+          'de' => 'Frankreich',
+          'es' => 'Francia',
+          _ => 'France',
+        };
+      case PaynMarket.it:
+        return switch (languageCode) {
+          'de' => 'Italien',
+          'es' => 'Italia',
+          _ => 'Italy',
+        };
+      case PaynMarket.pt:
+        return switch (languageCode) {
+          'de' => 'Portugal',
+          'es' => 'Portugal',
+          _ => 'Portugal',
+        };
+      case PaynMarket.nl:
+        return switch (languageCode) {
+          'de' => 'Niederlande',
+          'es' => 'Países Bajos',
+          _ => 'Netherlands',
+        };
+    }
+  }
+
+  String _categoryLabel(PaynCategory category, String languageCode) {
+    switch (category) {
+      case PaynCategory.loans:
+        return switch (languageCode) {
+          'de' => 'Kredite',
+          'es' => 'Préstamos',
+          _ => 'Loans',
+        };
+      case PaynCategory.cards:
+        return switch (languageCode) {
+          'de' => 'Karten',
+          'es' => 'Tarjetas',
+          _ => 'Cards',
+        };
+      case PaynCategory.transfers:
+        return switch (languageCode) {
+          'de' => 'Überweisungen',
+          'es' => 'Transferencias',
+          _ => 'Transfers',
+        };
+      case PaynCategory.exchange:
+        return switch (languageCode) {
+          'de' => 'Wechsel',
+          'es' => 'Cambio',
+          _ => 'Exchange',
+        };
+      case PaynCategory.insurance:
+        return switch (languageCode) {
+          'de' => 'Versicherungen',
+          'es' => 'Seguros',
+          _ => 'Insurance',
+        };
+      case PaynCategory.investments:
+        return switch (languageCode) {
+          'de' => 'Investments',
+          'es' => 'Inversiones',
+          _ => 'Investments',
+        };
+    }
+  }
+
+  String _interestLabel(String interest, String languageCode) {
+    switch (interest) {
+      case 'travel':
+        return switch (languageCode) {
+          'de' => 'Reisen',
+          'es' => 'Viajes',
+          _ => 'Travel',
+        };
+      case 'savings':
+        return switch (languageCode) {
+          'de' => 'Sparen',
+          'es' => 'Ahorro',
+          _ => 'Savings',
+        };
+      case 'crypto':
+        return switch (languageCode) {
+          'de' => 'Krypto',
+          'es' => 'Cripto',
+          _ => 'Crypto',
+        };
+      case 'international_transfers':
+        return switch (languageCode) {
+          'de' => 'Internationale Überweisungen',
+          'es' => 'Transferencias internacionales',
+          _ => 'International transfers',
+        };
+      case 'investing':
+        return switch (languageCode) {
+          'de' => 'Investieren',
+          'es' => 'Inversión',
+          _ => 'Investing',
+        };
+      case 'insurance':
+        return switch (languageCode) {
+          'de' => 'Versicherung',
+          'es' => 'Seguros',
+          _ => 'Insurance',
+        };
+      case 'everyday_banking':
+        return switch (languageCode) {
+          'de' => 'Alltägliches Banking',
+          'es' => 'Banca diaria',
+          _ => 'Everyday banking',
+        };
+      default:
+        return interest;
     }
   }
 
@@ -302,7 +624,7 @@ class LocalMarketplaceRepository {
     return math.max(0, 5 - age * 0.5).toDouble();
   }
 
-  static const List<PaynOffer> _offers = <PaynOffer>[
+  static const List<PaynOffer> _fallbackOffers = <PaynOffer>[
     PaynOffer(
       id: 'loan-klarna-flex',
       slug: 'klarna-flexible-loan',
@@ -843,6 +1165,161 @@ class LocalMarketplaceRepository {
           'stocks',
           'crypto',
           'platform',
+        ],
+      ),
+    ),
+    PaynOffer(
+      id: 'investment-kraken-crypto-access',
+      slug: 'kraken-crypto-access',
+      category: PaynCategory.investments,
+      countryCodes: <String>['EU', 'UK'],
+      providerMark: 'KR',
+      providerName: 'Kraken',
+      title: 'Kraken Crypto Access',
+      subtitle:
+          'Crypto trading access for BTC and ETH with lower-fee exchange routes and stronger pro tooling for active investors.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Access', value: 'BTC, ETH and major crypto pairs'),
+        PaynMetric(label: 'Fee model', value: 'Low-fee exchange pricing'),
+        PaynMetric(label: 'Platform', value: 'Advanced trading tools'),
+      ],
+      bestFor: <String>['Crypto', 'BTC', 'ETH', 'Low fees', 'Pro tools'],
+      providerWebsiteUrl: 'https://www.kraken.com',
+      affiliateLink: 'https://www.financeads.net/tc.php?t=83248C5666133898T',
+      affiliatePriorityScore: 0.90,
+      updatedAt: '2026-04-30T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        subtype: 'crypto',
+        feeProfile: 'low',
+        availability: 'international',
+        affiliate: true,
+        monetized: true,
+        searchTags: <String>['crypto', 'btc', 'eth', 'low fees', 'pro tools'],
+      ),
+    ),
+    PaynOffer(
+      id: 'investment-linxea-avenir-2',
+      slug: 'linxea-avenir-2',
+      category: PaynCategory.investments,
+      countryCodes: <String>['FR'],
+      providerMark: 'LX',
+      providerName: 'Linxea',
+      title: 'Linxea Avenir 2',
+      subtitle:
+          'French assurance vie option for long-term savings and investment insurance positioning with tax-efficient wrappers.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Product type', value: 'Assurance vie'),
+        PaynMetric(label: 'Market', value: 'France'),
+        PaynMetric(
+          label: 'Positioning',
+          value: 'Long-term tax-efficient savings',
+        ),
+      ],
+      bestFor: <String>[
+        'Assurance vie',
+        'Long-term savings',
+        'France',
+        'Investment insurance',
+        'Tax-efficient savings',
+      ],
+      providerWebsiteUrl: 'https://www.linxea.com',
+      affiliateLink: 'https://www.financeads.net/tc.php?t=83248C432495606T',
+      affiliatePriorityScore: 0.85,
+      updatedAt: '2026-04-30T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        subtype: 'assurance_vie',
+        feeProfile: 'low',
+        availability: 'local',
+        affiliate: true,
+        monetized: true,
+        searchTags: <String>[
+          'assurance vie',
+          'long-term savings',
+          'france',
+          'investment insurance',
+          'tax-efficient savings',
+        ],
+      ),
+    ),
+    PaynOffer(
+      id: 'investment-iuvo-p2p-investing',
+      slug: 'iuvo-p2p-investing',
+      category: PaynCategory.investments,
+      countryCodes: <String>['DE', 'EU'],
+      providerMark: 'IV',
+      providerName: 'Iuvo Group',
+      title: 'Iuvo P2P Investing',
+      subtitle:
+          'P2P investment platform offering fixed-income style marketplace access with diversified loan portfolio exposure.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Access', value: 'Diversified P2P loan portfolios'),
+        PaynMetric(label: 'Return style', value: 'Fixed-income marketplace exposure'),
+        PaynMetric(label: 'Market', value: 'Germany and EU availability'),
+      ],
+      bestFor: <String>[
+        'P2P',
+        'Passive income',
+        'Fixed returns',
+        'Lending marketplace',
+        'EU investing',
+      ],
+      providerWebsiteUrl: 'https://iuvo-group.com',
+      affiliateLink: 'https://www.financeads.net/tc.php?t=83248C226841413T',
+      affiliatePriorityScore: 0.84,
+      updatedAt: '2026-04-30T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        subtype: 'p2p',
+        feeProfile: 'medium',
+        availability: 'eu_wide',
+        affiliate: true,
+        monetized: true,
+        searchTags: <String>[
+          'p2p',
+          'passive income',
+          'fixed returns',
+          'lending marketplace',
+          'eu investing',
+        ],
+      ),
+    ),
+    PaynOffer(
+      id: 'investment-trezor-hardware-wallet',
+      slug: 'trezor-hardware-wallet',
+      category: PaynCategory.investments,
+      countryCodes: <String>['EU', 'UK'],
+      providerMark: 'TZ',
+      providerName: 'Trezor',
+      title: 'Trezor Hardware Wallet',
+      subtitle:
+          'Secure offline hardware wallet for BTC, ETH, and broader crypto self-custody when storage security matters most.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Security', value: 'Offline cold storage'),
+        PaynMetric(label: 'Assets', value: 'BTC, ETH and supported crypto'),
+        PaynMetric(label: 'Use case', value: 'Hardware wallet self-custody'),
+      ],
+      bestFor: <String>[
+        'Crypto',
+        'Security',
+        'Hardware wallet',
+        'BTC',
+        'Cold storage',
+      ],
+      providerWebsiteUrl: 'https://trezor.io',
+      affiliateLink: 'https://www.financeads.net/tc.php?t=83248C5142119968T',
+      affiliatePriorityScore: 0.82,
+      updatedAt: '2026-04-30T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        subtype: 'crypto_wallet',
+        feeProfile: 'medium',
+        availability: 'international',
+        affiliate: true,
+        monetized: true,
+        searchTags: <String>[
+          'crypto',
+          'security',
+          'hardware wallet',
+          'btc',
+          'cold storage',
         ],
       ),
     ),

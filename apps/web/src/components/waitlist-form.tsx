@@ -103,7 +103,7 @@ export function WaitlistForm({
             onChange={(event) => setEmail(event.target.value)}
             placeholder={copy.waitlist.emailPlaceholder}
             disabled={status === "loading"}
-            className="mt-1.5 h-12 w-full rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none focus:ring-2 focus:ring-black/5 disabled:opacity-60"
+            className="mt-1.5 h-12 w-full rounded-2xl border border-line bg-bg-surface px-4 text-sm text-ink placeholder:text-ink-tertiary focus:border-accent-emerald/30 focus:outline-none focus:ring-2 focus:ring-accent-emerald/10 disabled:opacity-60"
           />
         </div>
 
@@ -119,7 +119,7 @@ export function WaitlistForm({
                   onClick={() => setPlatform(value)}
                   className={`rounded-2xl border px-4 py-3 text-left text-sm font-medium transition-colors ${
                     active
-                      ? "border-black bg-black/[0.04] text-ink"
+                      ? "border-accent-emerald/30 bg-accent-emerald-soft text-accent-emerald-strong"
                       : "border-line bg-white text-ink-secondary hover:text-ink"
                   }`}
                 >
@@ -145,7 +145,7 @@ export function WaitlistForm({
         <button
           type="submit"
           disabled={status === "loading"}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-accent-emerald px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-50"
         >
           {status === "loading" ? copy.waitlist.joining : submitLabel}
         </button>

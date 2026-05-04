@@ -4,30 +4,30 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
-    --font-body: "Inter", "Avenir Next", "Segoe UI", sans-serif;
-    --font-display: "Inter Tight", "Inter", "Avenir Next Condensed", sans-serif;
+    color-scheme: light;
+    --font-body: "Manrope", "Inter", "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: "Manrope", "Inter", "Avenir Next Condensed", sans-serif;
     --font-mono: "Geist Mono", "SFMono-Regular", "SF Mono", "Menlo", monospace;
-    --bg-base: #09090b;
-    --surface-base: rgba(255, 255, 255, 0.04);
-    --surface-muted: rgba(255, 255, 255, 0.03);
-    --surface-raised: rgba(255, 255, 255, 0.05);
-    --surface-elevated: rgba(24, 24, 27, 0.86);
-    --surface-dark: #09090b;
-    --surface-dark-elevated: #18181b;
-    --line-subtle: rgba(255, 255, 255, 0.1);
-    --line-strong: rgba(255, 255, 255, 0.16);
-    --ink-primary: #e2e8f0;
-    --ink-secondary: #94a3b8;
-    --ink-tertiary: #64748b;
-    --ink-inverse: #09090b;
-    --emerald: #22d3ee;
-    --emerald-strong: #06b6d4;
-    --emerald-soft: rgba(34, 211, 238, 0.12);
-    --emerald-glow: rgba(34, 211, 238, 0.2);
-    --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.24);
-    --shadow-hover: 0 26px 64px rgba(0, 0, 0, 0.34);
-    --shadow-floating: 0 36px 96px rgba(0, 0, 0, 0.42);
+    --bg-base: #ffffff;
+    --surface-base: #ffffff;
+    --surface-muted: #f5f7f4;
+    --surface-raised: #ffffff;
+    --surface-elevated: rgba(255, 255, 255, 0.96);
+    --surface-dark: #111827;
+    --surface-dark-elevated: #1f2937;
+    --line-subtle: rgba(17, 24, 39, 0.08);
+    --line-strong: rgba(17, 24, 39, 0.14);
+    --ink-primary: #111827;
+    --ink-secondary: #4b5563;
+    --ink-tertiary: #8a94a6;
+    --ink-inverse: #ffffff;
+    --emerald: #0f8a4b;
+    --emerald-strong: #0b6d3b;
+    --emerald-soft: #ddf4e7;
+    --emerald-glow: rgba(15, 138, 75, 0.18);
+    --shadow-soft: 0 10px 30px rgba(15, 23, 32, 0.05);
+    --shadow-hover: 0 18px 42px rgba(15, 23, 32, 0.08);
+    --shadow-floating: 0 24px 64px rgba(15, 23, 32, 0.1);
     --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
   }
@@ -41,10 +41,7 @@
 
   body {
     min-height: 100vh;
-    background:
-      radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.12), transparent 24%),
-      radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.08), transparent 22%),
-      linear-gradient(180deg, #09090b 0%, #0f172a 48%, #09090b 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #f5f7f4 48%, #ffffff 100%);
     color: var(--ink-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -68,8 +65,8 @@
   }
 
   ::selection {
-    background: rgba(34, 211, 238, 0.22);
-    color: #f8fafc;
+    background: rgba(15, 138, 75, 0.18);
+    color: #111827;
   }
 }
 
@@ -111,10 +108,8 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0) 36%),
-      radial-gradient(circle at top right, rgba(15, 190, 123, 0.08), transparent 34%);
-    opacity: 0.9;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 48%);
+    opacity: 0.7;
     pointer-events: none;
     z-index: -1;
   }
@@ -201,7 +196,7 @@
     gap: 8px;
     border-radius: 999px;
     border: 1px solid var(--line-subtle);
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--surface-muted);
     padding: 10px 14px;
     color: var(--ink-secondary);
     transition:
@@ -240,13 +235,9 @@
   }
 
   .surface-panel {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.88) 100%),
-      var(--surface-base);
-    border: 1px solid rgba(17, 24, 39, 0.06);
-    box-shadow: 0 18px 48px rgba(10, 14, 10, 0.06);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #ffffff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    box-shadow: 0 10px 30px rgba(15, 23, 32, 0.05);
   }
 
   .subtle-grid {
@@ -261,23 +252,21 @@
     position: relative;
     overflow: hidden;
     border-radius: 36px;
-    border: 1px solid rgba(17, 24, 39, 0.06);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(247, 249, 247, 0.92) 100%);
-    box-shadow: 0 24px 60px rgba(10, 14, 10, 0.05);
+    border: 1px solid rgba(17, 24, 39, 0.07);
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 32, 0.05);
   }
 
   .dark-surface-panel {
-    background:
-      radial-gradient(circle at top right, rgba(15, 190, 123, 0.16), transparent 32%),
-      linear-gradient(180deg, rgba(20, 25, 26, 0.98) 0%, rgba(10, 14, 10, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 80px rgba(10, 14, 10, 0.2);
+    background: #ffffff;
+    border: 1px solid rgba(17, 24, 39, 0.07);
+    box-shadow: 0 10px 30px rgba(15, 23, 32, 0.05);
   }
 
   .metric-tile {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(247, 249, 247, 0.96) 100%);
-    border: 1px solid rgba(17, 24, 39, 0.06);
-    box-shadow: 0 14px 34px rgba(15, 23, 32, 0.04);
+    background: #ffffff;
+    border: 1px solid rgba(17, 24, 39, 0.07);
+    box-shadow: 0 4px 12px rgba(15, 23, 32, 0.04);
   }
 
   .hero-stage {

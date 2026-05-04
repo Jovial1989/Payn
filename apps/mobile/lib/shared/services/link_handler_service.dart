@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Opens provider URLs in SFSafariViewController (iOS) or Chrome Custom Tab
-/// (Android), keeping the user inside the Payn session rather than leaving
-/// to the system browser.
+/// Opens provider URLs in the system browser only, keeping Payn out of any
+/// embedded browser or webview flow.
 ///
 /// Usage:
 ///   final result = await LinkHandlerService.open(uri, context: context);
@@ -17,12 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 ///   flutter_custom_tabs) and use CustomTabsLaunchParams.safariViewControllerOptions.
 abstract final class LinkHandlerService {
 
-  /// Opens [uri] in an in-app browser and returns the result.
-  ///
-  /// Strategy (in order):
-  ///   1. In-app browser view (SFSafariViewController / Chrome Custom Tab)
-  ///   2. System browser fallback
-  ///   3. Clipboard copy as last resort
+  /// Opens [uri] in the external browser and returns the result.
   static Future<LinkResult> open(
     Uri uri, {
     required BuildContext context,
@@ -47,23 +41,6 @@ abstract final class LinkHandlerService {
       );
     }
 
-    // ── Primary: in-app browser ───────────────────────────────────────────
-    // LaunchMode.inAppBrowserView maps to:
-    //   iOS  → SFSafariViewController  (Apple-approved, "Done" button included,
-    //                                   full JS + cookies, no popup-blocker risk)
-    //   Android → Chrome Custom Tab    (shares cookies/session with Chrome)
-    try {
-      final launched = await launchUrl(
-        secureUri,
-        mode: LaunchMode.inAppBrowserView,
-        browserConfiguration: const BrowserConfiguration(showTitle: true),
-      );
-      if (launched) return LinkResult._ok(uri: secureUri);
-    } catch (_) {
-      // In-app view unavailable (e.g. simulator without Safari) — fall through.
-    }
-
-    // ── Fallback: system browser ──────────────────────────────────────────
     try {
       final external = await launchUrl(
         secureUri,
@@ -102,7 +79,7 @@ class LinkResult {
   final Uri uri;
   final String? message;
 
-  /// True when the system browser was used instead of the in-app view.
+  /// True when a non-primary fallback path was used.
   final bool usedFallback;
 
   /// True when the URL was copied to clipboard as a last resort.

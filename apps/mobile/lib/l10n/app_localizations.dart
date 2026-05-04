@@ -766,6 +766,66 @@ abstract class AppLocalizations {
   /// **'Clear filters'**
   String get exploreClearFilters;
 
+  /// No description provided for @exploreFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get exploreFiltersTitle;
+
+  /// No description provided for @exploreMarketLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get exploreMarketLabel;
+
+  /// No description provided for @exploreProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get exploreProviderLabel;
+
+  /// No description provided for @exploreFeatureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature'**
+  String get exploreFeatureLabel;
+
+  /// No description provided for @exploreSubtypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtype'**
+  String get exploreSubtypeLabel;
+
+  /// No description provided for @exploreAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount {amount}'**
+  String exploreAmountLabel(Object amount);
+
+  /// No description provided for @exploreTermLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Term {months} months'**
+  String exploreTermLabel(int months);
+
+  /// No description provided for @exploreApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get exploreApply;
+
+  /// No description provided for @exploreMarketIntelligenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Market intelligence'**
+  String get exploreMarketIntelligenceTitle;
+
+  /// No description provided for @exploreMarketIntelligenceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track live market context before moving into investment products.'**
+  String get exploreMarketIntelligenceSubtitle;
+
   /// No description provided for @offerDecisionReviewed.
   ///
   /// In en, this message translates to:
@@ -789,6 +849,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved'**
   String get offerSaved;
+
+  /// No description provided for @offerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer no longer available.'**
+  String get offerUnavailable;
+
+  /// No description provided for @offerStrongMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong match'**
+  String get offerStrongMatch;
+
+  /// No description provided for @offerRatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rates'**
+  String get offerRatesTitle;
+
+  /// No description provided for @offerBenefitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Benefits'**
+  String get offerBenefitsTitle;
+
+  /// No description provided for @offerTradeoffsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tradeoffs'**
+  String get offerTradeoffsTitle;
 
   /// No description provided for @navHome.
   ///
@@ -820,38 +910,328 @@ abstract class AppLocalizations {
   /// **'{value}k'**
   String formatterThousandsCompact(Object value);
 
+  /// No description provided for @homeActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your financial activity'**
   String get homeActivityTitle;
+
+  /// No description provided for @homeActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track views, shortlist momentum, and clicks over time.'**
   String get homeActivitySubtitle;
+
+  /// No description provided for @homeActivityTotalViews.
+  ///
+  /// In en, this message translates to:
+  /// **'Total views'**
   String get homeActivityTotalViews;
+
+  /// No description provided for @homeActivityCtr.
+  ///
+  /// In en, this message translates to:
+  /// **'Click-through rate'**
   String get homeActivityCtr;
+
+  /// No description provided for @homeActivityOfferHandoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer handoff'**
   String get homeActivityOfferHandoff;
+
+  /// No description provided for @homeActivitySavedOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved offers'**
   String get homeActivitySavedOffers;
+
+  /// No description provided for @homeActivityShortlistReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortlist ready'**
   String get homeActivityShortlistReady;
+
+  /// No description provided for @chartViews.
+  ///
+  /// In en, this message translates to:
+  /// **'Views'**
   String get chartViews;
+
+  /// No description provided for @chartClicks.
+  ///
+  /// In en, this message translates to:
+  /// **'Clicks'**
   String get chartClicks;
+
+  /// No description provided for @offerDecisionNoFees.
+  ///
+  /// In en, this message translates to:
+  /// **'No fees'**
   String get offerDecisionNoFees;
+
+  /// No description provided for @offerDecisionFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
   String get offerDecisionFast;
+
+  /// No description provided for @offerDecisionBestValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Best value'**
   String get offerDecisionBestValue;
+
+  /// No description provided for @offerCtaCheckRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Check my rate'**
   String get offerCtaCheckRate;
+
+  /// No description provided for @offerCtaApprovalOdds.
+  ///
+  /// In en, this message translates to:
+  /// **'See approval odds'**
   String get offerCtaApprovalOdds;
+
+  /// No description provided for @offerCtaOpenProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Open provider'**
   String get offerCtaOpenProvider;
+
+  /// No description provided for @offerCtaCoverPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Check cover price'**
   String get offerCtaCoverPrice;
+
+  /// No description provided for @offerCtaOpenDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Open details'**
   String get offerCtaOpenDetails;
+
+  /// No description provided for @offerDetailsLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan details'**
   String get offerDetailsLoan;
+
+  /// No description provided for @offerDetailsCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card details'**
   String get offerDetailsCard;
+
+  /// No description provided for @offerDetailsFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee details'**
   String get offerDetailsFee;
+
+  /// No description provided for @offerDetailsPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Policy details'**
   String get offerDetailsPolicy;
+
+  /// No description provided for @offerDetailsPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform details'**
   String get offerDetailsPlatform;
+
+  /// No description provided for @providerOpeningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening {provider}'**
   String providerOpeningTitle(Object provider);
+
+  /// No description provided for @providerLeavingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You are leaving Payn to continue'**
   String get providerLeavingDescription;
+
+  /// No description provided for @providerOpeningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening provider page...'**
   String get providerOpeningMessage;
+
+  /// No description provided for @providerManualMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Open provider if nothing happened.'**
   String get providerManualMessage;
+
+  /// No description provided for @providerOpenButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open provider'**
   String get providerOpenButton;
+
+  /// No description provided for @providerBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Payn'**
   String get providerBackButton;
+
+  /// No description provided for @providerLinkUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider link is unavailable.'**
   String get providerLinkUnavailable;
+
+  /// No description provided for @providerLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open automatically. URL copied to clipboard.'**
   String get providerLinkCopied;
+
+  /// No description provided for @providerLinkUnavailableSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'This provider link is unavailable right now.'**
   String get providerLinkUnavailableSnackbar;
+
+  /// No description provided for @interestTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get interestTravel;
+
+  /// No description provided for @interestSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get interestSavings;
+
+  /// No description provided for @interestCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto'**
+  String get interestCrypto;
+
+  /// No description provided for @interestInternationalTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'International transfers'**
+  String get interestInternationalTransfers;
+
+  /// No description provided for @interestInvesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Investing'**
+  String get interestInvesting;
+
+  /// No description provided for @interestInsurance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insurance'**
+  String get interestInsurance;
+
+  /// No description provided for @interestEverydayBanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyday banking'**
+  String get interestEverydayBanking;
+
+  /// No description provided for @exploreSortBestMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Best match'**
+  String get exploreSortBestMatch;
+
+  /// No description provided for @exploreSortLowestFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest fee'**
+  String get exploreSortLowestFee;
+
+  /// No description provided for @exploreSortFastest.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest'**
+  String get exploreSortFastest;
+
+  /// No description provided for @exploreSortRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get exploreSortRecommended;
+
+  /// No description provided for @exploreMarketDataUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Market data is temporarily unavailable. Try another asset.'**
+  String get exploreMarketDataUnavailable;
+
+  /// No description provided for @exploreMarketTrendsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trends'**
+  String get exploreMarketTrendsTitle;
+
+  /// No description provided for @exploreMarketInsightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI insights'**
+  String get exploreMarketInsightsTitle;
+
+  /// No description provided for @exploreMarketRecommendationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended actions'**
+  String get exploreMarketRecommendationsTitle;
+
+  /// No description provided for @marketAssetSp500.
+  ///
+  /// In en, this message translates to:
+  /// **'S&P 500'**
+  String get marketAssetSp500;
+
+  /// No description provided for @marketAssetGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get marketAssetGold;
+
+  /// No description provided for @marketAssetPriceSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot price'**
+  String get marketAssetPriceSpot;
+
+  /// No description provided for @marketAssetPriceIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Index level'**
+  String get marketAssetPriceIndex;
+
+  /// No description provided for @marketAssetPriceFx.
+  ///
+  /// In en, this message translates to:
+  /// **'FX rate'**
+  String get marketAssetPriceFx;
+
+  /// No description provided for @marketAssetPriceFutures.
+  ///
+  /// In en, this message translates to:
+  /// **'Futures price'**
+  String get marketAssetPriceFutures;
+
+  /// No description provided for @splashTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Move money with more clarity'**
   String get splashTagline;
+
+  /// No description provided for @routerError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not open that route.'**
   String get routerError;
 }
 

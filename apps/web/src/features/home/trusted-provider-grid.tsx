@@ -53,7 +53,7 @@ function getEyebrow(locale: MarketplaceLocale) {
 function TrustLogoCell({ provider }: { provider: TrustedProvider }) {
   return (
     <div
-      className="group/trust flex h-14 w-14 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.06] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.10] sm:h-16 sm:w-16 sm:rounded-[16px]"
+      className="group/trust flex h-14 w-14 items-center justify-center rounded-[14px] border border-line bg-white shadow-subtle transition-all duration-200 hover:border-accent-emerald/20 hover:bg-bg-surface sm:h-16 sm:w-16 sm:rounded-[16px]"
       title={provider.label}
       aria-label={provider.label}
     >
@@ -66,12 +66,12 @@ function TrustLogoCell({ provider }: { provider: TrustedProvider }) {
             src={provider.src}
             alt={provider.label}
             loading="lazy"
-            className={`h-auto w-auto object-contain brightness-0 invert opacity-40 transition-opacity duration-200 ease-out group-hover/trust:opacity-70 ${provider.maxWidthClassName ?? "max-w-[42px]"} ${provider.maxHeightClassName ?? "max-h-[18px]"}`}
+            className={`h-auto w-auto object-contain opacity-70 transition-opacity duration-200 ease-out group-hover/trust:opacity-100 ${provider.maxWidthClassName ?? "max-w-[42px]"} ${provider.maxHeightClassName ?? "max-h-[18px]"}`}
           />
         </span>
       ) : (
         <div
-          className={`flex flex-col items-center justify-center text-center text-slate-500 opacity-60 transition-opacity duration-200 ease-out group-hover/trust:opacity-90 ${provider.className ?? ""}`}
+          className={`flex flex-col items-center justify-center text-center text-ink-tertiary opacity-80 transition-opacity duration-200 ease-out group-hover/trust:opacity-100 ${provider.className ?? ""}`}
           style={{ fontFamily: "Manrope, system-ui, sans-serif" }}
         >
           {provider.lines.map((line) => (
@@ -87,26 +87,26 @@ export function TrustedProviderGrid({ locale }: { locale: MarketplaceLocale }) {
   const dictionary = getDictionary(locale);
 
   return (
-    <section className="rounded-[28px] border border-white/10 bg-white/[0.03] px-5 py-6 backdrop-blur-md sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+    <section className="rounded-[28px] border border-line bg-white px-5 py-6 shadow-card sm:px-6 sm:py-7 lg:px-8 lg:py-8">
       {/* ── Stat counters ── */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 mb-8 pb-8 border-b border-white/10">
+      <div className="mb-8 grid grid-cols-2 gap-4 border-b border-line pb-8 sm:grid-cols-4 sm:gap-6">
         {TRUST_STATS.map((stat) => (
           <div key={stat.label} className="text-center sm:text-left">
-            <p className="text-[2rem] font-extrabold leading-none tracking-[-0.06em] text-slate-50 sm:text-[2.4rem]">
+            <p className="text-[2rem] font-extrabold leading-none tracking-[-0.06em] text-ink sm:text-[2.4rem]">
               {stat.value}
             </p>
-            <p className="mt-1.5 text-[12px] font-medium text-slate-500">{stat.label}</p>
+            <p className="mt-1.5 text-[12px] font-medium text-ink-tertiary">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* ── Provider grid ── */}
       <div className="max-w-2xl">
-        <p className="text-caption uppercase tracking-[0.28em] text-slate-500">
+        <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
           {getEyebrow(locale)}
         </p>
-        <h2 className="mt-3 text-h3 text-slate-50">{dictionary.home.providerTitle}</h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
+        <h2 className="mt-3 text-h3 text-ink">{dictionary.home.providerTitle}</h2>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
           {dictionary.home.providerDescription}
         </p>
       </div>
@@ -118,12 +118,12 @@ export function TrustedProviderGrid({ locale }: { locale: MarketplaceLocale }) {
       </div>
 
       {/* ── Ranking note ── */}
-      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/10 pt-5">
-        <p className="text-[12px] text-slate-600">
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line pt-5">
+        <p className="text-[12px] text-ink-tertiary">
           Rankings are updated daily based on fees, rates, and real user outcomes.
         </p>
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-emerald">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-emerald" />
           No ads · No sponsored placements
         </span>
       </div>

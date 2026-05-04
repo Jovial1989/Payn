@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 
@@ -60,5 +61,54 @@ extension ProfileTypeL10n on ProfileType {
       case ProfileType.business:
         return l10n.profileTypeBusiness;
     }
+  }
+}
+
+extension MarketAssetL10n on MarketAsset {
+  String localizedLabel(AppLocalizations l10n) {
+    switch (this) {
+      case MarketAsset.btc:
+        return 'BTC';
+      case MarketAsset.sp500:
+        return l10n.marketAssetSp500;
+      case MarketAsset.eurUsd:
+        return 'EUR/USD';
+      case MarketAsset.gold:
+        return l10n.marketAssetGold;
+    }
+  }
+
+  String localizedPriceLabel(AppLocalizations l10n) {
+    switch (this) {
+      case MarketAsset.btc:
+        return l10n.marketAssetPriceSpot;
+      case MarketAsset.sp500:
+        return l10n.marketAssetPriceIndex;
+      case MarketAsset.eurUsd:
+        return l10n.marketAssetPriceFx;
+      case MarketAsset.gold:
+        return l10n.marketAssetPriceFutures;
+    }
+  }
+}
+
+String localizedInterestLabel(String interest, AppLocalizations l10n) {
+  switch (interest) {
+    case 'travel':
+      return l10n.interestTravel;
+    case 'savings':
+      return l10n.interestSavings;
+    case 'crypto':
+      return l10n.interestCrypto;
+    case 'international_transfers':
+      return l10n.interestInternationalTransfers;
+    case 'investing':
+      return l10n.interestInvesting;
+    case 'insurance':
+      return l10n.interestInsurance;
+    case 'everyday_banking':
+      return l10n.interestEverydayBanking;
+    default:
+      return interest;
   }
 }

@@ -334,7 +334,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exploreLiveRanking => 'Ranking en vivo';
 
   @override
-  String get exploreBestOptions => 'Mejores opciones para ti';
+  String get exploreBestOptions => '¿Qué necesitas?';
 
   @override
   String exploreRankedOffersInMarket(int count, Object market) {
@@ -366,6 +366,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exploreClearFilters => 'Borrar filtros';
 
   @override
+  String get exploreFiltersTitle => 'Filtros';
+
+  @override
+  String get exploreMarketLabel => 'Mercado';
+
+  @override
+  String get exploreProviderLabel => 'Proveedor';
+
+  @override
+  String get exploreFeatureLabel => 'Característica';
+
+  @override
+  String get exploreSubtypeLabel => 'Subtipo';
+
+  @override
+  String exploreAmountLabel(Object amount) {
+    return 'Importe $amount';
+  }
+
+  @override
+  String exploreTermLabel(int months) {
+    return 'Plazo $months meses';
+  }
+
+  @override
+  String get exploreApply => 'Aplicar';
+
+  @override
+  String get exploreMarketIntelligenceTitle => 'Inteligencia de mercado';
+
+  @override
+  String get exploreMarketIntelligenceSubtitle =>
+      'Sigue el contexto del mercado en vivo antes de pasar a productos de inversión.';
+
+  @override
   String get offerDecisionReviewed => 'Revisado';
 
   @override
@@ -376,6 +411,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get offerSaved => 'Guardado';
+
+  @override
+  String get offerUnavailable => 'La oferta ya no está disponible.';
+
+  @override
+  String get offerStrongMatch => 'Buena coincidencia';
+
+  @override
+  String get offerRatesTitle => 'Condiciones';
+
+  @override
+  String get offerBenefitsTitle => 'Ventajas';
+
+  @override
+  String get offerTradeoffsTitle => 'Compensaciones';
 
   @override
   String get navHome => 'Inicio';
@@ -398,7 +448,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeActivityTitle => 'Tu actividad financiera';
 
   @override
-  String get homeActivitySubtitle => 'Sigue vistas, lista corta y clics a lo largo del tiempo.';
+  String get homeActivitySubtitle =>
+      'Sigue vistas, lista corta y clics a lo largo del tiempo.';
 
   @override
   String get homeActivityTotalViews => 'Vistas totales';
@@ -461,7 +512,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get offerDetailsPlatform => 'Detalles de la plataforma';
 
   @override
-  String providerOpeningTitle(Object provider) => 'Abriendo $provider';
+  String providerOpeningTitle(Object provider) {
+    return 'Abriendo $provider';
+  }
 
   @override
   String get providerLeavingDescription => 'Saliendo de Payn para continuar';
@@ -470,7 +523,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get providerOpeningMessage => 'Abriendo la página del proveedor...';
 
   @override
-  String get providerManualMessage => 'Pulsa "Abrir proveedor" si nada ocurrió.';
+  String get providerManualMessage =>
+      'Pulsa \"Abrir proveedor\" si nada ocurrió.';
 
   @override
   String get providerOpenButton => 'Abrir proveedor';
@@ -482,10 +536,76 @@ class AppLocalizationsEs extends AppLocalizations {
   String get providerLinkUnavailable => 'Este enlace no está disponible.';
 
   @override
-  String get providerLinkCopied => 'No se pudo abrir. URL copiada al portapapeles.';
+  String get providerLinkCopied =>
+      'No se pudo abrir. URL copiada al portapapeles.';
 
   @override
-  String get providerLinkUnavailableSnackbar => 'Este enlace del proveedor no está disponible ahora.';
+  String get providerLinkUnavailableSnackbar =>
+      'Este enlace del proveedor no está disponible ahora.';
+
+  @override
+  String get interestTravel => 'Viajes';
+
+  @override
+  String get interestSavings => 'Ahorro';
+
+  @override
+  String get interestCrypto => 'Cripto';
+
+  @override
+  String get interestInternationalTransfers => 'Transferencias internacionales';
+
+  @override
+  String get interestInvesting => 'Inversión';
+
+  @override
+  String get interestInsurance => 'Seguros';
+
+  @override
+  String get interestEverydayBanking => 'Banca diaria';
+
+  @override
+  String get exploreSortBestMatch => 'Mejor coincidencia';
+
+  @override
+  String get exploreSortLowestFee => 'Menor comisión';
+
+  @override
+  String get exploreSortFastest => 'Más rápido';
+
+  @override
+  String get exploreSortRecommended => 'Recomendado';
+
+  @override
+  String get exploreMarketDataUnavailable =>
+      'Los datos de mercado no están disponibles temporalmente. Prueba con otro activo.';
+
+  @override
+  String get exploreMarketTrendsTitle => 'Tendencias';
+
+  @override
+  String get exploreMarketInsightsTitle => 'Ideas de IA';
+
+  @override
+  String get exploreMarketRecommendationsTitle => 'Acciones recomendadas';
+
+  @override
+  String get marketAssetSp500 => 'S&P 500';
+
+  @override
+  String get marketAssetGold => 'Oro';
+
+  @override
+  String get marketAssetPriceSpot => 'Precio spot';
+
+  @override
+  String get marketAssetPriceIndex => 'Nivel del índice';
+
+  @override
+  String get marketAssetPriceFx => 'Tipo FX';
+
+  @override
+  String get marketAssetPriceFutures => 'Precio de futuros';
 
   @override
   String get splashTagline => 'Claridad para tu dinero';
