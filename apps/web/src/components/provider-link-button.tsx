@@ -104,6 +104,21 @@ export function ProviderLinkButton({
       }),
     );
 
+    void fetch("/api/v1/track-click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        offer_id: offer.id,
+        provider_name: offer.providerName,
+        category: offer.category,
+        country,
+        language,
+        is_monetised: Boolean(offer.affiliateLink || offer.linkType === "affiliate_redirect"),
+        outbound_url: rawUrl ?? "",
+        source_page: source,
+      }),
+    }).catch(() => {});
+
     if (user && isSupabaseConfigured()) {
       void (async () => {
         try {
