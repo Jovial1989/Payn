@@ -112,6 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
+  const isAdmin = user?.email === "admin@admin.com" || user?.app_metadata?.role === "admin" || user?.user_metadata?.role === "admin";
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const uiCopy = getUiCopy(preferences.locale);
@@ -432,6 +433,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           >
                             {uiCopy.dashboard.navItems.profile.label}
                           </Link>
+                          {isAdmin ? (
+                            <Link
+                              href="/admin"
+                              onClick={() => setAccountMenuOpen(false)}
+                              className="rounded-[14px] px-3 py-2 text-sm font-semibold text-accent-emerald transition-colors hover:bg-accent-emerald-soft"
+                            >
+                              Admin panel
+                            </Link>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => {

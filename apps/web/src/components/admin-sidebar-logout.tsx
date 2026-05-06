@@ -6,8 +6,8 @@ export function AdminSidebarLogout() {
   const router = useRouter();
 
   async function handleLogout() {
-    await fetch("/api/v1/admin/logout", { method: "POST" });
-    router.replace("/admin/login");
+    await fetch("/api/v1/auth/signout", { method: "POST", credentials: "same-origin" });
+    router.replace("/login");
   }
 
   return (
