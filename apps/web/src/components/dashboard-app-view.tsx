@@ -91,6 +91,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   const handleSignOut = useCallback(async () => {
     await signOut();
     router.replace(discoverHref);
+    router.refresh();
   }, [discoverHref, router, signOut]);
   const loadInsights = useCallback(async () => {
     if (!user) {

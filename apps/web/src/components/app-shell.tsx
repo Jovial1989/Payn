@@ -203,6 +203,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const handleSignOut = async () => {
     await signOut();
     router.replace(localePath(preferences.locale, "/discover"));
+    router.refresh();
   };
 
   return (
