@@ -195,6 +195,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!error && data.user) {
         await createDefaultProfile(data.user.id);
+        return { error: null, hasSession: true };
+      }
+
+      // If Supabase blocks because email isn't confirmed, try the admin credential route.
+      // This allows admin@admin.com to log in without needing email confirmation.
+      if (error?.message?.toLowerCase().includes("confirm")) {
+        const res = await fetch("/api/v1/auth/admin-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ email, password }),
+        });
+        if (res.ok) {
+          return { error: null, hasSession: true };
+        }
       }
 
       return {

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, verifyAdminSession } from "@/lib/admin-auth";
 
 function isAdminUser(email: string | undefined, appMeta: Record<string, unknown> | undefined, userMeta: Record<string, unknown> | undefined): boolean {
   return (
@@ -11,6 +12,12 @@ function isAdminUser(email: string | undefined, appMeta: Record<string, unknown>
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Accept the HMAC cookie from the direct admin-login route (no Supabase needed)
+  const adminCookie = request.cookies.get(SESSION_COOKIE)?.value;
+  if (adminCookie && await verifyAdminSession(adminCookie)) {
+    return NextResponse.next({ request });
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
