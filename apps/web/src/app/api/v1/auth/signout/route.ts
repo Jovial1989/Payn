@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
-import { SESSION_COOKIE } from "@/lib/admin-auth";
+import { SESSION_COOKIE } from "@/lib/admin-auth-edge";
 import { createSupabaseServerClient } from "@/server/supabase/client";
 
 export async function POST() {

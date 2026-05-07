@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminSession, SESSION_COOKIE } from "@/lib/admin-auth";
+import { createAdminSession, SESSION_COOKIE } from "@/lib/admin-auth-edge";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json().catch(() => ({}));

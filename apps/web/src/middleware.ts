@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifyAdminSession } from "@/lib/admin-auth";
+import { SESSION_COOKIE, verifyAdminSession } from "@/lib/admin-auth-edge";
 
 function isAdminUser(email: string | undefined, appMeta: Record<string, unknown> | undefined, userMeta: Record<string, unknown> | undefined): boolean {
   return (
@@ -13,7 +13,12 @@ function isAdminUser(email: string | undefined, appMeta: Record<string, unknown>
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Accept the HMAC cookie from the direct admin-login route (no Supabase needed)
+  // Allow the login endpoint through without any auth check (chicken-and-egg)
+  if (pathname === "/api/v1/admin/login") {
+    return NextResponse.next({ request });
+  }
+
+  // Accept the HMAC cookie from the admin-login endpoint (no Supabase needed)
   const adminCookie = request.cookies.get(SESSION_COOKIE)?.value;
   if (adminCookie && await verifyAdminSession(adminCookie)) {
     return NextResponse.next({ request });
