@@ -48,8 +48,7 @@ class SavedScreen extends StatelessWidget {
             ),
           ),
           if (offers.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
+            SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   20,

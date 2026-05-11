@@ -24,8 +24,6 @@ export const canonicalLanguages: CanonicalLanguageOption[] = [
   { code: "de", native: "Deutsch" },
   { code: "es", native: "Espanol" },
   { code: "fr", native: "Francais" },
-  { code: "it", native: "Italiano" },
-  { code: "pt", native: "Portugues" },
 ];
 
 export const canonicalCategories: MarketplaceCategory[] = [
@@ -87,7 +85,17 @@ export const canonicalCountryLabels: Record<MarketplaceLocale, Partial<Record<Ma
     nl: "Paises Bajos",
     pt: "Portugal",
   },
-  fr: {},
+  fr: {
+    eu: "Toute l'Europe",
+    international: "International",
+    de: "Allemagne",
+    es: "Espagne",
+    it: "Italie",
+    fr: "France",
+    uk: "Royaume-Uni",
+    nl: "Pays-Bas",
+    pt: "Portugal",
+  },
   it: {},
   pt: {},
 };

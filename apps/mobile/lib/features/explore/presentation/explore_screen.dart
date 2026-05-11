@@ -13,12 +13,20 @@ import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/insight_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
+
+class _NumberRange {
+  const _NumberRange({this.min, this.max});
+
+  final double? min;
+  final double? max;
+}
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -299,6 +307,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
           const SliverToBoxAdapter(child: SizedBox(height: 6)),
 
+          if (controller.hasCatalogError)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: _CatalogErrorBanner(
+                  loading: controller.catalogLoading,
+                  onRetry: controller.refreshCatalog,
+                ),
+              ),
+            ),
+
           if (usingFallback)
             SliverToBoxAdapter(
               child: Padding(
@@ -436,10 +455,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               );
                               if (!accepted && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'You can compare up to 3 offers.',
-                                    ),
+                                  SnackBar(
+                                    content: Text(l10n.savedCompareLimit),
                                   ),
                                 );
                               }
@@ -488,12 +505,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   int _metricScore(PaynOffer offer) {
-    if (offer.metrics.isEmpty) return 999999;
-    final value = offer.metrics.first.value.replaceAll(RegExp(r'[^0-9.]'), '');
-    return (double.tryParse(value) ?? 999999).round();
+    final feeMetric = _metricValue(offer, const <String>[
+      'Fee',
+      'Fees',
+      'Annual fee',
+      'Monthly fee',
+      'Spread',
+      'FX markup',
+      'Conversion fee',
+    ]);
+    return (_metricRange(feeMetric).min ?? 999999).round();
   }
 
   int _speedScore(PaynOffer offer) {
+    switch (offer.attributes.speed) {
+      case 'instant':
+        return 0;
+      case 'same_day':
+        return 1;
+      case 'next_day':
+        return 2;
+    }
+
     final text = [
       offer.subtitle.toLowerCase(),
       ...offer.bestFor.map((item) => item.toLowerCase()),
@@ -505,7 +538,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   double _recommendationScore(PaynOffer offer) {
-    return offer.affiliatePriorityScore + (offer.bestFor.length * 0.2);
+    final partnerBoost = offer.attributes.isPartner ? 2 : 0;
+    final updatedAt = DateTime.tryParse(offer.updatedAt);
+    final freshness =
+        updatedAt == null
+            ? 0
+            : (updatedAt.millisecondsSinceEpoch / 1000000000000);
+    return partnerBoost + freshness + offer.affiliatePriorityScore;
+  }
+
+  String? _metricValue(PaynOffer offer, List<String> labels) {
+    for (final metric in offer.metrics) {
+      if (labels.contains(metric.label)) {
+        return metric.value;
+      }
+    }
+    return null;
+  }
+
+  _NumberRange _metricRange(String? value) {
+    if (value == null || value.isEmpty) {
+      return const _NumberRange();
+    }
+    final numbers =
+        RegExp(r'(\d+(?:[.,]\d+)?)')
+            .allMatches(value)
+            .map(
+              (match) => double.tryParse(match.group(1)!.replaceAll(',', '')),
+            )
+            .whereType<double>()
+            .toList();
+    if (numbers.isEmpty) {
+      return const _NumberRange();
+    }
+    return _NumberRange(min: numbers.first, max: numbers.last);
   }
 
   String _sortLabel(_ExploreSort option, dynamic l10n) {
@@ -527,11 +593,22 @@ class _ExploreScreenState extends State<ExploreScreen> {
   ) async {
     final current = controller.exploreFilters;
     var draft = current;
+    final reduceMotion = PaynMotion.reduce(context);
 
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.24),
+      clipBehavior: Clip.none,
+      sheetAnimationStyle: AnimationStyle(
+        duration: reduceMotion ? Duration.zero : PaynMotion.sheet,
+        reverseDuration: reduceMotion ? Duration.zero : PaynMotion.medium,
+        curve: PaynMotion.ease,
+        reverseCurve: Curves.easeInCubic,
+      ),
       builder: (context) {
         final theme = Theme.of(context);
         return DraggableScrollableSheet(
@@ -542,202 +619,266 @@ class _ExploreScreenState extends State<ExploreScreen> {
           snap: true,
           snapSizes: const <double>[0.42, 0.72, 0.92],
           builder: (context, scrollController) {
-            return StatefulBuilder(
-              builder: (context, setState) {
-                final l10n = context.l10n;
-                final isLoans =
-                    controller.selectedExploreCategory == PaynCategory.loans;
-                final providerOptions = controller.providerOptions;
-                final featureOptions = controller.featureOptions;
-                final subtypeOptions = controller.subtypeOptions;
-
-                return Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    12,
-                    16,
-                    16 + MediaQuery.of(context).viewInsets.bottom,
+            return DecoratedBox(
+              decoration: const BoxDecoration(
+                color: PaynColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Color(0x1F000000),
+                    blurRadius: 28,
+                    offset: Offset(0, -8),
                   ),
-                  child: ListView(
-                    controller: scrollController,
-                    children: <Widget>[
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color: PaynColors.outline,
+                ],
+              ),
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  final l10n = context.l10n;
+                  final isLoans =
+                      controller.selectedExploreCategory == PaynCategory.loans;
+                  final providerOptions = controller.providerOptions;
+                  final featureOptions = controller.featureOptions;
+                  final subtypeOptions = controller.subtypeOptions;
+
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      12,
+                      16,
+                      16 + MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: ListView(
+                      controller: scrollController,
+                      children: <Widget>[
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              color: PaynColors.outline,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.exploreFiltersTitle,
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 14),
-                      DropdownButtonFormField<PaynMarket>(
-                        initialValue: controller.preferences.market,
-                        decoration: InputDecoration(
-                          labelText: l10n.exploreMarketLabel,
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.exploreFiltersTitle,
+                          style: theme.textTheme.titleLarge,
                         ),
-                        items:
-                            PaynMarket.values
-                                .map(
-                                  (market) => DropdownMenuItem<PaynMarket>(
-                                    value: market,
-                                    child: Text(market.localizedLabel(l10n)),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          if (value == null) return;
-                          controller.updatePreferences(
-                            controller.preferences.copyWith(market: value),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue:
-                            draft.provider.isEmpty ? null : draft.provider,
-                        decoration: InputDecoration(
-                          labelText: l10n.exploreProviderLabel,
+                        const SizedBox(height: 14),
+                        DropdownButtonFormField<PaynMarket>(
+                          initialValue: controller.preferences.market,
+                          decoration: InputDecoration(
+                            labelText: l10n.exploreMarketLabel,
+                          ),
+                          items:
+                              PaynMarket.values
+                                  .map(
+                                    (market) => DropdownMenuItem<PaynMarket>(
+                                      value: market,
+                                      child: Text(market.localizedLabel(l10n)),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            controller.updatePreferences(
+                              controller.preferences.copyWith(market: value),
+                            );
+                          },
                         ),
-                        items:
-                            providerOptions
-                                .map(
-                                  (p) => DropdownMenuItem(
-                                    value: p,
-                                    child: Text(p),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          setState(
-                            () => draft = draft.copyWith(provider: value ?? ''),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue:
-                            draft.feature.isEmpty ? null : draft.feature,
-                        decoration: InputDecoration(
-                          labelText: l10n.exploreFeatureLabel,
-                        ),
-                        items:
-                            featureOptions
-                                .map(
-                                  (f) => DropdownMenuItem(
-                                    value: f,
-                                    child: Text(f),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          setState(
-                            () => draft = draft.copyWith(feature: value ?? ''),
-                          );
-                        },
-                      ),
-                      if (subtypeOptions.isNotEmpty) ...<Widget>[
                         const SizedBox(height: 10),
                         DropdownButtonFormField<String>(
                           initialValue:
-                              draft.subtype.isEmpty ? null : draft.subtype,
+                              draft.provider.isEmpty ? null : draft.provider,
                           decoration: InputDecoration(
-                            labelText: l10n.exploreSubtypeLabel,
+                            labelText: l10n.exploreProviderLabel,
                           ),
                           items:
-                              subtypeOptions
+                              providerOptions
                                   .map(
-                                    (s) => DropdownMenuItem(
-                                      value: s,
-                                      child: Text(s),
+                                    (p) => DropdownMenuItem(
+                                      value: p,
+                                      child: Text(p),
                                     ),
                                   )
                                   .toList(),
                           onChanged: (value) {
                             setState(
                               () =>
-                                  draft = draft.copyWith(subtype: value ?? ''),
+                                  draft = draft.copyWith(provider: value ?? ''),
                             );
                           },
                         ),
-                      ],
-                      if (isLoans) ...<Widget>[
-                        const SizedBox(height: 14),
-                        Text(
-                          l10n.exploreAmountLabel(
-                            formatCurrencyLabel(
-                              draft.amount,
-                              controller.preferences.market,
-                            ),
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<String>(
+                          initialValue:
+                              draft.feature.isEmpty ? null : draft.feature,
+                          decoration: InputDecoration(
+                            labelText: l10n.exploreFeatureLabel,
                           ),
-                          style: theme.textTheme.labelLarge,
-                        ),
-                        Slider(
-                          value: draft.amount.toDouble(),
-                          min: 1000,
-                          max: 60000,
-                          divisions: 59,
+                          items:
+                              featureOptions
+                                  .map(
+                                    (f) => DropdownMenuItem(
+                                      value: f,
+                                      child: Text(f),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged: (value) {
                             setState(
                               () =>
-                                  draft = draft.copyWith(amount: value.round()),
+                                  draft = draft.copyWith(feature: value ?? ''),
                             );
                           },
                         ),
-                        Text(
-                          l10n.exploreTermLabel(draft.term),
-                          style: theme.textTheme.labelLarge,
-                        ),
-                        Slider(
-                          value: draft.term.toDouble(),
-                          min: 6,
-                          max: 84,
-                          divisions: 13,
-                          onChanged: (value) {
-                            setState(
-                              () => draft = draft.copyWith(term: value.round()),
-                            );
-                          },
-                        ),
-                      ],
-                      const SizedBox(height: 14),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                controller.clearExploreFilters();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(l10n.commonClear),
+                        if (subtypeOptions.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: 10),
+                          DropdownButtonFormField<String>(
+                            initialValue:
+                                draft.subtype.isEmpty ? null : draft.subtype,
+                            decoration: InputDecoration(
+                              labelText: l10n.exploreSubtypeLabel,
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: () {
-                                controller.updateExploreFilters(draft);
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(l10n.exploreApply),
-                            ),
+                            items:
+                                subtypeOptions
+                                    .map(
+                                      (s) => DropdownMenuItem(
+                                        value: s,
+                                        child: Text(s),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (value) {
+                              setState(
+                                () =>
+                                    draft = draft.copyWith(
+                                      subtype: value ?? '',
+                                    ),
+                              );
+                            },
                           ),
                         ],
-                      ),
-                    ],
-                  ),
-                );
-              },
+                        if (isLoans) ...<Widget>[
+                          const SizedBox(height: 14),
+                          Text(
+                            l10n.exploreAmountLabel(
+                              formatCurrencyLabel(
+                                draft.amount,
+                                controller.preferences.market,
+                              ),
+                            ),
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          Slider(
+                            value: draft.amount.toDouble(),
+                            min: 1000,
+                            max: 60000,
+                            divisions: 59,
+                            onChanged: (value) {
+                              setState(
+                                () =>
+                                    draft = draft.copyWith(
+                                      amount: value.round(),
+                                    ),
+                              );
+                            },
+                          ),
+                          Text(
+                            l10n.exploreTermLabel(draft.term),
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          Slider(
+                            value: draft.term.toDouble(),
+                            min: 6,
+                            max: 84,
+                            divisions: 13,
+                            onChanged: (value) {
+                              setState(
+                                () =>
+                                    draft = draft.copyWith(term: value.round()),
+                              );
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 14),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  controller.clearExploreFilters();
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(l10n.commonClear),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  controller.updateExploreFilters(draft);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(l10n.exploreApply),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             );
           },
         );
       },
+    );
+  }
+}
+
+class _CatalogErrorBanner extends StatelessWidget {
+  const _CatalogErrorBanner({required this.loading, required this.onRetry});
+
+  final bool loading;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: PaynColors.surfaceDim,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: PaynColors.outline),
+      ),
+      child: Row(
+        children: <Widget>[
+          const Icon(
+            Icons.cloud_off_rounded,
+            size: 18,
+            color: PaynColors.textSecondary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              l10n.catalogSyncError,
+              style: theme.textTheme.bodyMedium,
+            ),
+          ),
+          TextButton(
+            onPressed: loading ? null : onRetry,
+            child: Text(
+              loading ? l10n.providerOpeningMessage : l10n.commonRetry,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

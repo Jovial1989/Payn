@@ -3,12 +3,72 @@
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 
 export const PAYN_OPEN_CHAT_EVENT = "payn:open-chat";
 
 const SHEET_MEDIA_QUERY = "(max-width: 1023px)";
 const MAX_TEXTAREA_HEIGHT = 128;
+
+const chatCopy = {
+  en: {
+    open: "Open AI assistant",
+    close: "Close AI assistant",
+    assistant: "Payn AI assistant",
+    beta: "Offer guidance beta",
+    clear: "Clear",
+    emptyTitle: "Ask me anything",
+    emptyBody: "I can help you understand offers, compare products, or explain financial terms.",
+    suggestions: ["What is APR?", "How do transfer fees work?", "Compare Revolut vs Wise"],
+    user: "You",
+    disclaimer: "AI-generated guidance only — not financial advice. Always verify with the provider before making decisions.",
+    inputLabel: "Ask about offers, rates, or terms",
+    inputPlaceholder: "Ask about offers, rates, or terms...",
+  },
+  de: {
+    open: "KI-Assistent öffnen",
+    close: "KI-Assistent schließen",
+    assistant: "Payn KI-Assistent",
+    beta: "Angebotsberatung Beta",
+    clear: "Leeren",
+    emptyTitle: "Frag mich alles",
+    emptyBody: "Ich helfe dir, Angebote zu verstehen, Produkte zu vergleichen oder Finanzbegriffe zu erklären.",
+    suggestions: ["Was ist APR?", "Wie funktionieren Überweisungsgebühren?", "Revolut und Wise vergleichen"],
+    user: "Du",
+    disclaimer: "KI-generierte Hinweise — keine Finanzberatung. Prüfe vor Entscheidungen immer den Anbieter.",
+    inputLabel: "Nach Angeboten, Raten oder Konditionen fragen",
+    inputPlaceholder: "Nach Angeboten, Raten oder Konditionen fragen...",
+  },
+  es: {
+    open: "Abrir asistente de IA",
+    close: "Cerrar asistente de IA",
+    assistant: "Asistente de IA de Payn",
+    beta: "Guía de ofertas beta",
+    clear: "Borrar",
+    emptyTitle: "Pregúntame lo que quieras",
+    emptyBody: "Puedo ayudarte a entender ofertas, comparar productos o explicar términos financieros.",
+    suggestions: ["¿Qué es la TAE?", "¿Cómo funcionan las comisiones de transferencia?", "Comparar Revolut y Wise"],
+    user: "Tú",
+    disclaimer: "Orientación generada por IA — no es asesoramiento financiero. Verifica siempre con el proveedor antes de decidir.",
+    inputLabel: "Pregunta sobre ofertas, tipos o condiciones",
+    inputPlaceholder: "Pregunta sobre ofertas, tipos o condiciones...",
+  },
+  fr: {
+    open: "Ouvrir l’assistant IA",
+    close: "Fermer l’assistant IA",
+    assistant: "Assistant IA Payn",
+    beta: "Conseil d’offres bêta",
+    clear: "Effacer",
+    emptyTitle: "Posez-moi une question",
+    emptyBody: "Je peux vous aider à comprendre les offres, comparer des produits ou expliquer des termes financiers.",
+    suggestions: ["Qu’est-ce que l’APR ?", "Comment fonctionnent les frais de transfert ?", "Comparer Revolut et Wise"],
+    user: "Vous",
+    disclaimer: "Conseils générés par IA uniquement — pas un conseil financier. Vérifiez toujours auprès du fournisseur avant de décider.",
+    inputLabel: "Question sur les offres, taux ou conditions",
+    inputPlaceholder: "Question sur les offres, taux ou conditions...",
+  },
+};
 
 function detectPageCategory(): string | undefined {
   if (typeof window === "undefined") return undefined;
@@ -21,7 +81,9 @@ function detectPageCategory(): string | undefined {
 }
 
 export function ChatWidget() {
+  const { locale } = useMarketplacePreferences();
   const { profile } = useAuth();
+  const copy = chatCopy[locale as keyof typeof chatCopy] ?? chatCopy.en;
   const [open, setOpen] = useState(false);
   const [present, setPresent] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -301,7 +363,7 @@ export function ChatWidget() {
           open && isSheetLayout ? "pointer-events-none scale-95 opacity-0" : "opacity-100"
         }`}
         style={launcherStyle}
-        aria-label="Open AI assistant"
+        aria-label={copy.open}
         aria-expanded={open}
       >
         {open ? (
@@ -331,14 +393,14 @@ export function ChatWidget() {
               type="button"
               onClick={closeChat}
               className="absolute inset-0"
-              aria-label="Close AI assistant"
+              aria-label={copy.close}
             />
           )}
 
           <div
             role="dialog"
             aria-modal={isSheetLayout}
-            aria-label="Payn AI assistant"
+            aria-label={copy.assistant}
             className={`relative flex min-h-0 w-full flex-col overflow-hidden bg-white ${
               isSheetLayout
                 ? "h-full max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 sm:mb-4 sm:max-h-full sm:max-w-[720px] sm:rounded-[30px] sm:border sm:border-line sm:shadow-elevated"
@@ -365,7 +427,7 @@ export function ChatWidget() {
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-ink">Payn AI</p>
-                <p className="truncate text-[11px] text-ink-tertiary">Offer guidance beta</p>
+                <p className="truncate text-[11px] text-ink-tertiary">{copy.beta}</p>
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
@@ -375,7 +437,7 @@ export function ChatWidget() {
                     onClick={clearConversation}
                     className="rounded-full px-3 py-1.5 text-[11px] font-medium text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
                   >
-                    Clear
+                    {copy.clear}
                   </button>
                 )}
 
@@ -383,7 +445,7 @@ export function ChatWidget() {
                   type="button"
                   onClick={closeChat}
                   className="flex h-10 w-10 items-center justify-center rounded-full text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
-                  aria-label="Close AI assistant"
+                  aria-label={copy.close}
                 >
                   <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                     <path d="M4 4l8 8M12 4l-8 8" />
@@ -404,16 +466,12 @@ export function ChatWidget() {
                       <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
                     </svg>
                   </div>
-                  <p className="mt-3 text-base font-semibold text-ink">Ask me anything</p>
+                  <p className="mt-3 text-base font-semibold text-ink">{copy.emptyTitle}</p>
                   <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-ink-tertiary">
-                    I can help you understand offers, compare products, or explain financial terms.
+                    {copy.emptyBody}
                   </p>
                   <div className="mt-5 grid gap-2.5">
-                    {[
-                      "What is APR?",
-                      "How do transfer fees work?",
-                      "Compare Revolut vs Wise",
-                    ].map((q) => (
+                    {copy.suggestions.map((q) => (
                       <button
                         key={q}
                         type="button"
@@ -435,7 +493,7 @@ export function ChatWidget() {
                       className={`flex flex-col gap-1 ${msg.role === "user" ? "items-end" : "items-start"}`}
                     >
                       <p className="text-[11px] font-medium text-ink-tertiary">
-                        {msg.role === "user" ? "You" : "Payn AI"}
+                        {msg.role === "user" ? copy.user : "Payn AI"}
                       </p>
                       <div
                         className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 [overflow-wrap:anywhere] ${
@@ -485,7 +543,7 @@ export function ChatWidget() {
               style={isSheetLayout ? { paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.875rem)" } : undefined}
             >
               <p className="mb-2 text-[10px] leading-snug text-ink-tertiary">
-                AI-generated guidance only — not financial advice. Always verify with the provider before making decisions.
+                {copy.disclaimer}
               </p>
               <form
                 onSubmit={(e) => {
@@ -495,7 +553,7 @@ export function ChatWidget() {
                 className="flex items-end gap-2"
               >
                 <label htmlFor="payn-chat-input" className="sr-only">
-                  Ask about offers, rates, or terms
+                  {copy.inputLabel}
                 </label>
                 <textarea
                   id="payn-chat-input"
@@ -504,7 +562,7 @@ export function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleTextareaKeyDown}
-                  placeholder="Ask about offers, rates, or terms..."
+                  placeholder={copy.inputPlaceholder}
                   className="min-h-[44px] flex-1 resize-none overflow-y-auto rounded-2xl border border-line bg-bg-surface px-4 py-[11px] text-sm leading-5 text-ink placeholder:text-ink-tertiary focus:border-line-active focus:outline-none"
                   style={{ WebkitOverflowScrolling: "touch" }}
                 />

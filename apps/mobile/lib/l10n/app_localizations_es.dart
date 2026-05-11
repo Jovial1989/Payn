@@ -75,6 +75,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get localeSpanish => 'Español';
 
   @override
+  String get localeFrench => 'Francés';
+
+  @override
+  String get localeItalian => 'Italiano';
+
+  @override
+  String get localePortuguese => 'Portugués';
+
+  @override
   String get homeLiveRanking => 'Ranking en vivo';
 
   @override
@@ -100,6 +109,61 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeProviders => 'Proveedores';
+
+  @override
+  String get homeDecisionTitle => 'Acciones recomendadas';
+
+  @override
+  String get homeDecisionSubtitle =>
+      'Elige el siguiente paso útil para decidir.';
+
+  @override
+  String get homeContinueComparingTitle => 'Continuar comparando';
+
+  @override
+  String homeContinueComparingBody(int count) {
+    return '$count ofertas están listas para comparar.';
+  }
+
+  @override
+  String get homeStartComparingTitle => 'Empieza con tus mejores opciones';
+
+  @override
+  String get homeStartComparingBody =>
+      'Compara comisiones, rapidez y elegibilidad antes de solicitar.';
+
+  @override
+  String get homeBestOffersInCountryTitle => 'Mejores ofertas en tu país';
+
+  @override
+  String homeBestOffersInCountryBody(Object provider, Object market) {
+    return '$provider destaca hoy para $market.';
+  }
+
+  @override
+  String homeBestOffersInCountryEmpty(Object market) {
+    return 'Explora ofertas clasificadas disponibles en $market.';
+  }
+
+  @override
+  String get homeRecentlyViewedTitle => 'Visto recientemente';
+
+  @override
+  String homeRecentlyViewedBody(Object provider, Object category) {
+    return 'Sigue revisando $provider en $category.';
+  }
+
+  @override
+  String get homeMarketUpdatesTitle => 'Actualizaciones del mercado';
+
+  @override
+  String homeMarketUpdatesBody(int count) {
+    return '$count ofertas activas están disponibles para tu mercado.';
+  }
+
+  @override
+  String get homeDecisionFootnote =>
+      'Payn te ayuda a comparar. Las condiciones finales las confirma cada proveedor.';
 
   @override
   String get savedTitle => 'Guardado';
@@ -356,6 +420,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonClear => 'Limpiar';
 
   @override
+  String get commonRetry => 'Reintentar';
+
+  @override
   String get exploreNoOffersTitle => 'Ninguna oferta coincide con tus filtros';
 
   @override
@@ -417,6 +484,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get offerStrongMatch => 'Buena coincidencia';
+
+  @override
+  String get offerInformational => 'Informativa';
+
+  @override
+  String get offerEstimated =>
+      'Tarifas estimadas. Las condiciones finales las confirma el proveedor.';
+
+  @override
+  String offerEstimatedUpdated(Object date) {
+    return 'Estimado / actualizado por última vez $date';
+  }
 
   @override
   String get offerRatesTitle => 'Condiciones';
@@ -520,6 +599,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get providerLeavingDescription => 'Saliendo de Payn para continuar';
 
   @override
+  String get providerDisclosure =>
+      'Vas a abrir el sitio del proveedor. Las tarifas y condiciones finales las confirma el proveedor.';
+
+  @override
   String get providerOpeningMessage => 'Abriendo la página del proveedor...';
 
   @override
@@ -528,6 +611,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get providerOpenButton => 'Abrir proveedor';
+
+  @override
+  String get providerFallbackBrowserButton => 'Abrir en navegador';
 
   @override
   String get providerBackButton => 'Volver a Payn';
@@ -612,4 +698,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get routerError => 'No pudimos abrir esa ruta.';
+
+  @override
+  String get catalogSyncError =>
+      'No se pudieron sincronizar los datos más recientes del marketplace. Se muestran ofertas en caché.';
 }

@@ -4,9 +4,9 @@ import {
   canonicalCountryOptions,
   canonicalLanguages,
 } from "@payn/config";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { listProductOffers } from "@/server/offers/offer-importer";
 
-export function buildCanonicalCatalogManifest() {
+export async function buildCanonicalCatalogManifest() {
   return {
     generatedAt: new Date().toISOString(),
     languages: canonicalLanguages,
@@ -20,6 +20,6 @@ export function buildCanonicalCatalogManifest() {
       ),
     })),
     categories: canonicalCategories,
-    offers: marketplaceOffers,
+    offers: await listProductOffers(),
   };
 }

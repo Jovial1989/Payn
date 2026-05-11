@@ -6,15 +6,17 @@ class AppConfig {
   final String apiBaseUrl;
 
   static Future<AppConfig> load() async {
+    String? configured;
     try {
       await dotenv.load(fileName: '.env');
+      configured = dotenv.maybeGet('PAYN_API_BASE_URL');
     } catch (_) {}
 
-    final configured = dotenv.maybeGet('PAYN_API_BASE_URL');
     return AppConfig(
-      apiBaseUrl: (configured == null || configured.trim().isEmpty)
-          ? 'https://payn.online'
-          : configured.trim(),
+      apiBaseUrl:
+          (configured == null || configured.trim().isEmpty)
+              ? 'https://payn.online'
+              : configured.trim(),
     );
   }
 }

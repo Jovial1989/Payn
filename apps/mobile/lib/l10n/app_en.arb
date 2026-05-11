@@ -34,6 +34,51 @@
   "homeSaved": "Saved",
   "homeCompared": "Compared",
   "homeProviders": "Providers",
+  "homeDecisionTitle": "Recommended actions",
+  "homeDecisionSubtitle": "Pick the next useful step toward a decision.",
+  "homeContinueComparingTitle": "Continue comparing",
+  "homeContinueComparingBody": "{count} offers are ready side by side.",
+  "@homeContinueComparingBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeStartComparingTitle": "Start with your best options",
+  "homeStartComparingBody": "Compare fees, speed, and eligibility before you apply.",
+  "homeBestOffersInCountryTitle": "Best offers in your country",
+  "homeBestOffersInCountryBody": "{provider} is ranking well for {market} today.",
+  "@homeBestOffersInCountryBody": {
+    "placeholders": {
+      "provider": {},
+      "market": {}
+    }
+  },
+  "homeBestOffersInCountryEmpty": "Browse ranked offers available in {market}.",
+  "@homeBestOffersInCountryEmpty": {
+    "placeholders": {
+      "market": {}
+    }
+  },
+  "homeRecentlyViewedTitle": "Recently viewed",
+  "homeRecentlyViewedBody": "Continue reviewing {provider} in {category}.",
+  "@homeRecentlyViewedBody": {
+    "placeholders": {
+      "provider": {},
+      "category": {}
+    }
+  },
+  "homeMarketUpdatesTitle": "Market updates",
+  "homeMarketUpdatesBody": "{count} live offers are available for your market.",
+  "@homeMarketUpdatesBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDecisionFootnote": "Payn helps you compare. Final rates and terms are confirmed by each provider.",
   "savedTitle": "Saved",
   "savedSubtitle": "Keep your shortlist ready and compare the strongest options when you want to decide.",
   "savedEmptyTitle": "No saved offers yet",
@@ -143,6 +188,7 @@
     }
   },
   "commonClear": "Clear",
+  "commonRetry": "Retry",
   "exploreNoOffersTitle": "No offers match your filters",
   "exploreNoOffersDescription": "Try clearing filters or switching category.",
   "exploreClearFilters": "Clear filters",
@@ -174,6 +220,14 @@
   "offerSaved": "Saved",
   "offerUnavailable": "Offer no longer available.",
   "offerStrongMatch": "Strong match",
+  "offerInformational": "Informational",
+  "offerEstimated": "Estimated rates. Final terms confirmed by provider.",
+  "offerEstimatedUpdated": "Estimated / last updated {date}",
+  "@offerEstimatedUpdated": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "offerRatesTitle": "Rates",
   "offerBenefitsTitle": "Benefits",
   "offerTradeoffsTitle": "Tradeoffs",
@@ -216,9 +270,11 @@
     }
   },
   "providerLeavingDescription": "You are leaving Payn to continue",
+  "providerDisclosure": "You are opening the provider site. Rates and final terms are confirmed by the provider.",
   "providerOpeningMessage": "Opening provider page...",
   "providerManualMessage": "Use Open provider if nothing happened.",
   "providerOpenButton": "Open provider",
+  "providerFallbackBrowserButton": "Open in browser",
   "providerBackButton": "Back to Payn",
   "providerLinkUnavailable": "Provider link is unavailable.",
   "providerLinkCopied": "Could not open automatically. URL copied to clipboard.",
@@ -245,5 +301,6 @@
   "marketAssetPriceFx": "FX rate",
   "marketAssetPriceFutures": "Futures price",
   "splashTagline": "Move money with more clarity",
-  "routerError": "We could not open that route."
+  "routerError": "We could not open that route.",
+  "catalogSyncError": "Latest marketplace data could not be synced. Cached offers are shown."
 }

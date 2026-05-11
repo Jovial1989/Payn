@@ -100,6 +100,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   children: <Widget>[
                     ProviderBadge(
                       offer: offer,
+                      heroTag: 'provider-${offer.id}',
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -191,7 +192,8 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       .map(
                         (metric) => Padding(
                           padding: EdgeInsets.only(
-                            bottom: identical(metric, offer.metrics.last) ? 0 : 18,
+                            bottom:
+                                identical(metric, offer.metrics.last) ? 0 : 18,
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,19 +295,21 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                                   children: <Widget>[
                                     Text(
                                       metric.label.toUpperCase(),
-                                      style: theme.textTheme.labelMedium?.copyWith(
-                                        fontSize: 10,
-                                        letterSpacing: 1.4,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      style: theme.textTheme.labelMedium
+                                          ?.copyWith(
+                                            fontSize: 10,
+                                            letterSpacing: 1.4,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       metric.value,
-                                      style: theme.textTheme.labelLarge?.copyWith(
-                                        color: PaynColors.text,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            color: PaynColors.text,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
                                   ],
                                 ),

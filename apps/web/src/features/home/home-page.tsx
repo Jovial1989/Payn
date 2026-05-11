@@ -366,7 +366,7 @@ export function HomePage() {
             </p>
             <h2 className="mt-3 text-h2 text-ink">{dictionary.home.howItWorksTitle}</h2>
             <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-ink-secondary">
-              Pick a category and we&apos;ll show you the best options for your country.
+              {dictionary.home.heroPanelSubtitle}
             </p>
           </div>
           <Link href={discoverHref} className={`${buttonStyles({ variant: "secondary", size: "md" })} shrink-0`}>
@@ -387,14 +387,14 @@ export function HomePage() {
               </div>
               <div>
                 <p className="text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink">
-                  {item.headline}
+                  {dictionary.categories[item.category]}
                 </p>
                 <p className="mt-1 text-[12px] leading-relaxed text-ink-tertiary">
                   {item.descriptions[locale] ?? item.descriptions.en}
                 </p>
               </div>
               <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-accent-emerald opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                Compare
+                {dictionary.home.mockup.compare}
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                   <path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -504,12 +504,14 @@ export function HomePage() {
           <div className="flex items-end justify-center overflow-hidden px-6 pb-0 pt-8 lg:items-center lg:py-6 lg:pr-12">
             {/* Compact offer preview instead of blueprint */}
             <div className="w-full max-w-[320px] rounded-[24px] border border-line bg-bg-surface p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">Your shortlist</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
+                {dictionary.home.mockup.yourShortlist}
+              </p>
               <div className="mt-4 grid gap-3">
                 {[
-                  { name: "Wise", cat: "Transfer", val: "0.41%", tag: "Best FX" },
-                  { name: "N26 Black", cat: "Card", val: "€9.90/mo", tag: "No FX fees" },
-                  { name: "Trade Republic", cat: "Investment", val: "4.00%", tag: "Top rate" },
+                  { name: "Wise", cat: dictionary.categories.transfers, val: "0.41%", tag: dictionary.home.tagBestValue },
+                  { name: "N26 Black", cat: dictionary.categories.cards, val: "€9.90/mo", tag: dictionary.home.tagNoFees },
+                  { name: "Trade Republic", cat: dictionary.categories.investments, val: "4.00%", tag: dictionary.home.topRanked },
                 ].map((item, i) => (
                   <div
                     key={item.name}
@@ -531,7 +533,9 @@ export function HomePage() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-center text-[11px] text-ink-tertiary">Syncs to mobile automatically</p>
+              <p className="mt-3 text-center text-[11px] text-ink-tertiary">
+                {dictionary.home.appWaitlistNote}
+              </p>
             </div>
           </div>
         </div>

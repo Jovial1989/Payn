@@ -203,17 +203,26 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       title: context.l10n.localeGateSelectCountry,
       options:
           controller.availableMarkets.map((market) {
-                final entry = _supportedMarkets.firstWhere(
-                  (item) => item.market == market,
-                  orElse: () => _MarketEntry(market: market, flag: market == PaynMarket.international ? '🌍' : market == PaynMarket.eu ? '🇪🇺' : market.name.toUpperCase()),
-                );
-                return SelectionSheetOption<PaynMarket>(
-                  value: market,
-                  leading: entry.flag,
-                  label: market.localizedLabel(context.l10n),
-                  selected: _selectedMarket == market,
-                );
-              }).toList(),
+            final entry = _supportedMarkets.firstWhere(
+              (item) => item.market == market,
+              orElse:
+                  () => _MarketEntry(
+                    market: market,
+                    flag:
+                        market == PaynMarket.international
+                            ? '🌍'
+                            : market == PaynMarket.eu
+                            ? '🇪🇺'
+                            : market.name.toUpperCase(),
+                  ),
+            );
+            return SelectionSheetOption<PaynMarket>(
+              value: market,
+              leading: entry.flag,
+              label: market.localizedLabel(context.l10n),
+              selected: _selectedMarket == market,
+            );
+          }).toList(),
       onSelected: (market) {
         HapticFeedback.selectionClick();
         unawaited(
@@ -224,7 +233,8 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               loggedIn: controller.isAuthenticated,
               country: market.name,
               language:
-                  _selectedLanguage?.code ?? controller.preferences.languageCode,
+                  _selectedLanguage?.code ??
+                  controller.preferences.languageCode,
             ),
           ),
         );
@@ -240,7 +250,9 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       title: context.l10n.localeGateSelectLanguage,
       options:
           controller.availableLanguages.map((item) {
-            final language = _languageForCode(item.code) ?? _AppLanguage(code: item.code, native: item.native, flag: '');
+            final language =
+                _languageForCode(item.code) ??
+                _AppLanguage(code: item.code, native: item.native, flag: '');
             return SelectionSheetOption<_AppLanguage>(
               value: language,
               leading: language.flag,
@@ -257,7 +269,8 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
             properties: controller.analytics.buildDefaultProperties(
               preferences: controller.preferences,
               loggedIn: controller.isAuthenticated,
-              country: _selectedMarket?.name ?? controller.preferences.market.name,
+              country:
+                  _selectedMarket?.name ?? controller.preferences.market.name,
               language: language.code,
             ),
           ),
@@ -274,10 +287,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
 // ─────────────────────────────────────────────────
 
 class _MarketEntry {
-  const _MarketEntry({
-    required this.market,
-    required this.flag,
-  });
+  const _MarketEntry({required this.market, required this.flag});
   final PaynMarket market;
   final String flag;
 }
@@ -323,20 +333,21 @@ class _AppLanguage {
   }
 }
 
-final List<_AppLanguage> _languages =
-    supportedLanguageOptions
-        .map(
-          (language) => _AppLanguage(
-            code: language.code,
-            native: language.native,
-            flag: language.flag ?? '',
-          ),
-        )
-        .toList(growable: false);
+final List<_AppLanguage> _languages = supportedLanguageOptions
+    .map(
+      (language) => _AppLanguage(
+        code: language.code,
+        native: language.native,
+        flag: language.flag ?? '',
+      ),
+    )
+    .toList(growable: false);
 
 _AppLanguage? _languageForCode(String code) {
   final normalized = normalizeSupportedLanguageCode(code);
-  return _languages.where((language) => language.code == normalized).firstOrNull;
+  return _languages
+      .where((language) => language.code == normalized)
+      .firstOrNull;
 }
 
 // ─────────────────────────────────────────────────

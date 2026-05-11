@@ -8,6 +8,7 @@ import 'package:payn_mobile/core/localization/supported_languages.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
+import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
@@ -101,7 +102,9 @@ class ProfileScreen extends StatelessWidget {
                     final selected = preferences.interests.contains(entry.key);
                     return FilterChip(
                       selected: selected,
-                      label: Text(localizedInterestLabel(entry.key, context.l10n)),
+                      label: Text(
+                        localizedInterestLabel(entry.key, context.l10n),
+                      ),
                       onSelected: (_) {
                         final next = List<String>.from(preferences.interests);
                         if (selected) {
@@ -188,7 +191,7 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> _showMarketSheet(
     BuildContext context,
-    dynamic controller,
+    AppController controller,
   ) async {
     final preferences = controller.preferences;
     await showPaynSelectionBottomSheet<PaynMarket>(
@@ -212,7 +215,7 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> _showLanguageSheet(
     BuildContext context,
-    dynamic controller,
+    AppController controller,
   ) async {
     final preferences = controller.preferences;
     await showPaynSelectionBottomSheet<String>(
@@ -225,7 +228,9 @@ class ProfileScreen extends StatelessWidget {
                   value: language.code,
                   label: _languageLabel(language.code, context.l10n),
                   selected:
-                      normalizeSupportedLanguageCode(preferences.languageCode) ==
+                      normalizeSupportedLanguageCode(
+                        preferences.languageCode,
+                      ) ==
                       language.code,
                 ),
               )
@@ -238,7 +243,9 @@ class ProfileScreen extends StatelessWidget {
 
   String _languageLabel(String code, dynamic l10n) {
     final match =
-        supportedLanguageOptions.where((language) => language.code == code).firstOrNull;
+        supportedLanguageOptions
+            .where((language) => language.code == code)
+            .firstOrNull;
     if (match == null) return code.toUpperCase();
     return '${match.native} - ${match.localizedLabel(l10n)}';
   }
@@ -300,7 +307,8 @@ class _ProfileHero extends StatelessWidget {
               children: <Widget>[
                 Text(
                   controller.isAuthenticated
-                      ? (controller.session.email ?? context.l10n.profileSignedIn)
+                      ? (controller.session.email ??
+                          context.l10n.profileSignedIn)
                       : context.l10n.profileGuestMode,
                   style: theme.textTheme.titleLarge,
                 ),
@@ -308,7 +316,9 @@ class _ProfileHero extends StatelessWidget {
                 Text(
                   controller.isAuthenticated
                       ? context.l10n.profileMarketSummary(
-                        controller.preferences.market.localizedLabel(context.l10n),
+                        controller.preferences.market.localizedLabel(
+                          context.l10n,
+                        ),
                       )
                       : context.l10n.profileGuestSummary,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -341,12 +351,23 @@ class _SettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color: PaynColors.surfaceRaised,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+    return Semantics(
+      button: true,
+      label: '$label, $value',
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          backgroundColor: PaynColors.surfaceRaised,
+          foregroundColor: PaynColors.text,
+          disabledForegroundColor: PaynColors.textTertiary,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          minimumSize: const Size(double.infinity, 66),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          alignment: Alignment.centerLeft,
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Row(
@@ -435,33 +456,3 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
-
-class _LanguageOption {
-  const _LanguageOption(this.code, this.native);
-
-  final String code;
-  final String native;
-
-  String localizedLabel(dynamic l10n) {
-    switch (code) {
-      case 'de':
-        return l10n.localeGerman;
-      case 'es':
-        return l10n.localeSpanish;
-      case 'fr':
-        return l10n.localeFrench;
-      case 'it':
-        return l10n.localeItalian;
-      case 'pt':
-        return l10n.localePortuguese;
-      case 'en':
-      default:
-        return l10n.localeEnglish;
-    }
-  }
-}
-
-final List<_LanguageOption> _languages =
-    supportedLanguageOptions
-        .map((language) => _LanguageOption(language.code, language.native))
-        .toList(growable: false);

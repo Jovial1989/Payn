@@ -50,7 +50,8 @@ class MarketIntelligenceService {
       return snapshot;
     } catch (_) {
       final fallback =
-          _cache[cacheKey] ?? _buildFallbackSnapshot(asset, range, languageCode);
+          _cache[cacheKey] ??
+          _buildFallbackSnapshot(asset, range, languageCode);
       _cache[cacheKey] = fallback;
       return fallback;
     }
@@ -146,12 +147,26 @@ class MarketIntelligenceService {
       MarketInsight(
         title:
             changePercent >= 2.5
-                ? _text(languageCode, 'Strong upward trend', 'Starker Aufwärtstrend', 'Tendencia alcista fuerte')
+                ? _text(
+                  languageCode,
+                  'Strong upward trend',
+                  'Starker Aufwärtstrend',
+                  'Tendencia alcista fuerte',
+                )
                 : changePercent <= -2.5
-                ? _text(languageCode, 'Potential correction', 'Mögliche Korrektur', 'Posible corrección')
-                : _text(languageCode, 'Trend is stabilizing', 'Trend stabilisiert sich', 'La tendencia se estabiliza'),
-        body:
-            _marketMomentumBody(languageCode, assetLabel, changePercent >= 0),
+                ? _text(
+                  languageCode,
+                  'Potential correction',
+                  'Mögliche Korrektur',
+                  'Posible corrección',
+                )
+                : _text(
+                  languageCode,
+                  'Trend is stabilizing',
+                  'Trend stabilisiert sich',
+                  'La tendencia se estabiliza',
+                ),
+        body: _marketMomentumBody(languageCode, assetLabel, changePercent >= 0),
         tone:
             changePercent >= 2.5
                 ? InsightTone.positive
@@ -162,38 +177,97 @@ class MarketIntelligenceService {
       MarketInsight(
         title:
             volatility >= 2.3
-                ? _text(languageCode, 'Volatility increasing', 'Volatilität nimmt zu', 'La volatilidad aumenta')
-                : _text(languageCode, 'Volatility contained', 'Volatilität bleibt begrenzt', 'Volatilidad contenida'),
+                ? _text(
+                  languageCode,
+                  'Volatility increasing',
+                  'Volatilität nimmt zu',
+                  'La volatilidad aumenta',
+                )
+                : _text(
+                  languageCode,
+                  'Volatility contained',
+                  'Volatilität bleibt begrenzt',
+                  'Volatilidad contenida',
+                ),
         body:
             volatility >= 2.3
-                ? _text(languageCode, 'Price swings are widening, which can change entry timing.', 'Die Kursschwankungen weiten sich aus, was den Einstiegszeitpunkt verändern kann.', 'Los movimientos de precio se amplían, lo que puede cambiar el momento de entrada.')
-                : _text(languageCode, 'Price moves remain comparatively controlled right now.', 'Die Kursbewegungen bleiben aktuell vergleichsweise kontrolliert.', 'Los movimientos de precio siguen relativamente controlados por ahora.'),
+                ? _text(
+                  languageCode,
+                  'Price swings are widening, which can change entry timing.',
+                  'Die Kursschwankungen weiten sich aus, was den Einstiegszeitpunkt verändern kann.',
+                  'Los movimientos de precio se amplían, lo que puede cambiar el momento de entrada.',
+                )
+                : _text(
+                  languageCode,
+                  'Price moves remain comparatively controlled right now.',
+                  'Die Kursbewegungen bleiben aktuell vergleichsweise kontrolliert.',
+                  'Los movimientos de precio siguen relativamente controlados por ahora.',
+                ),
         tone: volatility >= 2.3 ? InsightTone.warning : InsightTone.neutral,
       ),
       MarketInsight(
         title:
             trends.first.asset == asset && trends.first.changePercent > 0
-                ? _text(languageCode, 'Leading relative move', 'Führende relative Bewegung', 'Movimiento relativo líder')
-                : _text(languageCode, 'Relative performance mixed', 'Relative Entwicklung gemischt', 'Rendimiento relativo mixto'),
-        body:
-            _compareBenchmarksBody(languageCode, assetLabel),
+                ? _text(
+                  languageCode,
+                  'Leading relative move',
+                  'Führende relative Bewegung',
+                  'Movimiento relativo líder',
+                )
+                : _text(
+                  languageCode,
+                  'Relative performance mixed',
+                  'Relative Entwicklung gemischt',
+                  'Rendimiento relativo mixto',
+                ),
+        body: _compareBenchmarksBody(languageCode, assetLabel),
         tone: InsightTone.neutral,
       ),
     ];
 
     final recommendations = <String>[
       if (volatility >= 2.3)
-        _text(languageCode, 'High volatility warning', 'Warnung vor hoher Volatilität', 'Aviso de alta volatilidad'),
+        _text(
+          languageCode,
+          'High volatility warning',
+          'Warnung vor hoher Volatilität',
+          'Aviso de alta volatilidad',
+        ),
       if (changePercent >= 3.5)
-        _text(languageCode, 'Consider diversification', 'Diversifikation erwägen', 'Considera diversificar'),
+        _text(
+          languageCode,
+          'Consider diversification',
+          'Diversifikation erwägen',
+          'Considera diversificar',
+        ),
       if (asset == MarketAsset.eurUsd && volatility < 1.2)
-        _text(languageCode, 'Low risk profile match', 'Passend für ein niedriges Risikoprofil', 'Encaja con un perfil de bajo riesgo'),
+        _text(
+          languageCode,
+          'Low risk profile match',
+          'Passend für ein niedriges Risikoprofil',
+          'Encaja con un perfil de bajo riesgo',
+        ),
       if (asset == MarketAsset.btc && volatility >= 2.3)
-        _text(languageCode, 'Keep position sizing tight', 'Positionsgröße eng begrenzen', 'Mantén ajustado el tamaño de la posición'),
+        _text(
+          languageCode,
+          'Keep position sizing tight',
+          'Positionsgröße eng begrenzen',
+          'Mantén ajustado el tamaño de la posición',
+        ),
       if (asset == MarketAsset.sp500 && changePercent > 0)
-        _text(languageCode, 'Momentum supports staggered entry', 'Momentum spricht für einen gestaffelten Einstieg', 'El momentum favorece una entrada escalonada'),
+        _text(
+          languageCode,
+          'Momentum supports staggered entry',
+          'Momentum spricht für einen gestaffelten Einstieg',
+          'El momentum favorece una entrada escalonada',
+        ),
       if (asset == MarketAsset.gold)
-        _text(languageCode, 'Use as defensive exposure', 'Als defensive Beimischung nutzen', 'Úsalo como exposición defensiva'),
+        _text(
+          languageCode,
+          'Use as defensive exposure',
+          'Als defensive Beimischung nutzen',
+          'Úsalo como exposición defensiva',
+        ),
     ];
 
     return MarketIntelligenceSnapshot(
@@ -206,7 +280,12 @@ class MarketIntelligenceService {
       recommendations:
           recommendations.isEmpty
               ? <String>[
-                _text(languageCode, 'Monitor price action before making a move', 'Beobachte die Kursbewegung, bevor du handelst', 'Vigila la acción del precio antes de moverte'),
+                _text(
+                  languageCode,
+                  'Monitor price action before making a move',
+                  'Beobachte die Kursbewegung, bevor du handelst',
+                  'Vigila la acción del precio antes de moverte',
+                ),
               ]
               : recommendations.take(3).toList(),
     );

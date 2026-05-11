@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 
 class OfferCardSkeleton extends StatefulWidget {
   const OfferCardSkeleton({super.key});
@@ -23,11 +24,13 @@ class _OfferCardSkeletonState extends State<OfferCardSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = PaynMotion.reduce(context);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
         return _SkeletonScope(
-          progress: _controller.value,
+          progress: reduceMotion ? 0.35 : _controller.value,
+          shimmer: !reduceMotion,
           child: child!,
         );
       },
@@ -72,9 +75,21 @@ class _OfferCardSkeletonState extends State<OfferCardSkeleton>
             SizedBox(height: 18),
             Row(
               children: <Widget>[
-                Expanded(child: SkeletonBox(width: double.infinity, height: 48, radius: 999)),
+                Expanded(
+                  child: SkeletonBox(
+                    width: double.infinity,
+                    height: 48,
+                    radius: 999,
+                  ),
+                ),
                 SizedBox(width: 10),
-                Expanded(child: SkeletonBox(width: double.infinity, height: 48, radius: 999)),
+                Expanded(
+                  child: SkeletonBox(
+                    width: double.infinity,
+                    height: 48,
+                    radius: 999,
+                  ),
+                ),
               ],
             ),
           ],
@@ -100,6 +115,7 @@ class SkeletonBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final scope = _SkeletonScope.of(context);
     final progress = scope?.progress ?? 0.0;
+    final shimmer = scope?.shimmer ?? true;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -117,23 +133,24 @@ class SkeletonBox extends StatelessWidget {
                 height: height,
                 color: const Color(0xFFF0F3F1),
               ),
-              Positioned(
-                left: offsetX,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  width: 120,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: <Color>[
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: 0.72),
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
+              if (shimmer)
+                Positioned(
+                  left: offsetX,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: <Color>[
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(alpha: 0.72),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         );
@@ -145,10 +162,12 @@ class SkeletonBox extends StatelessWidget {
 class _SkeletonScope extends InheritedWidget {
   const _SkeletonScope({
     required this.progress,
+    required this.shimmer,
     required super.child,
   });
 
   final double progress;
+  final bool shimmer;
 
   static _SkeletonScope? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<_SkeletonScope>();
@@ -156,6 +175,6 @@ class _SkeletonScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_SkeletonScope oldWidget) {
-    return oldWidget.progress != progress;
+    return oldWidget.progress != progress || oldWidget.shimmer != shimmer;
   }
 }

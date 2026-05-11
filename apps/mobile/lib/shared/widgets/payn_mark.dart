@@ -32,16 +32,18 @@ class _MarkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke;
 
-    final path = Path()
-      ..moveTo(size.width * 0.18, size.height * 0.82)
-      ..lineTo(size.width * 0.5, size.height * 0.18)
-      ..lineTo(size.width * 0.82, size.height * 0.82);
+    final path =
+        Path()
+          ..moveTo(size.width * 0.18, size.height * 0.82)
+          ..lineTo(size.width * 0.5, size.height * 0.18)
+          ..lineTo(size.width * 0.82, size.height * 0.82);
 
     canvas.drawPath(path, paint);
   }

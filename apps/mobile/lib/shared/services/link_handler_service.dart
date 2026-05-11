@@ -1,79 +1,93 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Opens provider URLs in the system browser only, keeping Payn out of any
-/// embedded browser or webview flow.
+/// Opens provider URLs from an explicit user action while preserving the
+/// original affiliate/tracking URL.
 ///
 /// Usage:
-///   final result = await LinkHandlerService.open(uri, context: context);
+///   final result = await LinkHandlerService.openInApp(uri, messages: messages);
 ///   if (!result.success) { /* show error */ }
-///
-/// iOS tint colour note:
-///   SFSafariViewController bar/control tint colours are not exposed by the
-///   current url_launcher API. To apply PaynColors.background / accent as
-///   the bar tints, add flutter_custom_tabs (https://pub.dev/packages/
-///   flutter_custom_tabs) and use CustomTabsLaunchParams.safariViewControllerOptions.
 abstract final class LinkHandlerService {
-
-  /// Opens [uri] in the external browser and returns the result.
-  static Future<LinkResult> open(
+  /// Opens [uri] in the in-app browser where the platform supports it.
+  static Future<LinkResult> openInApp(
     Uri uri, {
-    required BuildContext context,
+    required LinkHandlerMessages messages,
   }) async {
-    // Upgrade http → https; reject anything else.
-    final secureUri =
-        uri.scheme == 'http' ? uri.replace(scheme: 'https') : uri;
+    return _open(uri, messages: messages, mode: LaunchMode.inAppBrowserView);
+  }
 
-    if (secureUri.scheme != 'https') {
-      return LinkResult._err(
-        uri: secureUri,
-        message: 'Only secure provider links can be opened from Payn.',
-      );
+  /// Fallback for cases where the in-app browser cannot be opened.
+  static Future<LinkResult> openExternal(
+    Uri uri, {
+    required LinkHandlerMessages messages,
+  }) async {
+    return _open(uri, messages: messages, mode: LaunchMode.externalApplication);
+  }
+
+  static Future<LinkResult> _open(
+    Uri uri, {
+    required LinkHandlerMessages messages,
+    required LaunchMode mode,
+  }) async {
+    if (uri.scheme != 'https' && uri.scheme != 'http') {
+      return LinkResult._err(uri: uri, message: messages.linkUnavailable);
     }
 
     // Verify the device can resolve the URL before trying to open it.
-    final canOpen = await canLaunchUrl(secureUri);
+    final canOpen = await canLaunchUrl(uri);
     if (!canOpen) {
       return LinkResult._err(
-        uri: secureUri,
-        message: 'This provider link could not be verified. Please try again.',
+        uri: uri,
+        message: messages.linkUnavailableSnackbar,
       );
     }
 
     try {
-      final external = await launchUrl(
-        secureUri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (external) return LinkResult._ok(uri: secureUri, usedFallback: true);
+      final opened = await launchUrl(uri, mode: mode);
+      if (opened) {
+        return LinkResult._ok(
+          uri: uri,
+          usedFallback: mode == LaunchMode.externalApplication,
+        );
+      }
     } catch (_) {}
 
     // ── Last resort: clipboard ────────────────────────────────────────────
-    await Clipboard.setData(ClipboardData(text: secureUri.toString()));
+    await Clipboard.setData(ClipboardData(text: uri.toString()));
     return LinkResult._err(
-      uri: secureUri,
-      message: 'Could not open automatically. '
-          'The link has been copied to your clipboard.',
+      uri: uri,
+      message: messages.linkCopied,
       copiedToClipboard: true,
     );
   }
+}
+
+class LinkHandlerMessages {
+  const LinkHandlerMessages({
+    required this.linkUnavailable,
+    required this.linkUnavailableSnackbar,
+    required this.linkCopied,
+  });
+
+  final String linkUnavailable;
+  final String linkUnavailableSnackbar;
+  final String linkCopied;
 }
 
 // ── Result type ───────────────────────────────────────────────────────────────
 
 class LinkResult {
   const LinkResult._ok({required this.uri, this.usedFallback = false})
-      : success = true,
-        message = null,
-        copiedToClipboard = false;
+    : success = true,
+      message = null,
+      copiedToClipboard = false;
 
   const LinkResult._err({
     required this.uri,
     required this.message,
     this.copiedToClipboard = false,
-  })  : success = false,
-        usedFallback = false;
+  }) : success = false,
+       usedFallback = false;
 
   final bool success;
   final Uri uri;

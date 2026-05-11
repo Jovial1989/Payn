@@ -72,6 +72,11 @@ export interface MarketplaceOfferAttributes {
   recurringSupported?: boolean;
   minimumOrder?: string;
   notes?: string;
+  sourceUrl?: string;
+  dataSource?: "manual" | "provider" | "marketplace" | "affiliate";
+  lastCheckedAt?: string;
+  confidenceScore?: number;
+  informational?: boolean;
   priceAmount?: number;
   coverageAmount?: number;
   medicalCoverage?: number;

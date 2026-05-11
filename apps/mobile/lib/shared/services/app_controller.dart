@@ -48,6 +48,8 @@ class AppController extends ChangeNotifier {
   List<String> _compareOfferIds = <String>[];
   bool _localeGateDone = false;
   MarketplaceCatalogManifest? _catalogManifest;
+  bool _catalogLoading = true;
+  String? _catalogError;
 
   UserSession get session => _session;
   ProfilePreferences get preferences => _preferences;
@@ -56,17 +58,19 @@ class AppController extends ChangeNotifier {
   bool get isAuthenticated => _session.isAuthenticated;
   bool get localeGateDone => _localeGateDone;
   String get languageCode => _preferences.languageCode;
+  bool get catalogLoading => _catalogLoading;
+  String? get catalogError => _catalogError;
+  bool get hasCatalogError => _catalogError != null;
   MarketplaceCatalogManifest? get catalogManifest => _catalogManifest;
   List<CatalogLanguageOption> get availableLanguages =>
-      _catalogManifest?.languages ??
-      const <CatalogLanguageOption>[
-        CatalogLanguageOption(code: 'en', native: 'English'),
-        CatalogLanguageOption(code: 'de', native: 'Deutsch'),
-        CatalogLanguageOption(code: 'es', native: 'Espanol'),
-        CatalogLanguageOption(code: 'fr', native: 'Francais'),
-        CatalogLanguageOption(code: 'it', native: 'Italiano'),
-        CatalogLanguageOption(code: 'pt', native: 'Portugues'),
-      ];
+      supportedLanguageOptions.map((language) {
+        final catalogMatch =
+            _catalogManifest?.languages
+                .where((item) => item.code == language.code)
+                .firstOrNull;
+        return catalogMatch ??
+            CatalogLanguageOption(code: language.code, native: language.native);
+      }).toList();
   List<PaynMarket> get availableMarkets {
     final countries =
         _catalogManifest?.countries ?? const <CatalogCountryOption>[];
@@ -115,6 +119,8 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> _restoreCatalogManifest() async {
+    _catalogLoading = true;
+    _catalogError = null;
     final cachedCatalog = await store.readString(_catalogKey);
     if (cachedCatalog != null && cachedCatalog.isNotEmpty) {
       try {
@@ -129,11 +135,13 @@ class AppController extends ChangeNotifier {
       final manifest = await catalogService.fetchCatalog();
       _catalogManifest = manifest;
       marketplaceRepository.replaceOffers(manifest.offers);
+      _catalogError = null;
       await store.saveString(
         _catalogKey,
         catalogService.encodeCatalog(manifest),
       );
-    } catch (_) {
+    } catch (error) {
+      _catalogError = error.toString();
       _catalogManifest ??= MarketplaceCatalogManifest(
         generatedAt: DateTime.now().toUtc().toIso8601String(),
         languages: availableLanguages,
@@ -149,6 +157,29 @@ class AppController extends ChangeNotifier {
         offers: marketplaceRepository.fallbackOffers,
       );
       marketplaceRepository.replaceOffers(_catalogManifest!.offers);
+    } finally {
+      _catalogLoading = false;
+    }
+  }
+
+  Future<void> refreshCatalog() async {
+    _catalogLoading = true;
+    _catalogError = null;
+    notifyListeners();
+
+    try {
+      final manifest = await catalogService.fetchCatalog();
+      _catalogManifest = manifest;
+      marketplaceRepository.replaceOffers(manifest.offers);
+      await store.saveString(
+        _catalogKey,
+        catalogService.encodeCatalog(manifest),
+      );
+    } catch (error) {
+      _catalogError = error.toString();
+    } finally {
+      _catalogLoading = false;
+      notifyListeners();
     }
   }
 

@@ -32,42 +32,16 @@ class SupportedLanguageOption {
 
 const List<SupportedLanguageOption> supportedLanguageOptions =
     <SupportedLanguageOption>[
-      SupportedLanguageOption(
-        code: 'en',
-        native: 'English',
-        flag: '🇬🇧',
-      ),
-      SupportedLanguageOption(
-        code: 'de',
-        native: 'Deutsch',
-        flag: '🇩🇪',
-      ),
-      SupportedLanguageOption(
-        code: 'es',
-        native: 'Español',
-        flag: '🇪🇸',
-      ),
-      SupportedLanguageOption(
-        code: 'fr',
-        native: 'Français',
-        flag: '🇫🇷',
-      ),
-      SupportedLanguageOption(
-        code: 'it',
-        native: 'Italiano',
-        flag: '🇮🇹',
-      ),
-      SupportedLanguageOption(
-        code: 'pt',
-        native: 'Português',
-        flag: '🇵🇹',
-      ),
+      SupportedLanguageOption(code: 'en', native: 'English', flag: '🇬🇧'),
+      SupportedLanguageOption(code: 'de', native: 'Deutsch', flag: '🇩🇪'),
+      SupportedLanguageOption(code: 'es', native: 'Español', flag: '🇪🇸'),
+      SupportedLanguageOption(code: 'fr', native: 'Français', flag: '🇫🇷'),
+      SupportedLanguageOption(code: 'it', native: 'Italiano', flag: '🇮🇹'),
+      SupportedLanguageOption(code: 'pt', native: 'Português', flag: '🇵🇹'),
     ];
 
 final Set<String> supportedLanguageCodes =
-    AppLocalizations.supportedLocales
-        .map((locale) => locale.languageCode)
-        .toSet();
+    supportedLanguageOptions.map((language) => language.code).toSet();
 
 String normalizeSupportedLanguageCode(String? code) {
   if (code != null && supportedLanguageCodes.contains(code)) {

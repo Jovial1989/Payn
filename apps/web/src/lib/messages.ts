@@ -2,6 +2,7 @@ import type { MarketplaceLocale } from "@payn/types";
 import en from "@/locales/en.json";
 import de from "@/locales/de.json";
 import es from "@/locales/es.json";
+import fr from "@/locales/fr.json";
 
 type Messages = typeof en;
 
@@ -9,6 +10,7 @@ const locales: Partial<Record<MarketplaceLocale, Messages>> = {
   en,
   de,
   es,
+  fr,
 };
 
 function mergeDeep<T extends Record<string, unknown>>(base: T, override?: Record<string, unknown>): T {

@@ -39,11 +39,7 @@ String formatMoney(
   ).format(value);
 }
 
-String formatPercent(
-  num value, {
-  String locale = 'en',
-  int decimalDigits = 2,
-}) {
+String formatPercent(num value, {String locale = 'en', int decimalDigits = 2}) {
   return NumberFormat.decimalPercentPattern(
     locale: locale,
     decimalDigits: decimalDigits,

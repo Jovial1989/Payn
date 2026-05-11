@@ -23,7 +23,7 @@ export const supportedMarkets: MarketplaceMarket[] = [
   "nl",
 ];
 
-export const supportedLocales: MarketplaceLocale[] = ["en", "de", "es", "fr", "it", "pt"];
+export const supportedLocales: MarketplaceLocale[] = ["en", "de", "es", "fr"];
 
 export const marketplaceCategories: MarketplaceCategory[] = [
   "loans",
@@ -56,8 +56,8 @@ export const marketDefinitions: Record<
   es: { marketCode: "ES", currency: "EUR", fallbackLocale: "es", label: "Spain" },
   uk: { marketCode: "UK", currency: "GBP", fallbackLocale: "en", label: "United Kingdom" },
   fr: { marketCode: "FR", currency: "EUR", fallbackLocale: "fr", label: "France" },
-  it: { marketCode: "IT", currency: "EUR", fallbackLocale: "it", label: "Italy" },
-  pt: { marketCode: "PT", currency: "EUR", fallbackLocale: "pt", label: "Portugal" },
+  it: { marketCode: "IT", currency: "EUR", fallbackLocale: "en", label: "Italy" },
+  pt: { marketCode: "PT", currency: "EUR", fallbackLocale: "en", label: "Portugal" },
   nl: { marketCode: "NL", currency: "EUR", fallbackLocale: "en", label: "Netherlands" },
 };
 
@@ -278,10 +278,10 @@ export function detectPreferencesFromAcceptLanguage(headerValue?: string | null)
     return { market: "fr" as MarketplaceMarket, locale: "fr" as MarketplaceLocale };
   }
   if (value.includes("it")) {
-    return { market: "it" as MarketplaceMarket, locale: "it" as MarketplaceLocale };
+    return { market: "it" as MarketplaceMarket, locale: "en" as MarketplaceLocale };
   }
   if (value.includes("pt")) {
-    return { market: "pt" as MarketplaceMarket, locale: "pt" as MarketplaceLocale };
+    return { market: "pt" as MarketplaceMarket, locale: "en" as MarketplaceLocale };
   }
   if (value.includes("en-gb") || value.includes("gb") || value.includes("uk")) {
     return { market: "uk" as MarketplaceMarket, locale: "en" as MarketplaceLocale };

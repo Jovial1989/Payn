@@ -3,21 +3,20 @@
 import type { MarketplaceLocale } from "@payn/types";
 import { useEffect, useState } from "react";
 import { getCountrySelectorOptions, individualCountryOptions } from "@/lib/countries";
+import { getDictionary } from "@/lib/i18n";
 import { getMessages } from "@/lib/messages";
 import { supportedLocales } from "@/lib/marketplace";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 
 const LOCALE_GATE_COOKIE = "payn-locale-gate-done";
 
-const languageOptions: { value: MarketplaceLocale; label: string; native: string }[] = (
+const languageOptions: { value: MarketplaceLocale; native: string }[] = (
   [
-    { value: "en" as MarketplaceLocale, label: "English", native: "English" },
-    { value: "de" as MarketplaceLocale, label: "German", native: "Deutsch" },
-    { value: "es" as MarketplaceLocale, label: "Spanish", native: "Español" },
-    { value: "fr" as MarketplaceLocale, label: "French", native: "Français" },
-    { value: "it" as MarketplaceLocale, label: "Italian", native: "Italiano" },
-    { value: "pt" as MarketplaceLocale, label: "Portuguese", native: "Português" },
-  ] as { value: MarketplaceLocale; label: string; native: string }[]
+    { value: "en" as MarketplaceLocale, native: "English" },
+    { value: "de" as MarketplaceLocale, native: "Deutsch" },
+    { value: "es" as MarketplaceLocale, native: "Español" },
+    { value: "fr" as MarketplaceLocale, native: "Français" },
+  ] as { value: MarketplaceLocale; native: string }[]
 ).filter((opt) => supportedLocales.includes(opt.value));
 
 function hasCompletedLocaleGate(): boolean {
@@ -35,6 +34,7 @@ const gateCountryOptions = individualCountryOptions.slice(0, 20); // top 20 by c
 export function LocaleGate() {
   const { locale, setCountry, setLanguage } = useMarketplacePreferences();
   const messages = getMessages(locale);
+  const dictionary = getDictionary(locale);
   const [visible, setVisible] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedLocale, setSelectedLocale] = useState<MarketplaceLocale | "">("");
@@ -129,7 +129,7 @@ export function LocaleGate() {
                 </option>
                 {languageOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.native} — {opt.label}
+                    {opt.native} — {dictionary.locales[opt.value]}
                   </option>
                 ))}
               </select>

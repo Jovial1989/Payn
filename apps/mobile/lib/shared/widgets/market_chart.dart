@@ -71,8 +71,10 @@ class MarketChart extends StatelessWidget {
                 horizontalInterval:
                     (maxValue - minValue) <= 0 ? 1 : (maxValue - minValue) / 4,
                 getDrawingHorizontalLine:
-                    (_) =>
-                        FlLine(color: PaynColors.outlineSubtle, strokeWidth: 0.5),
+                    (_) => FlLine(
+                      color: PaynColors.outlineSubtle,
+                      strokeWidth: 0.5,
+                    ),
               ),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(),

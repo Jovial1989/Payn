@@ -109,7 +109,20 @@ const localizedMarketScopeOptions: Record<
     },
   },
   es: {},
-  fr: {},
+  fr: {
+    local_only: {
+      label: "Local uniquement",
+      description: "Uniquement les parcours propres au pays",
+    },
+    eu_fallback: {
+      label: "Local + relais UE",
+      description: "Privilégier les offres locales, puis les options européennes",
+    },
+    all_europe: {
+      label: "Toute l'Europe",
+      description: "Utiliser la vue de comparaison européenne la plus large",
+    },
+  },
   it: {},
   pt: {},
 };
@@ -120,8 +133,12 @@ function localizeCountryOption(option: CountryOption, locale: MarketplaceLocale)
     ...option,
     label: labels[option.value as MarketplaceMarket] ?? option.label,
     currency:
-      locale === "de" && option.currency === "Multi-currency"
-        ? "Mehrere Währungen"
+      option.currency === "Multi-currency"
+        ? locale === "de"
+          ? "Mehrere Währungen"
+          : locale === "fr"
+            ? "Multi-devises"
+            : option.currency
         : option.currency,
   };
 }

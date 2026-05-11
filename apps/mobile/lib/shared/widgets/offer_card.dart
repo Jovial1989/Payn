@@ -3,6 +3,7 @@ import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 
 class OfferCard extends StatefulWidget {
@@ -52,7 +53,10 @@ class _OfferCardState extends State<OfferCard> {
         <String>[
               ...widget.offer.bestFor,
               ...widget.reasons,
-              if (widget.showCategory) widget.offer.category.localizedLabel(l10n),
+              if (widget.showCategory)
+                widget.offer.category.localizedLabel(l10n),
+              if (widget.offer.attributes.informational)
+                l10n.offerInformational,
             ]
             .map((value) => value.trim())
             .where((value) => value.isNotEmpty)
@@ -62,8 +66,11 @@ class _OfferCardState extends State<OfferCard> {
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 380 + (widget.motionIndex * 60)),
-      curve: Curves.easeOutCubic,
+      duration: PaynMotion.duration(
+        context,
+        Duration(milliseconds: 340 + (widget.motionIndex * 48)),
+      ),
+      curve: PaynMotion.curve(context, PaynMotion.ease),
       builder: (context, value, child) {
         return Opacity(
           opacity: value.clamp(0, 1),
@@ -73,12 +80,12 @@ class _OfferCardState extends State<OfferCard> {
               onEnter: (_) => setState(() => _hovered = true),
               onExit: (_) => setState(() => _hovered = false),
               child: AnimatedScale(
-                duration: const Duration(milliseconds: 140),
-                curve: Curves.easeOutBack,
-                scale: _pressed ? 0.97 : 1,
+                duration: PaynMotion.duration(context, PaynMotion.fast),
+                curve: PaynMotion.curve(context, PaynMotion.spring),
+                scale: _pressed ? 0.98 : 1,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
+                  duration: PaynMotion.duration(context, PaynMotion.medium),
+                  curve: PaynMotion.curve(context, PaynMotion.ease),
                   transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -128,6 +135,7 @@ class _OfferCardState extends State<OfferCard> {
                                       ProviderBadge(
                                         offer: widget.offer,
                                         size: 52,
+                                        heroTag: 'provider-${widget.offer.id}',
                                       ),
                                       const SizedBox(width: 14),
                                       Expanded(
@@ -160,6 +168,19 @@ class _OfferCardState extends State<OfferCard> {
                                                 if (widget.rankLabel != null)
                                                   _OfferTag(
                                                     label: widget.rankLabel!,
+                                                    background:
+                                                        PaynColors.surfaceDim,
+                                                    foreground:
+                                                        PaynColors
+                                                            .textSecondary,
+                                                  ),
+                                                if (widget
+                                                    .offer
+                                                    .attributes
+                                                    .informational)
+                                                  _OfferTag(
+                                                    label:
+                                                        l10n.offerInformational,
                                                     background:
                                                         PaynColors.surfaceDim,
                                                     foreground:
@@ -212,6 +233,7 @@ class _OfferCardState extends State<OfferCard> {
                                       ProviderBadge(
                                         offer: widget.offer,
                                         size: 52,
+                                        heroTag: 'provider-${widget.offer.id}',
                                       ),
                                       const SizedBox(width: 14),
                                       Expanded(
@@ -244,6 +266,19 @@ class _OfferCardState extends State<OfferCard> {
                                                 if (widget.rankLabel != null)
                                                   _OfferTag(
                                                     label: widget.rankLabel!,
+                                                    background:
+                                                        PaynColors.surfaceDim,
+                                                    foreground:
+                                                        PaynColors
+                                                            .textSecondary,
+                                                  ),
+                                                if (widget
+                                                    .offer
+                                                    .attributes
+                                                    .informational)
+                                                  _OfferTag(
+                                                    label:
+                                                        l10n.offerInformational,
                                                     background:
                                                         PaynColors.surfaceDim,
                                                     foreground:
@@ -289,7 +324,7 @@ class _OfferCardState extends State<OfferCard> {
                                     ],
                                   ),
                                 const SizedBox(height: 22),
-                                  Text(
+                                Text(
                                   (primaryMetric?.label ??
                                           widget.offer.category.localizedLabel(
                                             l10n,
@@ -360,6 +395,17 @@ class _OfferCardState extends State<OfferCard> {
                                               (item) => _InfoPill(label: item),
                                             )
                                             .toList(),
+                                  ),
+                                ],
+                                if (widget
+                                    .offer
+                                    .attributes
+                                    .informational) ...<Widget>[
+                                  const SizedBox(height: 12),
+                                  _ParsedOfferNotice(
+                                    updatedAt:
+                                        widget.offer.attributes.lastCheckedAt ??
+                                        widget.offer.updatedAt,
                                   ),
                                 ],
                                 const SizedBox(height: 18),
@@ -448,6 +494,10 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   String _primaryCtaLabel(AppLocalizations l10n) {
+    if (widget.offer.attributes.informational) {
+      return l10n.providerOpenButton;
+    }
+
     switch (widget.offer.category) {
       case PaynCategory.loans:
         return l10n.offerCtaCheckRate;
@@ -477,6 +527,37 @@ class _OfferCardState extends State<OfferCard> {
       case PaynCategory.investments:
         return l10n.offerDetailsPlatform;
     }
+  }
+}
+
+class _ParsedOfferNotice extends StatelessWidget {
+  const _ParsedOfferNotice({required this.updatedAt});
+
+  final String updatedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final dateLabel = updatedAt.length >= 10 ? updatedAt.substring(0, 10) : '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: PaynColors.surfaceDim,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: PaynColors.outlineSubtle),
+      ),
+      child: Text(
+        dateLabel.isEmpty
+            ? l10n.offerEstimated
+            : l10n.offerEstimatedUpdated(dateLabel),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: PaynColors.textSecondary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 

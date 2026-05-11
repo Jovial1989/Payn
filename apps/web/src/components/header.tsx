@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { trackSignInClicked } from "@/lib/analytics";
 import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
+import { supportedLocales } from "@/lib/marketplace";
 import { getUiCopy } from "@/lib/ui-copy";
 
 const navKeys = ["marketplace", "about", "contact"] as const;
@@ -165,9 +166,9 @@ export function Header({
                 className="appearance-none bg-transparent text-sm font-medium text-ink outline-none"
                 aria-label={dictionary.nav.language}
               >
-                {Object.entries(dictionary.locales).map(([value, label]) => (
+                {supportedLocales.map((value) => (
                   <option key={value} value={value}>
-                    {label}
+                    {dictionary.locales[value]}
                   </option>
                 ))}
               </select>
@@ -304,9 +305,9 @@ export function Header({
                   onChange={(event) => handleLocaleChange(event.target.value as MarketplaceLocale)}
                   className="h-11 rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none"
                 >
-                  {Object.entries(dictionary.locales).map(([value, label]) => (
+                  {supportedLocales.map((value) => (
                     <option key={value} value={value}>
-                      {label}
+                      {dictionary.locales[value]}
                     </option>
                   ))}
                 </select>

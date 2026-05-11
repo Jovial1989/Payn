@@ -34,6 +34,51 @@
   "homeSaved": "Guardado",
   "homeCompared": "Comparado",
   "homeProviders": "Proveedores",
+  "homeDecisionTitle": "Acciones recomendadas",
+  "homeDecisionSubtitle": "Elige el siguiente paso útil para decidir.",
+  "homeContinueComparingTitle": "Continuar comparando",
+  "homeContinueComparingBody": "{count} ofertas están listas para comparar.",
+  "@homeContinueComparingBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeStartComparingTitle": "Empieza con tus mejores opciones",
+  "homeStartComparingBody": "Compara comisiones, rapidez y elegibilidad antes de solicitar.",
+  "homeBestOffersInCountryTitle": "Mejores ofertas en tu país",
+  "homeBestOffersInCountryBody": "{provider} destaca hoy para {market}.",
+  "@homeBestOffersInCountryBody": {
+    "placeholders": {
+      "provider": {},
+      "market": {}
+    }
+  },
+  "homeBestOffersInCountryEmpty": "Explora ofertas clasificadas disponibles en {market}.",
+  "@homeBestOffersInCountryEmpty": {
+    "placeholders": {
+      "market": {}
+    }
+  },
+  "homeRecentlyViewedTitle": "Visto recientemente",
+  "homeRecentlyViewedBody": "Sigue revisando {provider} en {category}.",
+  "@homeRecentlyViewedBody": {
+    "placeholders": {
+      "provider": {},
+      "category": {}
+    }
+  },
+  "homeMarketUpdatesTitle": "Actualizaciones del mercado",
+  "homeMarketUpdatesBody": "{count} ofertas activas están disponibles para tu mercado.",
+  "@homeMarketUpdatesBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDecisionFootnote": "Payn te ayuda a comparar. Las condiciones finales las confirma cada proveedor.",
   "savedTitle": "Guardado",
   "savedSubtitle": "Mantén tu selección lista y compara las opciones más fuertes cuando quieras decidir.",
   "savedEmptyTitle": "Aún no hay ofertas guardadas",
@@ -143,6 +188,7 @@
     }
   },
   "commonClear": "Limpiar",
+  "commonRetry": "Reintentar",
   "exploreNoOffersTitle": "Ninguna oferta coincide con tus filtros",
   "exploreNoOffersDescription": "Prueba a borrar los filtros o cambiar de categoría.",
   "exploreClearFilters": "Borrar filtros",
@@ -174,6 +220,14 @@
   "offerSaved": "Guardado",
   "offerUnavailable": "La oferta ya no está disponible.",
   "offerStrongMatch": "Buena coincidencia",
+  "offerInformational": "Informativa",
+  "offerEstimated": "Tarifas estimadas. Las condiciones finales las confirma el proveedor.",
+  "offerEstimatedUpdated": "Estimado / actualizado por última vez {date}",
+  "@offerEstimatedUpdated": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "offerRatesTitle": "Condiciones",
   "offerBenefitsTitle": "Ventajas",
   "offerTradeoffsTitle": "Compensaciones",
@@ -216,9 +270,11 @@
     }
   },
   "providerLeavingDescription": "Saliendo de Payn para continuar",
+  "providerDisclosure": "Vas a abrir el sitio del proveedor. Las tarifas y condiciones finales las confirma el proveedor.",
   "providerOpeningMessage": "Abriendo la página del proveedor...",
   "providerManualMessage": "Pulsa \"Abrir proveedor\" si nada ocurrió.",
   "providerOpenButton": "Abrir proveedor",
+  "providerFallbackBrowserButton": "Abrir en navegador",
   "providerBackButton": "Volver a Payn",
   "providerLinkUnavailable": "Este enlace no está disponible.",
   "providerLinkCopied": "No se pudo abrir. URL copiada al portapapeles.",
@@ -245,5 +301,6 @@
   "marketAssetPriceFx": "Tipo FX",
   "marketAssetPriceFutures": "Precio de futuros",
   "splashTagline": "Claridad para tu dinero",
-  "routerError": "No pudimos abrir esa ruta."
+  "routerError": "No pudimos abrir esa ruta.",
+  "catalogSyncError": "No se pudieron sincronizar los datos más recientes del marketplace. Se muestran ofertas en caché."
 }

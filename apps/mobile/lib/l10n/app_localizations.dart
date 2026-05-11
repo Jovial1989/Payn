@@ -8,6 +8,9 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_pt.dart';
 
 // ignore_for_file: type=lint
 
@@ -98,6 +101,9 @@ abstract class AppLocalizations {
     Locale('de'),
     Locale('en'),
     Locale('es'),
+    Locale('fr'),
+    Locale('it'),
+    Locale('pt'),
   ];
 
   /// No description provided for @appTitle.
@@ -232,6 +238,24 @@ abstract class AppLocalizations {
   /// **'Spanish'**
   String get localeSpanish;
 
+  /// No description provided for @localeFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get localeFrench;
+
+  /// No description provided for @localeItalian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get localeItalian;
+
+  /// No description provided for @localePortuguese.
+  ///
+  /// In en, this message translates to:
+  /// **'Portuguese'**
+  String get localePortuguese;
+
   /// No description provided for @homeLiveRanking.
   ///
   /// In en, this message translates to:
@@ -285,6 +309,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Providers'**
   String get homeProviders;
+
+  /// No description provided for @homeDecisionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended actions'**
+  String get homeDecisionTitle;
+
+  /// No description provided for @homeDecisionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the next useful step toward a decision.'**
+  String get homeDecisionSubtitle;
+
+  /// No description provided for @homeContinueComparingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue comparing'**
+  String get homeContinueComparingTitle;
+
+  /// No description provided for @homeContinueComparingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} offers are ready side by side.'**
+  String homeContinueComparingBody(int count);
+
+  /// No description provided for @homeStartComparingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with your best options'**
+  String get homeStartComparingTitle;
+
+  /// No description provided for @homeStartComparingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare fees, speed, and eligibility before you apply.'**
+  String get homeStartComparingBody;
+
+  /// No description provided for @homeBestOffersInCountryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Best offers in your country'**
+  String get homeBestOffersInCountryTitle;
+
+  /// No description provided for @homeBestOffersInCountryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is ranking well for {market} today.'**
+  String homeBestOffersInCountryBody(Object provider, Object market);
+
+  /// No description provided for @homeBestOffersInCountryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse ranked offers available in {market}.'**
+  String homeBestOffersInCountryEmpty(Object market);
+
+  /// No description provided for @homeRecentlyViewedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently viewed'**
+  String get homeRecentlyViewedTitle;
+
+  /// No description provided for @homeRecentlyViewedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reviewing {provider} in {category}.'**
+  String homeRecentlyViewedBody(Object provider, Object category);
+
+  /// No description provided for @homeMarketUpdatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Market updates'**
+  String get homeMarketUpdatesTitle;
+
+  /// No description provided for @homeMarketUpdatesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} live offers are available for your market.'**
+  String homeMarketUpdatesBody(int count);
+
+  /// No description provided for @homeDecisionFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Payn helps you compare. Final rates and terms are confirmed by each provider.'**
+  String get homeDecisionFootnote;
 
   /// No description provided for @savedTitle.
   ///
@@ -715,7 +823,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreBestOptions.
   ///
   /// In en, this message translates to:
-  /// **'Best options for you'**
+  /// **'What do you need?'**
   String get exploreBestOptions;
 
   /// No description provided for @exploreRankedOffersInMarket.
@@ -747,6 +855,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get commonClear;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
 
   /// No description provided for @exploreNoOffersTitle.
   ///
@@ -861,6 +975,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Strong match'**
   String get offerStrongMatch;
+
+  /// No description provided for @offerInformational.
+  ///
+  /// In en, this message translates to:
+  /// **'Informational'**
+  String get offerInformational;
+
+  /// No description provided for @offerEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated rates. Final terms confirmed by provider.'**
+  String get offerEstimated;
+
+  /// No description provided for @offerEstimatedUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated / last updated {date}'**
+  String offerEstimatedUpdated(Object date);
 
   /// No description provided for @offerRatesTitle.
   ///
@@ -1054,6 +1186,12 @@ abstract class AppLocalizations {
   /// **'You are leaving Payn to continue'**
   String get providerLeavingDescription;
 
+  /// No description provided for @providerDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'You are opening the provider site. Rates and final terms are confirmed by the provider.'**
+  String get providerDisclosure;
+
   /// No description provided for @providerOpeningMessage.
   ///
   /// In en, this message translates to:
@@ -1071,6 +1209,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open provider'**
   String get providerOpenButton;
+
+  /// No description provided for @providerFallbackBrowserButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get providerFallbackBrowserButton;
 
   /// No description provided for @providerBackButton.
   ///
@@ -1233,6 +1377,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We could not open that route.'**
   String get routerError;
+
+  /// No description provided for @catalogSyncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest marketplace data could not be synced. Cached offers are shown.'**
+  String get catalogSyncError;
 }
 
 class _AppLocalizationsDelegate
@@ -1245,8 +1395,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'de',
+    'en',
+    'es',
+    'fr',
+    'it',
+    'pt',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1261,6 +1417,12 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'pt':
+      return AppLocalizationsPt();
   }
 
   throw FlutterError(

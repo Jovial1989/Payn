@@ -9,6 +9,7 @@ import { getCountrySelectorOptions, getLocalizedMarketScopeOptions } from "@/lib
 import { writePersistedProfileDraft } from "@/lib/profile-persistence";
 import type { UserProfileMarketScope } from "@/lib/residence-countries";
 import { getDictionary } from "@/lib/i18n";
+import { supportedLocales } from "@/lib/marketplace";
 import { getGoalLabel, getUserTypeOptions } from "@/lib/ui-copy";
 import type { UserProfile } from "@/lib/types";
 
@@ -335,9 +336,9 @@ export function DashboardProfileWorkspace({
                 onChange={(event) => setPreferredLocale(event.target.value as MarketplaceLocale)}
                 className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
               >
-                {Object.entries(dictionary.locales).map(([value, label]) => (
+                {supportedLocales.map((value) => (
                   <option key={value} value={value}>
-                    {label}
+                    {dictionary.locales[value]}
                   </option>
                 ))}
               </select>

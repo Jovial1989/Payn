@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 
 class PaynShell extends StatelessWidget {
   const PaynShell({super.key, required this.navigationShell});
@@ -36,6 +37,7 @@ class _FrostedNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final l10n = context.l10n;
+    final reduceMotion = PaynMotion.reduce(context);
     final destinations = <_NavItem>[
       _NavItem(
         label: l10n.navHome,
@@ -90,10 +92,13 @@ class _FrostedNavBar extends StatelessWidget {
                 child: Stack(
                   children: <Widget>[
                     AnimatedAlign(
-                      duration: const Duration(milliseconds: 360),
-                      curve: Curves.easeOutCubic,
+                      duration:
+                          reduceMotion ? Duration.zero : PaynMotion.medium,
+                      curve: PaynMotion.ease,
                       alignment: Alignment(
-                        -1 + (navigationShell.currentIndex * (2 / (destinations.length - 1))),
+                        -1 +
+                            (navigationShell.currentIndex *
+                                (2 / (destinations.length - 1))),
                         0,
                       ),
                       child: FractionallySizedBox(
@@ -103,11 +108,15 @@ class _FrostedNavBar extends StatelessWidget {
                           child: Container(
                             height: 42,
                             decoration: BoxDecoration(
-                              color: PaynColors.accentSurface.withValues(alpha: 0.9),
+                              color: PaynColors.accentSurface.withValues(
+                                alpha: 0.9,
+                              ),
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: <BoxShadow>[
                                 BoxShadow(
-                                  color: PaynColors.accent.withValues(alpha: 0.18),
+                                  color: PaynColors.accent.withValues(
+                                    alpha: 0.18,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 8),
                                 ),
@@ -118,7 +127,9 @@ class _FrostedNavBar extends StatelessWidget {
                       ),
                     ),
                     Row(
-                      children: List<Widget>.generate(destinations.length, (index) {
+                      children: List<Widget>.generate(destinations.length, (
+                        index,
+                      ) {
                         final item = destinations[index];
                         final selected = navigationShell.currentIndex == index;
 
@@ -129,7 +140,8 @@ class _FrostedNavBar extends StatelessWidget {
                             onTap: () {
                               navigationShell.goBranch(
                                 index,
-                                initialLocation: index == navigationShell.currentIndex,
+                                initialLocation:
+                                    index == navigationShell.currentIndex,
                               );
                             },
                           ),
@@ -174,16 +186,16 @@ class _NavButton extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
               child: AnimatedScale(
-                duration: const Duration(milliseconds: 240),
-                curve: Curves.easeOutBack,
-                scale: selected ? 1.08 : 1,
+                duration: PaynMotion.duration(context, PaynMotion.fast),
+                curve: PaynMotion.curve(context, PaynMotion.spring),
+                scale: selected ? 1.05 : 0.95,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
                       duration: const Duration(milliseconds: 240),
-                      curve: Curves.easeOutCubic,
+                      curve: PaynMotion.curve(context, PaynMotion.ease),
                       builder: (context, value, _) {
                         return Transform.translate(
                           offset: Offset(0, -1.5 * value),
@@ -202,17 +214,29 @@ class _NavButton extends StatelessWidget {
                     const SizedBox(height: 3),
                     AnimatedSlide(
                       offset: Offset(0, selected ? 0 : 0.06),
-                      duration: const Duration(milliseconds: 240),
-                      curve: Curves.easeOutCubic,
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        style: theme.textTheme.labelMedium!.copyWith(
-                          fontSize: 11,
-                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                          color: selected ? PaynColors.accent : PaynColors.textTertiary,
+                      duration: PaynMotion.duration(context, PaynMotion.fast),
+                      curve: PaynMotion.curve(context, PaynMotion.ease),
+                      child: AnimatedOpacity(
+                        opacity: selected ? 1 : 0.72,
+                        duration: PaynMotion.duration(context, PaynMotion.fast),
+                        curve: PaynMotion.curve(context, PaynMotion.ease),
+                        child: AnimatedDefaultTextStyle(
+                          duration: PaynMotion.duration(
+                            context,
+                            PaynMotion.fast,
+                          ),
+                          curve: PaynMotion.curve(context, PaynMotion.ease),
+                          style: theme.textTheme.labelMedium!.copyWith(
+                            fontSize: 11,
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w500,
+                            color:
+                                selected
+                                    ? PaynColors.accent
+                                    : PaynColors.textTertiary,
+                          ),
+                          child: Text(item.label, textAlign: TextAlign.center),
                         ),
-                        child: Text(item.label, textAlign: TextAlign.center),
                       ),
                     ),
                   ],

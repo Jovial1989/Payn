@@ -10,6 +10,7 @@ import 'package:payn_mobile/features/offers/presentation/offer_detail_screen.dar
 import 'package:payn_mobile/features/profile/presentation/profile_screen.dart';
 import 'package:payn_mobile/features/saved/presentation/saved_screen.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 
 GoRouter createRouter(AppController controller) {
@@ -138,22 +139,22 @@ CustomTransitionPage<void> _buildTransitionPage({
 }) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
+    transitionDuration: PaynMotion.route,
+    reverseTransitionDuration: PaynMotion.medium,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final fade = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-      );
+      if (PaynMotion.reduce(context)) {
+        return child;
+      }
+      final fade = CurvedAnimation(parent: animation, curve: PaynMotion.ease);
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.028),
+        begin: const Offset(0, 0.035),
         end: Offset.zero,
       ).animate(fade);
       final scale = Tween<double>(
-        begin: 0.988,
+        begin: 0.98,
         end: 1,
-      ).animate(
-        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-      );
+      ).animate(CurvedAnimation(parent: animation, curve: PaynMotion.ease));
 
       return FadeTransition(
         opacity: fade,

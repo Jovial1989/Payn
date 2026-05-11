@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 
 class SelectionSheetOption<T> {
   const SelectionSheetOption({
@@ -23,12 +24,21 @@ Future<void> showPaynSelectionBottomSheet<T>({
   required List<SelectionSheetOption<T>> options,
   required FutureOr<void> Function(T value) onSelected,
 }) {
+  final reduceMotion = PaynMotion.reduce(context);
   return showModalBottomSheet<void>(
     context: context,
-    useRootNavigator: true,
+    useRootNavigator: false,
     isScrollControlled: true,
     useSafeArea: true,
+    barrierColor: Colors.black.withValues(alpha: 0.24),
     backgroundColor: Colors.transparent,
+    clipBehavior: Clip.none,
+    sheetAnimationStyle: AnimationStyle(
+      duration: reduceMotion ? Duration.zero : PaynMotion.sheet,
+      reverseDuration: reduceMotion ? Duration.zero : PaynMotion.medium,
+      curve: PaynMotion.ease,
+      reverseCurve: Curves.easeInCubic,
+    ),
     builder: (sheetContext) {
       final mediaQuery = MediaQuery.of(sheetContext);
       final maxHeight = mediaQuery.size.height * 0.78;
@@ -67,9 +77,9 @@ Future<void> showPaynSelectionBottomSheet<T>({
                 const SizedBox(height: 18),
                 Text(
                   title,
-                  style: Theme.of(sheetContext).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    sheetContext,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 16),
                 Flexible(
@@ -101,10 +111,7 @@ Future<void> showPaynSelectionBottomSheet<T>({
 }
 
 class _SelectionRow<T> extends StatelessWidget {
-  const _SelectionRow({
-    required this.option,
-    required this.onTap,
-  });
+  const _SelectionRow({required this.option, required this.onTap});
 
   final SelectionSheetOption<T> option;
   final Future<void> Function() onTap;
@@ -113,52 +120,52 @@ class _SelectionRow<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color:
-          option.selected ? PaynColors.accentSurface : PaynColors.surfaceRaised,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 60),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: <Widget>[
-                if ((option.leading ?? '').isNotEmpty) ...<Widget>[
-                  Text(
-                    option.leading!,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Text(
-                    option.label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight:
-                          option.selected ? FontWeight.w800 : FontWeight.w600,
-                    ),
-                  ),
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        backgroundColor:
+            option.selected
+                ? PaynColors.accentSurface
+                : PaynColors.surfaceRaised,
+        foregroundColor: PaynColors.text,
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        minimumSize: const Size(double.infinity, 60),
+        alignment: Alignment.centerLeft,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: <Widget>[
+            if ((option.leading ?? '').isNotEmpty) ...<Widget>[
+              Text(option.leading!, style: theme.textTheme.titleMedium),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Text(
+                option.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight:
+                      option.selected ? FontWeight.w800 : FontWeight.w600,
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 20,
-                  child:
-                      option.selected
-                          ? const Icon(
-                            Icons.check_rounded,
-                            color: PaynColors.accent,
-                            size: 20,
-                          )
-                          : null,
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 20,
+              child:
+                  option.selected
+                      ? const Icon(
+                        Icons.check_rounded,
+                        color: PaynColors.accent,
+                        size: 20,
+                      )
+                      : null,
+            ),
+          ],
         ),
       ),
     );

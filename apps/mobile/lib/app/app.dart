@@ -10,6 +10,7 @@ import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 
 class PaynApp extends StatefulWidget {
@@ -50,17 +51,14 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
 
     _splashController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 920),
+      duration: const Duration(milliseconds: 520),
     );
     _splashOpacity = CurvedAnimation(
       parent: _splashController,
-      curve: const Interval(0.28, 1, curve: Curves.easeOutCubic),
+      curve: Curves.easeOutCubic,
     );
     _splashScale = Tween<double>(begin: 0.92, end: 1).animate(
-      CurvedAnimation(
-        parent: _splashController,
-        curve: const Interval(0, 0.72, curve: Curves.easeOutBack),
-      ),
+      CurvedAnimation(parent: _splashController, curve: Curves.easeOutCubic),
     );
     unawaited(
       widget.controller.analytics.track(
@@ -80,7 +78,7 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
 
     // Keep the branded launch surface visible until the app has produced
     // its first real frame and the minimum splash duration has elapsed.
-    Timer(const Duration(milliseconds: 820), () {
+    Timer(const Duration(milliseconds: 1180), () {
       if (!mounted) return;
       setState(() => _minimumSplashElapsed = true);
       _completeSplashIfReady();
@@ -139,13 +137,35 @@ class _PaynAppState extends State<PaynApp> with SingleTickerProviderStateMixin {
               return const Locale('en');
             },
             builder: (context, child) {
+              final reduceMotion = PaynMotion.reduce(context);
+              final appChild = child ?? _SplashScreen(scale: _splashScale);
+
               return Stack(
                 children: <Widget>[
-                  child ?? _SplashScreen(scale: _splashScale),
+                  AnimatedScale(
+                    scale: _splashDone || reduceMotion ? 1 : 0.985,
+                    duration: PaynMotion.duration(
+                      context,
+                      const Duration(milliseconds: 360),
+                    ),
+                    curve: PaynMotion.curve(context, Curves.easeOutCubic),
+                    child: appChild,
+                  ),
                   if (!_splashDone)
-                    FadeTransition(
-                      opacity: ReverseAnimation(_splashOpacity),
-                      child: _SplashScreen(scale: _splashScale),
+                    IgnorePointer(
+                      ignoring: true,
+                      child: FadeTransition(
+                        opacity:
+                            reduceMotion
+                                ? const AlwaysStoppedAnimation<double>(0)
+                                : ReverseAnimation(_splashOpacity),
+                        child: _SplashScreen(
+                          scale:
+                              reduceMotion
+                                  ? const AlwaysStoppedAnimation<double>(1)
+                                  : _splashScale,
+                        ),
+                      ),
                     ),
                 ],
               );
@@ -226,7 +246,11 @@ class _SplashScreen extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: <Color>[Color(0xFFF8FCFA), Color(0xFFF2F7F4), Color(0xFFEAF4EE)],
+          colors: <Color>[
+            Color(0xFFF8FCFA),
+            Color(0xFFF2F7F4),
+            Color(0xFFEAF4EE),
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),

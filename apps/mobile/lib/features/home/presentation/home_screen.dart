@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
-import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/offer_card.dart';
-import 'package:payn_mobile/shared/widgets/market_chart.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
@@ -99,7 +97,9 @@ class HomeScreen extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Text(
-                                  controller.preferences.market.localizedLabel(l10n),
+                                  controller.preferences.market.localizedLabel(
+                                    l10n,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: theme.textTheme.labelMedium?.copyWith(
@@ -157,7 +157,7 @@ class HomeScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
-              child: _ActivitySection(controller: controller),
+              child: _DecisionSection(controller: controller),
             ),
           ),
 
@@ -627,128 +627,88 @@ class _TrustLogo extends StatelessWidget {
 // Private widgets — tight, zero waste
 // ─────────────────────────────────────────────────
 
-class _ActivitySection extends StatefulWidget {
-  const _ActivitySection({required this.controller});
+class _DecisionSection extends StatelessWidget {
+  const _DecisionSection({required this.controller});
 
   final AppController controller;
 
   @override
-  State<_ActivitySection> createState() => _ActivitySectionState();
-}
-
-class _ActivitySectionState extends State<_ActivitySection> {
-  ChartTimeRange _range = ChartTimeRange.week;
-
-  @override
   Widget build(BuildContext context) {
-    final snapshot = widget.controller.activitySnapshotFor(_range);
+    final theme = Theme.of(context);
     final l10n = context.l10n;
+    final topOffer = controller.homeRecommendations.firstOrNull?.offer;
+    final recentOffer = controller.recentOffers.firstOrNull;
+    final marketLabel = controller.preferences.market.localizedLabel(l10n);
 
     return SectionCard(
-      title: l10n.homeActivityTitle,
-      subtitle: l10n.homeActivitySubtitle,
-      trailing: SegmentedButton<ChartTimeRange>(
-        segments:
-            ChartTimeRange.values
-                .map(
-                  (range) => ButtonSegment<ChartTimeRange>(
-                    value: range,
-                    label: Text(range.shortLabel),
-                  ),
-                )
-                .toList(),
-        selected: <ChartTimeRange>{_range},
-        showSelectedIcon: false,
-        onSelectionChanged: (selection) {
-          setState(() => _range = selection.first);
-        },
-      ),
+      title: l10n.homeDecisionTitle,
+      subtitle: l10n.homeDecisionSubtitle,
       child: Column(
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _ActivityMetricCard(
-                  label: l10n.homeActivityTotalViews,
-                  value: '${snapshot.totalViews}',
-                  detail:
-                      '${snapshot.changePercent >= 0 ? '+' : ''}${snapshot.changePercent.toStringAsFixed(0)}%',
+          _DecisionActionCard(
+            icon: Icons.compare_arrows_rounded,
+            title:
+                controller.compareCount >= 2
+                    ? l10n.homeContinueComparingTitle
+                    : l10n.homeStartComparingTitle,
+            body:
+                controller.compareCount >= 2
+                    ? l10n.homeContinueComparingBody(controller.compareCount)
+                    : l10n.homeStartComparingBody,
+            cta:
+                controller.compareCount >= 2
+                    ? l10n.savedCompare
+                    : l10n.savedFindOffers,
+            onTap:
+                () => context.go(
+                  controller.compareCount >= 2 ? '/compare' : '/explore',
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ActivityMetricCard(
-                  label: l10n.homeActivityCtr,
-                  value: '${snapshot.clickThroughRate.toStringAsFixed(1)}%',
-                  detail: l10n.homeActivityOfferHandoff,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ActivityMetricCard(
-                  label: l10n.homeActivitySavedOffers,
-                  value: '${snapshot.savedOffers}',
-                  detail: l10n.homeActivityShortlistReady,
-                ),
-              ),
-            ],
           ),
-          const SizedBox(height: 18),
-          MarketChart(
-            range: _range,
-            lines: <MarketChartLine>[
-              MarketChartLine(
-                label: l10n.chartViews,
-                points: snapshot.views,
-                color: PaynColors.text,
-                showArea: true,
-              ),
-              MarketChartLine(
-                label: l10n.chartClicks,
-                points: snapshot.clicks,
-                color: PaynColors.accent,
-              ),
-              MarketChartLine(
-                label: l10n.homeSaved,
-                points: snapshot.saves,
-                color: PaynColors.positive,
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7F8FA),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: PaynColors.outlineSubtle),
-            ),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: PaynColors.accentSurface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.insights_rounded,
-                    size: 18,
-                    color: PaynColors.accent,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    snapshot.insight,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: PaynColors.textSecondary,
+          const SizedBox(height: 10),
+          _DecisionActionCard(
+            icon: Icons.local_offer_rounded,
+            title: l10n.homeBestOffersInCountryTitle,
+            body:
+                topOffer == null
+                    ? l10n.homeBestOffersInCountryEmpty(marketLabel)
+                    : l10n.homeBestOffersInCountryBody(
+                      topOffer.providerName,
+                      marketLabel,
                     ),
-                  ),
-                ),
-              ],
+            cta: l10n.homeSeeAll,
+            onTap: () => context.go('/explore'),
+          ),
+          const SizedBox(height: 10),
+          _DecisionActionCard(
+            icon:
+                recentOffer == null
+                    ? Icons.trending_up_rounded
+                    : Icons.history_rounded,
+            title:
+                recentOffer == null
+                    ? l10n.homeMarketUpdatesTitle
+                    : l10n.homeRecentlyViewedTitle,
+            body:
+                recentOffer == null
+                    ? l10n.homeMarketUpdatesBody(controller.marketOfferCount)
+                    : l10n.homeRecentlyViewedBody(
+                      recentOffer.providerName,
+                      recentOffer.category.localizedLabel(l10n),
+                    ),
+            cta:
+                recentOffer == null
+                    ? l10n.exploreMarketInsightsTitle
+                    : l10n.offerCtaOpenDetails,
+            onTap:
+                recentOffer == null
+                    ? () => context.go('/explore')
+                    : () => context.push('/offer/${recentOffer.id}'),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.homeDecisionFootnote,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: PaynColors.textTertiary,
             ),
           ),
         ],
@@ -757,42 +717,84 @@ class _ActivitySectionState extends State<_ActivitySection> {
   }
 }
 
-class _ActivityMetricCard extends StatelessWidget {
-  const _ActivityMetricCard({
-    required this.label,
-    required this.value,
-    required this.detail,
+class _DecisionActionCard extends StatelessWidget {
+  const _DecisionActionCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.cta,
+    required this.onTap,
   });
 
-  final String label;
-  final String value;
-  final String detail;
+  final IconData icon;
+  final String title;
+  final String body;
+  final String cta;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: PaynColors.outlineSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(label, style: theme.textTheme.labelMedium),
-          const SizedBox(height: 10),
-          Text(value, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 4),
-          Text(
-            detail,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: PaynColors.textTertiary,
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F8FA),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: PaynColors.outlineSubtle),
           ),
-        ],
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: PaynColors.accentSurface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 19, color: PaynColors.accent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(title, style: theme.textTheme.titleSmall),
+                    const SizedBox(height: 3),
+                    Text(
+                      body,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: PaynColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                cta,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: PaynColors.accent,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 2),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: PaynColors.accent,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

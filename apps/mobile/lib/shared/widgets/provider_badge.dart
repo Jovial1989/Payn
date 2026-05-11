@@ -1,14 +1,15 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
+import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/services/link_handler_service.dart';
+import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 
 class ProviderBrand {
   const ProviderBrand({
@@ -218,7 +219,7 @@ Future<void> showProviderHandoffSheet(
   final controller = AppScope.of(context);
   final trackedUri = _buildTrackedProviderUri(
     offer: offer,
-    marketName: controller.preferences.market.name,
+    market: controller.preferences.market,
   );
 
   HapticFeedback.mediumImpact();
@@ -243,28 +244,40 @@ Future<void> showProviderHandoffSheet(
     return;
   }
 
-  final result = await LinkHandlerService.open(trackedUri, context: context);
-  if (!context.mounted || result.success) {
-    return;
-  }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        result.copiedToClipboard
-            ? context.l10n.providerLinkCopied
-            : (result.message ?? context.l10n.providerLinkUnavailableSnackbar),
-      ),
+  if (!context.mounted) return;
+  final reduceMotion = PaynMotion.reduce(context);
+  await showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.24),
+    clipBehavior: Clip.none,
+    sheetAnimationStyle: AnimationStyle(
+      duration: reduceMotion ? Duration.zero : PaynMotion.sheet,
+      reverseDuration: reduceMotion ? Duration.zero : PaynMotion.medium,
+      curve: PaynMotion.ease,
+      reverseCurve: Curves.easeInCubic,
     ),
+    builder:
+        (_) => _ProviderHandoffSheet(
+          providerName: offer.providerName,
+          uri: trackedUri,
+        ),
   );
 }
 
 Uri? _buildTrackedProviderUri({
   required PaynOffer offer,
-  required String marketName,
+  required PaynMarket market,
 }) {
+  final marketCode = marketDefinitions[market]?.marketCode.toUpperCase();
   final rawUrl =
-      offer.affiliateLink.trim().isNotEmpty
+      marketCode != null &&
+              offer.providerUrls[marketCode]?.trim().isNotEmpty == true
+          ? offer.providerUrls[marketCode]!
+          : offer.affiliateLink.trim().isNotEmpty
           ? offer.affiliateLink
           : offer.providerWebsiteUrl;
   final uri = Uri.tryParse(rawUrl);
@@ -278,39 +291,27 @@ Uri? _buildTrackedProviderUri({
   return normalizedUri;
 }
 
-class _ProviderRedirectOverlay extends StatefulWidget {
-  const _ProviderRedirectOverlay({
-    required this.providerName,
-    required this.uri,
-  });
+class _ProviderHandoffSheet extends StatefulWidget {
+  const _ProviderHandoffSheet({required this.providerName, required this.uri});
 
   final String providerName;
   final Uri? uri;
 
   @override
-  State<_ProviderRedirectOverlay> createState() =>
-      _ProviderRedirectOverlayState();
+  State<_ProviderHandoffSheet> createState() => _ProviderHandoffSheetState();
 }
 
-class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
-  bool _launching = true;
+class _ProviderHandoffSheetState extends State<_ProviderHandoffSheet> {
+  bool _launching = false;
+  bool _showBrowserFallback = false;
   String? _error;
-  Timer? _autoCloseTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_launchProvider());
-  }
 
   @override
   void dispose() {
-    _autoCloseTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _launchProvider() async {
-    _autoCloseTimer?.cancel();
+  Future<void> _launchProvider({required bool externalFallback}) async {
     if (mounted) {
       setState(() {
         _launching = true;
@@ -319,30 +320,38 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     }
 
     final uri = widget.uri;
+    final messages = LinkHandlerMessages(
+      linkUnavailable: context.l10n.providerLinkUnavailable,
+      linkUnavailableSnackbar: context.l10n.providerLinkUnavailableSnackbar,
+      linkCopied: context.l10n.providerLinkCopied,
+    );
     if (uri == null) {
       if (!mounted) return;
       final msg = context.l10n.providerLinkUnavailable;
       setState(() {
         _launching = false;
         _error = msg;
+        _showBrowserFallback = false;
       });
       return;
     }
 
-    final result = await LinkHandlerService.open(uri, context: context);
+    final result =
+        externalFallback
+            ? await LinkHandlerService.openExternal(uri, messages: messages)
+            : await LinkHandlerService.openInApp(uri, messages: messages);
 
     if (!mounted) return;
 
     if (result.success) {
-      _autoCloseTimer = Timer(const Duration(milliseconds: 420), () {
-        if (mounted) Navigator.of(context).pop();
-      });
+      Navigator.of(context).pop();
       return;
     }
 
     final l10n = context.l10n;
     setState(() {
       _launching = false;
+      _showBrowserFallback = !externalFallback;
       _error =
           result.copiedToClipboard
               ? l10n.providerLinkCopied
@@ -355,163 +364,154 @@ class _ProviderRedirectOverlayState extends State<_ProviderRedirectOverlay> {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return PopScope(
-      canPop: true,
-      child: Dialog.fullscreen(
-        backgroundColor: Colors.transparent,
-        child: Stack(
+    final bottomPadding = MediaQuery.paddingOf(context).bottom + 24;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: PaynColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Color(0x1F000000),
+            blurRadius: 28,
+            offset: Offset(0, -8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 12, 20, bottomPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: Container(color: Colors.black.withValues(alpha: 0.22)),
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: PaynColors.outline,
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
             ),
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 360),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: PaynColors.surface,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: PaynColors.outlineSubtle),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.16),
-                        blurRadius: 40,
-                        offset: const Offset(0, 18),
+            const SizedBox(height: 18),
+            Row(
+              children: <Widget>[
+                Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: CircularProgressIndicator(
+                        value: _launching ? null : 1,
+                        strokeWidth: 2.4,
+                        color: PaynColors.accent,
+                        backgroundColor: PaynColors.accentSurface,
                       ),
-                    ],
-                  ),
+                    ),
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: PaynColors.text,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        widget.providerName.isNotEmpty
+                            ? widget.providerName[0].toUpperCase()
+                            : '?',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 14),
+                Expanded(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Stack(
-                            alignment: Alignment.center,
-                            children: <Widget>[
-                              SizedBox(
-                                width: 56,
-                                height: 56,
-                                child: CircularProgressIndicator(
-                                  value: _launching ? null : 1,
-                                  strokeWidth: 2.4,
-                                  color: PaynColors.accent,
-                                  backgroundColor: PaynColors.accentSurface,
-                                ),
-                              ),
-                              Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color: PaynColors.text,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  widget.providerName.isNotEmpty
-                                      ? widget.providerName[0].toUpperCase()
-                                      : '?',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  l10n.providerOpeningTitle(
-                                    widget.providerName,
-                                  ),
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    fontSize: 22,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  l10n.providerLeavingDescription,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: PaynColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: PaynColors.surfaceDim,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Text(
-                          _error ??
-                              (_launching
-                                  ? l10n.providerOpeningMessage
-                                  : l10n.providerManualMessage),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: PaynColors.text,
-                          ),
+                      Text(
+                        l10n.providerOpeningTitle(widget.providerName),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontSize: 22,
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: FilledButton(
-                              onPressed:
-                                  widget.uri == null ? null : _openManualLink,
-                              child: Text(l10n.providerOpenButton),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(l10n.providerBackButton),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.providerLeavingDescription,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: PaynColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: PaynColors.surfaceDim,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                _error ??
+                    (_launching
+                        ? l10n.providerOpeningMessage
+                        : l10n.providerDisclosure),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: PaynColors.text,
+                ),
               ),
             ),
+            const SizedBox(height: 18),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: FilledButton(
+                    onPressed:
+                        _launching || widget.uri == null
+                            ? null
+                            : () => _launchProvider(externalFallback: false),
+                    child: Text(
+                      _launching
+                          ? l10n.providerOpeningMessage
+                          : l10n.providerOpenButton,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.providerBackButton),
+                  ),
+                ),
+              ],
+            ),
+            if (_showBrowserFallback) ...<Widget>[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed:
+                      _launching || widget.uri == null
+                          ? null
+                          : () => _launchProvider(externalFallback: true),
+                  child: Text(l10n.providerFallbackBrowserButton),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _openManualLink() async {
-    final uri = widget.uri;
-    if (uri == null) return;
-    final navigator = Navigator.of(context);
-    final result = await LinkHandlerService.open(uri, context: context);
-    if (result.success && mounted) {
-      navigator.pop();
-      return;
-    }
-    if (!mounted) return;
-    setState(() {
-      _launching = false;
-      _error = result.message ?? _error;
-    });
   }
 }

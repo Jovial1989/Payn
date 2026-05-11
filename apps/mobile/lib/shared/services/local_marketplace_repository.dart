@@ -3,6 +3,13 @@ import 'dart:math' as math;
 import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 
+class _NumberRange {
+  const _NumberRange({this.min, this.max});
+
+  final double? min;
+  final double? max;
+}
+
 class LocalMarketplaceRepository {
   List<PaynOffer> _catalogOffers = List<PaynOffer>.from(_fallbackOffers);
 
@@ -72,12 +79,24 @@ class LocalMarketplaceRepository {
       }
 
       if (category == PaynCategory.loans) {
+        final amountRange =
+            offer.attributes.maxAmount == null
+                ? _metricRange(_metricValue(offer, const <String>['Amount']))
+                : _NumberRange(
+                  min: offer.attributes.minAmount?.toDouble(),
+                  max: offer.attributes.maxAmount?.toDouble(),
+                );
+        final termRange =
+            offer.attributes.maxTermMonths == null
+                ? _metricRange(_metricValue(offer, const <String>['Term']))
+                : _NumberRange(
+                  min: offer.attributes.minTermMonths?.toDouble(),
+                  max: offer.attributes.maxTermMonths?.toDouble(),
+                );
         final amountOkay =
-            offer.attributes.maxAmount == null ||
-            offer.attributes.maxAmount! >= filters.amount;
+            amountRange.max == null || amountRange.max! >= filters.amount;
         final termOkay =
-            offer.attributes.maxTermMonths == null ||
-            offer.attributes.maxTermMonths! >= filters.term;
+            termRange.max == null || termRange.max! >= filters.term;
         if (!amountOkay || !termOkay) {
           return false;
         }
@@ -243,10 +262,7 @@ class LocalMarketplaceRepository {
       ),
       TrendSignal(
         label: _decisionPressureLabel(languageCode),
-        value: _decisionPressureValue(
-          topTransfer.isNotEmpty,
-          languageCode,
-        ),
+        value: _decisionPressureValue(topTransfer.isNotEmpty, languageCode),
         detail:
             savedOfferIds.isEmpty
                 ? _decisionPressureEmptyDetail(languageCode)
@@ -259,39 +275,57 @@ class LocalMarketplaceRepository {
     switch (offer.category) {
       case PaynCategory.loans:
         return switch (languageCode) {
-          'de' => 'Die endgültige Preisgestaltung kann sich durch Bonität, Einkommensprüfung und Rückzahlungsprofil noch ändern.',
-          'es' => 'El precio final aún puede variar según elegibilidad, ingresos y perfil de devolución.',
-          _ => 'Final pricing can still move with eligibility, income checks, and repayment profile.',
+          'de' =>
+            'Die endgültige Preisgestaltung kann sich durch Bonität, Einkommensprüfung und Rückzahlungsprofil noch ändern.',
+          'es' =>
+            'El precio final aún puede variar según elegibilidad, ingresos y perfil de devolución.',
+          _ =>
+            'Final pricing can still move with eligibility, income checks, and repayment profile.',
         };
       case PaynCategory.cards:
         return switch (languageCode) {
-          'de' => 'Die stärksten Reisevorteile gehen oft mit einer laufenden Gebühr oder strengeren Nutzungsbedingungen einher.',
-          'es' => 'Las mejores ventajas de viaje suelen venir con una cuota recurrente o condiciones de uso más estrictas.',
-          _ => 'The strongest travel perks usually come with a recurring plan fee or stricter usage pattern.',
+          'de' =>
+            'Die stärksten Reisevorteile gehen oft mit einer laufenden Gebühr oder strengeren Nutzungsbedingungen einher.',
+          'es' =>
+            'Las mejores ventajas de viaje suelen venir con una cuota recurrente o condiciones de uso más estrictas.',
+          _ =>
+            'The strongest travel perks usually come with a recurring plan fee or stricter usage pattern.',
         };
       case PaynCategory.transfers:
         return switch (languageCode) {
-          'de' => 'Der günstigste Weg ist nicht immer der schnellste, besonders über verschiedene Auszahlungsarten hinweg.',
-          'es' => 'La ruta más barata no siempre es la más rápida, especialmente entre distintos métodos de pago.',
-          _ => 'The cheapest route is not always the fastest, especially across payout methods.',
+          'de' =>
+            'Der günstigste Weg ist nicht immer der schnellste, besonders über verschiedene Auszahlungsarten hinweg.',
+          'es' =>
+            'La ruta más barata no siempre es la más rápida, especialmente entre distintos métodos de pago.',
+          _ =>
+            'The cheapest route is not always the fastest, especially across payout methods.',
         };
       case PaynCategory.exchange:
         return switch (languageCode) {
-          'de' => 'Beworbene Kurse können weiterhin Limits, Wochenendaufschläge oder corridor-spezifische Spreads verbergen.',
-          'es' => 'Los tipos anunciados aún pueden ocultar límites, recargos de fin de semana o diferenciales por corredor.',
-          _ => 'Headline rates can still hide limits, weekend markups, or corridor-specific spreads.',
+          'de' =>
+            'Beworbene Kurse können weiterhin Limits, Wochenendaufschläge oder corridor-spezifische Spreads verbergen.',
+          'es' =>
+            'Los tipos anunciados aún pueden ocultar límites, recargos de fin de semana o diferenciales por corredor.',
+          _ =>
+            'Headline rates can still hide limits, weekend markups, or corridor-specific spreads.',
         };
       case PaynCategory.insurance:
         return switch (languageCode) {
-          'de' => 'Prämien und Deckungstiefe können sich je nach Gesundheit, Alter, Reiseprofil oder Fahrzeugprofil ändern.',
-          'es' => 'Las primas y la cobertura pueden cambiar según salud, edad, patrón de viaje o perfil del vehículo.',
-          _ => 'Premiums and cover depth can change with health, age, travel pattern, or vehicle profile.',
+          'de' =>
+            'Prämien und Deckungstiefe können sich je nach Gesundheit, Alter, Reiseprofil oder Fahrzeugprofil ändern.',
+          'es' =>
+            'Las primas y la cobertura pueden cambiar según salud, edad, patrón de viaje o perfil del vehículo.',
+          _ =>
+            'Premiums and cover depth can change with health, age, travel pattern, or vehicle profile.',
         };
       case PaynCategory.investments:
         return switch (languageCode) {
-          'de' => 'Niedrige Gebühren beseitigen weder Marktrisiko noch Plattformkomplexität oder Verwahrungsabwägungen.',
-          'es' => 'Las comisiones bajas no eliminan el riesgo de mercado, la complejidad de la plataforma ni las compensaciones de custodia.',
-          _ => 'Low fees do not remove market risk, platform complexity, or custody tradeoffs.',
+          'de' =>
+            'Niedrige Gebühren beseitigen weder Marktrisiko noch Plattformkomplexität oder Verwahrungsabwägungen.',
+          'es' =>
+            'Las comisiones bajas no eliminan el riesgo de mercado, la complejidad de la plataforma ni las compensaciones de custodia.',
+          _ =>
+            'Low fees do not remove market risk, platform complexity, or custody tradeoffs.',
         };
     }
   }
@@ -305,11 +339,12 @@ class LocalMarketplaceRepository {
     };
   }
 
-  String _regionalVisibilityReason(String languageCode) => switch (languageCode) {
-    'de' => 'In europäischen Vergleichsflüssen sichtbar',
-    'es' => 'Visible en comparativas europeas',
-    _ => 'Visible across European comparison flows',
-  };
+  String _regionalVisibilityReason(String languageCode) =>
+      switch (languageCode) {
+        'de' => 'In europäischen Vergleichsflüssen sichtbar',
+        'es' => 'Visible en comparativas europeas',
+        _ => 'Visible across European comparison flows',
+      };
 
   String _categoryFocusReason(PaynCategory category, String languageCode) {
     final categoryLabel = _categoryLabel(category, languageCode).toLowerCase();
@@ -379,15 +414,17 @@ class LocalMarketplaceRepository {
     _ => 'Provider coverage',
   };
 
-  String _providerCoverageValue(int count, String languageCode) => switch (languageCode) {
-    'de' => '$count Anbieter',
-    'es' => '$count proveedores',
-    _ => '$count providers',
-  };
+  String _providerCoverageValue(int count, String languageCode) =>
+      switch (languageCode) {
+        'de' => '$count Anbieter',
+        'es' => '$count proveedores',
+        _ => '$count providers',
+      };
 
   String _providerCoverageDetail(String languageCode) => switch (languageCode) {
     'de' => 'Bekannte Institute bleiben im gesamten Shortlist-Fluss sichtbar.',
-    'es' => 'Las instituciones reconocidas siguen visibles en todo el flujo de shortlist.',
+    'es' =>
+      'Las instituciones reconocidas siguen visibles en todo el flujo de shortlist.',
     _ => 'Recognizable institutions stay visible across the shortlist flow.',
   };
 
@@ -413,17 +450,20 @@ class LocalMarketplaceRepository {
     };
   }
 
-  String _decisionPressureEmptyDetail(String languageCode) => switch (languageCode) {
+  String _decisionPressureEmptyDetail(
+    String languageCode,
+  ) => switch (languageCode) {
     'de' => 'Speichere Angebote, um deine mobile Shortlist enger zu halten.',
     'es' => 'Guarda ofertas para mantener una shortlist móvil más enfocada.',
     _ => 'Save offers to keep a tighter mobile shortlist.',
   };
 
-  String _decisionPressureReadyDetail(String languageCode) => switch (languageCode) {
-    'de' => 'Deine Shortlist ist bereit für den direkten Vergleich.',
-    'es' => 'Tu shortlist está lista para una comparación lado a lado.',
-    _ => 'Your shortlist is ready for side-by-side comparison.',
-  };
+  String _decisionPressureReadyDetail(String languageCode) =>
+      switch (languageCode) {
+        'de' => 'Deine Shortlist ist bereit für den direkten Vergleich.',
+        'es' => 'Tu shortlist está lista para una comparación lado a lado.',
+        _ => 'Your shortlist is ready for side-by-side comparison.',
+      };
 
   String _marketLabel(PaynMarket market, String languageCode) {
     switch (market) {
@@ -577,21 +617,24 @@ class LocalMarketplaceRepository {
   bool _matchesMarket(PaynOffer offer, PaynMarket market) {
     final marketCode = marketDefinitions[market]!.marketCode;
     final codes = offer.countryCodes.map((item) => item.toUpperCase()).toSet();
+    final euWideMatch =
+        codes.contains('EU') ||
+        codes.contains('ALL_EU') ||
+        offer.attributes.availability == 'eu_wide';
+    final internationalMatch = offer.attributes.availability == 'international';
 
     if (market == PaynMarket.eu) {
-      return codes.contains('EU') || codes.length >= 4;
+      return euWideMatch || internationalMatch || codes.length >= 4;
     }
 
     if (market == PaynMarket.international) {
-      return codes.contains('EU') ||
+      return euWideMatch ||
           codes.length >= 4 ||
-          offer.attributes.availability == 'international' ||
+          internationalMatch ||
           globallyRecognizedProviders.contains(offer.providerName);
     }
 
-    return codes.contains(marketCode) ||
-        codes.contains('EU') ||
-        offer.attributes.availability == 'international';
+    return codes.contains(marketCode) || euWideMatch || internationalMatch;
   }
 
   bool _isDirectMarketMatch(PaynOffer offer, PaynMarket market) {
@@ -622,6 +665,36 @@ class LocalMarketplaceRepository {
 
     final age = DateTime.now().difference(updatedAt).inDays;
     return math.max(0, 5 - age * 0.5).toDouble();
+  }
+
+  String? _metricValue(PaynOffer offer, List<String> labels) {
+    for (final metric in offer.metrics) {
+      if (labels.contains(metric.label)) {
+        return metric.value;
+      }
+    }
+    return null;
+  }
+
+  _NumberRange _metricRange(String? value) {
+    if (value == null || value.isEmpty) {
+      return const _NumberRange();
+    }
+
+    final matches = RegExp(r'(\d+(?:[.,]\d+)?)').allMatches(value);
+    final numbers =
+        matches
+            .map(
+              (match) => double.tryParse(match.group(1)!.replaceAll(',', '')),
+            )
+            .whereType<double>()
+            .toList();
+
+    if (numbers.isEmpty) {
+      return const _NumberRange();
+    }
+
+    return _NumberRange(min: numbers.first, max: numbers.last);
   }
 
   static const List<PaynOffer> _fallbackOffers = <PaynOffer>[
@@ -1253,7 +1326,10 @@ class LocalMarketplaceRepository {
           'P2P investment platform offering fixed-income style marketplace access with diversified loan portfolio exposure.',
       metrics: <PaynMetric>[
         PaynMetric(label: 'Access', value: 'Diversified P2P loan portfolios'),
-        PaynMetric(label: 'Return style', value: 'Fixed-income marketplace exposure'),
+        PaynMetric(
+          label: 'Return style',
+          value: 'Fixed-income marketplace exposure',
+        ),
         PaynMetric(label: 'Market', value: 'Germany and EU availability'),
       ],
       bestFor: <String>[
