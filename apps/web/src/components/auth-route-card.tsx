@@ -87,7 +87,7 @@ export function AuthRouteCard({ mode }: { mode: AuthMode }) {
           return;
         }
 
-        router.push(nextHref);
+        router.push(result.redirectTo ?? nextHref);
         router.refresh();
         return;
       }

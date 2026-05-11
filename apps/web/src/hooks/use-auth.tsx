@@ -25,7 +25,7 @@ interface AuthState {
   signInWithEmail: (
     email: string,
     password: string,
-  ) => Promise<{ error: string | null; hasSession: boolean }>;
+  ) => Promise<{ error: string | null; hasSession: boolean; redirectTo?: string }>;
   signUpWithEmail: (
     email: string,
     password: string,
@@ -204,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { adminSignIn } = await import("@/actions/admin-auth");
         const result = await adminSignIn(email, password);
         if (result.ok) {
-          return { error: null, hasSession: true };
+          return { error: null, hasSession: true, redirectTo: "/admin" };
         }
       }
 
