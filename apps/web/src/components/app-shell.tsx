@@ -16,6 +16,7 @@ import { trackSignInClicked } from "@/lib/analytics";
 import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
+import { categoryGroups, marketplaceCategories } from "@/lib/marketplace";
 
 type AppNavItem = {
   id: "dashboard" | "discover" | MarketplaceCategory | "settings";
@@ -41,16 +42,13 @@ function resolveCurrentSection(pathname: string | null): AppSection {
   if (!pathname) return "other";
   if (pathname.includes("/dashboard")) return "dashboard";
   if (pathname.includes("/settings")) return "settings";
-  if (pathname.includes("/loans")) return "loans";
-  if (pathname.includes("/cards")) return "cards";
-  if (pathname.includes("/transfers")) return "transfers";
-  if (pathname.includes("/exchange")) return "exchange";
-  if (pathname.includes("/insurance")) return "insurance";
-  if (pathname.includes("/investments")) return "investments";
   if (pathname.includes("/offers/")) return "offers";
   if (pathname.includes("/login")) return "login";
   if (pathname.includes("/signup")) return "signup";
   if (pathname.includes("/discover")) return "discover";
+  for (const cat of marketplaceCategories) {
+    if (pathname.includes(`/${cat}`)) return cat;
+  }
   return "other";
 }
 
@@ -120,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
-  const navItems = useMemo<AppNavItem[]>(
+  const systemItems = useMemo<AppNavItem[]>(
     () => [
       { id: "dashboard", label: uiCopy.dashboard.navItems.dashboard.label, href: localePath(preferences.locale, "/dashboard") },
       {
@@ -129,20 +127,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href: localePath(preferences.locale, "/discover"),
         icon: <SearchIcon className="h-4 w-4 shrink-0" />,
       },
-      { id: "loans", label: dictionary.categories.loans, href: localePath(preferences.locale, "/loans") },
-      { id: "cards", label: dictionary.categories.cards, href: localePath(preferences.locale, "/cards") },
-      { id: "transfers", label: dictionary.categories.transfers, href: localePath(preferences.locale, "/transfers") },
-      { id: "exchange", label: dictionary.categories.exchange, href: localePath(preferences.locale, "/exchange") },
-      { id: "insurance", label: dictionary.categories.insurance, href: localePath(preferences.locale, "/insurance") },
-      { id: "investments", label: dictionary.categories.investments, href: localePath(preferences.locale, "/investments") },
-      {
-        id: "settings",
-        label: uiCopy.dashboard.navItems.profile.label,
-        href: localePath(preferences.locale, "/settings"),
-        disabledWhenLoggedOut: true,
-      },
     ],
-    [dictionary.categories, preferences.locale, productEntryActionLabel, uiCopy.dashboard.navItems],
+    [preferences.locale, productEntryActionLabel, uiCopy.dashboard.navItems],
+  );
+
+  const settingsItem = useMemo<AppNavItem>(
+    () => ({
+      id: "settings",
+      label: uiCopy.dashboard.navItems.profile.label,
+      href: localePath(preferences.locale, "/settings"),
+      disabledWhenLoggedOut: true,
+    }),
+    [preferences.locale, uiCopy.dashboard.navItems],
+  );
+
+  const navItems = useMemo<AppNavItem[]>(
+    () => [
+      ...systemItems,
+      ...marketplaceCategories.map((cat) => ({
+        id: cat as AppNavItem["id"],
+        label: dictionary.categories[cat],
+        href: localePath(preferences.locale, `/${cat}`),
+      })),
+      settingsItem,
+    ],
+    [dictionary.categories, preferences.locale, systemItems, settingsItem],
   );
 
   useEffect(() => {
@@ -159,13 +168,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     () => ({
       dashboard: uiCopy.dashboard.navItems.dashboard.label,
       discover: productEntryActionLabel,
-      loans: dictionary.categories.loans,
-      cards: dictionary.categories.cards,
-      transfers: dictionary.categories.transfers,
-      exchange: dictionary.categories.exchange,
-      insurance: dictionary.categories.insurance,
-      investments: dictionary.categories.investments,
       settings: uiCopy.dashboard.navItems.profile.label,
+      ...Object.fromEntries(marketplaceCategories.map((cat) => [cat, dictionary.categories[cat]])),
     }),
     [dictionary.categories, productEntryActionLabel, uiCopy.dashboard.navItems],
   );
@@ -224,17 +228,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="hidden flex-1 overflow-y-auto px-3 py-4 lg:block">
             <div className="grid gap-1">
-              {navItems.map((item) => (
-                <SidebarLink
-                  key={item.id}
-                  label={item.label}
-                  href={item.href}
-                  icon={item.icon}
-                  active={item.id === currentSection}
-                  disabled={Boolean(item.disabledWhenLoggedOut && !user)}
-                  onClick={() => undefined}
-                />
+              {systemItems.map((item) => (
+                <SidebarLink key={item.id} label={item.label} href={item.href} icon={item.icon}
+                  active={item.id === currentSection} onClick={() => undefined} />
               ))}
+            </div>
+            <div className="mt-3 grid gap-4">
+              {categoryGroups.map((group) => (
+                <div key={group.id}>
+                  <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                    {group.label}
+                  </p>
+                  <div className="grid gap-0.5">
+                    {group.categories.map((cat) => (
+                      <SidebarLink key={cat} label={dictionary.categories[cat]}
+                        href={localePath(preferences.locale, `/${cat}`)}
+                        active={currentSection === cat} onClick={() => undefined} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 grid gap-1 border-t border-line pt-3">
+              <SidebarLink label={settingsItem.label} href={settingsItem.href}
+                active={currentSection === "settings"}
+                disabled={Boolean(settingsItem.disabledWhenLoggedOut && !user)}
+                onClick={() => undefined} />
             </div>
           </div>
         </aside>
@@ -278,17 +297,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               <div className="mt-5 grid gap-1">
-                {navItems.map((item) => (
-                  <SidebarLink
-                    key={item.id}
-                    label={item.label}
-                    href={item.href}
-                    icon={item.icon}
-                    active={item.id === currentSection}
-                    disabled={Boolean(item.disabledWhenLoggedOut && !user)}
-                    onClick={() => setMobileNavOpen(false)}
-                  />
+                {systemItems.map((item) => (
+                  <SidebarLink key={item.id} label={item.label} href={item.href} icon={item.icon}
+                    active={item.id === currentSection} onClick={() => setMobileNavOpen(false)} />
                 ))}
+              </div>
+              <div className="mt-3 grid gap-4">
+                {categoryGroups.map((group) => (
+                  <div key={group.id}>
+                    <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                      {group.label}
+                    </p>
+                    <div className="grid gap-0.5">
+                      {group.categories.map((cat) => (
+                        <SidebarLink key={cat} label={dictionary.categories[cat]}
+                          href={localePath(preferences.locale, `/${cat}`)}
+                          active={currentSection === cat} onClick={() => setMobileNavOpen(false)} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 grid gap-1 border-t border-line pt-3">
+                <SidebarLink label={settingsItem.label} href={settingsItem.href}
+                  active={currentSection === "settings"}
+                  disabled={Boolean(settingsItem.disabledWhenLoggedOut && !user)}
+                  onClick={() => setMobileNavOpen(false)} />
               </div>
 
               <div className="mt-6 grid gap-3 rounded-[22px] border border-line bg-bg-surface px-4 py-4">

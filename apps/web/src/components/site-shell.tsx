@@ -7,7 +7,7 @@ import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { Tag } from "@/components/tag";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
-import { marketplaceCategories } from "@/lib/marketplace";
+import { categoryGroups } from "@/lib/marketplace";
 
 export function SiteShell({
   children,
@@ -80,56 +80,41 @@ export function SiteShell({
             </p>
           </div>
 
-          {/* Footer column: Consumer & Invest */}
+          {/* Footer columns — driven by shared categoryGroups registry */}
           <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                Banking & Cards
-              </p>
-              <div className="mt-3 grid gap-2.5">
-                {(["banking","neobanks","savings","debit","cards","wallets"] as MarketplaceCategory[]).map((cat) => (
-                  <Link key={cat} href={localePath(locale, `/${cat}`)}
-                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
-                    {dictionary.categories[cat]}
-                  </Link>
-                ))}
-              </div>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                Send & Exchange
-              </p>
-              <div className="mt-3 grid gap-2.5">
-                {(["transfers","remittance","exchange","travel","bnpl"] as MarketplaceCategory[]).map((cat) => (
-                  <Link key={cat} href={localePath(locale, `/${cat}`)}
-                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
-                    {dictionary.categories[cat]}
-                  </Link>
-                ))}
-              </div>
+            <div className="grid gap-6">
+              {categoryGroups.slice(0, 3).map((group) => (
+                <div key={group.id}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                    {group.label}
+                  </p>
+                  <div className="mt-3 grid gap-2.5">
+                    {group.categories.map((cat) => (
+                      <Link key={cat} href={localePath(locale, `/${cat}`)}
+                        className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                        {dictionary.categories[cat]}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                Invest & Borrow
-              </p>
-              <div className="mt-3 grid gap-2.5">
-                {(["investments","trading","crypto","loans","insurance","cashback"] as MarketplaceCategory[]).map((cat) => (
-                  <Link key={cat} href={localePath(locale, `/${cat}`)}
-                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
-                    {dictionary.categories[cat]}
-                  </Link>
-                ))}
-              </div>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                Business
-              </p>
-              <div className="mt-3 grid gap-2.5">
-                {(["business","payroll","tax","expense","budgeting","kids"] as MarketplaceCategory[]).map((cat) => (
-                  <Link key={cat} href={localePath(locale, `/${cat}`)}
-                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
-                    {dictionary.categories[cat]}
-                  </Link>
-                ))}
-              </div>
+            <div className="grid gap-6">
+              {categoryGroups.slice(3).map((group) => (
+                <div key={group.id}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                    {group.label}
+                  </p>
+                  <div className="mt-3 grid gap-2.5">
+                    {group.categories.map((cat) => (
+                      <Link key={cat} href={localePath(locale, `/${cat}`)}
+                        className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                        {dictionary.categories[cat]}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

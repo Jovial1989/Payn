@@ -4,39 +4,7 @@ import { buttonStyles } from "@/components/button";
 import { ProviderStrip } from "@/components/provider-strip";
 import { localePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
-import { categoryMeta } from "@/lib/marketplace";
-
-type CategoryGroup = {
-  label: string;
-  categories: MarketplaceCategory[];
-};
-
-const categoryGroups: CategoryGroup[] = [
-  {
-    label: "Banking & Cards",
-    categories: ["banking", "neobanks", "savings", "debit", "cards", "wallets"],
-  },
-  {
-    label: "Send & Exchange",
-    categories: ["transfers", "remittance", "exchange", "travel"],
-  },
-  {
-    label: "Borrow & Pay Later",
-    categories: ["loans", "bnpl"],
-  },
-  {
-    label: "Invest & Trade",
-    categories: ["investments", "trading", "crypto"],
-  },
-  {
-    label: "Protect & Reward",
-    categories: ["insurance", "cashback", "budgeting", "kids"],
-  },
-  {
-    label: "Business",
-    categories: ["business", "payroll", "tax", "expense"],
-  },
-];
+import { categoryGroups, categoryMeta } from "@/lib/marketplace";
 
 const featuredProviders = [
   "Revolut", "Wise", "N26", "Trade Republic", "Klarna",
