@@ -1,4 +1,17 @@
 {
+  "categories": {
+    "loans":       "Loans",
+    "cards":       "Credit Cards",
+    "banking":     "Banking",
+    "transfers":   "Money Transfers",
+    "exchange":    "Exchange",
+    "insurance":   "Insurance",
+    "investments": "Investments",
+    "crypto":      "Crypto",
+    "business":    "Business Banking",
+    "budgeting":   "Budgeting & Finance",
+    "kids":        "Kids & Family"
+  },
   "localeGate": {
     "title": "Choose your market and language",
     "description": "Set your region and language to see the most relevant offers and product experience.",

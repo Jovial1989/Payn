@@ -2,7 +2,7 @@ import type { MarketplaceCategory, MarketplaceLocale, MarketplaceMarket } from "
 
 export const platformConfig = {
   productName: "Payn",
-  categories: ["loans", "cards", "transfers", "exchange", "insurance", "investments"] as const,
+  categories: ["loans", "cards", "banking", "transfers", "exchange", "insurance", "investments", "crypto", "business", "budgeting", "kids"] as const,
 };
 
 export interface CanonicalLanguageOption {
@@ -29,10 +29,15 @@ export const canonicalLanguages: CanonicalLanguageOption[] = [
 export const canonicalCategories: MarketplaceCategory[] = [
   "loans",
   "cards",
+  "banking",
   "transfers",
   "exchange",
   "insurance",
   "investments",
+  "crypto",
+  "business",
+  "budgeting",
+  "kids",
 ];
 
 export const canonicalCountryOptions: CanonicalCountryOption[] = [

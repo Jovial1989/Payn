@@ -24,12 +24,17 @@ const defaultFilters: FilterState = {
 };
 
 const purposeOptions: Record<MarketplaceCategory, string[]> = {
-  loans: ["Debt consolidation", "Large purchases", "Home improvements", "Digital application", "Fast funding"],
-  cards: ["Travel", "Cashback", "No FX fees", "BNPL", "Free card"],
+  loans:     ["Debt consolidation", "Large purchases", "Home improvements", "Digital application", "Fast funding"],
+  cards:     ["Travel", "Cashback", "No FX fees", "BNPL", "Free card"],
+  banking:   ["No monthly fee", "High-yield savings", "Multi-currency", "Mobile-first", "EU-wide"],
   transfers: ["Best rates", "Remittances", "Fast delivery", "Free P2P", "Business payments"],
-  exchange: ["Mid-market rate", "Rate alerts", "Business FX", "Multi-currency hold", "Free exchanges"],
+  exchange:  ["Mid-market rate", "Rate alerts", "Business FX", "Multi-currency hold", "Free exchanges"],
   insurance: ["Health cover", "Travel cover", "Car cover", "Family protection", "Digital claims"],
-  investments: ["Stocks", "ETF plans", "Crypto", "Long-term investing", "Low-cost trading"],
+  investments: ["Stocks", "ETF plans", "Long-term investing", "Low-cost trading", "Recurring buy"],
+  crypto:    ["Buy crypto", "Crypto card", "Staking", "DeFi access", "Low fees"],
+  business:  ["Multi-currency", "Team cards", "Invoicing", "Fast setup", "No hidden fees"],
+  budgeting: ["Spending insights", "Savings goals", "Bill tracking", "Cashback", "Open banking"],
+  kids:      ["Pocket money", "Parental controls", "Financial literacy", "Debit card", "Chores & rewards"],
 };
 
 function formatAmount(locale: string, val: number) {

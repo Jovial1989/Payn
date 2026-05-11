@@ -97,17 +97,27 @@ function getGoalLabel(locale: MarketplaceLocale, goal: GoalId) {
           transfers: "Geld ins Ausland senden",
           loans: "Kredit finden",
           cards: "Beste Karte finden",
+          banking: "Konto eröffnen",
           exchange: "Währung tauschen",
           insurance: "Versicherung finden",
           investments: "Geld anlegen",
+          crypto: "Krypto kaufen",
+          business: "Geschäftskonto",
+          budgeting: "Ausgaben verfolgen",
+          kids: "Für Kinder",
         }
       : {
           transfers: "Send money abroad",
           loans: "Get a loan",
           cards: "Find best card",
+          banking: "Open an account",
           exchange: "Exchange currency",
           insurance: "Get insured",
           investments: "Invest money",
+          crypto: "Buy crypto",
+          business: "Business account",
+          budgeting: "Track spending",
+          kids: "For kids",
         };
 
   return labels[goal];
@@ -120,17 +130,27 @@ function getGoalDescription(locale: MarketplaceLocale, goal: GoalId) {
           transfers: "Vergleiche, was nach Gebühren wirklich beim Empfänger ankommt.",
           loans: "Vergleiche Monatsrate, Zusagegeschwindigkeit und Kredit-Fit.",
           cards: "Wähle zuerst den Kartenzweck und vergleiche dann die echte Wirtschaftlichkeit.",
+          banking: "Kostenlose Konten und Neobanken mit hohen Zinsen vergleichen.",
           exchange: "Vergleiche den gelieferten Wechselkurs statt nur Werbeversprechen.",
           insurance: "Starte mit der passenden Schutzart und verfeinere dann die Route.",
           investments: "Prüfe erst den Markt-Kontext und vergleiche dann die Plattformen.",
+          crypto: "Vergleiche Krypto-Plattformen nach Gebühren und Asset-Auswahl.",
+          business: "Geschäftskonten nach Funktionen, Währungen und Kosten vergleichen.",
+          budgeting: "Ausgaben analysieren und Sparziele mit Open-Banking-Tools setzen.",
+          kids: "Taschengeld-Apps mit elterlicher Kontrolle und Lernmodus vergleichen.",
         }
       : {
           transfers: "Compare what the recipient actually gets after fees.",
           loans: "Compare monthly cost, approval speed, and borrowing fit.",
           cards: "Choose the card angle first, then compare actual economics.",
+          banking: "Compare free accounts and neobanks with high-yield options.",
           exchange: "Compare delivered conversion, not just headline rates.",
           insurance: "Start with the protection type, then narrow the route.",
           investments: "Review market context first, then compare platforms.",
+          crypto: "Compare crypto platforms by fees, assets, and security model.",
+          business: "Compare business accounts by features, currencies, and cost.",
+          budgeting: "Analyse spending and set savings goals with open banking tools.",
+          kids: "Compare pocket money apps with parental controls and learning modes.",
         };
 
   return descriptions[goal];

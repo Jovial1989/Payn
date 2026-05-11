@@ -18,10 +18,15 @@ export type HeroMarketOffer = {
 const categoryRoutes: Record<MarketplaceCategory, string> = {
   loans: "/loans",
   cards: "/cards",
+  banking: "/banking",
   transfers: "/transfers",
   exchange: "/exchange",
   insurance: "/insurance",
   investments: "/investments",
+  crypto: "/crypto",
+  business: "/business",
+  budgeting: "/budgeting",
+  kids: "/kids",
 };
 
 function badgeClass(tone: HeroMarketOffer["badgeTone"]) {

@@ -15,10 +15,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryLoans => 'Loans';
 
   @override
-  String get categoryCards => 'Cards';
+  String get categoryCards => 'Credit Cards';
 
   @override
-  String get categoryTransfers => 'Transfers';
+  String get categoryBanking => 'Banking';
+
+  @override
+  String get categoryTransfers => 'Money Transfers';
 
   @override
   String get categoryExchange => 'Exchange';
@@ -28,6 +31,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryInvestments => 'Investments';
+
+  @override
+  String get categoryCrypto => 'Crypto';
+
+  @override
+  String get categoryBusiness => 'Business Banking';
+
+  @override
+  String get categoryBudgeting => 'Budgeting & Finance';
+
+  @override
+  String get categoryKids => 'Kids & Family';
 
   @override
   String get profileTypePersonal => 'Personal';

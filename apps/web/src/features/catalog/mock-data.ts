@@ -1259,4 +1259,162 @@ export const featuredOffers: MarketplaceOffer[] = [
     affiliateLink: "https://santander.com",
     updatedAt: "2026-03-20T00:00:00Z",
   },
+
+  // ═══════════════════════════════════════════════════
+  // CRYPTO
+  // ═══════════════════════════════════════════════════
+  {
+    id: "crypto-wirex-account",
+    slug: "wirex-crypto-account",
+    category: "crypto",
+    countryCodes: ["UK", "EU"],
+    providerMark: "WX",
+    providerName: "Wirex",
+    title: "Wirex Crypto Account",
+    subtitle: "Multi-currency crypto account with a Mastercard that lets you spend crypto seamlessly at real-world rates. Earn crypto rewards on every purchase.",
+    metrics: [
+      { label: "Cryptoback", value: "Up to 8%" },
+      { label: "Supported assets", value: "150+" },
+      { label: "Monthly fee", value: "EUR 0" },
+    ],
+    bestFor: ["Crypto card", "Crypto rewards", "Multi-asset"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.84,
+    providerWebsiteUrl: "https://wirexapp.com",
+    affiliateLink: "https://wirexapp.com/en/wirex-card",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: { cryptoSupport: true, affiliate: true, monetized: true },
+  },
+
+  // ═══════════════════════════════════════════════════
+  // BUSINESS BANKING
+  // ═══════════════════════════════════════════════════
+  {
+    id: "business-wise-account",
+    slug: "wise-business-account",
+    category: "business",
+    countryCodes: ["UK", "EU"],
+    providerMark: "WS",
+    providerName: "Wise",
+    title: "Wise Business Account",
+    subtitle: "The business account built for international companies. Hold 40+ currencies, pay teams abroad at the real rate, and integrate with Xero and QuickBooks.",
+    metrics: [
+      { label: "Currencies", value: "40+" },
+      { label: "FX Fee", value: "0.35% – 1%" },
+      { label: "Monthly fee", value: "EUR 0" },
+    ],
+    bestFor: ["Multi-currency", "Team payments", "Accounting integrations"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.93,
+    providerWebsiteUrl: "https://wise.com/business",
+    affiliateLink: "https://wise.com/gb/business/",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: { affiliate: true, monetized: true, availability: "international" },
+  },
+  {
+    id: "business-xe-business",
+    slug: "xe-business-account",
+    category: "business",
+    countryCodes: ["UK", "EU"],
+    providerMark: "XE",
+    providerName: "XE",
+    title: "XE Business Transfers",
+    subtitle: "Trusted FX for SMEs and corporates. Lock in forward contracts, set rate alerts, and send high-value transfers at interbank-close rates with a dedicated dealer.",
+    metrics: [
+      { label: "Transfer fee", value: "EUR 0 (>1k)" },
+      { label: "Corridors", value: "130+ currencies" },
+      { label: "Forward contracts", value: "Yes" },
+    ],
+    bestFor: ["Forward contracts", "Large transfers", "Rate alerts"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.85,
+    providerWebsiteUrl: "https://www.xe.com/business/",
+    affiliateLink: "https://www.xe.com/business/",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: { affiliate: true, monetized: true, availability: "international" },
+  },
+
+  // ═══════════════════════════════════════════════════
+  // BUDGETING & FINANCE
+  // ═══════════════════════════════════════════════════
+  {
+    id: "budgeting-snoop-app",
+    slug: "snoop-budgeting-app",
+    category: "budgeting",
+    countryCodes: ["UK"],
+    providerMark: "SN",
+    providerName: "Snoop",
+    title: "Snoop Money App",
+    subtitle: "Open-banking powered budgeting app that analyses your spending, flags wasted subscriptions, and finds personalised savings opportunities across 100+ banks.",
+    metrics: [
+      { label: "Banks connected", value: "100+" },
+      { label: "App", value: "Free" },
+      { label: "Savings found", value: "Avg. GBP 1,500/yr" },
+    ],
+    bestFor: ["Spending insights", "Bill tracking", "Subscription tracking"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.78,
+    providerWebsiteUrl: "https://snoopapp.com",
+    affiliateLink: "https://snoopapp.com",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: { affiliate: true, monetized: true, availability: "local" },
+  },
+
+  // ═══════════════════════════════════════════════════
+  // KIDS & FAMILY FINANCE
+  // ═══════════════════════════════════════════════════
+  {
+    id: "kids-gohenry-account",
+    slug: "gohenry-kids-account",
+    category: "kids",
+    countryCodes: ["UK", "EU"],
+    providerMark: "GH",
+    providerName: "GoHenry",
+    title: "GoHenry Kids Account",
+    subtitle: "The pocket money app designed for 6–18 year olds. Kids get a debit card and spending app; parents set limits, assign chores, and track spending in real time.",
+    metrics: [
+      { label: "Age range", value: "6 – 18 years" },
+      { label: "Monthly fee", value: "From GBP 2.99" },
+      { label: "Parental controls", value: "Full" },
+    ],
+    bestFor: ["Pocket money", "Parental controls", "Financial literacy"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.86,
+    providerWebsiteUrl: "https://www.gohenry.com",
+    affiliateLink: "https://www.gohenry.com",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: { affiliate: true, monetized: true, availability: "regional" },
+  },
+
+  // ═══════════════════════════════════════════════════
+  // FINANCEADS IMPORT — NEEDS REVIEW
+  // ═══════════════════════════════════════════════════
+  {
+    id: "financeads-83248c4120135638t",
+    slug: "financeads-83248c4120135638t",
+    category: "banking",
+    countryCodes: ["EU"],
+    providerMark: "?",
+    providerName: "Unknown Provider",
+    title: "Financeads Partner Offer",
+    subtitle: "Affiliate offer imported from Financeads network. Provider identity not yet resolved — pending manual review.",
+    metrics: [
+      { label: "Source", value: "Financeads" },
+      { label: "Campaign ID", value: "83248C4120135638T" },
+    ],
+    bestFor: ["Needs review"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0,
+    providerWebsiteUrl: "",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C4120135638T",
+    updatedAt: "2026-05-07T00:00:00Z",
+    attributes: {
+      affiliate: true,
+      monetized: true,
+      dataSource: "affiliate",
+      confidenceScore: 0,
+      searchTags: ["needs_review", "financeads", "pending"],
+      informational: false,
+    },
+  },
 ];

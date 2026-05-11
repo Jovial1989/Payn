@@ -15,19 +15,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryLoans => 'Préstamos';
 
   @override
-  String get categoryCards => 'Tarjetas';
+  String get categoryCards => 'Tarjetas de crédito';
+
+  @override
+  String get categoryBanking => 'Banca';
 
   @override
   String get categoryTransfers => 'Transferencias';
 
   @override
-  String get categoryExchange => 'Cambio';
+  String get categoryExchange => 'Cambio de divisas';
 
   @override
   String get categoryInsurance => 'Seguros';
 
   @override
   String get categoryInvestments => 'Inversiones';
+
+  @override
+  String get categoryCrypto => 'Cripto';
+
+  @override
+  String get categoryBusiness => 'Banca empresarial';
+
+  @override
+  String get categoryBudgeting => 'Presupuesto y finanzas';
+
+  @override
+  String get categoryKids => 'Niños y familia';
 
   @override
   String get profileTypePersonal => 'Personal';

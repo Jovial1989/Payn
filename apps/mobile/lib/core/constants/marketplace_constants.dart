@@ -65,7 +65,9 @@ const Map<PaynCategory, String> categoryDescriptions = <PaynCategory, String>{
   PaynCategory.loans:
       'Review borrowing options with a cleaner view of cost, term, and repayment flexibility.',
   PaynCategory.cards:
-      'Compare payment cards by travel fit, fee profile, and everyday value.',
+      'Compare credit and debit cards by travel fit, fee profile, and everyday value.',
+  PaynCategory.banking:
+      'Find the right current account — from neobanks to traditional institutions.',
   PaynCategory.transfers:
       'Rank transfer routes by delivered amount, timing, and payout method.',
   PaynCategory.exchange:
@@ -74,6 +76,14 @@ const Map<PaynCategory, String> categoryDescriptions = <PaynCategory, String>{
       'Compare protection products by cover depth, exclusions, and monthly cost.',
   PaynCategory.investments:
       'Shortlist platforms by fee profile, market access, and long-term usability.',
+  PaynCategory.crypto:
+      'Compare crypto platforms by fees, supported assets, and security model.',
+  PaynCategory.business:
+      'Business accounts, multi-currency wallets, and team expense tools.',
+  PaynCategory.budgeting:
+      'Track spending, set savings goals, and get actionable financial insights.',
+  PaynCategory.kids:
+      'Pocket money apps and family finance tools with full parental controls.',
 };
 
 const Map<String, String> interestLabels = <String, String>{
@@ -109,28 +119,40 @@ const Map<String, List<String>> interestKeywords = <String, List<String>>{
 const Map<ProfileType, List<PaynCategory>> profileCategoryPreferences =
     <ProfileType, List<PaynCategory>>{
       ProfileType.personal: <PaynCategory>[
-        PaynCategory.loans,
+        PaynCategory.banking,
         PaynCategory.cards,
-        PaynCategory.insurance,
+        PaynCategory.loans,
         PaynCategory.transfers,
+        PaynCategory.insurance,
         PaynCategory.investments,
         PaynCategory.exchange,
+        PaynCategory.budgeting,
+        PaynCategory.crypto,
+        PaynCategory.kids,
       ],
       ProfileType.freelancer: <PaynCategory>[
         PaynCategory.transfers,
+        PaynCategory.business,
         PaynCategory.exchange,
         PaynCategory.cards,
+        PaynCategory.banking,
         PaynCategory.insurance,
         PaynCategory.investments,
         PaynCategory.loans,
+        PaynCategory.crypto,
+        PaynCategory.budgeting,
       ],
       ProfileType.business: <PaynCategory>[
+        PaynCategory.business,
         PaynCategory.exchange,
         PaynCategory.transfers,
         PaynCategory.investments,
         PaynCategory.insurance,
         PaynCategory.cards,
+        PaynCategory.banking,
         PaynCategory.loans,
+        PaynCategory.crypto,
+        PaynCategory.budgeting,
       ],
     };
 

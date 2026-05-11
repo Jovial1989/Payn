@@ -71,12 +71,17 @@ type IntentEntry = {
 };
 
 const INTENT_CATEGORIES: IntentEntry[] = [
-  { category: "transfers", headline: "Send Money", descriptions: { en: "Best FX rates · lowest fees", de: "Beste Kurse · niedrigste Gebühren", es: "Mejores tipos · menores tarifas", fr: "Meilleurs taux · frais réduits", it: "Tariffe migliori · commissioni basse", pt: "Melhores taxas · menores tarifas" } },
-  { category: "loans",    headline: "Get a Loan",  descriptions: { en: "From 3.9% APR · fast approval", de: "Ab 3,9% APR · schnelle Genehmigung", es: "Desde 3,9% TAE · aprobación rápida", fr: "Dès 3,9% APR · approbation rapide", it: "Da 3,9% APR · approvazione rapida", pt: "A partir de 3,9% APR · aprovação rápida" } },
-  { category: "cards",    headline: "Get a Card",  descriptions: { en: "Cashback, travel & no-fee cards", de: "Cashback, Reise & gebührenfreie Karten", es: "Cashback, viaje y sin comisiones", fr: "Cashback, voyage & sans frais", it: "Cashback, viaggi & senza commissioni", pt: "Cashback, viagem & sem taxas" } },
-  { category: "exchange", headline: "Exchange Currency", descriptions: { en: "Real rates · no hidden markup", de: "Echte Kurse · keine versteckten Aufschläge", es: "Tipos reales · sin margen oculto", fr: "Vrais taux · sans marge cachée", it: "Tassi reali · nessun markup nascosto", pt: "Taxas reais · sem margem oculta" } },
-  { category: "insurance", headline: "Get Insurance", descriptions: { en: "Travel, health & life coverage", de: "Reise-, Kranken- & Lebensversicherung", es: "Cobertura de viaje, salud y vida", fr: "Voyage, santé & vie", it: "Viaggio, salute & vita", pt: "Viagem, saúde & vida" } },
-  { category: "investments", headline: "Invest", descriptions: { en: "Stocks, ETFs, crypto & more", de: "Aktien, ETFs, Krypto & mehr", es: "Acciones, ETFs, criptomonedas & más", fr: "Actions, ETF, crypto & plus", it: "Azioni, ETF, crypto & altro", pt: "Ações, ETFs, cripto & mais" } },
+  { category: "transfers",  headline: "Send Money",        descriptions: { en: "Best FX rates · lowest fees",         de: "Beste Kurse · niedrigste Gebühren",       es: "Mejores tipos · menores tarifas",        fr: "Meilleurs taux · frais réduits",         it: "Tariffe migliori · commissioni basse",    pt: "Melhores taxas · menores tarifas" } },
+  { category: "loans",      headline: "Get a Loan",        descriptions: { en: "From 3.9% APR · fast approval",       de: "Ab 3,9% APR · schnelle Genehmigung",      es: "Desde 3,9% TAE · aprobación rápida",    fr: "Dès 3,9% APR · approbation rapide",      it: "Da 3,9% APR · approvazione rapida",       pt: "A partir de 3,9% APR · aprovação rápida" } },
+  { category: "cards",      headline: "Get a Card",        descriptions: { en: "Cashback, travel & no-fee cards",      de: "Cashback, Reise & gebührenfreie Karten",  es: "Cashback, viaje y sin comisiones",      fr: "Cashback, voyage & sans frais",          it: "Cashback, viaggi & senza commissioni",    pt: "Cashback, viagem & sem taxas" } },
+  { category: "banking",    headline: "Open an Account",   descriptions: { en: "Free accounts · high-yield options",   de: "Kostenlose Konten · Zinsangebote",        es: "Cuentas gratuitas · alta rentabilidad", fr: "Comptes gratuits · hauts rendements",    it: "Conti gratuiti · rendimenti elevati",     pt: "Contas gratuitas · altos rendimentos" } },
+  { category: "exchange",   headline: "Exchange Currency", descriptions: { en: "Real rates · no hidden markup",         de: "Echte Kurse · keine versteckten Aufschläge", es: "Tipos reales · sin margen oculto",    fr: "Vrais taux · sans marge cachée",         it: "Tassi reali · nessun markup nascosto",    pt: "Taxas reais · sem margem oculta" } },
+  { category: "insurance",  headline: "Get Insurance",     descriptions: { en: "Travel, health & life coverage",       de: "Reise-, Kranken- & Lebensversicherung",   es: "Cobertura de viaje, salud y vida",      fr: "Voyage, santé & vie",                    it: "Viaggio, salute & vita",                  pt: "Viagem, saúde & vida" } },
+  { category: "investments",headline: "Invest",             descriptions: { en: "Stocks, ETFs & more",                 de: "Aktien, ETFs & mehr",                     es: "Acciones, ETFs y más",                  fr: "Actions, ETF & plus",                    it: "Azioni, ETF & altro",                     pt: "Ações, ETFs & mais" } },
+  { category: "crypto",     headline: "Buy Crypto",         descriptions: { en: "Low fees · 150+ assets",              de: "Niedrige Gebühren · 150+ Assets",         es: "Comisiones bajas · 150+ activos",       fr: "Frais réduits · 150+ actifs",            it: "Commissioni basse · 150+ asset",          pt: "Taxas baixas · 150+ ativos" } },
+  { category: "business",   headline: "Business Account",   descriptions: { en: "Multi-currency · team tools",          de: "Multi-Währung · Team-Tools",              es: "Multi-divisa · herramientas de equipo", fr: "Multi-devises · outils d'équipe",        it: "Multi-valuta · strumenti per il team",    pt: "Multi-moeda · ferramentas de equipa" } },
+  { category: "budgeting",  headline: "Track Spending",     descriptions: { en: "Insights · savings goals",             de: "Einblicke · Sparziele",                   es: "Información · metas de ahorro",         fr: "Analyses · objectifs d'épargne",         it: "Analisi · obiettivi di risparmio",        pt: "Insights · metas de poupança" } },
+  { category: "kids",       headline: "For Kids",            descriptions: { en: "Pocket money · parental controls",    de: "Taschengeld · elterliche Kontrolle",      es: "Paga · control parental",               fr: "Argent de poche · contrôle parental",    it: "Paghetta · controllo genitori",           pt: "Mesada · controlo parental" } },
 ];
 
 // ─── Why Payn icons ────────────────────────────────────────────────────────────
@@ -116,6 +121,38 @@ function IntentIcon({ category }: { category: MarketplaceCategory }) {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M8 1.5L2 4v4c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M5.5 8l2 2 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+  if (category === "banking") return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M1 6l7-4 7 4H1z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 6v6M7 6v6M9 6v6M13 6v6M1 12h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+  if (category === "crypto") return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M6 5.5h3a1.5 1.5 0 010 3H6m0 0h3.5a1.5 1.5 0 010 3H6m0-6v6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+  if (category === "business") return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M5 10h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+  if (category === "budgeting") return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="1.5" width="14" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M4 8h2.5M4 11h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M9 5.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+  if (category === "kids") return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
   return (

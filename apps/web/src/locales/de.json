@@ -1,4 +1,17 @@
 {
+  "categories": {
+    "loans":       "Kredite",
+    "cards":       "Kreditkarten",
+    "banking":     "Banking",
+    "transfers":   "Geldtransfers",
+    "exchange":    "Währungswechsel",
+    "insurance":   "Versicherungen",
+    "investments": "Investments",
+    "crypto":      "Krypto",
+    "business":    "Geschäftskonto",
+    "budgeting":   "Budget & Finanzen",
+    "kids":        "Kinder & Familie"
+  },
   "localeGate": {
     "title": "Markt und Sprache wählen",
     "description": "Lege Region und Sprache fest, um die relevantesten Angebote und die passende Produkterfahrung zu sehen.",

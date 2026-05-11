@@ -1,4 +1,16 @@
-enum PaynCategory { loans, cards, transfers, exchange, insurance, investments }
+enum PaynCategory {
+  loans,
+  cards,
+  banking,
+  transfers,
+  exchange,
+  insurance,
+  investments,
+  crypto,
+  business,
+  budgeting,
+  kids,
+}
 
 extension PaynCategoryLabel on PaynCategory {
   String get label {
@@ -6,16 +18,49 @@ extension PaynCategoryLabel on PaynCategory {
       case PaynCategory.loans:
         return 'Loans';
       case PaynCategory.cards:
-        return 'Cards';
+        return 'Credit Cards';
+      case PaynCategory.banking:
+        return 'Banking';
       case PaynCategory.transfers:
-        return 'Transfers';
+        return 'Money Transfers';
       case PaynCategory.exchange:
         return 'Exchange';
       case PaynCategory.insurance:
         return 'Insurance';
       case PaynCategory.investments:
         return 'Investments';
+      case PaynCategory.crypto:
+        return 'Crypto';
+      case PaynCategory.business:
+        return 'Business Banking';
+      case PaynCategory.budgeting:
+        return 'Budgeting & Finance';
+      case PaynCategory.kids:
+        return 'Kids & Family';
     }
+  }
+
+  String get slug {
+    switch (this) {
+      case PaynCategory.loans:       return 'loans';
+      case PaynCategory.cards:       return 'cards';
+      case PaynCategory.banking:     return 'banking';
+      case PaynCategory.transfers:   return 'transfers';
+      case PaynCategory.exchange:    return 'exchange';
+      case PaynCategory.insurance:   return 'insurance';
+      case PaynCategory.investments: return 'investments';
+      case PaynCategory.crypto:      return 'crypto';
+      case PaynCategory.business:    return 'business';
+      case PaynCategory.budgeting:   return 'budgeting';
+      case PaynCategory.kids:        return 'kids';
+    }
+  }
+
+  static PaynCategory? fromSlug(String slug) {
+    for (final cat in PaynCategory.values) {
+      if (cat.slug == slug) return cat;
+    }
+    return null;
   }
 }
 

@@ -28,10 +28,15 @@ export const supportedLocales: MarketplaceLocale[] = ["en", "de", "es", "fr"];
 export const marketplaceCategories: MarketplaceCategory[] = [
   "loans",
   "cards",
+  "banking",
   "transfers",
   "exchange",
   "insurance",
   "investments",
+  "crypto",
+  "business",
+  "budgeting",
+  "kids",
 ];
 
 export const explorerCategories: ExplorerCategory[] = ["all", ...marketplaceCategories];
@@ -63,14 +68,19 @@ export const marketDefinitions: Record<
 
 export const categoryMeta: Record<
   MarketplaceCategory,
-  { label: string; shortLabel: string }
+  { label: string; shortLabel: string; icon: string }
 > = {
-  loans: { label: "Loans", shortLabel: "loan" },
-  cards: { label: "Cards", shortLabel: "card" },
-  transfers: { label: "Transfers", shortLabel: "transfer" },
-  exchange: { label: "Exchange", shortLabel: "exchange" },
-  insurance: { label: "Insurance", shortLabel: "insurance" },
-  investments: { label: "Investments", shortLabel: "investment" },
+  loans:     { label: "Loans",               shortLabel: "loan",       icon: "💳" },
+  cards:     { label: "Credit Cards",        shortLabel: "card",       icon: "🪪" },
+  banking:   { label: "Banking",             shortLabel: "account",    icon: "🏦" },
+  transfers: { label: "Money Transfers",     shortLabel: "transfer",   icon: "↔️" },
+  exchange:  { label: "Exchange",            shortLabel: "exchange",   icon: "🔄" },
+  insurance: { label: "Insurance",           shortLabel: "insurance",  icon: "🛡️" },
+  investments: { label: "Investments",       shortLabel: "investment", icon: "📈" },
+  crypto:    { label: "Crypto",              shortLabel: "crypto",     icon: "₿" },
+  business:  { label: "Business Banking",    shortLabel: "business",   icon: "🏢" },
+  budgeting: { label: "Budgeting & Finance", shortLabel: "budgeting",  icon: "📊" },
+  kids:      { label: "Kids & Family",       shortLabel: "kids",       icon: "👶" },
 };
 
 const globalProviderNames = new Set([
@@ -199,6 +209,26 @@ export function getOfferTradeoff(offer: MarketplaceOffer) {
 
   if (offer.category === "insurance") {
     return "Premiums, exclusions, and acceptance can change with age, health, vehicle profile, or trip details.";
+  }
+
+  if (offer.category === "banking") {
+    return "Features and fee waivers depend on your monthly activity and account plan tier.";
+  }
+
+  if (offer.category === "crypto") {
+    return "Crypto assets carry high volatility risk. Regulatory status varies by country.";
+  }
+
+  if (offer.category === "business") {
+    return "Business account eligibility and pricing depend on company size, turnover, and country of registration.";
+  }
+
+  if (offer.category === "budgeting") {
+    return "Savings and cashback outcomes depend on your spending habits and linked accounts.";
+  }
+
+  if (offer.category === "kids") {
+    return "Parental controls and age restrictions apply. Features vary by country.";
   }
 
   return "Low headline fees do not remove market risk, custody terms, FX costs, or product complexity.";

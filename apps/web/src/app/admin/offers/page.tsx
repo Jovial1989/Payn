@@ -48,7 +48,7 @@ export default async function AdminOffersPage({ searchParams }: Props) {
   if (monetised === "false") offers = offers.filter((o) => !o.isMonetised);
   if (status) offers = offers.filter((o) => o.effectiveStatus === status);
 
-  const categories = ["loans", "cards", "transfers", "exchange", "insurance", "investments"];
+  const categories = ["loans", "cards", "banking", "transfers", "exchange", "insurance", "investments", "crypto", "business", "budgeting", "kids"];
 
   return (
     <div className="grid gap-6">

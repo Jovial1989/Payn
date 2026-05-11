@@ -121,13 +121,19 @@ abstract class AppLocalizations {
   /// No description provided for @categoryCards.
   ///
   /// In en, this message translates to:
-  /// **'Cards'**
+  /// **'Credit Cards'**
   String get categoryCards;
+
+  /// No description provided for @categoryBanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Banking'**
+  String get categoryBanking;
 
   /// No description provided for @categoryTransfers.
   ///
   /// In en, this message translates to:
-  /// **'Transfers'**
+  /// **'Money Transfers'**
   String get categoryTransfers;
 
   /// No description provided for @categoryExchange.
@@ -147,6 +153,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Investments'**
   String get categoryInvestments;
+
+  /// No description provided for @categoryCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto'**
+  String get categoryCrypto;
+
+  /// No description provided for @categoryBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Banking'**
+  String get categoryBusiness;
+
+  /// No description provided for @categoryBudgeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgeting & Finance'**
+  String get categoryBudgeting;
+
+  /// No description provided for @categoryKids.
+  ///
+  /// In en, this message translates to:
+  /// **'Kids & Family'**
+  String get categoryKids;
 
   /// No description provided for @profileTypePersonal.
   ///

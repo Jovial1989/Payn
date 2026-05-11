@@ -1,4 +1,17 @@
 {
+  "categories": {
+    "loans":       "Prêts",
+    "cards":       "Cartes de crédit",
+    "banking":     "Banque",
+    "transfers":   "Virements",
+    "exchange":    "Change",
+    "insurance":   "Assurances",
+    "investments": "Investissements",
+    "crypto":      "Crypto",
+    "business":    "Banque professionnelle",
+    "budgeting":   "Budget et finances",
+    "kids":        "Enfants et famille"
+  },
   "localeGate": {
     "title": "Choisissez votre marché et votre langue",
     "description": "Définissez votre région et votre langue pour voir les offres et l’expérience produit les plus pertinentes.",

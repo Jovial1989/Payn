@@ -43,10 +43,15 @@ const localeCountryDefaults: Record<MarketplaceLocale, string> = {
 const minimumOfferCounts: Record<MarketplaceCategory, number> = {
   loans: 3,
   cards: 3,
+  banking: 1,
   transfers: 3,
   exchange: 3,
   insurance: 1,
   investments: 1,
+  crypto: 1,
+  business: 1,
+  budgeting: 1,
+  kids: 1,
 };
 
 const providerNamesWithBroadCoverage = new Set([

@@ -1,10 +1,15 @@
 export type MarketplaceCategory =
   | "loans"
   | "cards"
+  | "banking"
   | "transfers"
   | "exchange"
   | "insurance"
-  | "investments";
+  | "investments"
+  | "crypto"
+  | "business"
+  | "budgeting"
+  | "kids";
 
 export type MarketplaceInsuranceType =
   | "travel"
