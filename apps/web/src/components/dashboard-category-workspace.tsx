@@ -1850,13 +1850,27 @@ export function DashboardCategoryWorkspace({
             <span className="text-sm text-ink-secondary">{copy.updatingLiveComparison}</span>
           </div>
         ) : rankedResults.length === 0 ? (
-          <div className="mt-6">
-            <DashboardEmptyState
-              title={category === "transfers" || category === "exchange" ? copy.marketDataUnavailable : copy.noProvidersTitle}
-              description={category === "transfers" || category === "exchange" ? copy.marketDataDescription : copy.noProvidersDescription}
-              href={discoverHref}
-              cta={copy.backToDiscover}
-            />
+          <div className="mt-6 rounded-[24px] border border-dashed border-line bg-bg-surface p-6">
+            <p className="text-base font-bold text-ink">
+              {category === "transfers" || category === "exchange" ? copy.marketDataUnavailable : copy.noProvidersTitle}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+              {category === "transfers" || category === "exchange" ? copy.marketDataDescription : copy.noProvidersDescription}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {country !== "all_europe" && (
+                <button
+                  type="button"
+                  onClick={() => updateCountry("all_europe")}
+                  className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
+                >
+                  Try All Europe
+                </button>
+              )}
+              <a href={discoverHref} className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong">
+                {copy.backToDiscover}
+              </a>
+            </div>
           </div>
         ) : (
           <div className="mt-6 grid gap-3">

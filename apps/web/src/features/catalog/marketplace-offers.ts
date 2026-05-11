@@ -6,6 +6,7 @@ import type {
 import { supplementalMarketplaceOffers } from "@/features/catalog/marketplace-expanded-offers";
 import { featuredOffers as coreOffers } from "@/features/catalog/mock-data";
 import { newCategoriesOffers } from "@/features/catalog/new-categories-catalog";
+import { catalogExpansionOffers } from "@/features/catalog/catalog-expansion";
 
 type InsuranceSeed = {
   id: string;
@@ -1912,6 +1913,7 @@ const expandedInvestmentOffers: MarketplaceOffer[] = [
 ];
 
 export const marketplaceOffers = [
+  ...catalogExpansionOffers,
   ...coreOffers,
   ...expandedOffers,
   ...supplementalMarketplaceOffers,

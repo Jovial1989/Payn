@@ -360,6 +360,14 @@ export function getCategoryOffersForCountrySelection(
   );
 }
 
+export function getActiveCategoriesForCountry(
+  countrySelection: string,
+  scope: UserProfileMarketScope = "eu_fallback",
+): Set<MarketplaceCategory> {
+  const offers = getOffersForCountrySelection(countrySelection, scope);
+  return new Set(offers.map((o) => o.category));
+}
+
 function getCoverageSnapshot(countrySelection: string) {
   const offers = getOffersForCountrySelection(countrySelection);
 

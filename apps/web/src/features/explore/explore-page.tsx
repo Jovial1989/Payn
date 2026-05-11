@@ -69,6 +69,10 @@ export function ExplorePageContent({
   const copy = getUiCopy(locale);
   const totalOffers = offers.length;
   const totalProviders = new Set(offers.map((o) => o.providerName)).size;
+  const activeCategories = new Set(offers.map((o) => o.category));
+  const visibleGroups = categoryGroups
+    .map((g) => ({ ...g, categories: g.categories.filter((c) => activeCategories.has(c)) }))
+    .filter((g) => g.categories.length > 0);
 
   return (
     <div className="grid gap-12">
@@ -86,7 +90,7 @@ export function ExplorePageContent({
         </div>
         <div className="h-8 w-px bg-line" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-2xl font-bold tabular-nums text-ink">{categoryGroups.reduce((n, g) => n + g.categories.length, 0)}</span>
+          <span className="text-2xl font-bold tabular-nums text-ink">{activeCategories.size}</span>
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-tertiary">Categories</span>
         </div>
         <div className="h-8 w-px bg-line" />
@@ -111,7 +115,7 @@ export function ExplorePageContent({
         </div>
 
         <div className="grid gap-8">
-          {categoryGroups.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.label}>
               <h2 className="mb-3 text-sm font-bold text-ink">{group.label}</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

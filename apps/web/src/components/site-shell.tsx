@@ -2,12 +2,14 @@
 
 import type { MarketplaceCategory } from "@payn/types";
 import Link from "next/link";
+import { useMemo } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { Tag } from "@/components/tag";
 import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { categoryGroups } from "@/lib/marketplace";
+import { getActiveCategoriesForCountry } from "@/lib/countries";
 
 export function SiteShell({
   children,
@@ -32,6 +34,11 @@ export function SiteShell({
   const dictionary = getDictionary(preferences.locale);
   const { locale } = preferences;
   const productEntryActionLabel = getProductEntryActionLabel(locale);
+  const activeCategories = useMemo(() => getActiveCategoriesForCountry(preferences.country), [preferences.country]);
+  const visibleCategoryGroups = useMemo(
+    () => categoryGroups.map((g) => ({ ...g, categories: g.categories.filter((c) => activeCategories.has(c)) })).filter((g) => g.categories.length > 0),
+    [activeCategories],
+  );
 
   return (
     <div className="min-h-screen bg-bg text-ink">
@@ -80,10 +87,10 @@ export function SiteShell({
             </p>
           </div>
 
-          {/* Footer columns — driven by shared categoryGroups registry */}
+          {/* Footer columns — driven by shared categoryGroups registry, filtered by country */}
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="grid gap-6">
-              {categoryGroups.slice(0, 3).map((group) => (
+              {visibleCategoryGroups.slice(0, 3).map((group) => (
                 <div key={group.id}>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                     {group.label}
@@ -100,7 +107,7 @@ export function SiteShell({
               ))}
             </div>
             <div className="grid gap-6">
-              {categoryGroups.slice(3).map((group) => (
+              {visibleCategoryGroups.slice(3).map((group) => (
                 <div key={group.id}>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                     {group.label}

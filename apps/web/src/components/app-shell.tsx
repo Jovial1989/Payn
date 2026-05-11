@@ -17,6 +17,7 @@ import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
 import { categoryGroups, marketplaceCategories } from "@/lib/marketplace";
+import { getActiveCategoriesForCountry } from "@/lib/countries";
 
 type AppNavItem = {
   id: "dashboard" | "discover" | MarketplaceCategory | "settings";
@@ -117,6 +118,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const productEntryActionLabel = getProductEntryActionLabel(preferences.locale);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const activeCategories = useMemo(
+    () => getActiveCategoriesForCountry(preferences.country),
+    [preferences.country],
+  );
+  const visibleCategoryGroups = useMemo(
+    () => categoryGroups.map((g) => ({ ...g, categories: g.categories.filter((c) => activeCategories.has(c)) })).filter((g) => g.categories.length > 0),
+    [activeCategories],
+  );
 
   const systemItems = useMemo<AppNavItem[]>(
     () => [
@@ -234,7 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ))}
             </div>
             <div className="mt-3 grid gap-4">
-              {categoryGroups.map((group) => (
+              {visibleCategoryGroups.map((group) => (
                 <div key={group.id}>
                   <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                     {group.label}
@@ -303,7 +312,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
               <div className="mt-3 grid gap-4">
-                {categoryGroups.map((group) => (
+                {visibleCategoryGroups.map((group) => (
                   <div key={group.id}>
                     <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                       {group.label}
