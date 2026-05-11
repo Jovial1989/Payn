@@ -27,6 +27,18 @@ const categoryRoutes: Record<MarketplaceCategory, string> = {
   business: "/business",
   budgeting: "/budgeting",
   kids: "/kids",
+  savings: "/savings",
+  trading: "/trading",
+  bnpl: "/bnpl",
+  debit: "/debit",
+  remittance: "/remittance",
+  travel: "/travel",
+  cashback: "/cashback",
+  wallets: "/wallets",
+  payroll: "/payroll",
+  tax: "/tax",
+  expense: "/expense",
+  neobanks: "/neobanks",
 };
 
 function badgeClass(tone: HeroMarketOffer["badgeTone"]) {

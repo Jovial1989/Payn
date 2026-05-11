@@ -52,6 +52,18 @@ const minimumOfferCounts: Record<MarketplaceCategory, number> = {
   business: 1,
   budgeting: 1,
   kids: 1,
+  savings: 1,
+  trading: 1,
+  bnpl: 1,
+  debit: 1,
+  remittance: 1,
+  travel: 1,
+  cashback: 1,
+  wallets: 1,
+  payroll: 1,
+  tax: 1,
+  expense: 1,
+  neobanks: 1,
 };
 
 const providerNamesWithBroadCoverage = new Set([

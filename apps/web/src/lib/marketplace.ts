@@ -26,17 +26,37 @@ export const supportedMarkets: MarketplaceMarket[] = [
 export const supportedLocales: MarketplaceLocale[] = ["en", "de", "es", "fr"];
 
 export const marketplaceCategories: MarketplaceCategory[] = [
-  "loans",
-  "cards",
+  // Consumer banking & cards
   "banking",
+  "neobanks",
+  "savings",
+  "debit",
+  "cards",
+  "wallets",
+  // Send & exchange
   "transfers",
+  "remittance",
   "exchange",
-  "insurance",
+  "travel",
+  // Borrow & pay later
+  "loans",
+  "bnpl",
+  // Invest & trade
   "investments",
+  "trading",
   "crypto",
-  "business",
+  // Protect & insure
+  "insurance",
+  // Rewards
+  "cashback",
+  // Lifestyle & family
   "budgeting",
   "kids",
+  // Business
+  "business",
+  "payroll",
+  "tax",
+  "expense",
 ];
 
 export const explorerCategories: ExplorerCategory[] = ["all", ...marketplaceCategories];
@@ -70,17 +90,37 @@ export const categoryMeta: Record<
   MarketplaceCategory,
   { label: string; shortLabel: string; icon: string }
 > = {
-  loans:     { label: "Loans",               shortLabel: "loan",       icon: "💳" },
-  cards:     { label: "Credit Cards",        shortLabel: "card",       icon: "🪪" },
-  banking:   { label: "Banking",             shortLabel: "account",    icon: "🏦" },
-  transfers: { label: "Money Transfers",     shortLabel: "transfer",   icon: "↔️" },
-  exchange:  { label: "Exchange",            shortLabel: "exchange",   icon: "🔄" },
-  insurance: { label: "Insurance",           shortLabel: "insurance",  icon: "🛡️" },
-  investments: { label: "Investments",       shortLabel: "investment", icon: "📈" },
-  crypto:    { label: "Crypto",              shortLabel: "crypto",     icon: "₿" },
-  business:  { label: "Business Banking",    shortLabel: "business",   icon: "🏢" },
-  budgeting: { label: "Budgeting & Finance", shortLabel: "budgeting",  icon: "📊" },
-  kids:      { label: "Kids & Family",       shortLabel: "kids",       icon: "👶" },
+  // Consumer
+  banking:    { label: "Banking",              shortLabel: "account",    icon: "🏦" },
+  neobanks:   { label: "Neobanks",             shortLabel: "neobank",    icon: "📱" },
+  savings:    { label: "Savings Accounts",     shortLabel: "savings",    icon: "🏛️" },
+  debit:      { label: "Debit Cards",          shortLabel: "debit",      icon: "💳" },
+  cards:      { label: "Credit Cards",         shortLabel: "card",       icon: "🪪" },
+  wallets:    { label: "Digital Wallets",      shortLabel: "wallet",     icon: "👜" },
+  // Send & exchange
+  transfers:  { label: "Money Transfers",      shortLabel: "transfer",   icon: "↔️" },
+  remittance: { label: "Remittance",           shortLabel: "remittance", icon: "🌍" },
+  exchange:   { label: "Exchange",             shortLabel: "exchange",   icon: "🔄" },
+  travel:     { label: "Travel Cards",         shortLabel: "travel",     icon: "✈️" },
+  // Borrow
+  loans:      { label: "Loans",               shortLabel: "loan",       icon: "🏧" },
+  bnpl:       { label: "Buy Now Pay Later",    shortLabel: "BNPL",       icon: "🛒" },
+  // Invest
+  investments:{ label: "Investments",          shortLabel: "investment", icon: "📈" },
+  trading:    { label: "Trading Platforms",    shortLabel: "trading",    icon: "📊" },
+  crypto:     { label: "Crypto",               shortLabel: "crypto",     icon: "₿" },
+  // Protect
+  insurance:  { label: "Insurance",            shortLabel: "insurance",  icon: "🛡️" },
+  // Rewards
+  cashback:   { label: "Cashback & Rewards",   shortLabel: "cashback",   icon: "💰" },
+  // Lifestyle
+  budgeting:  { label: "Budgeting & Finance",  shortLabel: "budgeting",  icon: "🗂️" },
+  kids:       { label: "Kids & Family",        shortLabel: "kids",       icon: "👶" },
+  // Business
+  business:   { label: "Business Banking",     shortLabel: "business",   icon: "🏢" },
+  payroll:    { label: "Payroll & Invoicing",  shortLabel: "payroll",    icon: "🧾" },
+  tax:        { label: "Tax & Accounting",     shortLabel: "tax",        icon: "🧮" },
+  expense:    { label: "Expense Tracking",     shortLabel: "expense",    icon: "📋" },
 };
 
 const globalProviderNames = new Set([
@@ -229,6 +269,54 @@ export function getOfferTradeoff(offer: MarketplaceOffer) {
 
   if (offer.category === "kids") {
     return "Parental controls and age restrictions apply. Features vary by country.";
+  }
+
+  if (offer.category === "savings") {
+    return "Interest rates are subject to change. Deposit protection limits and eligibility vary by country.";
+  }
+
+  if (offer.category === "trading") {
+    return "Investing involves risk of loss. Past performance does not guarantee future results.";
+  }
+
+  if (offer.category === "bnpl") {
+    return "Late payments may incur fees or interest. Credit checks and eligibility vary by provider.";
+  }
+
+  if (offer.category === "debit") {
+    return "ATM and foreign transaction fees may apply depending on your account tier.";
+  }
+
+  if (offer.category === "remittance") {
+    return "Delivered amount varies by corridor, exchange rate, and payout method at time of transfer.";
+  }
+
+  if (offer.category === "travel") {
+    return "Card benefits and fee waivers depend on your spending level and destination country.";
+  }
+
+  if (offer.category === "cashback") {
+    return "Cashback rates and caps depend on your spending category and account tier.";
+  }
+
+  if (offer.category === "wallets") {
+    return "Fund availability and withdrawal fees depend on your wallet plan and verification level.";
+  }
+
+  if (offer.category === "payroll") {
+    return "Pricing scales with headcount. Local payroll compliance obligations remain with the employer.";
+  }
+
+  if (offer.category === "tax") {
+    return "Tax software assists with filing but does not constitute professional tax advice.";
+  }
+
+  if (offer.category === "expense") {
+    return "Integrations and automation features depend on your subscription tier and accounting software.";
+  }
+
+  if (offer.category === "neobanks") {
+    return "Neobanks may hold an e-money licence rather than a full banking licence. Check deposit protection.";
   }
 
   return "Low headline fees do not remove market risk, custody terms, FX costs, or product complexity.";

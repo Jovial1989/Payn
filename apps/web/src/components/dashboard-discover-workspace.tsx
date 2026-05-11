@@ -45,7 +45,7 @@ import {
 } from "@/lib/countries";
 import type { UserProfile } from "@/lib/types";
 
-type GoalId = MarketplaceCategory;
+type GoalId = "transfers" | "loans" | "cards" | "banking" | "exchange" | "insurance" | "investments" | "crypto" | "business" | "budgeting" | "kids";
 type CardFocus = "travel" | "cashback" | "atm" | "fx";
 
 type PreviewRow = {
@@ -614,8 +614,11 @@ export function DashboardDiscoverWorkspace({
       return;
     }
 
-    lastAppliedIntentRef.current = initialIntent;
-    setSelectedGoal(initialIntent);
+    if (!goalOptions.includes(initialIntent as GoalId)) {
+      return;
+    }
+    lastAppliedIntentRef.current = initialIntent as GoalId;
+    setSelectedGoal(initialIntent as GoalId);
   }, [initialIntent]);
 
   useEffect(() => {

@@ -58,7 +58,7 @@ export function SiteShell({
       </main>
 
       <footer className="border-t border-line bg-white">
-        <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-8 sm:px-5 lg:grid-cols-[1.1fr_0.9fr_0.9fr] lg:px-8 lg:py-10">
+        <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-8 sm:px-5 lg:grid-cols-[1fr_1.6fr_0.7fr] lg:px-8 lg:py-10">
           <div>
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-emerald/15 bg-accent-emerald-soft">
@@ -80,20 +80,56 @@ export function SiteShell({
             </p>
           </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              {dictionary.footer.compare}
-            </p>
-            <div className="mt-4 grid gap-3">
-              {marketplaceCategories.map((category) => (
-                <Link
-                  key={category}
-                  href={localePath(locale, `/${category}`)}
-                  className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong"
-                >
-                  {dictionary.categories[category]}
-                </Link>
-              ))}
+          {/* Footer column: Consumer & Invest */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                Banking & Cards
+              </p>
+              <div className="mt-3 grid gap-2.5">
+                {(["banking","neobanks","savings","debit","cards","wallets"] as MarketplaceCategory[]).map((cat) => (
+                  <Link key={cat} href={localePath(locale, `/${cat}`)}
+                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                    {dictionary.categories[cat]}
+                  </Link>
+                ))}
+              </div>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                Send & Exchange
+              </p>
+              <div className="mt-3 grid gap-2.5">
+                {(["transfers","remittance","exchange","travel","bnpl"] as MarketplaceCategory[]).map((cat) => (
+                  <Link key={cat} href={localePath(locale, `/${cat}`)}
+                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                    {dictionary.categories[cat]}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                Invest & Borrow
+              </p>
+              <div className="mt-3 grid gap-2.5">
+                {(["investments","trading","crypto","loans","insurance","cashback"] as MarketplaceCategory[]).map((cat) => (
+                  <Link key={cat} href={localePath(locale, `/${cat}`)}
+                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                    {dictionary.categories[cat]}
+                  </Link>
+                ))}
+              </div>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                Business
+              </p>
+              <div className="mt-3 grid gap-2.5">
+                {(["business","payroll","tax","expense","budgeting","kids"] as MarketplaceCategory[]).map((cat) => (
+                  <Link key={cat} href={localePath(locale, `/${cat}`)}
+                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                    {dictionary.categories[cat]}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 

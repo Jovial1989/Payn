@@ -9,7 +9,19 @@ export type MarketplaceCategory =
   | "crypto"
   | "business"
   | "budgeting"
-  | "kids";
+  | "kids"
+  | "savings"
+  | "trading"
+  | "bnpl"
+  | "debit"
+  | "remittance"
+  | "travel"
+  | "cashback"
+  | "wallets"
+  | "payroll"
+  | "tax"
+  | "expense"
+  | "neobanks";
 
 export type MarketplaceInsuranceType =
   | "travel"

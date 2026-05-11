@@ -35,6 +35,18 @@ const purposeOptions: Record<MarketplaceCategory, string[]> = {
   business:  ["Multi-currency", "Team cards", "Invoicing", "Fast setup", "No hidden fees"],
   budgeting: ["Spending insights", "Savings goals", "Bill tracking", "Cashback", "Open banking"],
   kids:      ["Pocket money", "Parental controls", "Financial literacy", "Debit card", "Chores & rewards"],
+  savings:   ["High interest", "Instant access", "Deposit protection", "No minimum", "EU-regulated"],
+  trading:   ["Stocks", "ETFs", "Zero commission", "Fractional shares", "Recurring buy"],
+  bnpl:      ["0% interest", "Flexible splits", "No new account", "Instant approval", "Pay in 30 days"],
+  debit:     ["Multi-currency", "No FX fees", "Travel perks", "Free ATM", "Instant payments"],
+  remittance:["Best rates", "Fast delivery", "Mobile money", "Cash pickup", "Large amounts"],
+  travel:    ["No FX fees", "Travel insurance", "Lounge access", "Free ATM abroad", "Global acceptance"],
+  cashback:  ["All spending", "Partner brands", "Flat rate", "No fee", "Points system"],
+  wallets:   ["Online payments", "Multi-currency", "Instant transfers", "Low fees", "Crypto support"],
+  payroll:   ["Remote teams", "Global payroll", "Contractor payments", "EOR", "Invoicing"],
+  tax:       ["Self-assessment", "Fast filing", "Refund optimisation", "Accountant help", "Freelancers"],
+  expense:   ["Company cards", "Receipt capture", "Accounting sync", "Budget limits", "Team spending"],
+  neobanks:  ["Free account", "Multi-currency", "No credit check", "Instant setup", "Travel-friendly"],
 };
 
 function formatAmount(locale: string, val: number) {
