@@ -198,9 +198,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: null, hasSession: true };
       }
 
-      // If Supabase blocks because email isn't confirmed, try the admin server action.
-      // This allows admin@admin.com to log in without needing email confirmation.
-      if (error?.message?.toLowerCase().includes("confirm")) {
+      // For the admin email, any Supabase failure falls back to HMAC-based admin auth.
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? "admin@admin.com";
+      if (email === adminEmail || error?.message?.toLowerCase().includes("confirm")) {
         const { adminSignIn } = await import("@/actions/admin-auth");
         const result = await adminSignIn(email, password);
         if (result.ok) {

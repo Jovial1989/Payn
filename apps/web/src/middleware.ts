@@ -13,8 +13,8 @@ function isAdminUser(email: string | undefined, appMeta: Record<string, unknown>
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow the login endpoint through without any auth check (chicken-and-egg)
-  if (pathname === "/api/v1/admin/login") {
+  // Allow the admin login page and login API through without auth check
+  if (pathname === "/admin/login" || pathname === "/api/v1/admin/login") {
     return NextResponse.next({ request });
   }
 
@@ -32,9 +32,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/api/v1/admin/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", "/admin");
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
   let response = NextResponse.next({ request });
@@ -71,9 +69,7 @@ export async function middleware(request: NextRequest) {
 
   // /admin/* pages
   if (!admin) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", "/admin");
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
   return response;

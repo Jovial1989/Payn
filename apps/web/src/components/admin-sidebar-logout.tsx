@@ -8,10 +8,11 @@ export function AdminSidebarLogout() {
 
   async function handleLogout() {
     const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signOut({ scope: "local" });
-    await fetch("/api/v1/auth/signout", { method: "POST", credentials: "same-origin" });
-    router.replace("/login");
-    router.refresh();
+    await Promise.allSettled([
+      supabase.auth.signOut({ scope: "local" }),
+      fetch("/api/v1/auth/signout", { method: "POST", credentials: "same-origin" }),
+    ]);
+    router.replace("/admin/login");
   }
 
   return (

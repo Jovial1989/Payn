@@ -43,6 +43,7 @@ export function Header({
   const uiCopy = getUiCopy(preferences.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isSignedIn = Boolean(user);
+  const isAdmin = user?.email === "admin@admin.com" || user?.app_metadata?.role === "admin" || user?.user_metadata?.role === "admin";
   const { locale } = preferences;
   const resolvedActivePage = activePage ?? inferActivePage(pathname);
   const authStateLabel = useMemo(
@@ -121,6 +122,18 @@ export function Header({
                 </Link>
               );
             })}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="nav-link inline-flex items-center gap-1.5 rounded-full bg-accent-emerald-soft px-3 py-1 text-sm font-semibold text-accent-emerald-strong hover:bg-accent-emerald/10"
+              >
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="9" width="11" height="7.5" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -249,6 +262,19 @@ export function Header({
                 </Link>
               );
             })}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="pressable inline-flex items-center gap-2 rounded-2xl bg-accent-emerald-soft px-4 py-3 text-sm font-semibold text-accent-emerald-strong"
+              >
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="9" width="11" height="7.5" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+                Admin
+              </Link>
+            )}
           </nav>
 
           <div className="mt-4 rounded-[26px] border border-line bg-white p-4 shadow-subtle">
