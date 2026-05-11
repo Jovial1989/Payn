@@ -37,6 +37,6 @@ export async function GET(request: NextRequest) {
     users: rows,
     page,
     perPage,
-    total: authData?.total ?? rows.length,
+    total: (authData as { total?: number } | null)?.total ?? rows.length,
   });
 }

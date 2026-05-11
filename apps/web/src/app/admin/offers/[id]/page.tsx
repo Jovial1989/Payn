@@ -59,7 +59,7 @@ export default async function AdminOfferDetailPage({ params }: Props) {
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-ink-tertiary">Markets</dt>
-                <dd className="font-medium text-ink">{offer.markets?.join(", ") ?? "—"}</dd>
+                <dd className="font-medium text-ink">{offer.countryCodes?.join(", ") ?? "—"}</dd>
               </div>
             </dl>
           </div>

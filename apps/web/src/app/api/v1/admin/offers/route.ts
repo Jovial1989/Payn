@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     category: o.category,
     isMonetised: Boolean(o.affiliateLink || o.linkType === "affiliate_redirect"),
     affiliateLink: o.affiliateLink ?? o.providerWebsiteUrl ?? null,
-    markets: o.markets ?? [],
+    markets: o.countryCodes ?? [],
     override: overrides[o.id] ?? null,
     clicks: clickCounts[o.id] ?? 0,
     effectiveStatus: overrides[o.id]?.status ?? "active",

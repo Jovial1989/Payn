@@ -27,7 +27,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   if (admin) {
     const { data: authData } = await admin.auth.admin.listUsers({ page, perPage });
     const authUsers = authData?.users ?? [];
-    total = authData?.total ?? authUsers.length;
+    total = (authData as { total?: number } | null)?.total ?? authUsers.length;
     const userIds = authUsers.map((u) => u.id);
     const { data: profiles } = userIds.length
       ? await admin.from("user_profiles").select("*").in("user_id", userIds)
