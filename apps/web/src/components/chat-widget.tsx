@@ -1,14 +1,18 @@
 "use client";
 
+import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { OfferCard } from "@/components/offer-card";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
+import { getCategoryOffersForCountrySelection, getCountryLabel } from "@/lib/countries";
+import { parseSearch } from "@/lib/discover/parseSearch";
 
 export const PAYN_OPEN_CHAT_EVENT = "payn:open-chat";
 
-const SHEET_MEDIA_QUERY = "(max-width: 1023px)";
+const SHEET_MEDIA_QUERY = "(max-width: 767px)";
 const MAX_TEXTAREA_HEIGHT = 128;
 
 const chatCopy = {
@@ -18,9 +22,14 @@ const chatCopy = {
     assistant: "Payn AI assistant",
     beta: "Offer guidance beta",
     clear: "Clear",
-    emptyTitle: "Ask me anything",
-    emptyBody: "I can help you understand offers, compare products, or explain financial terms.",
-    suggestions: ["What is APR?", "How do transfer fees work?", "Compare Revolut vs Wise"],
+    emptyTitle: "Hi. What are you looking for?",
+    emptyBody: "",
+    suggestions: [
+      "Best savings account in Germany",
+      "Send €500 to Spain — cheapest option",
+      "Personal loan €10k, 36 months",
+      "Travel card with no FX fees",
+    ],
     user: "You",
     disclaimer: "AI-generated guidance only — not financial advice. Always verify with the provider before making decisions.",
     inputLabel: "Ask about offers, rates, or terms",
@@ -81,7 +90,7 @@ function detectPageCategory(): string | undefined {
 }
 
 export function ChatWidget() {
-  const { locale } = useMarketplacePreferences();
+  const { locale, country, setCountry } = useMarketplacePreferences();
   const { profile } = useAuth();
   const copy = chatCopy[locale as keyof typeof chatCopy] ?? chatCopy.en;
   const [open, setOpen] = useState(false);
@@ -95,6 +104,8 @@ export function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const offerCacheRef = useRef<Map<string, MarketplaceOffer[]>>(new Map());
+  const offersByMsgIdRef = useRef<Map<string, MarketplaceOffer[]>>(new Map());
 
   const closeChat = useCallback(() => setOpen(false), []);
 
@@ -281,6 +292,58 @@ export function ChatWidget() {
       setSuggestions([]);
       setLoading(true);
 
+      // parseSearch routing — handle locally without hitting the AI API
+      const parsed = parseSearch(text.trim());
+      let countryForOffers = country;
+
+      if (parsed.market && parsed.market !== country) {
+        setCountry(parsed.market);
+        countryForOffers = parsed.market;
+      }
+
+      if (parsed.goal) {
+        const cacheKey = `${parsed.goal}:${countryForOffers}`;
+        let topOffers = offerCacheRef.current.get(cacheKey);
+        if (!topOffers) {
+          topOffers = getCategoryOffersForCountrySelection(countryForOffers, parsed.goal as MarketplaceCategory)
+            .slice(0, 3);
+          offerCacheRef.current.set(cacheKey, topOffers);
+        }
+        const countryName = getCountryLabel(countryForOffers, locale as Parameters<typeof getCountryLabel>[1]);
+        const switchNote = parsed.market && parsed.market !== country
+          ? `Switched your country to ${countryName}. ` : "";
+        const msgId = crypto.randomUUID();
+        offersByMsgIdRef.current.set(msgId, topOffers);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msgId,
+            role: "assistant",
+            content: `${switchNote}Top three for ${parsed.goal} in ${countryName}.`,
+            offerIds: topOffers.map((o) => o.id),
+            timestamp: Date.now(),
+          },
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      // Unknown goal — ask one follow-up question, skip the API
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: locale === "de"
+            ? "Was möchtest du tun — Geld senden, leihen, sparen, eine Karte finden oder etwas anderes?"
+            : "What are you trying to do — send money, borrow, save, get a card, or something else?",
+          timestamp: Date.now(),
+        },
+      ]);
+      setLoading(false);
+      return;
+
+      // Legacy AI path (kept for future use, currently unreachable)
       try {
         const res = await fetch("/api/v1/chat", {
           method: "POST",
@@ -328,7 +391,7 @@ export function ChatWidget() {
         setLoading(false);
       }
     },
-    [messages, loading, profile],
+    [messages, loading, profile, country, locale, setCountry],
   );
 
   const handleTextareaKeyDown = useCallback(
@@ -381,10 +444,10 @@ export function ChatWidget() {
         <div
           className={
             isSheetLayout
-              ? `fixed inset-0 z-[60] flex items-end justify-center bg-black/30 backdrop-blur-[2px] transition-opacity duration-200 sm:p-4 ${
+              ? `fixed inset-0 z-[60] flex items-end justify-center bg-black/30 backdrop-blur-[2px] transition-opacity duration-200 ${
                   visible ? "opacity-100" : "opacity-0"
                 }`
-              : "fixed bottom-24 right-4 z-[60] flex transition-all duration-200 sm:right-6"
+              : "fixed right-6 top-20 bottom-6 z-50 w-[400px] flex transition-all duration-200"
           }
           style={isSheetLayout ? sheetViewportStyle : undefined}
         >
@@ -403,8 +466,8 @@ export function ChatWidget() {
             aria-label={copy.assistant}
             className={`relative flex min-h-0 w-full flex-col overflow-hidden bg-white ${
               isSheetLayout
-                ? "h-full max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 sm:mb-4 sm:max-h-full sm:max-w-[720px] sm:rounded-[30px] sm:border sm:border-line sm:shadow-elevated"
-                : "h-[min(560px,calc(100vh-7.5rem))] w-[min(420px,calc(100vw-2rem))] rounded-[28px] border border-line shadow-elevated"
+                ? "h-[75vh] rounded-t-[16px] border border-line shadow-elevated"
+                : "h-full rounded-[16px] border border-line shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
             } ${
               isSheetLayout
                 ? visible
@@ -460,22 +523,14 @@ export function ChatWidget() {
               style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
             >
               {messages.length === 0 && (
-                <div className="flex h-full flex-col justify-center text-center max-sm:justify-start max-sm:pt-6">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bg-surface">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-tertiary" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-                    </svg>
-                  </div>
-                  <p className="mt-3 text-base font-semibold text-ink">{copy.emptyTitle}</p>
-                  <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-ink-tertiary">
-                    {copy.emptyBody}
-                  </p>
+                <div className="flex h-full flex-col justify-center text-center">
+                  <p className="text-base font-semibold text-ink">{copy.emptyTitle}</p>
                   <div className="mt-5 grid gap-2.5">
                     {copy.suggestions.map((q) => (
                       <button
                         key={q}
                         type="button"
-                        onClick={() => sendMessage(q)}
+                        onClick={() => void sendMessage(q)}
                         className="w-full rounded-2xl border border-line px-4 py-3 text-left text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
                       >
                         {q}
@@ -504,6 +559,13 @@ export function ChatWidget() {
                       >
                         {msg.content}
                       </div>
+                      {msg.offerIds && offersByMsgIdRef.current.get(msg.id)?.length ? (
+                        <div className="mt-2 w-full grid gap-2">
+                          {offersByMsgIdRef.current.get(msg.id)!.map((offer, i) => (
+                            <OfferCard key={offer.id} offer={offer} rank={i + 1} locale={locale as Parameters<typeof OfferCard>[0]["locale"]} />
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
 

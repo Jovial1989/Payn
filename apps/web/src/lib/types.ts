@@ -30,4 +30,6 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: number;
+  offerLabel?: string;
+  offerIds?: string[];
 }
