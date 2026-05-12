@@ -1296,6 +1296,29 @@ export function DashboardCategoryWorkspace({
           flexibilityValue: flexibility,
         });
       }
+    } else {
+      for (const offer of scopedOffers) {
+        const popularity = getPopularityScore(offer, insightMap.get(offer.id));
+        baseRows.push({
+          offer,
+          primaryLabel: locale === "de" ? "Anbieter" : "Provider",
+          primaryValue: normalizeDisplayText(offer.title),
+          summary: normalizeDisplayText(offer.subtitle),
+          metrics: offer.metrics.slice(0, 4).map((m) => ({
+            label: m.label,
+            value: normalizeDisplayText(m.value),
+          })),
+          why:
+            locale === "de"
+              ? `${offer.providerName} ist einer der meistgesuchten Anbieter in dieser Kategorie für Ihren Markt.`
+              : `${offer.providerName} is one of the most-matched providers in this category for your market.`,
+          rawOutcomeValue: offer.affiliatePriorityScore ?? 0.5,
+          outcomeDirection: "higher",
+          popularityValue: popularity,
+          speedValue: inferSpeedValue(offer),
+          flexibilityValue: getSimplicityScore(offer),
+        });
+      }
     }
 
     if (baseRows.length === 0) {
