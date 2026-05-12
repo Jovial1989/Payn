@@ -154,7 +154,7 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
         >
           <div className="flex flex-wrap gap-3">
             <Link
-              href={localePath(preferences.locale, "/login")}
+              href={`${localePath(preferences.locale, "/login")}?next=${encodeURIComponent(localePath(preferences.locale, "/dashboard"))}`}
               onClick={() =>
                 trackSignInClicked({
                   country: preferences.country,
