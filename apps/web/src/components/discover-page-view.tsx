@@ -15,8 +15,6 @@ import type { DashboardInsights } from "@/lib/dashboard";
 import { localePath } from "@/lib/locale";
 import type { MarketplaceOffer } from "@payn/types";
 
-type GoalId = "transfers" | "loans" | "cards" | "exchange" | "insurance" | "investments";
-
 function getRecentTrailOffers(insights: DashboardInsights | null) {
   if (!insights) return [] as MarketplaceOffer[];
   const merged: MarketplaceOffer[] = [];
@@ -35,8 +33,8 @@ export function DiscoverPageView({
   const { user, profile, loading } = useAuth();
   const preferences = useMarketplacePreferences();
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
-  const [activeGoal, setActiveGoal] = useState<GoalId | undefined>(
-    initialIntent as GoalId | undefined,
+  const [activeGoal, setActiveGoal] = useState<MarketplaceCategory | undefined>(
+    initialIntent,
   );
   const workspaceRef = useRef<HTMLDivElement>(null);
   const productMarketScope = "eu_fallback";
@@ -60,7 +58,7 @@ export function DiscoverPageView({
   const recentTrail = useMemo(() => getRecentTrailOffers(insights), [insights]);
   const continueOffer = recentTrail[0] ?? insights?.savedOffers?.[0] ?? null;
 
-  const handleGoalSelect = useCallback((goal: GoalId) => {
+  const handleGoalSelect = useCallback((goal: MarketplaceCategory) => {
     setActiveGoal(goal);
     // Scroll the workspace into view after a short paint delay
     setTimeout(() => {

@@ -1,28 +1,17 @@
 "use client";
 
-import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ProviderLogo } from "@/components/provider-logo";
 import { getOfferHref } from "@/lib/marketplace";
 import { localePath } from "@/lib/locale";
+import { discoverCopy as t } from "@/copy/discover.en";
+import { parseSearch } from "@/lib/discover/parseSearch";
 
-type GoalId = "transfers" | "loans" | "cards" | "exchange" | "insurance" | "investments";
+const placeholders = [...t.hero.searchPlaceholder];
 
-const placeholders = [
-  "Send €500 to Spain",
-  "Best savings account in Germany",
-  "0% credit card UK",
-  "Personal loan, €10,000, 36 months",
-  "Cheapest EUR → GBP transfer",
-];
-
-const chips: { id: GoalId; label: string }[] = [
-  { id: "transfers", label: "Send money" },
-  { id: "loans", label: "Borrow" },
-  { id: "investments", label: "Save" },
-  { id: "cards", label: "Spend abroad" },
-];
+const quickStart = [...t.hero.quickStart];
 
 function RotatingPlaceholder() {
   const [index, setIndex] = useState(0);
@@ -55,7 +44,7 @@ export function DiscoverHero({
   continueOffer,
 }: {
   locale: MarketplaceLocale;
-  onGoalSelect: (goal: GoalId) => void;
+  onGoalSelect: (goal: MarketplaceCategory) => void;
   continueOffer?: MarketplaceOffer | null;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,21 +52,16 @@ export function DiscoverHero({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple keyword parse — route to the closest goal
-    const q = query.toLowerCase();
-    if (q.includes("send") || q.includes("transfer") || q.includes("remit")) return onGoalSelect("transfers");
-    if (q.includes("loan") || q.includes("borrow") || q.includes("credit")) return onGoalSelect("loans");
-    if (q.includes("card") || q.includes("cashback") || q.includes("spend")) return onGoalSelect("cards");
-    if (q.includes("exchange") || q.includes("currency") || q.includes("eur") || q.includes("gbp")) return onGoalSelect("exchange");
-    if (q.includes("invest") || q.includes("etf") || q.includes("stock") || q.includes("sav")) return onGoalSelect("investments");
-    if (q.includes("insur") || q.includes("cover")) return onGoalSelect("insurance");
-    // Default: show transfers
-    onGoalSelect("transfers");
+    const parsed = parseSearch(query);
+    if (parsed.goal) {
+      onGoalSelect(parsed.goal as MarketplaceCategory);
+    } else {
+      onGoalSelect("transfers");
+    }
   };
 
   return (
     <section className="relative overflow-hidden rounded-[32px] border border-line bg-white px-6 py-8 shadow-card sm:px-10 sm:py-12">
-      {/* Continue card — top-right, only when returning user */}
       {continueOffer && (
         <Link
           href={localePath(locale, getOfferHref(continueOffer))}
@@ -85,23 +69,24 @@ export function DiscoverHero({
         >
           <span className="text-ink-tertiary">↩</span>
           <span>
-            You were comparing <strong className="text-ink">{continueOffer.providerName}</strong> · Continue →
+            {t.hero.continueCard.prefix}{" "}
+            <strong className="text-ink">{continueOffer.providerName}</strong>{" "}
+            · {t.hero.continueCard.cta}
           </span>
         </Link>
       )}
 
       <div className="mx-auto max-w-2xl">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent-emerald-strong">
-          Financial marketplace · Europe
+          {t.hero.eyebrow}
         </p>
         <h1 className="mt-3 text-[2rem] font-semibold leading-[1.15] tracking-[-0.035em] text-ink sm:text-[2.5rem]">
-          Find money tools that actually fit you.
+          {t.hero.headline}
         </h1>
         <p className="mt-3 max-w-lg text-base leading-relaxed text-ink-secondary">
-          Compare cards, loans, transfers and savings across Europe. See the real cost upfront.
+          {t.hero.subhead}
         </p>
 
-        {/* Search bar */}
         <form onSubmit={handleSubmit} className="mt-6">
           <div className="relative flex items-center rounded-[20px] border border-line bg-white shadow-card transition-all focus-within:border-accent-emerald/40 focus-within:shadow-[0_4px_16px_rgba(15,138,75,0.10)]">
             <svg
@@ -137,13 +122,13 @@ export function DiscoverHero({
           </div>
         </form>
 
-        {/* Quick-start chips */}
         <div className="mt-4 flex flex-wrap gap-2">
-          {chips.map((chip) => (
+          <span className="py-2 text-sm text-ink-tertiary">{t.hero.quickStartLabel}</span>
+          {quickStart.map((chip) => (
             <button
-              key={chip.id}
+              key={chip.goal}
               type="button"
-              onClick={() => onGoalSelect(chip.id)}
+              onClick={() => onGoalSelect(chip.goal as MarketplaceCategory)}
               className="rounded-full border border-line bg-bg-surface px-4 py-2 text-sm font-semibold text-ink-secondary transition-all hover:border-accent-emerald/40 hover:bg-white hover:text-accent-emerald-strong"
             >
               {chip.label}

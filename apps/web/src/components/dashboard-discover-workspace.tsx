@@ -437,7 +437,7 @@ export function DashboardDiscoverWorkspace({
           continueButton: "Fortsetzen",
           rememberTitle: "Discover-Eingaben bleiben jetzt mit deinem Konto verknüpft",
           rememberDescription:
-            "Nutze unten ein Ziel und Payn merkt sich die letzten strukturierten Eingaben, gespeicherten Angebote und den aktuellen Markt-Kontext für deinen nächsten Besuch.",
+            "",
           savedOffers: "Gespeicherte Angebote",
           savedOffersHint:
             "Vorgemerkte Anbieter bleiben in Discover und auf den vollständigen Kategorieseiten verfügbar.",
@@ -446,13 +446,13 @@ export function DashboardDiscoverWorkspace({
           profileContextHint:
             "Empfehlungen nutzen dein gespeichertes Land und deine Profileinstellungen, wenn sie verfügbar sind.",
           step1Eyebrow: "",
-          step1Title: "Was möchtest du tun?",
+          step1Title: "Ziel wählen",
           step1Description: "",
           step2Eyebrow: "",
           step2Title: "Ein paar Details",
           step2Description: "",
           step3Eyebrow: "",
-          step3Title: "Am besten für dich gerade",
+          step3Title: "Drei gute Optionen",
           step3Description: "",
           openFullPrefix: "Alle ansehen",
           updatingQuote: "Die aktuellen Kurse werden abgerufen…",
@@ -503,8 +503,7 @@ export function DashboardDiscoverWorkspace({
           continueTitle: "Continue where you left off",
           continueButton: "Resume",
           rememberTitle: "Discover inputs will now stay with your account",
-          rememberDescription:
-            "Use any goal below and Payn will remember the last structured inputs, saved offers, and the current market context for your next visit.",
+          rememberDescription: "",
           savedOffers: "Saved offers",
           savedOffersHint:
             "Shortlisted providers stay available across discover and the full category pages.",
@@ -513,13 +512,13 @@ export function DashboardDiscoverWorkspace({
           profileContextHint:
             "Recommendations use your saved country and profile settings when they are available.",
           step1Eyebrow: "",
-          step1Title: "What do you want to do?",
+          step1Title: "Browse by goal",
           step1Description: "",
           step2Eyebrow: "",
           step2Title: "A couple of details",
           step2Description: "",
           step3Eyebrow: "",
-          step3Title: "Best for you right now",
+          step3Title: "Three good fits",
           step3Description: "",
           openFullPrefix: "See all",
           updatingQuote: "Getting the latest rates…",
