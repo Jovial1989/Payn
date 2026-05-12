@@ -142,6 +142,12 @@ export function SiteShell({
               <Link href={localePath(locale, "/waitlist")} className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
                 {dictionary.nav.mobileWaitlist}
               </Link>
+              <Link href="/how-we-rank" className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                How we rank
+              </Link>
+              <Link href="/how-we-make-money" className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent-emerald-strong">
+                How we make money
+              </Link>
             </div>
           </div>
         </div>
