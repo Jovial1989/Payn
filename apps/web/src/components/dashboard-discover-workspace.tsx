@@ -44,7 +44,7 @@ import {
 } from "@/lib/countries";
 import type { UserProfile } from "@/lib/types";
 
-type GoalId = "transfers" | "loans" | "cards" | "banking" | "exchange" | "insurance" | "investments" | "crypto" | "business" | "budgeting" | "kids";
+type GoalId = MarketplaceCategory;
 type CardFocus = "travel" | "cashback" | "atm" | "fx";
 
 type PreviewRow = {
@@ -84,9 +84,26 @@ const goalOptions: GoalId[] = [
   "transfers",
   "loans",
   "cards",
+  "neobanks",
+  "savings",
   "exchange",
   "insurance",
   "investments",
+  "crypto",
+  "debit",
+  "travel",
+  "cashback",
+  "banking",
+  "remittance",
+  "wallets",
+  "bnpl",
+  "budgeting",
+  "kids",
+  "trading",
+  "business",
+  "payroll",
+  "expense",
+  "tax",
 ];
 
 function getGoalLabel(locale: MarketplaceLocale, goal: GoalId) {
@@ -96,27 +113,51 @@ function getGoalLabel(locale: MarketplaceLocale, goal: GoalId) {
           transfers: "Geld ins Ausland senden",
           loans: "Kredit finden",
           cards: "Beste Karte finden",
+          neobanks: "Neobank wählen",
+          savings: "Tagesgeld & Sparen",
           banking: "Konto eröffnen",
           exchange: "Währung tauschen",
           insurance: "Versicherung finden",
           investments: "Geld anlegen",
           crypto: "Krypto kaufen",
-          business: "Geschäftskonto",
+          debit: "Debitkarte finden",
+          travel: "Reisekarte finden",
+          cashback: "Cashback-Karte",
+          remittance: "Heimatüberweisungen",
+          wallets: "Digitale Geldbörse",
+          bnpl: "Jetzt kaufen, später zahlen",
           budgeting: "Ausgaben verfolgen",
           kids: "Für Kinder",
+          trading: "Trading-Plattform",
+          business: "Geschäftskonto",
+          payroll: "Lohnabrechnung",
+          expense: "Ausgabenmanagement",
+          tax: "Steuererklärung",
         }
       : {
           transfers: "Send money abroad",
           loans: "Get a loan",
           cards: "Find best card",
+          neobanks: "Choose a neobank",
+          savings: "Savings & interest",
           banking: "Open an account",
           exchange: "Exchange currency",
           insurance: "Get insured",
           investments: "Invest money",
           crypto: "Buy crypto",
-          business: "Business account",
+          debit: "Find a debit card",
+          travel: "Travel card",
+          cashback: "Cashback card",
+          remittance: "Send to family abroad",
+          wallets: "Digital wallet",
+          bnpl: "Buy now, pay later",
           budgeting: "Track spending",
           kids: "For kids",
+          trading: "Trading platform",
+          business: "Business account",
+          payroll: "Payroll",
+          expense: "Expense management",
+          tax: "File taxes",
         };
 
   return labels[goal];
@@ -129,27 +170,51 @@ function getGoalDescription(locale: MarketplaceLocale, goal: GoalId) {
           transfers: "Vergleiche, was nach Gebühren wirklich beim Empfänger ankommt.",
           loans: "Vergleiche Monatsrate, Zusagegeschwindigkeit und Kredit-Fit.",
           cards: "Wähle zuerst den Kartenzweck und vergleiche dann die echte Wirtschaftlichkeit.",
+          neobanks: "Konten mit hohen Zinsen, Echtzeit-Benachrichtigungen und 0 € Gebühren.",
+          savings: "Vergleiche Tagesgeldzinsen und Festgeld – stets auf dem neuesten Stand.",
           banking: "Kostenlose Konten und Neobanken mit hohen Zinsen vergleichen.",
           exchange: "Vergleiche den gelieferten Wechselkurs statt nur Werbeversprechen.",
           insurance: "Starte mit der passenden Schutzart und verfeinere dann die Route.",
           investments: "Prüfe erst den Markt-Kontext und vergleiche dann die Plattformen.",
           crypto: "Vergleiche Krypto-Plattformen nach Gebühren und Asset-Auswahl.",
-          business: "Geschäftskonten nach Funktionen, Währungen und Kosten vergleichen.",
+          debit: "Debitkarten ohne Auslandsgebühren und mit kostenlosem Geldautomaten.",
+          travel: "Keine Wechselkurszuschläge, kostenlose Abhebungen weltweit.",
+          cashback: "Echte Cashback-Raten auf Einkäufe – ohne versteckte Bedingungen.",
+          remittance: "Überweisungsgebühren und Auszahlungsgeschwindigkeit vergleichen.",
+          wallets: "Apple Pay, Google Pay und digitale Konten für alltägliche Zahlungen.",
+          bnpl: "Jetzt kaufen, in Raten zahlen – ohne Zinsen bei pünktlicher Zahlung.",
           budgeting: "Ausgaben analysieren und Sparziele mit Open-Banking-Tools setzen.",
           kids: "Taschengeld-Apps mit elterlicher Kontrolle und Lernmodus vergleichen.",
+          trading: "CFD-, Aktien- und ETF-Plattformen nach Kosten und Tools vergleichen.",
+          business: "Geschäftskonten nach Funktionen, Währungen und Kosten vergleichen.",
+          payroll: "Globale Gehaltsabrechnung und Arbeitgeberregistrierung vergleichen.",
+          expense: "Firmenkarten und Ausgabenkontrolle für Teams vergleichen.",
+          tax: "Steuersoftware für Selbstständige und Expats im Vergleich.",
         }
       : {
           transfers: "See exactly what arrives — fees and FX included.",
           loans: "Personal loans from 3.9% APR across 8 markets.",
           cards: "Cashback, travel, low-fee — pick the angle, we'll match.",
+          neobanks: "Accounts with high interest, real-time alerts and zero fees.",
+          savings: "Compare easy-access rates and fixed-term deposits — always current.",
           banking: "Compare free accounts and neobanks with great rates.",
           exchange: "Real exchange rates, no hidden markup.",
           insurance: "Car, home, life — compare what's actually included.",
           investments: "Brokers, ETFs and cash savings — fees compared.",
           crypto: "Compare exchanges by fees, assets, and security.",
-          business: "Multi-currency accounts for teams — fees and features compared.",
+          debit: "Zero FX fees, free ATM withdrawals — compare debit cards.",
+          travel: "No foreign transaction fees, free ATM withdrawals worldwide.",
+          cashback: "Real cashback rates on your spending — no hidden conditions.",
+          remittance: "Compare transfer fees and payout speed to 130+ countries.",
+          wallets: "Apple Pay, Google Pay and digital accounts for everyday payments.",
+          bnpl: "Buy now, pay in instalments — often interest-free if you pay on time.",
           budgeting: "Connect your accounts and see where your money goes.",
           kids: "Pocket money apps with spending limits and savings goals.",
+          trading: "Compare CFD, stock and ETF platforms by cost and tools.",
+          business: "Multi-currency accounts for teams — fees and features compared.",
+          payroll: "Global payroll and employer-of-record services compared.",
+          expense: "Company cards and spend management for teams — compared.",
+          tax: "Tax filing software for freelancers and expats — fees and features.",
         };
 
   return descriptions[goal];
@@ -973,25 +1038,48 @@ export function DashboardDiscoverWorkspace({
         .slice(0, 3);
     }
 
-    return getInvestmentAccessMatches(
-      offers.filter((offer) => offer.category === "investments"),
-      investmentsAsset,
-    )
-      .filter((match, index, source) => source.findIndex((item) => item.offer.providerName === match.offer.providerName) === index)
+    if (selectedGoal === "investments") {
+      return getInvestmentAccessMatches(
+        offers.filter((offer) => offer.category === "investments"),
+        investmentsAsset,
+      )
+        .filter((match, index, source) => source.findIndex((item) => item.offer.providerName === match.offer.providerName) === index)
+        .slice(0, 3)
+        .map((match) => ({
+          key: `${match.offer.id}-${match.assetId}`,
+          providerName: match.offer.providerName,
+          title: match.offer.title,
+          primaryLabel: copy.estimatedCost,
+          primaryValue: match.estimatedCostLabel,
+          secondary: `${match.accessType} · ${match.minimumOrder ?? copy.routeDependent}`,
+          tags: [
+            match.recurringSupported ? translateUiToken(locale, "Savings plan") : "",
+            translateUiToken(locale, normalizeDisplayText(match.bestFor)),
+          ].filter(Boolean),
+          href: `${categoryHref("investments")}?asset=${investmentsAsset}`,
+        }));
+    }
+
+    // Generic fallback for all other categories: show top 3 by affiliatePriorityScore
+    return offers
+      .filter((offer) => offer.category === selectedGoal)
+      .filter((offer, index, source) => source.findIndex((o) => o.providerName === offer.providerName) === index)
+      .sort((a, b) => (b.affiliatePriorityScore ?? 0) - (a.affiliatePriorityScore ?? 0))
       .slice(0, 3)
-      .map((match) => ({
-        key: `${match.offer.id}-${match.assetId}`,
-        providerName: match.offer.providerName,
-        title: match.offer.title,
-        primaryLabel: copy.estimatedCost,
-        primaryValue: match.estimatedCostLabel,
-        secondary: `${match.accessType} · ${match.minimumOrder ?? copy.routeDependent}`,
-        tags: [
-          match.recurringSupported ? translateUiToken(locale, "Savings plan") : "",
-          translateUiToken(locale, normalizeDisplayText(match.bestFor)),
-        ].filter(Boolean),
-        href: `${categoryHref("investments")}?asset=${investmentsAsset}`,
-      }));
+      .map((offer) => {
+        const metric1 = offer.metrics[0];
+        const metric2 = offer.metrics[1];
+        return {
+          key: offer.id,
+          providerName: offer.providerName,
+          title: offer.title,
+          primaryLabel: metric1?.label ?? "",
+          primaryValue: normalizeDisplayText(metric1?.value ?? "—"),
+          secondary: metric2 ? `${metric2.label} ${normalizeDisplayText(metric2.value)}` : "",
+          tags: (offer.bestFor ?? []).slice(0, 2).map((t) => normalizeDisplayText(t)),
+          href: categoryHref(selectedGoal),
+        } satisfies PreviewRow;
+      });
   }, [
     cardFocus,
     cardMonthlySpend,
