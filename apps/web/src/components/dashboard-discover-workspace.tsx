@@ -586,6 +586,7 @@ export function DashboardDiscoverWorkspace({
     [defaultCountry],
   );
   const [workspaceStateLoaded, setWorkspaceStateLoaded] = useState(false);
+  const [showAllGoals, setShowAllGoals] = useState(false);
   const lastAppliedIntentRef = useRef<GoalId | null>(null);
   const lastPreferredCountryRef = useRef(defaultCountry);
   const [selectedGoal, setSelectedGoal] = useState<GoalId>(defaultWorkspaceState.selectedGoal);
@@ -1139,17 +1140,16 @@ export function DashboardDiscoverWorkspace({
 
   return (
     <div className="mx-auto grid max-w-[1100px] gap-6">
-      {/* Browse by goal */}
+      {/* Most-used goals */}
       <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
         <div className="mb-6 flex items-center gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-            {locale === "de" ? "Ziel wählen" : "Browse by goal"}
+            {locale === "de" ? "Meist gesucht" : "Most-used"}
           </p>
           <div className="h-px flex-1 bg-line" />
         </div>
-        <h2 className="mb-4 text-xl font-bold tracking-[-0.02em] text-ink">{copy.step1Title}</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {goalOptions.map((goal) => {
+          {(["transfers", "loans", "cards", "savings", "exchange", "neobanks"] as GoalId[]).map((goal) => {
             const count = offers.filter((o) => o.category === goal).length;
             return (
               <button
@@ -1198,6 +1198,72 @@ export function DashboardDiscoverWorkspace({
               </button>
             );
           })}
+        </div>
+
+        {/* More ways to compare */}
+        <div className="mt-6">
+          <div className="mb-4 flex items-center gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+              {locale === "de" ? "Weitere Vergleiche" : "More ways to compare"}
+            </p>
+            <div className="h-px flex-1 bg-line" />
+          </div>
+          {!showAllGoals ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm text-ink-secondary">
+                {locale === "de"
+                  ? "Außerdem: Kinderkonto, Payroll, Ausgaben-Tracking, Steuererklärung, Geschäftskonto und mehr."
+                  : "Also: kids’ banking, payroll, expense tracking, tax filing, business accounts, and more."}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAllGoals(true)}
+                className="shrink-0 rounded-full border border-line bg-bg-surface px-4 py-1.5 text-sm font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
+              >
+                {locale === "de" ? "Alle 17 anzeigen →" : "Show all 17 →"}
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {goalOptions
+                .filter((g) => !(["transfers", "loans", "cards", "savings", "exchange", "neobanks"] as GoalId[]).includes(g))
+                .map((goal) => {
+                  const count = offers.filter((o) => o.category === goal).length;
+                  return (
+                    <button
+                      key={goal}
+                      type="button"
+                      onClick={() => setSelectedGoal(goal)}
+                      className={clsx(
+                        "flex items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-150 hover:shadow-[0_4px_12px_rgba(17,24,39,0.07)]",
+                        selectedGoal === goal
+                          ? "border-accent-emerald bg-accent-emerald text-white"
+                          : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
+                      )}
+                    >
+                      <CategoryIcon
+                        category={goal}
+                        size="sm"
+                        className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
+                      />
+                      <span className="flex-1 text-sm font-semibold">{getGoalLabel(locale, goal)}</span>
+                      {count > 0 && (
+                        <span
+                          className={clsx(
+                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                            selectedGoal === goal
+                              ? "bg-white/20 text-white"
+                              : "bg-accent-emerald-soft text-accent-emerald-strong",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          )}
         </div>
       </section>
 

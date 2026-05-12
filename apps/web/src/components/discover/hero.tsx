@@ -76,14 +76,14 @@ export function DiscoverHero({
         </Link>
       )}
 
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-[720px] text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent-emerald-strong">
           {t.hero.eyebrow}
         </p>
         <h1 className="mt-3 text-[2rem] font-semibold leading-[1.15] tracking-[-0.035em] text-ink sm:text-[2.5rem]">
           {t.hero.headline}
         </h1>
-        <p className="mt-3 max-w-lg text-base leading-relaxed text-ink-secondary">
+        <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-ink-secondary">
           {t.hero.subhead}
         </p>
 
@@ -122,7 +122,7 @@ export function DiscoverHero({
           </div>
         </form>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <span className="py-2 text-sm text-ink-tertiary">{t.hero.quickStartLabel}</span>
           {quickStart.map((chip) => (
             <button
