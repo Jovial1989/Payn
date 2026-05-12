@@ -43,27 +43,27 @@ const localeCountryDefaults: Record<MarketplaceLocale, string> = {
 const minimumOfferCounts: Record<MarketplaceCategory, number> = {
   loans: 3,
   cards: 3,
-  banking: 1,
+  banking: 3,
   transfers: 3,
   exchange: 3,
-  insurance: 1,
-  investments: 1,
-  crypto: 1,
-  business: 1,
-  budgeting: 1,
-  kids: 1,
-  savings: 1,
-  trading: 1,
-  bnpl: 1,
-  debit: 1,
-  remittance: 1,
-  travel: 1,
-  cashback: 1,
-  wallets: 1,
-  payroll: 1,
-  tax: 1,
-  expense: 1,
-  neobanks: 1,
+  insurance: 3,
+  investments: 3,
+  crypto: 3,
+  business: 3,
+  budgeting: 3,
+  kids: 3,
+  savings: 3,
+  trading: 3,
+  bnpl: 3,
+  debit: 3,
+  remittance: 3,
+  travel: 3,
+  cashback: 3,
+  wallets: 3,
+  payroll: 3,
+  tax: 3,
+  expense: 3,
+  neobanks: 3,
 };
 
 const providerNamesWithBroadCoverage = new Set([
@@ -342,7 +342,12 @@ export function getOffersForCountrySelection(
     matchesOfferCountrySelection(offer, countrySelection, scope),
   );
   const fallbackTopUps = (
-    ["loans", "cards", "transfers", "exchange", "insurance", "investments"] as MarketplaceCategory[]
+    [
+      "loans", "cards", "transfers", "exchange", "insurance", "investments",
+      "banking", "neobanks", "savings", "debit", "remittance", "travel",
+      "crypto", "trading", "bnpl", "wallets", "cashback", "budgeting",
+      "kids", "business", "payroll", "expense", "tax",
+    ] as MarketplaceCategory[]
   ).flatMap((category) =>
     getCategoryFallbackOffers(countrySelection, category, scope),
   );

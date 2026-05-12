@@ -704,9 +704,9 @@ export function DashboardCategoryWorkspace({
           marketDataUnavailable: "Marktdaten vorübergehend nicht verfügbar",
           marketDataDescription:
             "Versuche ein anderes Währungspaar oder lade gleich neu. Payn zeigt nur eine sortierte Liste, wenn ein echter Marktkurs vorliegt.",
-          noProvidersTitle: "Noch keine passenden Anbieter für diese Eingaben",
+          noProvidersTitle: "Noch keine lokalen Anbieter für diesen Markt",
           noProvidersDescription:
-            "Passe die Eingaben an und Payn berechnet die Anbieterliste sofort neu.",
+            "Payn baut diesen Markt gerade aus. Europäische Anbieter, die hier verfügbar sind, findest du über ganz Europa.",
           checkDetails: "Details ansehen",
           goToProvider: "Zum Anbieter",
           compare: "Vergleichen",
@@ -795,9 +795,9 @@ export function DashboardCategoryWorkspace({
           marketDataUnavailable: "Market data temporarily unavailable",
           marketDataDescription:
             "Try another currency pair or refresh shortly. Payn will only show a ranked list when it has a real market quote.",
-          noProvidersTitle: "No providers match these inputs yet",
+          noProvidersTitle: "No local providers for this market yet",
           noProvidersDescription:
-            "Adjust the inputs and Payn will recalculate the provider list immediately.",
+            "Payn is expanding coverage here. Pan-European providers that work in your country are available via All Europe.",
           checkDetails: "Check details",
           goToProvider: "Go to provider",
           compare: "Compare",
@@ -1791,7 +1791,9 @@ export function DashboardCategoryWorkspace({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.rankedResults}</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">{resultCountLabel}</h2>
+            {rankedResults.length > 0 && (
+              <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">{resultCountLabel}</h2>
+            )}
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
               {copy.rankingDescription} {disclaimer}
             </p>
@@ -1864,7 +1866,7 @@ export function DashboardCategoryWorkspace({
                   onClick={() => updateCountry("all_europe")}
                   className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
                 >
-                  Try All Europe
+                  {locale === "de" ? "Ganz Europa anzeigen" : "Show pan-European options →"}
                 </button>
               )}
               <a href={discoverHref} className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong">
