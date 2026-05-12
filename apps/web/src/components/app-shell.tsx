@@ -19,6 +19,21 @@ import { getUiCopy } from "@/lib/ui-copy";
 import { categoryGroups, marketplaceCategories } from "@/lib/marketplace";
 import { getActiveCategoriesForCountry } from "@/lib/countries";
 
+const groupOrderByUserType: Record<string, string[]> = {
+  business:  ["business", "borrow", "transfers", "banking", "invest", "lifestyle"],
+  freelancer: ["business", "banking", "borrow", "transfers", "lifestyle", "invest"],
+  personal:  ["banking", "transfers", "borrow", "invest", "lifestyle", "business"],
+};
+
+function sortGroupsByUserType(groups: typeof categoryGroups, userType: string | null | undefined) {
+  const order = groupOrderByUserType[userType ?? "personal"] ?? groupOrderByUserType.personal;
+  return [...groups].sort((a, b) => {
+    const ai = order.indexOf(a.id);
+    const bi = order.indexOf(b.id);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+}
+
 type AppNavItem = {
   id: "dashboard" | "discover" | MarketplaceCategory | "settings";
   label: string;
@@ -123,8 +138,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     [preferences.country],
   );
   const visibleCategoryGroups = useMemo(
-    () => categoryGroups.map((g) => ({ ...g, categories: g.categories.filter((c) => activeCategories.has(c)) })).filter((g) => g.categories.length > 0),
-    [activeCategories],
+    () => sortGroupsByUserType(categoryGroups, profile?.user_type)
+      .map((g) => ({ ...g, categories: g.categories.filter((c) => activeCategories.has(c)) }))
+      .filter((g) => g.categories.length > 0),
+    [activeCategories, profile?.user_type],
   );
 
   const systemItems = useMemo<AppNavItem[]>(
