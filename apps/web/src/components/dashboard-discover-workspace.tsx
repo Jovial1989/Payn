@@ -11,16 +11,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import { CategoryIcon } from "@/components/category-icon";
-import { DashboardSectionCard } from "@/components/dashboard-primitives";
+
 import { ProviderLogo } from "@/components/provider-logo";
 import { Tag } from "@/components/tag";
 import type { FxQuotePayload } from "@/lib/fx-quote";
 import { supportedFxCurrencies } from "@/lib/fx-quote";
 import { getDictionary, getMetricLabel, translateUiToken } from "@/lib/i18n";
-import { localePath } from "@/lib/locale";
+
 import {
   getMetricValue,
-  getOfferHref,
   normalizeDisplayText,
   parseMetricRange,
 } from "@/lib/marketplace";
@@ -140,17 +139,17 @@ function getGoalDescription(locale: MarketplaceLocale, goal: GoalId) {
           kids: "Taschengeld-Apps mit elterlicher Kontrolle und Lernmodus vergleichen.",
         }
       : {
-          transfers: "Compare what the recipient actually gets after fees.",
-          loans: "Compare monthly cost, approval speed, and borrowing fit.",
-          cards: "Choose the card angle first, then compare actual economics.",
-          banking: "Compare free accounts and neobanks with high-yield options.",
-          exchange: "Compare delivered conversion, not just headline rates.",
-          insurance: "Start with the protection type, then narrow the route.",
-          investments: "Review market context first, then compare platforms.",
-          crypto: "Compare crypto platforms by fees, assets, and security model.",
-          business: "Compare business accounts by features, currencies, and cost.",
-          budgeting: "Analyse spending and set savings goals with open banking tools.",
-          kids: "Compare pocket money apps with parental controls and learning modes.",
+          transfers: "See exactly what arrives — fees and FX included.",
+          loans: "Personal loans from 3.9% APR across 8 markets.",
+          cards: "Cashback, travel, low-fee — pick the angle, we'll match.",
+          banking: "Compare free accounts and neobanks with great rates.",
+          exchange: "Real exchange rates, no hidden markup.",
+          insurance: "Car, home, life — compare what's actually included.",
+          investments: "Brokers, ETFs and cash savings — fees compared.",
+          crypto: "Compare exchanges by fees, assets, and security.",
+          business: "Multi-currency accounts for teams — fees and features compared.",
+          budgeting: "Connect your accounts and see where your money goes.",
+          kids: "Pocket money apps with spending limits and savings goals.",
         };
 
   return descriptions[goal];
@@ -345,10 +344,6 @@ export function DashboardDiscoverWorkspace({
   preferredCountry,
   profile,
   offers,
-  recentOffers,
-  savedOffers,
-  dashboardHref,
-  settingsHref,
   categoryHref,
   onCountryChange,
 }: {
@@ -359,10 +354,6 @@ export function DashboardDiscoverWorkspace({
   preferredCountry?: string | null;
   profile?: UserProfile | null;
   offers: MarketplaceOffer[];
-  recentOffers?: MarketplaceOffer[];
-  savedOffers?: MarketplaceOffer[];
-  dashboardHref?: string;
-  settingsHref?: string;
   categoryHref: (category: MarketplaceCategory) => string;
   onCountryChange?: (country: string) => void;
 }) {
@@ -389,24 +380,21 @@ export function DashboardDiscoverWorkspace({
           discoverMarket: "Discover-Markt",
           profileContextHint:
             "Empfehlungen nutzen dein gespeichertes Land und deine Profileinstellungen, wenn sie verfügbar sind.",
-          step1Eyebrow: "Schritt 1",
-          step1Title: "Wähle zuerst das Ziel",
-          step1Description:
-            `Starte mit einem Ziel und Payn zeigt die stärksten Routen für ${marketLabel.toLowerCase()}, bevor du die vollständige Vergleichsansicht öffnest.`,
-          step2Eyebrow: "Schritt 2",
-          step2Title: "Gib die minimale strukturierte Eingabe an",
-          step2Description:
-            "Jedes Ziel fragt nur die Informationen ab, die nötig sind, um vor dem Öffnen der vollständigen Seite echte Arbeit zu leisten.",
-          step3Eyebrow: "Schritt 3",
-          step3Title: "Top 3 Routen im Moment",
-          step3Description:
-            "Das ist die Sofortvorschau. Öffne die vollständige Seite, wenn du tiefere Ranking-Logik, gespeicherte Vergleiche und den kompletten Filtersatz willst.",
-          openFullPrefix: "Vollständige Ansicht öffnen",
-          updatingQuote: "Die Live-Kurs-Vorschau wird aktualisiert…",
+          step1Eyebrow: "",
+          step1Title: "Was möchtest du tun?",
+          step1Description: "",
+          step2Eyebrow: "",
+          step2Title: "Ein paar Details",
+          step2Description: "",
+          step3Eyebrow: "",
+          step3Title: "Am besten für dich gerade",
+          step3Description: "",
+          openFullPrefix: "Alle ansehen",
+          updatingQuote: "Die aktuellen Kurse werden abgerufen…",
           marketUnavailable:
-            "Marktdaten sind vorübergehend nicht verfügbar. Ändere das Währungspaar oder versuche es gleich erneut.",
+            "Zeigt Kurse von früher heute. Gleich aktualisieren für die neuesten.",
           emptyPreview:
-            "Füge ein paar Eingaben hinzu und Payn zeigt hier sofort die stärksten Routen an.",
+            "Wähle oben ein Ziel, um die besten Optionen für dich zu sehen.",
           checkDetails: "Details ansehen",
           chooseCountry: "Land wählen",
           amount: "Betrag",
@@ -459,25 +447,22 @@ export function DashboardDiscoverWorkspace({
           discoverMarket: "Discover market",
           profileContextHint:
             "Recommendations use your saved country and profile settings when they are available.",
-          step1Eyebrow: "Step 1",
-          step1Title: "Choose the intent first",
-          step1Description:
-            `Start with one goal and Payn previews the strongest routes for ${marketLabel.toLowerCase()} before you open the full comparison flow.`,
-          step2Eyebrow: "Step 2",
-          step2Title: "Add the minimum structured input",
-          step2Description:
-            "Each goal asks for just enough information to do real work before the full page opens.",
-          step3Eyebrow: "Step 3",
-          step3Title: "Top 3 routes right now",
-          step3Description:
-            "This is the immediate preview. Open the full page when you want deeper ranking logic, compare persistence, and the full filter set.",
-          openFullPrefix: "Open full",
-          updatingQuote: "Updating the live quote preview…",
+          step1Eyebrow: "",
+          step1Title: "What do you want to do?",
+          step1Description: "",
+          step2Eyebrow: "",
+          step2Title: "A couple of details",
+          step2Description: "",
+          step3Eyebrow: "",
+          step3Title: "Best for you right now",
+          step3Description: "",
+          openFullPrefix: "See all",
+          updatingQuote: "Getting the latest rates…",
           marketUnavailable:
-            "Market data temporarily unavailable. Change the pair or try again shortly.",
+            "Showing rates from earlier today. Refresh in a moment for the latest.",
           emptyPreview:
-            "Add a few inputs and Payn will preview the strongest routes here.",
-          checkDetails: "Check details",
+            "Choose a goal above to see the best options for you.",
+          checkDetails: "See details",
           chooseCountry: "Choose country",
           amount: "Amount",
           from: "From",
@@ -1040,19 +1025,16 @@ export function DashboardDiscoverWorkspace({
 
     return categoryHref(selectedGoal);
   }, [categoryHref, investmentsAsset, selectedGoal]);
+  const goalOfferCount = offers.filter((o) => o.category === selectedGoal).length;
   const openFullLabel =
     locale === "de"
-      ? `Vollständige ${dictionary.categories[selectedGoal]}-Ansicht öffnen`
-      : `Open full ${dictionary.categories[selectedGoal]}`;
+      ? `${copy.openFullPrefix} ${goalOfferCount} Angebote →`
+      : `${copy.openFullPrefix} ${goalOfferCount} offers →`;
 
   const showUnavailable =
     (selectedGoal === "transfers" || selectedGoal === "exchange") &&
     !quoteLoading &&
     (!quote || quote.unavailable);
-  const continueOffer = recentOffers?.[0] ?? savedOffers?.[0] ?? null;
-  const selectedCountryLabel =
-    countryOptions.find((option) => option.value === normalizeCountryValue(preferredCountry ?? profile?.home_country))?.label ??
-    null;
   const updateLoanCountry = (nextCountry: string) => {
     setLoanCountry(nextCountry);
     onCountryChange?.(nextCountry);
@@ -1070,119 +1052,77 @@ export function DashboardDiscoverWorkspace({
 
   return (
     <div className="mx-auto grid max-w-[1100px] gap-6">
-      {userId ? (
-        <DashboardSectionCard
-          eyebrow={copy.signedInEyebrow}
-          title={copy.signedInTitle}
-          description={copy.signedInDescription}
-          action={
-            <div className="flex flex-wrap gap-2">
-              {dashboardHref ? (
-                <Link href={dashboardHref} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-                  {copy.continueDashboard}
-                </Link>
-              ) : null}
-              {settingsHref ? (
-                <Link href={settingsHref} className={buttonStyles({ variant: "ghost", size: "sm" })}>
-                  {copy.continueSettings}
-                </Link>
-              ) : null}
-            </div>
-          }
-        >
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_320px]">
-            <div className="grid gap-3">
-              {continueOffer ? (
-                <Link
-                  href={localePath(locale, getOfferHref(continueOffer))}
-                  className="flex flex-col gap-4 rounded-[22px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-5 transition-colors hover:bg-white sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <ProviderLogo providerName={continueOffer.providerName} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                        {copy.continueTitle}
-                      </p>
-                      <p className="mt-2 text-base font-bold tracking-[-0.02em] text-ink">{continueOffer.title}</p>
-                      <p className="mt-2 text-sm text-ink-secondary">{continueOffer.providerName}</p>
-                    </div>
-                  </div>
-                  <span className={`${buttonStyles({ variant: "primary", size: "sm" })} w-full justify-center sm:w-auto`}>
-                    {copy.continueButton}
-                  </span>
-                </Link>
-              ) : (
-                <div className="rounded-[22px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-5">
-                  <p className="text-base font-semibold text-ink">{copy.rememberTitle}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-                    {copy.rememberDescription}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{copy.savedOffers}</p>
-                <p className="mt-2 text-xl font-bold tracking-tight text-ink">{savedOffers?.length ?? 0}</p>
-                <p className="mt-2 text-sm text-ink-tertiary">{copy.savedOffersHint}</p>
-              </div>
-              <div className="rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{copy.profileContext}</p>
-                <p className="mt-2 text-sm font-semibold text-ink">{selectedCountryLabel ?? copy.discoverMarket}</p>
-                <p className="mt-2 text-sm text-ink-tertiary">{copy.profileContextHint}</p>
-              </div>
-            </div>
-          </div>
-        </DashboardSectionCard>
-      ) : null}
-
-      <DashboardSectionCard
-        eyebrow={copy.step1Eyebrow}
-        title={copy.step1Title}
-        description={copy.step1Description}
-      >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {goalOptions.map((goal) => (
-            <button
-              key={goal}
-              type="button"
-              onClick={() => setSelectedGoal(goal)}
-              className={clsx(
-                "group rounded-[28px] border px-5 py-5 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.985]",
-                selectedGoal === goal
-                  ? "border-accent-emerald bg-accent-emerald text-white"
-                  : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
-              )}
-            >
-              <div className="flex items-start gap-4">
-                <CategoryIcon
-                  category={goal}
-                  size="lg"
-                  className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
-                />
-                <div className="min-w-0">
-                  <p className="text-base font-semibold tracking-[-0.02em]">{getGoalLabel(locale, goal)}</p>
-                  <p
-                    className={clsx(
-                      "mt-2 max-w-[22rem] text-sm leading-relaxed",
-                      selectedGoal === goal ? "text-white/80" : "text-ink-secondary",
-                    )}
-                  >
-                    {getGoalDescription(locale, goal)}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
+      {/* Browse by goal */}
+      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
+        <div className="mb-6 flex items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+            {locale === "de" ? "Ziel wählen" : "Browse by goal"}
+          </p>
+          <div className="h-px flex-1 bg-line" />
         </div>
-      </DashboardSectionCard>
+        <h2 className="mb-4 text-xl font-bold tracking-[-0.02em] text-ink">{copy.step1Title}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {goalOptions.map((goal) => {
+            const count = offers.filter((o) => o.category === goal).length;
+            return (
+              <button
+                key={goal}
+                type="button"
+                onClick={() => setSelectedGoal(goal)}
+                className={clsx(
+                  "group rounded-[28px] border px-5 py-5 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.985]",
+                  selectedGoal === goal
+                    ? "border-accent-emerald bg-accent-emerald text-white"
+                    : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
+                )}
+              >
+                <div className="flex items-start gap-4">
+                  <CategoryIcon
+                    category={goal}
+                    size="lg"
+                    className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-base font-semibold tracking-[-0.02em]">{getGoalLabel(locale, goal)}</p>
+                      {count > 0 && (
+                        <span
+                          className={clsx(
+                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                            selectedGoal === goal
+                              ? "bg-white/20 text-white"
+                              : "bg-accent-emerald-soft text-accent-emerald-strong",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className={clsx(
+                        "mt-2 max-w-[22rem] text-sm leading-relaxed",
+                        selectedGoal === goal ? "text-white/80" : "text-ink-secondary",
+                      )}
+                    >
+                      {getGoalDescription(locale, goal)}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
-      <DashboardSectionCard
-        eyebrow={copy.step2Eyebrow}
-        title={copy.step2Title}
-        description={copy.step2Description}
-      >
+      {/* Quick check */}
+      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
+        <div className="mb-6 flex items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+            {locale === "de" ? "Schnellcheck" : "Quick check"}
+          </p>
+          <div className="h-px flex-1 bg-line" />
+        </div>
+        <h2 className="mb-4 text-xl font-bold tracking-[-0.02em] text-ink">{copy.step2Title}</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {selectedGoal === "transfers" ? (
             <>
@@ -1195,7 +1135,23 @@ export function DashboardDiscoverWorkspace({
                 />
               </MiniField>
               <MiniField label={copy.from}>
-                <CurrencySelect value={transferFromCurrency} onChange={setTransferFromCurrency} />
+                <div className="flex items-center gap-1.5">
+                  <div className="flex-1 [&>div]:w-full [&_select]:w-full">
+                    <CurrencySelect value={transferFromCurrency} onChange={setTransferFromCurrency} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tmp = transferFromCurrency;
+                      setTransferFromCurrency(transferToCurrency);
+                      setTransferToCurrency(tmp);
+                    }}
+                    className="h-12 shrink-0 rounded-full border border-line bg-bg-surface px-2.5 text-sm text-ink-tertiary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong sm:h-14"
+                    aria-label="Swap currencies"
+                  >
+                    ⇄
+                  </button>
+                </div>
               </MiniField>
               <MiniField label={copy.to}>
                 <CurrencySelect value={transferToCurrency} onChange={setTransferToCurrency} />
@@ -1284,7 +1240,23 @@ export function DashboardDiscoverWorkspace({
                 />
               </MiniField>
               <MiniField label={copy.from}>
-                <CurrencySelect value={exchangeFromCurrency} onChange={setExchangeFromCurrency} />
+                <div className="flex items-center gap-1.5">
+                  <div className="flex-1 [&>div]:w-full [&_select]:w-full">
+                    <CurrencySelect value={exchangeFromCurrency} onChange={setExchangeFromCurrency} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tmp = exchangeFromCurrency;
+                      setExchangeFromCurrency(exchangeToCurrency);
+                      setExchangeToCurrency(tmp);
+                    }}
+                    className="h-12 shrink-0 rounded-full border border-line bg-bg-surface px-2.5 text-sm text-ink-tertiary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong sm:h-14"
+                    aria-label="Swap currencies"
+                  >
+                    ⇄
+                  </button>
+                </div>
               </MiniField>
               <MiniField label={copy.to}>
                 <CurrencySelect value={exchangeToCurrency} onChange={setExchangeToCurrency} />
@@ -1361,25 +1333,30 @@ export function DashboardDiscoverWorkspace({
             </MiniField>
           ) : null}
         </div>
-      </DashboardSectionCard>
+      </section>
 
-      <DashboardSectionCard
-        eyebrow={copy.step3Eyebrow}
-        title={copy.step3Title}
-        description={copy.step3Description}
-        action={
+      {/* Best for you */}
+      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+              {locale === "de" ? "Am besten für dich" : "Best for you"}
+            </p>
+            <div className="h-px w-8 bg-line" />
+          </div>
           <Link href={continueHref} className={buttonStyles({ variant: "primary", size: "sm" })}>
             {openFullLabel}
           </Link>
-        }
-      >
-        {quoteLoading ? (
-          <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-8 text-sm text-ink-secondary">
-            {copy.updatingQuote}
-          </div>
-        ) : showUnavailable ? (
-          <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-8 text-sm text-ink-secondary">
+        </div>
+        <h2 className="mb-4 text-xl font-bold tracking-[-0.02em] text-ink">{copy.step3Title}</h2>
+        {showUnavailable && (
+          <div className="mb-4 rounded-[16px] border border-line bg-bg-surface px-4 py-3 text-sm text-ink-secondary">
             {copy.marketUnavailable}
+          </div>
+        )}
+        {quoteLoading ? (
+          <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-8 text-center text-sm text-ink-secondary">
+            {copy.updatingQuote}
           </div>
         ) : previewRows.length > 0 ? (
           <div className="grid gap-3">
@@ -1427,11 +1404,11 @@ export function DashboardDiscoverWorkspace({
             ))}
           </div>
         ) : (
-          <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-8 text-sm text-ink-secondary">
+          <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-8 text-center text-sm text-ink-secondary">
             {copy.emptyPreview}
           </div>
         )}
-      </DashboardSectionCard>
+      </section>
     </div>
   );
 }
