@@ -7,4 +7,6 @@ export const env = {
   adminUsername: process.env.ADMIN_USERNAME ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET ?? "dev-secret-change-me",
+  adminApiToken: process.env.ADMIN_API_TOKEN ?? "",
+  firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "",
 };
