@@ -15,6 +15,8 @@ import { countTotalOffers, countOffersByOutcome } from "@/features/catalog/count
 import { AtlasGrid } from "@/features/home/atlas-grid";
 import { localePath } from "@/lib/locale";
 import { TrustedProviderGrid } from "@/features/home/trusted-provider-grid";
+import { WhatsNew } from "@/features/home/whats-new";
+import type { Highlight } from "@/features/highlights/get-active-highlights";
 
 // ─── Hero preview data (static, presentational) ───────────────────────────────
 const HERO_CARDS = [
@@ -239,7 +241,7 @@ function AppWaitlistModal({ onClose, strings }: { onClose: () => void; strings: 
 const impactSiteVerificationText = "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
 
 // ─── Main component ────────────────────────────────────────────────────────────
-export function HomePage() {
+export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
   const preferences = useMarketplacePreferences();
   const { user, loading } = useAuth();
   const { locale } = preferences;
@@ -400,6 +402,11 @@ export function HomePage() {
           ATLAS GRID
       ══════════════════════════════════════════════════════════ */}
       <AtlasGrid country={preferences.country} locale={locale} buckets={buckets} />
+
+      {/* ══════════════════════════════════════════════════════════
+          WHAT'S NEW — admin-managed highlights feed
+      ══════════════════════════════════════════════════════════ */}
+      <WhatsNew highlights={highlights} locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
           TRUST — provider logos + stat counters
