@@ -75,7 +75,6 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
   const { locale } = preferences;
   const dictionary = getDictionary(locale);
   const exploreHref = localePath(locale, "/explore");
-  const authHref = localePath(locale, "/signup");
 
   const heroBadges: Record<string, string> = {
     wise: dictionary.homeAtlas.badges.bestValue,
@@ -131,7 +130,7 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
               {formatCopy(dictionary.homeAtlas.hero.sub, { country: countryName })}
             </p>
 
-            {/* CTAs */}
+            {/* CTA */}
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={exploreHref}
@@ -142,12 +141,6 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
-              <Link
-                href={authHref}
-                className={buttonStyles({ variant: "secondary", size: "lg" })}
-              >
-                {dictionary.home.heroCtaSecondary}
-              </Link>
             </div>
 
             {/* Trustline */}
@@ -155,22 +148,6 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
               {formatCopy(dictionary.homeAtlas.hero.trustLine, { productCount, providerCount })}
             </p>
 
-            {/* Trust pills */}
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2">
-              {[
-                { text: dictionary.home.heroPillProviders, icon: "✦" },
-                { text: dictionary.home.heroPillCategories, icon: null },
-                { text: dictionary.home.heroPillNoSignup, icon: null },
-              ].map((pill) => (
-                <span
-                  key={pill.text}
-                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-tertiary"
-                >
-                  {pill.icon && <span className="text-[10px] text-accent-emerald">{pill.icon}</span>}
-                  {pill.text}
-                </span>
-              ))}
-            </div>
           </div>
 
           {/* ── Right: floating offer preview cards ── */}
