@@ -228,6 +228,7 @@ type Dictionary = {
       sectionHeadline: string;
       sectionSub: string;
       cardCounterText: string;
+      cardCounterTextSingular: string;
       cardComingSoonText: string;
     };
     whatsNew: {
@@ -699,6 +700,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "All your options in {country}",
         sectionSub: "Click any category to see every option available — not just the popular ones.",
         cardCounterText: "{count} options in {country}",
+        cardCounterTextSingular: "{count} option in {country}",
         cardComingSoonText: "Coming soon to {country}",
       },
       whatsNew: {
@@ -1121,6 +1123,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "Alle deine Optionen in {country}",
         sectionSub: "Klick auf eine Kategorie, um alle verfügbaren Optionen zu sehen — nicht nur die beliebten.",
         cardCounterText: "{count} Optionen in {country}",
+        cardCounterTextSingular: "{count} Option in {country}",
         cardComingSoonText: "Bald in {country}",
       },
       whatsNew: {
@@ -1587,6 +1590,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "Todas tus opciones en {country}",
         sectionSub: "Haz clic en cualquier categoría para ver todas las opciones disponibles, no solo las populares.",
         cardCounterText: "{count} opciones en {country}",
+        cardCounterTextSingular: "{count} opción en {country}",
         cardComingSoonText: "Próximamente en {country}",
       },
       whatsNew: {
@@ -2029,6 +2033,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "Toutes vos options en {country}",
         sectionSub: "Cliquez sur une catégorie pour voir toutes les options disponibles, pas seulement les populaires.",
         cardCounterText: "{count} options en {country}",
+        cardCounterTextSingular: "{count} option en {country}",
         cardComingSoonText: "Bientôt en {country}",
       },
       whatsNew: {
@@ -2469,6 +2474,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "Tutte le tue opzioni in {country}",
         sectionSub: "Clicca su una categoria per vedere tutte le opzioni disponibili, non solo le popolari.",
         cardCounterText: "{count} opzioni in {country}",
+        cardCounterTextSingular: "{count} opzione in {country}",
         cardComingSoonText: "Prossimamente in {country}",
       },
       whatsNew: {
@@ -2909,6 +2915,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         sectionHeadline: "Todas as tuas opções em {country}",
         sectionSub: "Clica em qualquer categoria para ver todas as opções disponíveis, não apenas as populares.",
         cardCounterText: "{count} opções em {country}",
+        cardCounterTextSingular: "{count} opção em {country}",
         cardComingSoonText: "Em breve em {country}",
       },
       whatsNew: {

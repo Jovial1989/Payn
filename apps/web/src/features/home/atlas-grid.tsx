@@ -92,7 +92,10 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
         {buckets.map(({ bucket, count, topProviders }, i) => {
           const isAvailable = count > 0;
           const counterText = isAvailable
-            ? formatCopy(atlas.atlas.cardCounterText, { count, country: countryName })
+            ? formatCopy(
+                count === 1 ? atlas.atlas.cardCounterTextSingular : atlas.atlas.cardCounterText,
+                { count, country: countryName },
+              )
             : formatCopy(atlas.atlas.cardComingSoonText, { country: countryName });
 
           const title = atlas[bucket.bucketKey].title;
