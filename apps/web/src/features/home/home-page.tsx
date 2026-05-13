@@ -2,7 +2,7 @@
 
 import type { MarketplaceCategory } from "@payn/types";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
@@ -11,7 +11,8 @@ import { WaitlistBadge } from "@/components/waitlist-badge";
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import { getDictionary, formatCopy } from "@/lib/i18n";
-import { countTotalOffers } from "@/features/catalog/count-by-outcome";
+import { countTotalOffers, countOffersByOutcome } from "@/features/catalog/count-by-outcome";
+import { AtlasGrid } from "@/features/home/atlas-grid";
 import { localePath } from "@/lib/locale";
 import { TrustedProviderGrid } from "@/features/home/trusted-provider-grid";
 
@@ -259,6 +260,7 @@ export function HomePage() {
     preferences.country;
 
   const { productCount, providerCount } = countTotalOffers(preferences.country);
+  const buckets = useMemo(() => countOffersByOutcome(preferences.country), [preferences.country]);
   const authHref = localePath(locale, "/signup");
 
   return (
@@ -393,6 +395,11 @@ export function HomePage() {
           </div>
         </div>
       </MotionReveal>
+
+      {/* ══════════════════════════════════════════════════════════
+          ATLAS GRID
+      ══════════════════════════════════════════════════════════ */}
+      <AtlasGrid country={preferences.country} locale={locale} buckets={buckets} />
 
       {/* ══════════════════════════════════════════════════════════
           TRUST — provider logos + stat counters
