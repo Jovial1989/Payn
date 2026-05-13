@@ -9,4 +9,8 @@ export const env = {
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET ?? "dev-secret-change-me",
   adminApiToken: process.env.ADMIN_API_TOKEN ?? "",
   firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "",
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFromAddress: process.env.EMAIL_FROM_ADDRESS ?? "Payn <noreply@payn.online>",
+  emailReplyTo: process.env.EMAIL_REPLY_TO ?? "support@payn.online",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "https://www.payn.online",
 };
