@@ -80,7 +80,7 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
   const sectionHeadline = formatCopy(atlas.atlas.sectionHeadline, { country: countryName });
 
   return (
-    <section className="mx-auto w-full">
+    <section className="mx-auto w-full min-w-0">
       <div className="mb-8">
         <h2 className="text-[1.5rem] font-bold tracking-[-0.025em] text-ink sm:text-[1.75rem]">
           {sectionHeadline}

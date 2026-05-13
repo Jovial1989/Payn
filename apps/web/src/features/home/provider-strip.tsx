@@ -19,7 +19,7 @@ export function ProviderStrip({ locale }: ProviderStripProps) {
   const doubled = [...PROVIDER_NAMES, ...PROVIDER_NAMES];
 
   return (
-    <section className="border-y border-gray-100 bg-gray-50/30 py-8">
+    <section className="w-full min-w-0 overflow-hidden border-y border-gray-100 bg-gray-50/30 py-8">
       <div className="mb-3 text-center">
         <span className="text-[10px] font-medium tracking-widest text-[#9ca3af]">
           {label}

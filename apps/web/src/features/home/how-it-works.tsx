@@ -18,7 +18,7 @@ export function HowItWorks({ locale }: HowItWorksProps) {
   ];
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16">
+    <section className="mx-auto w-full min-w-0 max-w-6xl px-6 py-16">
       <h2 className="mb-10 text-2xl font-medium text-[#1F2937]">
         {t.sectionHeadline}
       </h2>

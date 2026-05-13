@@ -34,7 +34,7 @@ export function WhatsNew({ highlights, locale }: WhatsNewProps) {
   }
 
   return (
-    <section>
+    <section className="w-full min-w-0">
       <div className="mb-5">
         <h2 className="text-[1.25rem] font-bold tracking-[-0.02em] text-ink">
           {atlas.whatsNew.sectionHeadline}
