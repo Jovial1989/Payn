@@ -211,6 +211,57 @@ type Dictionary = {
     partnershipCta: string;
   };
   metrics: Record<string, string>;
+  homeAtlas: {
+    hero: {
+      eyebrow: string;
+      headline: string;
+      sub: string;
+      cta: string;
+      trustLine: string;
+    };
+    badges: {
+      newRate: string;
+      bestValue: string;
+      justLaunched: string;
+    };
+    atlas: {
+      sectionHeadline: string;
+      sectionSub: string;
+      cardCounterText: string;
+      cardComingSoonText: string;
+    };
+    whatsNew: {
+      sectionHeadline: string;
+      sectionSub: string;
+      kindRateChange: string;
+      kindNewLaunch: string;
+      kindNewProvider: string;
+      kindFeatureUpdate: string;
+      defaultCta: string;
+    };
+    howItWorks: {
+      sectionHeadline: string;
+      col1Title: string;
+      col1Body: string;
+      col2Title: string;
+      col2Body: string;
+      col3Title: string;
+      col3Body: string;
+    };
+    providerStrip: {
+      label: string;
+    };
+    countryNames: Record<string, string>;
+    bucketSpendSmarter: { title: string; description: string };
+    bucketEarnOnCash: { title: string; description: string };
+    bucketTravel: { title: string; description: string };
+    bucketBanking: { title: string; description: string };
+    bucketInvest: { title: string; description: string };
+    bucketBigPurchases: { title: string; description: string };
+    bucketBusiness: { title: string; description: string };
+    bucketFamily: { title: string; description: string };
+    bucketProtect: { title: string; description: string };
+  };
 };
 
 const baseMetrics = {
@@ -631,6 +682,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipBody: "Share your company, product type, and markets covered so the conversation starts with context.",
       partnershipCta: "Discuss partnerships",
     },
+    homeAtlas: {
+      hero: {
+        eyebrow: "Europe's full financial inventory",
+        headline: "You have more options than you think.",
+        sub: "From cashback cards to leasing a Tesla, from 4% savings to lending you didn't know existed — see what's available to you in {country}.",
+        cta: "Browse everything",
+        trustLine: "{productCount} products · {providerCount} providers · No filters needed",
+      },
+      badges: {
+        newRate: "NEW RATE",
+        bestValue: "BEST VALUE",
+        justLaunched: "JUST LAUNCHED",
+      },
+      atlas: {
+        sectionHeadline: "All your options in {country}",
+        sectionSub: "Click any category to see every option available — not just the popular ones.",
+        cardCounterText: "{count} options in {country}",
+        cardComingSoonText: "Coming soon to {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "New this month in {country}",
+        sectionSub: "Stuff that wasn't here last time you looked.",
+        kindRateChange: "RATE CHANGE",
+        kindNewLaunch: "NEW LAUNCH",
+        kindNewProvider: "NEW PROVIDER",
+        kindFeatureUpdate: "FEATURE UPDATE",
+        defaultCta: "See offer",
+      },
+      howItWorks: {
+        sectionHeadline: "How we built this",
+        col1Title: "Every option, real data",
+        col1Body: "We track 50+ providers across 8 countries and 23 product categories.",
+        col2Title: "Real costs, not marketing",
+        col2Body: "Every fee, every rate, every catch. Recalculated daily.",
+        col3Title: "You decide. We show you what's available.",
+        col3Body: "No 'best for you' guesses. No quizzes. Just full inventory — you pick what fits.",
+      },
+      providerStrip: {
+        label: "LIVE INVENTORY · UPDATED DAILY",
+      },
+      countryNames: {
+        UK: "the UK", GB: "the UK", DE: "Germany", ES: "Spain", FR: "France",
+        IT: "Italy", PT: "Portugal", NL: "the Netherlands", AT: "Austria", BE: "Belgium", EU: "Europe",
+      },
+      bucketSpendSmarter: { title: "Spend smarter", description: "Cashback cards, rewards, perks" },
+      bucketEarnOnCash: { title: "Earn on your cash", description: "High-interest savings & deposits" },
+      bucketTravel: { title: "Travel & abroad", description: "Multi-currency, no FX fees" },
+      bucketBanking: { title: "Daily banking", description: "Current accounts for every situation" },
+      bucketInvest: { title: "Invest & grow", description: "Brokers, ETFs, crypto, robos" },
+      bucketBigPurchases: { title: "Big purchases", description: "Loans, mortgages, BNPL" },
+      bucketBusiness: { title: "For your business", description: "Business banking, payroll, tax tools" },
+      bucketFamily: { title: "Family & kids", description: "Kids' accounts, family budgeting" },
+      bucketProtect: { title: "Protect", description: "Insurance: health, life, travel, property" },
+    },
     metrics: baseMetrics,
   },
   de: {
@@ -998,6 +1103,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipTitle: "Partnerschaften",
       partnershipBody: "Nennen Sie Unternehmen, Produkttyp und Märkte, damit das Gespräch mit Kontext startet.",
       partnershipCta: "Partnerschaft besprechen",
+    },
+    homeAtlas: {
+      hero: {
+        eyebrow: "Europas vollständiges Finanzinventar",
+        headline: "Du hast mehr Möglichkeiten, als du denkst.",
+        sub: "Von Cashback-Karten bis zum Tesla-Leasing, von 4% Sparzinsen bis zu Krediten, von denen du nicht wusstest — sieh, was in {country} verfügbar ist.",
+        cta: "Alles ansehen",
+        trustLine: "{productCount} Produkte · {providerCount} Anbieter · Keine Filter nötig",
+      },
+      badges: {
+        newRate: "NEUER ZINS",
+        bestValue: "BESTPREIS",
+        justLaunched: "GERADE GESTARTET",
+      },
+      atlas: {
+        sectionHeadline: "Alle deine Optionen in {country}",
+        sectionSub: "Klick auf eine Kategorie, um alle verfügbaren Optionen zu sehen — nicht nur die beliebten.",
+        cardCounterText: "{count} Optionen in {country}",
+        cardComingSoonText: "Bald in {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "Diesen Monat neu in {country}",
+        sectionSub: "Sachen, die letztes Mal noch nicht hier waren.",
+        kindRateChange: "ZINSÄNDERUNG",
+        kindNewLaunch: "NEU GESTARTET",
+        kindNewProvider: "NEUER ANBIETER",
+        kindFeatureUpdate: "FUNKTIONS-UPDATE",
+        defaultCta: "Angebot ansehen",
+      },
+      howItWorks: {
+        sectionHeadline: "Wie wir das gebaut haben",
+        col1Title: "Jede Option, echte Daten",
+        col1Body: "Wir verfolgen über 50 Anbieter in 8 Ländern und 23 Produktkategorien.",
+        col2Title: "Echte Kosten, kein Marketing",
+        col2Body: "Jede Gebühr, jeder Zins, jeder Haken. Täglich neu berechnet.",
+        col3Title: "Du entscheidest. Wir zeigen, was verfügbar ist.",
+        col3Body: "Keine 'für dich beste' Schätzungen. Keine Quizze. Nur das volle Inventar — du wählst, was passt.",
+      },
+      providerStrip: {
+        label: "LIVE-INVENTAR · TÄGLICH AKTUALISIERT",
+      },
+      countryNames: {
+        UK: "Großbritannien", GB: "Großbritannien", DE: "Deutschland", ES: "Spanien", FR: "Frankreich",
+        IT: "Italien", PT: "Portugal", NL: "den Niederlanden", AT: "Österreich", BE: "Belgien", EU: "Europa",
+      },
+      bucketSpendSmarter: { title: "Klüger ausgeben", description: "Cashback-Karten, Prämien, Vorteile" },
+      bucketEarnOnCash: { title: "Verdiene mit deinem Geld", description: "Hochzins-Sparkonten & Festgeld" },
+      bucketTravel: { title: "Reisen & Ausland", description: "Multi-Währung, keine FX-Gebühren" },
+      bucketBanking: { title: "Alltagsbanking", description: "Girokonten für jede Lebenslage" },
+      bucketInvest: { title: "Investieren & wachsen", description: "Broker, ETFs, Krypto, Robo-Advisors" },
+      bucketBigPurchases: { title: "Große Anschaffungen", description: "Kredite, Hypotheken, BNPL" },
+      bucketBusiness: { title: "Für dein Business", description: "Geschäftskonten, Lohn, Steuer-Tools" },
+      bucketFamily: { title: "Familie & Kinder", description: "Kinderkonten, Familienbudget" },
+      bucketProtect: { title: "Schützen", description: "Versicherung: Gesundheit, Leben, Reise, Eigentum" },
     },
     metrics: {
       ...baseMetrics,
@@ -1411,6 +1570,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipBody: "Comparte empresa, tipo de producto y mercados cubiertos para empezar con contexto.",
       partnershipCta: "Hablar de alianzas",
     },
+    homeAtlas: {
+      hero: {
+        eyebrow: "El inventario financiero completo de Europa",
+        headline: "Tienes más opciones de las que crees.",
+        sub: "Desde tarjetas con cashback hasta leasing de un Tesla, desde ahorros al 4% hasta préstamos que no sabías que existían — descubre qué hay disponible para ti en {country}.",
+        cta: "Explorar todo",
+        trustLine: "{productCount} productos · {providerCount} proveedores · Sin filtros",
+      },
+      badges: {
+        newRate: "NUEVA TASA",
+        bestValue: "MEJOR VALOR",
+        justLaunched: "RECIÉN LANZADO",
+      },
+      atlas: {
+        sectionHeadline: "Todas tus opciones en {country}",
+        sectionSub: "Haz clic en cualquier categoría para ver todas las opciones disponibles, no solo las populares.",
+        cardCounterText: "{count} opciones en {country}",
+        cardComingSoonText: "Próximamente en {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "Nuevo este mes en {country}",
+        sectionSub: "Cosas que no estaban aquí la última vez.",
+        kindRateChange: "CAMBIO DE TASA",
+        kindNewLaunch: "NUEVO LANZAMIENTO",
+        kindNewProvider: "NUEVO PROVEEDOR",
+        kindFeatureUpdate: "ACTUALIZACIÓN",
+        defaultCta: "Ver oferta",
+      },
+      howItWorks: {
+        sectionHeadline: "Cómo lo construimos",
+        col1Title: "Cada opción, datos reales",
+        col1Body: "Seguimos más de 50 proveedores en 8 países y 23 categorías de productos.",
+        col2Title: "Costos reales, no marketing",
+        col2Body: "Cada comisión, cada tasa, cada letra pequeña. Recalculado a diario.",
+        col3Title: "Tú decides. Nosotros mostramos qué hay disponible.",
+        col3Body: "Sin adivinanzas de 'lo mejor para ti'. Sin tests. Solo el inventario completo — tú eliges lo que encaja.",
+      },
+      providerStrip: {
+        label: "INVENTARIO EN VIVO · ACTUALIZADO DIARIAMENTE",
+      },
+      countryNames: {
+        UK: "el Reino Unido", GB: "el Reino Unido", DE: "Alemania", ES: "España", FR: "Francia",
+        IT: "Italia", PT: "Portugal", NL: "los Países Bajos", AT: "Austria", BE: "Bélgica", EU: "Europa",
+      },
+      bucketSpendSmarter: { title: "Gasta inteligente", description: "Tarjetas con cashback, recompensas, ventajas" },
+      bucketEarnOnCash: { title: "Gana con tu dinero", description: "Ahorros e imposiciones a alto interés" },
+      bucketTravel: { title: "Viajes y extranjero", description: "Multidivisa, sin comisiones FX" },
+      bucketBanking: { title: "Banca diaria", description: "Cuentas para cada situación" },
+      bucketInvest: { title: "Invierte y crece", description: "Brókeres, ETFs, cripto, robo-advisors" },
+      bucketBigPurchases: { title: "Grandes compras", description: "Préstamos, hipotecas, BNPL" },
+      bucketBusiness: { title: "Para tu negocio", description: "Banca empresarial, nóminas, impuestos" },
+      bucketFamily: { title: "Familia y niños", description: "Cuentas para niños, presupuesto familiar" },
+      bucketProtect: { title: "Protege", description: "Seguros: salud, vida, viajes, propiedad" },
+    },
     metrics: {
       ...baseMetrics,
       APR: "TAE",
@@ -1799,6 +2012,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipBody: "Partagez votre société, votre type de produit et vos marchés couverts pour démarrer avec du contexte.",
       partnershipCta: "Parler partenariat",
     },
+    homeAtlas: {
+      hero: {
+        eyebrow: "L'inventaire financier complet de l'Europe",
+        headline: "Vous avez plus d'options que vous ne le pensez.",
+        sub: "Des cartes cashback à la location d'une Tesla, des épargnes à 4% aux prêts dont vous ignoriez l'existence — découvrez ce qui est disponible en {country}.",
+        cta: "Tout parcourir",
+        trustLine: "{productCount} produits · {providerCount} fournisseurs · Pas de filtres",
+      },
+      badges: {
+        newRate: "NOUVEAU TAUX",
+        bestValue: "MEILLEURE OFFRE",
+        justLaunched: "NOUVEAUTÉ",
+      },
+      atlas: {
+        sectionHeadline: "Toutes vos options en {country}",
+        sectionSub: "Cliquez sur une catégorie pour voir toutes les options disponibles, pas seulement les populaires.",
+        cardCounterText: "{count} options en {country}",
+        cardComingSoonText: "Bientôt en {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "Nouveau ce mois-ci en {country}",
+        sectionSub: "Des choses qui n'étaient pas là la dernière fois.",
+        kindRateChange: "CHANGEMENT DE TAUX",
+        kindNewLaunch: "NOUVEAU LANCEMENT",
+        kindNewProvider: "NOUVEAU FOURNISSEUR",
+        kindFeatureUpdate: "MISE À JOUR",
+        defaultCta: "Voir l'offre",
+      },
+      howItWorks: {
+        sectionHeadline: "Comment nous l'avons construit",
+        col1Title: "Chaque option, données réelles",
+        col1Body: "Nous suivons plus de 50 fournisseurs dans 8 pays et 23 catégories de produits.",
+        col2Title: "Coûts réels, pas du marketing",
+        col2Body: "Chaque frais, chaque taux, chaque piège. Recalculé quotidiennement.",
+        col3Title: "Vous décidez. Nous montrons ce qui est disponible.",
+        col3Body: "Pas de 'le meilleur pour vous'. Pas de quiz. Juste l'inventaire complet — vous choisissez ce qui convient.",
+      },
+      providerStrip: {
+        label: "INVENTAIRE EN DIRECT · MIS À JOUR QUOTIDIENNEMENT",
+      },
+      countryNames: {
+        UK: "Royaume-Uni", GB: "Royaume-Uni", DE: "Allemagne", ES: "Espagne", FR: "France",
+        IT: "Italie", PT: "Portugal", NL: "Pays-Bas", AT: "Autriche", BE: "Belgique", EU: "Europe",
+      },
+      bucketSpendSmarter: { title: "Dépensez mieux", description: "Cartes cashback, récompenses, avantages" },
+      bucketEarnOnCash: { title: "Faites fructifier votre cash", description: "Épargne et dépôts à haut rendement" },
+      bucketTravel: { title: "Voyage & étranger", description: "Multi-devises, sans frais FX" },
+      bucketBanking: { title: "Banque au quotidien", description: "Comptes courants pour chaque situation" },
+      bucketInvest: { title: "Investir & croître", description: "Courtiers, ETFs, crypto, robo-advisors" },
+      bucketBigPurchases: { title: "Gros achats", description: "Prêts, hypothèques, BNPL" },
+      bucketBusiness: { title: "Pour votre entreprise", description: "Banque pro, paie, outils fiscaux" },
+      bucketFamily: { title: "Famille & enfants", description: "Comptes enfants, budget familial" },
+      bucketProtect: { title: "Protéger", description: "Assurance : santé, vie, voyage, propriété" },
+    },
     metrics: {
       ...baseMetrics,
       Amount: "Montant",
@@ -2185,6 +2452,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipBody: "Condividi azienda, tipo di prodotto e mercati coperti per iniziare con contesto.",
       partnershipCta: "Parla di partnership",
     },
+    homeAtlas: {
+      hero: {
+        eyebrow: "L'inventario finanziario completo d'Europa",
+        headline: "Hai più opzioni di quante pensi.",
+        sub: "Dalle carte cashback al leasing di una Tesla, da risparmi al 4% a prestiti che non sapevi esistessero — scopri cosa è disponibile in {country}.",
+        cta: "Esplora tutto",
+        trustLine: "{productCount} prodotti · {providerCount} fornitori · Nessun filtro",
+      },
+      badges: {
+        newRate: "NUOVO TASSO",
+        bestValue: "MIGLIOR RAPPORTO",
+        justLaunched: "APPENA LANCIATO",
+      },
+      atlas: {
+        sectionHeadline: "Tutte le tue opzioni in {country}",
+        sectionSub: "Clicca su una categoria per vedere tutte le opzioni disponibili, non solo le popolari.",
+        cardCounterText: "{count} opzioni in {country}",
+        cardComingSoonText: "Prossimamente in {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "Nuovo questo mese in {country}",
+        sectionSub: "Cose che non c'erano l'ultima volta.",
+        kindRateChange: "CAMBIO DI TASSO",
+        kindNewLaunch: "NUOVO LANCIO",
+        kindNewProvider: "NUOVO FORNITORE",
+        kindFeatureUpdate: "AGGIORNAMENTO",
+        defaultCta: "Vedi offerta",
+      },
+      howItWorks: {
+        sectionHeadline: "Come l'abbiamo costruito",
+        col1Title: "Ogni opzione, dati reali",
+        col1Body: "Monitoriamo oltre 50 fornitori in 8 paesi e 23 categorie di prodotti.",
+        col2Title: "Costi reali, non marketing",
+        col2Body: "Ogni commissione, ogni tasso, ogni trappola. Ricalcolato ogni giorno.",
+        col3Title: "Decidi tu. Mostriamo cosa è disponibile.",
+        col3Body: "Niente 'meglio per te'. Niente quiz. Solo l'inventario completo — scegli tu cosa va bene.",
+      },
+      providerStrip: {
+        label: "INVENTARIO LIVE · AGGIORNATO OGNI GIORNO",
+      },
+      countryNames: {
+        UK: "Regno Unito", GB: "Regno Unito", DE: "Germania", ES: "Spagna", FR: "Francia",
+        IT: "Italia", PT: "Portogallo", NL: "Paesi Bassi", AT: "Austria", BE: "Belgio", EU: "Europa",
+      },
+      bucketSpendSmarter: { title: "Spendi meglio", description: "Carte cashback, premi, vantaggi" },
+      bucketEarnOnCash: { title: "Guadagna sui tuoi soldi", description: "Risparmi e depositi ad alto interesse" },
+      bucketTravel: { title: "Viaggi & estero", description: "Multi-valuta, senza commissioni FX" },
+      bucketBanking: { title: "Banca quotidiana", description: "Conti correnti per ogni situazione" },
+      bucketInvest: { title: "Investi & cresci", description: "Broker, ETF, crypto, robo-advisor" },
+      bucketBigPurchases: { title: "Grandi acquisti", description: "Prestiti, mutui, BNPL" },
+      bucketBusiness: { title: "Per la tua attività", description: "Banca aziendale, payroll, strumenti fiscali" },
+      bucketFamily: { title: "Famiglia & bambini", description: "Conti per bambini, budget familiare" },
+      bucketProtect: { title: "Proteggi", description: "Assicurazione: salute, vita, viaggio, proprietà" },
+    },
     metrics: {
       ...baseMetrics,
       Amount: "Importo",
@@ -2570,6 +2891,60 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipTitle: "Parcerias",
       partnershipBody: "Partilhe empresa, tipo de produto e mercados cobertos para começar com contexto.",
       partnershipCta: "Falar sobre parcerias",
+    },
+    homeAtlas: {
+      hero: {
+        eyebrow: "O inventário financeiro completo da Europa",
+        headline: "Tens mais opções do que pensas.",
+        sub: "De cartões com cashback a leasing de um Tesla, de poupanças a 4% a empréstimos que não sabias que existiam — vê o que está disponível em {country}.",
+        cta: "Explorar tudo",
+        trustLine: "{productCount} produtos · {providerCount} fornecedores · Sem filtros",
+      },
+      badges: {
+        newRate: "NOVA TAXA",
+        bestValue: "MELHOR VALOR",
+        justLaunched: "ACABOU DE LANÇAR",
+      },
+      atlas: {
+        sectionHeadline: "Todas as tuas opções em {country}",
+        sectionSub: "Clica em qualquer categoria para ver todas as opções disponíveis, não apenas as populares.",
+        cardCounterText: "{count} opções em {country}",
+        cardComingSoonText: "Em breve em {country}",
+      },
+      whatsNew: {
+        sectionHeadline: "Novo este mês em {country}",
+        sectionSub: "Coisas que não estavam aqui da última vez.",
+        kindRateChange: "MUDANÇA DE TAXA",
+        kindNewLaunch: "NOVO LANÇAMENTO",
+        kindNewProvider: "NOVO FORNECEDOR",
+        kindFeatureUpdate: "ATUALIZAÇÃO",
+        defaultCta: "Ver oferta",
+      },
+      howItWorks: {
+        sectionHeadline: "Como construímos isto",
+        col1Title: "Cada opção, dados reais",
+        col1Body: "Acompanhamos mais de 50 fornecedores em 8 países e 23 categorias de produtos.",
+        col2Title: "Custos reais, não marketing",
+        col2Body: "Cada taxa, cada comissão, cada armadilha. Recalculado diariamente.",
+        col3Title: "Tu decides. Mostramos o que está disponível.",
+        col3Body: "Sem palpites de 'o melhor para ti'. Sem quizzes. Apenas o inventário completo — escolhes o que serve.",
+      },
+      providerStrip: {
+        label: "INVENTÁRIO EM TEMPO REAL · ATUALIZADO DIARIAMENTE",
+      },
+      countryNames: {
+        UK: "Reino Unido", GB: "Reino Unido", DE: "Alemanha", ES: "Espanha", FR: "França",
+        IT: "Itália", PT: "Portugal", NL: "Países Baixos", AT: "Áustria", BE: "Bélgica", EU: "Europa",
+      },
+      bucketSpendSmarter: { title: "Gasta melhor", description: "Cartões com cashback, recompensas, vantagens" },
+      bucketEarnOnCash: { title: "Ganha com o teu dinheiro", description: "Poupanças e depósitos com juro alto" },
+      bucketTravel: { title: "Viagens & estrangeiro", description: "Multimoeda, sem taxas FX" },
+      bucketBanking: { title: "Banca diária", description: "Contas correntes para cada situação" },
+      bucketInvest: { title: "Investe & cresce", description: "Corretoras, ETFs, cripto, robos" },
+      bucketBigPurchases: { title: "Grandes compras", description: "Empréstimos, hipotecas, BNPL" },
+      bucketBusiness: { title: "Para o teu negócio", description: "Banca empresarial, salários, fiscal" },
+      bucketFamily: { title: "Família & filhos", description: "Contas para crianças, orçamento familiar" },
+      bucketProtect: { title: "Proteger", description: "Seguros: saúde, vida, viagem, propriedade" },
     },
     metrics: {
       ...baseMetrics,
