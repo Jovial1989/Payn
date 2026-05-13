@@ -10,7 +10,8 @@ import { MotionReveal } from "@/components/motion-reveal";
 import { WaitlistBadge } from "@/components/waitlist-badge";
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
-import { getDictionary } from "@/lib/i18n";
+import { getDictionary, formatCopy } from "@/lib/i18n";
+import { countTotalOffers } from "@/features/catalog/count-by-outcome";
 import { localePath } from "@/lib/locale";
 import { TrustedProviderGrid } from "@/features/home/trusted-provider-grid";
 
@@ -245,6 +246,19 @@ export function HomePage() {
   const dictionary = getDictionary(locale);
   const whyPaynCards = dictionary.home.whyPaynCards;
   const discoverHref = localePath(locale, "/discover");
+  const exploreHref = localePath(locale, "/explore");
+
+  const heroBadges: Record<string, string> = {
+    wise: dictionary.homeAtlas.badges.bestValue,
+    revolut: dictionary.homeAtlas.badges.justLaunched,
+    tr: dictionary.homeAtlas.badges.newRate,
+  };
+
+  const countryName =
+    dictionary.homeAtlas.countryNames[preferences.country.toUpperCase()] ??
+    preferences.country;
+
+  const { productCount, providerCount } = countTotalOffers(preferences.country);
   const authHref = localePath(locale, "/signup");
 
   return (
@@ -275,31 +289,26 @@ export function HomePage() {
             {/* Eyebrow */}
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-emerald/20 bg-accent-emerald-soft px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
               <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
-              {dictionary.home.heroEyebrowShort}
+              {dictionary.homeAtlas.hero.eyebrow}
             </div>
 
             {/* Headline */}
             <h1 className="mt-6 max-w-[16ch] text-[2.6rem] font-extrabold leading-[0.9] tracking-[-0.06em] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
-              {dictionary.home.heroHeadline.split("You won't.").length > 1 ? (
-                <>
-                  {dictionary.home.heroHeadline.split("You won't.")[0]}
-                  <span className="text-accent-emerald">You won&apos;t.</span>
-                </>
-              ) : dictionary.home.heroHeadline}
+              {dictionary.homeAtlas.hero.headline}
             </h1>
 
             {/* Subheadline */}
             <p className="mt-5 max-w-[36ch] text-[16px] leading-7 text-ink-secondary sm:text-[18px]">
-              {dictionary.home.heroSubtitleShort}
+              {formatCopy(dictionary.homeAtlas.hero.sub, { country: countryName })}
             </p>
 
             {/* CTAs */}
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                href={discoverHref}
+                href={exploreHref}
                 className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta gap-2`}
               >
-                {dictionary.home.heroCta}
+                {dictionary.homeAtlas.hero.cta}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -311,6 +320,11 @@ export function HomePage() {
                 {dictionary.home.heroCtaSecondary}
               </Link>
             </div>
+
+            {/* Trustline */}
+            <p className="mt-4 text-[12px] text-ink-tertiary">
+              {formatCopy(dictionary.homeAtlas.hero.trustLine, { productCount, providerCount })}
+            </p>
 
             {/* Trust pills */}
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2">
@@ -366,7 +380,7 @@ export function HomePage() {
                   style={card.badgeStyle}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
-                  {card.badge}
+                  {heroBadges[card.key] ?? card.badge}
                 </div>
               </div>
             ))}
