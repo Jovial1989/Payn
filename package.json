@@ -8,6 +8,7 @@
     "lint:web": "corepack pnpm --filter web lint",
     "typecheck:web": "corepack pnpm --filter web typecheck",
     "deploy:check": "corepack pnpm --filter web typecheck && corepack pnpm --filter web build",
-    "reset-monetised": "bash scripts/reset-monetised.sh"
+    "reset-monetised": "bash scripts/reset-monetised.sh",
+    "preview-email": "cd apps/web && npx tsx scripts/preview-emails.ts"
   }
 }
