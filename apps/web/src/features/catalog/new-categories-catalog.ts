@@ -569,7 +569,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/gb/card/",
     affiliateLink: "https://wise.com/gb/card/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["debit card", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["debit card", "Wise", "multi-currency"] },
   },
   {
     id: "debit-curve",
@@ -661,7 +661,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/gb/send-money/",
     affiliateLink: "https://wise.com/gb/send-money/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["remittance", "international transfer", "Wise"] },
+    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["remittance", "international transfer", "Wise"] },
   },
   {
     id: "remittance-remitly",
@@ -797,7 +797,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/gb/card/",
     affiliateLink: "https://wise.com/gb/card/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["travel card", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["travel card", "Wise", "multi-currency"] },
   },
   {
     id: "travel-curve-card",
@@ -1047,7 +1047,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/gb/multi-currency-account/",
     affiliateLink: "https://wise.com/gb/multi-currency-account/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["wallet", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["wallet", "Wise", "multi-currency"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -1139,7 +1139,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/gb/business/payroll/",
     affiliateLink: "https://wise.com/gb/business/payroll/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["payroll", "international payments", "Wise Business"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["payroll", "international payments", "Wise Business"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -1419,7 +1419,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.gohenry.com/us/features/",
     affiliateLink: "https://www.gohenry.com/us/features/",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["kids", "pocket money", "family finance"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["kids", "pocket money", "family finance"] },
   },
   {
     id: "kids-revolut-junior",

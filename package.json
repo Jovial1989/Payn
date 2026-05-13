@@ -7,6 +7,7 @@
     "build:web": "corepack pnpm --filter web build",
     "lint:web": "corepack pnpm --filter web lint",
     "typecheck:web": "corepack pnpm --filter web typecheck",
-    "deploy:check": "corepack pnpm --filter web typecheck && corepack pnpm --filter web build"
+    "deploy:check": "corepack pnpm --filter web typecheck && corepack pnpm --filter web build",
+    "reset-monetised": "bash scripts/reset-monetised.sh"
   }
 }

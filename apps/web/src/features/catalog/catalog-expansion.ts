@@ -293,7 +293,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.xe.com/personal-money-transfer/",
     affiliateLink: "https://www.xe.com/personal-money-transfer/",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["exchange", "currency", "XE", "rate alerts", "fx"] },
+    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["exchange", "currency", "XE", "rate alerts", "fx"] },
   },
   {
     id: "exchange-xe-business",
@@ -315,7 +315,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.xe.com/business/",
     affiliateLink: "https://www.xe.com/business/",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["exchange", "business fx", "XE Business", "international payments"] },
+    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["exchange", "business fx", "XE Business", "international payments"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -341,7 +341,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://snoop.app/features/",
     affiliateLink: "https://snoop.app/features/",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "local", monetized: true, affiliate: true, isPartner: true, searchTags: ["budgeting", "money saving", "Snoop", "open banking", "UK"] },
+    attributes: { availability: "local", monetized: false, affiliate: true, isPartner: true, searchTags: ["budgeting", "money saving", "Snoop", "open banking", "UK"] },
   },
   {
     id: "budgeting-cleo",
@@ -669,7 +669,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://wise.com/business",
     affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676594T",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["business", "Wise Business", "international payments", "multi-currency"] },
+    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["business", "Wise Business", "international payments", "multi-currency"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -695,7 +695,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://qonto.com",
     affiliateLink: "https://qonto.com",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Qonto", "SME", "neobank", "expense management"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Qonto", "SME", "neobank", "expense management"] },
   },
   {
     id: "business-tide-uk-de",
@@ -717,7 +717,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.tide.co",
     affiliateLink: "https://www.tide.co",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Tide", "UK business", "SME", "free account"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Tide", "UK business", "SME", "free account"] },
   },
   {
     id: "business-starling-business-uk",
@@ -739,7 +739,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.starlingbank.com/business-account/",
     affiliateLink: "https://www.starlingbank.com/business-account/",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Starling", "UK business", "free account", "FCA"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Starling", "UK business", "free account", "FCA"] },
   },
   {
     id: "business-mettle-uk",
@@ -761,7 +761,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://mettle.co.uk",
     affiliateLink: "https://mettle.co.uk",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Mettle", "UK business", "sole trader", "freelancer"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Mettle", "UK business", "sole trader", "freelancer"] },
   },
   {
     id: "business-finom-eu",
@@ -783,7 +783,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://finom.co",
     affiliateLink: "https://finom.co",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Finom", "SME", "cashback", "freelancer"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Finom", "SME", "cashback", "freelancer"] },
   },
   {
     id: "business-anna-uk",
@@ -805,7 +805,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://anna.money",
     affiliateLink: "https://anna.money",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Anna Money", "UK business", "VAT", "bookkeeping"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Anna Money", "UK business", "VAT", "bookkeeping"] },
   },
   {
     id: "business-holvi-eu",
@@ -827,7 +827,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://holvi.com",
     affiliateLink: "https://holvi.com",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "Holvi", "Finland", "self-employed", "invoicing"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "Holvi", "Finland", "self-employed", "invoicing"] },
   },
   {
     id: "business-n26-business-eu",
@@ -849,7 +849,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://n26.com/business",
     affiliateLink: "https://n26.com/business",
     updatedAt: "2026-05-12T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: true, affiliate: true, searchTags: ["business", "N26 Business", "EU", "cashback", "neobank"] },
+    attributes: { availability: "eu_wide", monetized: false, affiliate: true, searchTags: ["business", "N26 Business", "EU", "cashback", "neobank"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -875,6 +875,6 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://www.xe.com/send-money/",
     affiliateLink: "https://www.xe.com/send-money/",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["transfers", "XE", "international", "no fee"] },
+    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["transfers", "XE", "international", "no fee"] },
   },
 ];

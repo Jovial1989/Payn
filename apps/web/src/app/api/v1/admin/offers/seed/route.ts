@@ -22,7 +22,7 @@ export async function POST() {
     is_monetised: Boolean(
       o.affiliateLink &&
         o.linkType === "affiliate_redirect" &&
-        o.attributes?.monetized !== false,
+        o.attributes?.monetized === true,
     ),
     status: "active",
     is_featured: false,
