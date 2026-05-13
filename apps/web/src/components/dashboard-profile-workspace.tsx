@@ -168,6 +168,18 @@ export function DashboardProfileWorkspace({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [resetState, setResetState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [resetError, setResetError] = useState<string | null>(null);
+  const [emailMarketingOptIn, setEmailMarketingOptIn] = useState(false);
+  const [emailDigestFrequency, setEmailDigestFrequency] = useState<"weekly" | "monthly" | "off">("monthly");
+  const [emailPrefsSaved, setEmailPrefsSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/me/email-preferences")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d: { marketing_opt_in: boolean; digest_frequency: "weekly" | "monthly" | "off" } | null) => {
+        if (d) { setEmailMarketingOptIn(d.marketing_opt_in); setEmailDigestFrequency(d.digest_frequency); }
+      })
+      .catch(() => { /* ignore */ });
+  }, []);
 
   const savePayload = useMemo<SettingsSavePayload>(
     () => ({
@@ -490,6 +502,69 @@ export function DashboardProfileWorkspace({
               <p className="mt-2 text-sm text-ink-secondary">
                 {copy.sessionSafetyHint}
               </p>
+            </div>
+          </div>
+        </DashboardSectionCard>
+
+        <DashboardSectionCard
+          eyebrow="Notifications"
+          title="Email preferences"
+          description="Control which emails Payn sends to your account."
+        >
+          <div className="grid gap-4">
+            <div className="rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={emailMarketingOptIn}
+                  onChange={(e) => setEmailMarketingOptIn(e.target.checked)}
+                  className="mt-0.5 accent-accent-emerald"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-ink">Receive marketing emails</p>
+                  <p className="mt-0.5 text-sm text-ink-secondary">Rate alerts, monthly digests, new offer announcements.</p>
+                </div>
+              </label>
+            </div>
+            <div className="rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-4">
+              <div className="flex items-start gap-3">
+                <input type="checkbox" checked disabled className="mt-0.5 accent-accent-emerald" />
+                <div>
+                  <p className="text-sm font-semibold text-ink">Receive account emails</p>
+                  <p className="mt-0.5 text-sm text-ink-secondary">Sign in, security, password reset. Required for account security.</p>
+                </div>
+              </div>
+            </div>
+            {emailMarketingOptIn && (
+              <div className="rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
+                <p className="text-sm font-semibold text-ink">Digest frequency</p>
+                <div className="mt-3 grid gap-2">
+                  {(["weekly", "monthly", "off"] as const).map((freq) => (
+                    <label key={freq} className="flex cursor-pointer items-center gap-3">
+                      <input type="radio" name="digestFreq" value={freq} checked={emailDigestFrequency === freq} onChange={() => setEmailDigestFrequency(freq)} className="accent-accent-emerald" />
+                      <span className="text-sm text-ink capitalize">{freq}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  await fetch("/api/me/email-preferences", {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ marketing_opt_in: emailMarketingOptIn, digest_frequency: emailDigestFrequency }),
+                  });
+                  setEmailPrefsSaved(true);
+                  setTimeout(() => setEmailPrefsSaved(false), 2000);
+                }}
+                className={`${buttonStyles({ variant: "secondary", size: "sm" })} w-full justify-center sm:w-auto`}
+              >
+                Save preferences
+              </button>
+              {emailPrefsSaved && <span className="text-sm text-accent-emerald-strong">Saved</span>}
             </div>
           </div>
         </DashboardSectionCard>

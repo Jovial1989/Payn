@@ -13,4 +13,5 @@ export const env = {
   emailFromAddress: process.env.EMAIL_FROM_ADDRESS ?? "Payn <noreply@payn.online>",
   emailReplyTo: process.env.EMAIL_REPLY_TO ?? "support@payn.online",
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "https://www.payn.online",
+  resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET ?? "",
 };
