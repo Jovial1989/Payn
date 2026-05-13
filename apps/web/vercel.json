@@ -3,6 +3,10 @@
     {
       "path": "/api/v1/offers/import",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/admin/push/dispatch-scheduled",
+      "schedule": "* * * * *"
     }
   ]
 }
