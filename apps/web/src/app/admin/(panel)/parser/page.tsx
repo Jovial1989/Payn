@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { AdminParserControls } from "@/components/admin-parser-controls";
+import { AdminPushTestForm } from "@/components/admin-push-test-form";
 
 type IngestionRun = {
   id: string;
@@ -97,6 +98,7 @@ export default async function AdminParserPage() {
 
       {/* Controls */}
       <AdminParserControls />
+      <AdminPushTestForm />
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
         {/* Run history */}
