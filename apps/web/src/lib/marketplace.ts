@@ -61,19 +61,27 @@ export const marketplaceCategories: MarketplaceCategory[] = [
 
 export const explorerCategories: ExplorerCategory[] = ["all", ...marketplaceCategories];
 
+export type SidebarNavGroupKey =
+  | "groupBankingCards"
+  | "groupSendExchange"
+  | "groupBorrowPayLater"
+  | "groupInvestTrade"
+  | "groupProtectLifestyle"
+  | "groupBusiness";
+
 export type CategoryGroup = {
   id: string;
-  label: string;
+  labelKey: SidebarNavGroupKey;
   categories: MarketplaceCategory[];
 };
 
 export const categoryGroups: CategoryGroup[] = [
-  { id: "banking", label: "Banking & Cards", categories: ["banking", "neobanks", "savings", "debit", "cards", "wallets"] },
-  { id: "transfers", label: "Send & Exchange", categories: ["transfers", "remittance", "exchange", "travel"] },
-  { id: "borrow", label: "Borrow & Pay Later", categories: ["loans", "bnpl"] },
-  { id: "invest", label: "Invest & Trade", categories: ["investments", "trading", "crypto"] },
-  { id: "lifestyle", label: "Protect & Lifestyle", categories: ["insurance", "cashback", "budgeting", "kids"] },
-  { id: "business", label: "Business", categories: ["business", "payroll", "tax", "expense"] },
+  { id: "banking",   labelKey: "groupBankingCards",     categories: ["banking", "neobanks", "savings", "debit", "cards", "wallets"] },
+  { id: "transfers", labelKey: "groupSendExchange",     categories: ["transfers", "remittance", "exchange", "travel"] },
+  { id: "borrow",    labelKey: "groupBorrowPayLater",   categories: ["loans", "bnpl"] },
+  { id: "invest",    labelKey: "groupInvestTrade",      categories: ["investments", "trading", "crypto"] },
+  { id: "lifestyle", labelKey: "groupProtectLifestyle", categories: ["insurance", "cashback", "budgeting", "kids"] },
+  { id: "business",  labelKey: "groupBusiness",         categories: ["business", "payroll", "tax", "expense"] },
 ];
 
 export const marketDefinitions: Record<

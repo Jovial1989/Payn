@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonStyles } from "@/components/button";
 import { ProviderStrip } from "@/components/provider-strip";
 import { localePath } from "@/lib/locale";
+import { getDictionary } from "@/lib/i18n";
 import { getUiCopy } from "@/lib/ui-copy";
 import { categoryGroups, categoryMeta } from "@/lib/marketplace";
 
@@ -67,6 +68,7 @@ export function ExplorePageContent({
   market: MarketplaceMarket;
 }) {
   const copy = getUiCopy(locale);
+  const dictionary = getDictionary(locale);
   const totalOffers = offers.length;
   const totalProviders = new Set(offers.map((o) => o.providerName)).size;
   const activeCategories = new Set(offers.map((o) => o.category));
@@ -116,8 +118,8 @@ export function ExplorePageContent({
 
         <div className="grid gap-8">
           {visibleGroups.map((group) => (
-            <div key={group.label}>
-              <h2 className="mb-3 text-sm font-bold text-ink">{group.label}</h2>
+            <div key={group.id}>
+              <h2 className="mb-3 text-sm font-bold text-ink">{dictionary.sidebarNav[group.labelKey]}</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {group.categories.map((cat) => (
                   <CategoryCard

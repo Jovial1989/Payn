@@ -93,7 +93,7 @@ export function SiteShell({
               {visibleCategoryGroups.slice(0, 3).map((group) => (
                 <div key={group.id}>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                    {group.label}
+                    {dictionary.sidebarNav[group.labelKey]}
                   </p>
                   <div className="mt-3 grid gap-2.5">
                     {group.categories.map((cat) => (
@@ -110,7 +110,7 @@ export function SiteShell({
               {visibleCategoryGroups.slice(3).map((group) => (
                 <div key={group.id}>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                    {group.label}
+                    {dictionary.sidebarNav[group.labelKey]}
                   </p>
                   <div className="mt-3 grid gap-2.5">
                     {group.categories.map((cat) => (

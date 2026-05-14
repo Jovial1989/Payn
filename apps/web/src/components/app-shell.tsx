@@ -263,7 +263,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {visibleCategoryGroups.map((group) => (
                 <div key={group.id}>
                   <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                    {group.label}
+                    {dictionary.sidebarNav[group.labelKey]}
                   </p>
                   <div className="grid gap-0.5">
                     {group.categories.map((cat) => (
@@ -332,7 +332,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {visibleCategoryGroups.map((group) => (
                   <div key={group.id}>
                     <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      {group.label}
+                      {dictionary.sidebarNav[group.labelKey]}
                     </p>
                     <div className="grid gap-0.5">
                       {group.categories.map((cat) => (

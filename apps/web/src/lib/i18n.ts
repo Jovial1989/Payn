@@ -270,6 +270,16 @@ type Dictionary = {
       headline: string;
     };
   };
+  sidebarNav: {
+    groupBankingCards: string;
+    groupSendExchange: string;
+    groupBorrowPayLater: string;
+    groupInvestTrade: string;
+    groupProtectLifestyle: string;
+    groupBusiness: string;
+    expandSection: string;
+    collapseSection: string;
+  };
 };
 
 const baseMetrics = {
@@ -747,6 +757,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       exploreBucket: { goToProvider: "Go to provider", bestFor: "Best for {audience}" },
       appWaitlist: { headline: "iOS + Android apps in development. Get early access" },
     },
+    sidebarNav: {
+      groupBankingCards: "Banking & Cards",
+      groupSendExchange: "Send & Exchange",
+      groupBorrowPayLater: "Borrow & Pay Later",
+      groupInvestTrade: "Invest & Trade",
+      groupProtectLifestyle: "Protect & Lifestyle",
+      groupBusiness: "Business",
+      expandSection: "Show all",
+      collapseSection: "Show less",
+    },
     metrics: baseMetrics,
   },
   de: {
@@ -1171,6 +1191,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketProtect: { title: "Schützen", description: "Versicherung: Gesundheit, Leben, Reise, Eigentum" },
       exploreBucket: { goToProvider: "Zum Anbieter", bestFor: "Am besten für {audience}" },
       appWaitlist: { headline: "iOS- und Android-Apps in Entwicklung. Frühzugang sichern" },
+    },
+    sidebarNav: {
+      groupBankingCards: "Konten & Karten",
+      groupSendExchange: "Senden & Wechseln",
+      groupBorrowPayLater: "Kredite & Später Bezahlen",
+      groupInvestTrade: "Investieren & Handeln",
+      groupProtectLifestyle: "Schützen & Lifestyle",
+      groupBusiness: "Geschäft",
+      expandSection: "Alle anzeigen",
+      collapseSection: "Weniger anzeigen",
     },
     metrics: {
       ...baseMetrics,
@@ -1641,6 +1671,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       exploreBucket: { goToProvider: "Ir al proveedor", bestFor: "Mejor para {audience}" },
       appWaitlist: { headline: "Apps iOS + Android en desarrollo. Consigue acceso anticipado" },
     },
+    sidebarNav: {
+      groupBankingCards: "Cuentas y Tarjetas",
+      groupSendExchange: "Enviar y Cambiar",
+      groupBorrowPayLater: "Préstamos y Paga Después",
+      groupInvestTrade: "Invertir y Operar",
+      groupProtectLifestyle: "Proteger y Lifestyle",
+      groupBusiness: "Negocio",
+      expandSection: "Mostrar todo",
+      collapseSection: "Mostrar menos",
+    },
     metrics: {
       ...baseMetrics,
       APR: "TAE",
@@ -2086,6 +2126,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       exploreBucket: { goToProvider: "Voir l'offre", bestFor: "Idéal pour {audience}" },
       appWaitlist: { headline: "Apps iOS + Android en développement. Obtenez l'accès anticipé" },
     },
+    sidebarNav: {
+      groupBankingCards: "Comptes & Cartes",
+      groupSendExchange: "Envoyer & Change",
+      groupBorrowPayLater: "Emprunts & Paiement Différé",
+      groupInvestTrade: "Investir & Trader",
+      groupProtectLifestyle: "Protéger & Lifestyle",
+      groupBusiness: "Entreprise",
+      expandSection: "Tout afficher",
+      collapseSection: "Afficher moins",
+    },
     metrics: {
       ...baseMetrics,
       Amount: "Montant",
@@ -2529,6 +2579,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       exploreBucket: { goToProvider: "Vai al fornitore", bestFor: "Ideale per {audience}" },
       appWaitlist: { headline: "App iOS + Android in sviluppo. Ottieni l'accesso anticipato" },
     },
+    sidebarNav: {
+      groupBankingCards: "Conti & Carte",
+      groupSendExchange: "Invia & Cambia",
+      groupBorrowPayLater: "Prestiti & Paga Dopo",
+      groupInvestTrade: "Investire & Tradare",
+      groupProtectLifestyle: "Proteggere & Lifestyle",
+      groupBusiness: "Business",
+      expandSection: "Mostra tutto",
+      collapseSection: "Mostra meno",
+    },
     metrics: {
       ...baseMetrics,
       Amount: "Importo",
@@ -2971,6 +3031,16 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketProtect: { title: "Proteger", description: "Seguros: saúde, vida, viagem, propriedade" },
       exploreBucket: { goToProvider: "Ir ao fornecedor", bestFor: "Ideal para {audience}" },
       appWaitlist: { headline: "Apps iOS + Android em desenvolvimento. Acesso antecipado" },
+    },
+    sidebarNav: {
+      groupBankingCards: "Contas & Cartões",
+      groupSendExchange: "Enviar & Câmbio",
+      groupBorrowPayLater: "Empréstimos & Paga Depois",
+      groupInvestTrade: "Investir & Negociar",
+      groupProtectLifestyle: "Proteger & Lifestyle",
+      groupBusiness: "Negócio",
+      expandSection: "Mostrar tudo",
+      collapseSection: "Mostrar menos",
     },
     metrics: {
       ...baseMetrics,
