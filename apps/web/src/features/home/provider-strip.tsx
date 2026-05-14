@@ -48,7 +48,12 @@ export function ProviderStrip({ locale }: ProviderStripProps) {
           to { transform: translateX(-50%); }
         }
         .provider-marquee-track {
-          animation: provider-marquee 40s linear infinite;
+          animation: provider-marquee 60s linear infinite;
+        }
+        @media (min-width: 768px) {
+          .provider-marquee-track {
+            animation-duration: 40s;
+          }
         }
         .provider-marquee-track:hover {
           animation-play-state: paused;
