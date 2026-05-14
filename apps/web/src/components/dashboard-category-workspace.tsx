@@ -9,10 +9,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import {
-  DecisionResultRow,
   type DecisionResultMetric,
   type DecisionResultTag,
 } from "@/components/decision-result-row";
+import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import { InsuranceCompareTable } from "@/components/insurance-compare-table";
 import {
@@ -319,11 +319,6 @@ function getLoanEmploymentBoost(offer: MarketplaceOffer, employmentStatus: LoanE
   return 0;
 }
 
-function getCompareToggleClassName(selected: boolean) {
-  return selected
-    ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-accent-emerald bg-accent-emerald px-3 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-accent-emerald-strong active:scale-[0.97] sm:w-auto"
-    : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-transparent px-3 py-2 text-sm font-semibold text-ink-secondary transition-all duration-150 hover:border-line-strong hover:text-ink active:scale-[0.97] sm:w-auto";
-}
 
 function getMetricDisplayValue(
   metrics: DecisionResultMetric[],
@@ -1444,13 +1439,6 @@ export function DashboardCategoryWorkspace({
     .slice(0, 3);
   const selectedCompareOffers = selectedCompareRows.map((row) => row.offer);
 
-  const disclaimer =
-    category === "transfers" || category === "exchange"
-      ? copy.estimatedResult
-      : category === "insurance"
-        ? copy.insuranceDisclaimer
-        : copy.generalDisclaimer;
-
   const topResult = rankedResults[0] ?? null;
   const loanSummary = (() => {
     if (category !== "loans" || !topResult || amountValue <= 0 || durationValue <= 0) return null;
@@ -1532,7 +1520,6 @@ export function DashboardCategoryWorkspace({
       }),
     [amountValue, category, durationValue, locale, selectedCompareRows],
   );
-  const resultCountLabel = copy.providersRanked(rankedResults.length);
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
       <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
@@ -1810,35 +1797,17 @@ export function DashboardCategoryWorkspace({
             </div>
       </section>
 
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.rankedResults}</p>
-            {rankedResults.length > 0 && (
-              <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">{resultCountLabel}</h2>
-            )}
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-              {copy.rankingDescription} {disclaimer}
+      <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <p className="text-sm text-ink-secondary">
+            {rankedResults.length === 1
+              ? `1 option in ${marketLabel}`
+              : `${rankedResults.length} options in ${marketLabel}`}
+          </p>
+          {quote?.delayed && quote.sourceName === "Cached estimate" ? (
+            <p className="text-[11px] text-amber-600">
+              Indicative rates — live data temporarily unavailable.
             </p>
-            {quote?.delayed && quote.sourceName === "Cached estimate" ? (
-              <p className="mt-2 text-[11px] text-amber-600">
-                Using indicative rates — live market data temporarily unavailable.
-              </p>
-            ) : null}
-          </div>
-
-          {topResult ? (
-            <div className="flex shrink-0 items-center gap-2.5 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-3">
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-emerald text-[10px] font-bold text-white">
-                1
-              </span>
-              <p className="text-sm text-ink-secondary">
-                <span className="font-semibold text-ink">{topResult.offer.providerName}</span>
-                {" · "}
-                {topResult.primaryLabel}:{" "}
-                <span className="font-semibold text-ink">{topResult.primaryValue}</span>
-              </p>
-            </div>
           ) : null}
         </div>
 
@@ -1898,50 +1867,9 @@ export function DashboardCategoryWorkspace({
             </div>
           </div>
         ) : (
-          <div className="mt-6 grid gap-3">
-            {rankedResults.map((row, index) => (
-              <DecisionResultRow
-                key={row.offer.id}
-                locale={locale}
-                offer={row.offer}
-                rank={index + 1}
-                summary={row.summary}
-                primaryLabel={row.primaryLabel}
-                primaryValue={row.primaryValue}
-                metrics={row.metrics}
-                tags={row.tags}
-                why={index === 0 ? row.why : undefined}
-                detailsLabel={copy.checkDetails}
-                providerLabel={copy.goToProvider}
-                highlighted={index < 3}
-                extraActions={
-                  (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCompareSelection((current) =>
-                          current.includes(row.offer.id)
-                            ? current.filter((id) => id !== row.offer.id)
-                            : [...current, row.offer.id].slice(0, 3),
-                        )
-                      }
-                      className={getCompareToggleClassName(compareSelection.includes(row.offer.id))}
-                    >
-                      {compareSelection.includes(row.offer.id) ? (
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                          <rect width="14" height="14" rx="4" fill="white" fillOpacity="0.25"/>
-                          <path d="M3 7l3 3 5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                          <rect x="0.5" y="0.5" width="13" height="13" rx="3.5" stroke="currentColor" strokeOpacity="0.4"/>
-                        </svg>
-                      )}
-                      <span>{copy.compare}</span>
-                    </button>
-                  )
-                }
-              />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {rankedResults.map((row) => (
+              <OfferCardAtlas key={row.offer.id} offer={row.offer} locale={locale} />
             ))}
           </div>
         )}
