@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement } from "react";
+import { createElement, useMemo } from "react";
 import type { ElementType, ReactNode } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
@@ -19,6 +19,10 @@ export function MotionReveal({
   const ref = useRef<HTMLElement | null>(null);
   const visible = useInView(ref, { once: true, margin: "-8% 0px -8% 0px" });
   const reduceMotion = useReducedMotion();
+  // Memoize motion(Tag) so it returns a stable component type across re-renders.
+  // Without this, motion(Tag) creates a new constructor every render → React
+  // unmounts + remounts the entire subtree → child ScrambleNumber restarts.
+  const MotionTag = useMemo(() => motion(Tag), [Tag]);
   const tagProps = {
     ref,
     className,
@@ -38,5 +42,5 @@ export function MotionReveal({
         : undefined,
   } as const;
 
-  return createElement(motion(Tag), tagProps, children);
+  return createElement(MotionTag, tagProps, children);
 }
