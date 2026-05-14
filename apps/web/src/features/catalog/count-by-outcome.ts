@@ -1,6 +1,6 @@
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { OUTCOME_BUCKETS, type OutcomeBucket } from "./outcomes";
-import { KNOWN_LOGOS } from "./known-logos.generated";
+import { providerToSlug, getProviderLogoPath } from "./provider-logo";
 
 export interface ProviderInfo {
   name: string;
@@ -13,10 +13,6 @@ export interface OutcomeBucketCount {
   bucket: OutcomeBucket;
   count: number;
   topProviders: ProviderInfo[];
-}
-
-function providerToSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
 function matchesCountry(countryCodes: string[] | undefined, country: string): boolean {
@@ -41,11 +37,12 @@ export function countOffersByOutcome(country: string): OutcomeBucketCount[] {
       const slug = providerToSlug(offer.providerName);
       if (seen.has(slug)) continue;
       seen.add(slug);
+      const logoPath = getProviderLogoPath(offer.providerName);
       topProviders.push({
         name: offer.providerName,
         mark: offer.providerMark ?? offer.providerName.slice(0, 2).toUpperCase(),
         slug,
-        logoPath: KNOWN_LOGOS.has(slug) ? `/logos/${slug}.png` : undefined,
+        logoPath: logoPath ?? undefined,
       });
       if (topProviders.length >= 3) break;
     }

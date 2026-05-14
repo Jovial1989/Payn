@@ -262,6 +262,10 @@ type Dictionary = {
     bucketBusiness: { title: string; description: string };
     bucketFamily: { title: string; description: string };
     bucketProtect: { title: string; description: string };
+    exploreBucket: {
+      goToProvider: string;
+      bestFor: string;
+    };
   };
 };
 
@@ -737,6 +741,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "For your business", description: "Business banking, payroll, tax tools" },
       bucketFamily: { title: "Family & kids", description: "Kids' accounts, family budgeting" },
       bucketProtect: { title: "Protect", description: "Insurance: health, life, travel, property" },
+      exploreBucket: { goToProvider: "Go to provider", bestFor: "Best for {audience}" },
     },
     metrics: baseMetrics,
   },
@@ -1160,6 +1165,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "Für dein Business", description: "Geschäftskonten, Lohn, Steuer-Tools" },
       bucketFamily: { title: "Familie & Kinder", description: "Kinderkonten, Familienbudget" },
       bucketProtect: { title: "Schützen", description: "Versicherung: Gesundheit, Leben, Reise, Eigentum" },
+      exploreBucket: { goToProvider: "Zum Anbieter", bestFor: "Am besten für {audience}" },
     },
     metrics: {
       ...baseMetrics,
@@ -1627,6 +1633,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "Para tu negocio", description: "Banca empresarial, nóminas, impuestos" },
       bucketFamily: { title: "Familia y niños", description: "Cuentas para niños, presupuesto familiar" },
       bucketProtect: { title: "Protege", description: "Seguros: salud, vida, viajes, propiedad" },
+      exploreBucket: { goToProvider: "Ir al proveedor", bestFor: "Mejor para {audience}" },
     },
     metrics: {
       ...baseMetrics,
@@ -2070,6 +2077,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "Pour votre entreprise", description: "Banque pro, paie, outils fiscaux" },
       bucketFamily: { title: "Famille & enfants", description: "Comptes enfants, budget familial" },
       bucketProtect: { title: "Protéger", description: "Assurance : santé, vie, voyage, propriété" },
+      exploreBucket: { goToProvider: "Voir l'offre", bestFor: "Idéal pour {audience}" },
     },
     metrics: {
       ...baseMetrics,
@@ -2511,6 +2519,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "Per la tua attività", description: "Banca aziendale, payroll, strumenti fiscali" },
       bucketFamily: { title: "Famiglia & bambini", description: "Conti per bambini, budget familiare" },
       bucketProtect: { title: "Proteggi", description: "Assicurazione: salute, vita, viaggio, proprietà" },
+      exploreBucket: { goToProvider: "Vai al fornitore", bestFor: "Ideale per {audience}" },
     },
     metrics: {
       ...baseMetrics,
@@ -2952,6 +2961,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketBusiness: { title: "Para o teu negócio", description: "Banca empresarial, salários, fiscal" },
       bucketFamily: { title: "Família & filhos", description: "Contas para crianças, orçamento familiar" },
       bucketProtect: { title: "Proteger", description: "Seguros: saúde, vida, viagem, propriedade" },
+      exploreBucket: { goToProvider: "Ir ao fornecedor", bestFor: "Ideal para {audience}" },
     },
     metrics: {
       ...baseMetrics,
