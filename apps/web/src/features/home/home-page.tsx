@@ -157,9 +157,20 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
               {dictionary.homeAtlas.hero.eyebrow}
             </div>
 
-            {/* Headline */}
+            {/* Headline — word-by-word blur-in */}
             <h1 className="mt-6 max-w-[16ch] text-[2.6rem] font-extrabold leading-[0.9] tracking-[-0.06em] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
-              {dictionary.homeAtlas.hero.headline}
+              {dictionary.homeAtlas.hero.headline.split(" ").map((word, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block"
+                  initial={shouldReduce ? false : { opacity: 0, filter: "blur(8px)", y: 8 }}
+                  animate={shouldReduce ? false : { opacity: 1, filter: "blur(0px)", y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
+                  style={{ marginRight: "0.25em" }}
+                >
+                  {word}
+                </motion.span>
+              ))}
             </h1>
 
             {/* Subheadline */}
