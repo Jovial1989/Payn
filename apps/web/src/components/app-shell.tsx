@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type { MarketplaceCategory } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceLocale } from "@payn/types";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useEffect, useMemo, useState } from "react";
@@ -18,6 +18,7 @@ import { localePath, switchLocalePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
 import { categoryGroups, marketplaceCategories } from "@/lib/marketplace";
 import { getActiveCategoriesForCountry } from "@/lib/countries";
+import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
 
 const groupOrderByUserType: Record<string, string[]> = {
   business:  ["business", "borrow", "transfers", "banking", "invest", "lifestyle"],
@@ -122,6 +123,72 @@ function SidebarLink({
   );
 }
 
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.5 3l3 3-3 3" />
+    </svg>
+  );
+}
+
+function CollapsibleCategoryGroup({
+  group,
+  label,
+  isExpanded,
+  onToggle,
+  currentSection,
+  locale,
+  categoryLabels,
+  onCategoryClick,
+}: {
+  group: { id: string; categories: MarketplaceCategory[] };
+  label: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  currentSection: string;
+  locale: MarketplaceLocale;
+  categoryLabels: Record<MarketplaceCategory | "all", string>;
+  onCategoryClick: () => void;
+}) {
+  const hasActive = (group.categories as string[]).includes(currentSection);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={clsx(
+          "flex w-full items-center justify-between gap-2 rounded-[18px] px-4 py-2.5 text-sm font-semibold transition-colors",
+          hasActive
+            ? "text-accent-emerald-strong"
+            : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
+        )}
+      >
+        <span>{label}</span>
+        <ChevronIcon className={clsx("h-3.5 w-3.5 shrink-0 transition-transform duration-200", isExpanded && "rotate-90")} />
+      </button>
+      {isExpanded && (
+        <div className="mb-1 ml-4 grid gap-0.5 border-l border-line pl-3">
+          {group.categories.map((cat) => (
+            <Link
+              key={cat}
+              href={localePath(locale, `/${cat}`)}
+              onClick={onCategoryClick}
+              className={clsx(
+                "block rounded-[14px] px-3 py-2 text-[13px] font-medium transition-colors",
+                currentSection === cat
+                  ? "bg-accent-emerald-soft font-semibold text-accent-emerald-strong shadow-[0_0_0_1px_rgba(15,138,75,0.15)]"
+                  : "text-ink-tertiary hover:bg-bg-surface hover:text-ink",
+              )}
+            >
+              {categoryLabels[cat]}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -189,7 +256,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setAccountMenuOpen(false);
   }, [pathname]);
 
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const seg = pathname?.split("/").find((s) => (marketplaceCategories as string[]).includes(s));
+    const group = seg ? categoryGroups.find((g) => (g.categories as string[]).includes(seg)) : null;
+    return group ? new Set([group.id]) : new Set<string>();
+  });
+
+  useEffect(() => {
+    const seg = pathname?.split("/").find((s) => (marketplaceCategories as string[]).includes(s));
+    if (!seg) return;
+    const group = categoryGroups.find((g) => (g.categories as string[]).includes(seg));
+    if (group) {
+      setExpandedGroups((prev) => new Set([...prev, group.id]));
+    }
+  }, [pathname]);
+
   const currentSection = resolveCurrentSection(pathname);
+
+  function toggleGroup(groupId: string) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }
+
+  function isActiveBucket(bucket: (typeof OUTCOME_BUCKETS)[number]): boolean {
+    if (pathname?.includes(`/explore/${bucket.slug}`)) return true;
+    return (bucket.categories as string[]).includes(currentSection);
+  }
+
   const sectionLabels = useMemo(
     () => ({
       dashboard: uiCopy.dashboard.navItems.dashboard.label,
@@ -259,22 +356,56 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   active={item.id === currentSection} onClick={() => undefined} />
               ))}
             </div>
-            <div className="mt-3 grid gap-4">
-              {visibleCategoryGroups.map((group) => (
-                <div key={group.id}>
-                  <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                    {dictionary.sidebarNav[group.labelKey]}
-                  </p>
-                  <div className="grid gap-0.5">
-                    {group.categories.map((cat) => (
-                      <SidebarLink key={cat} label={dictionary.categories[cat]}
-                        href={localePath(preferences.locale, `/${cat}`)}
-                        active={currentSection === cat} onClick={() => undefined} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+
+            {/* Atlas buckets — primary browse layer */}
+            <div className="mt-4">
+              <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                Browse
+              </p>
+              <div className="grid gap-0.5">
+                {[...OUTCOME_BUCKETS].sort((a, b) => a.order - b.order).map((bucket) => {
+                  const active = isActiveBucket(bucket);
+                  return (
+                    <Link
+                      key={bucket.slug}
+                      href={`/explore/${bucket.slug}?country=${preferences.country}`}
+                      className={clsx(
+                        "flex items-center gap-2.5 rounded-[18px] px-4 py-2.5 text-sm font-semibold transition-colors",
+                        active
+                          ? "bg-accent-emerald-soft text-accent-emerald-strong shadow-[0_0_0_1px_rgba(15,138,75,0.15)]"
+                          : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
+                      )}
+                    >
+                      <bucket.Icon className="h-4 w-4 shrink-0 text-accent-emerald" />
+                      <span className="truncate">{dictionary.homeAtlas[bucket.bucketKey].title}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Collapsible category groups — backward-compat deep links */}
+            <div className="mt-4 border-t border-line pt-3">
+              <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                All categories
+              </p>
+              <div className="grid gap-0.5">
+                {visibleCategoryGroups.map((group) => (
+                  <CollapsibleCategoryGroup
+                    key={group.id}
+                    group={group}
+                    label={dictionary.sidebarNav[group.labelKey]}
+                    isExpanded={expandedGroups.has(group.id)}
+                    onToggle={() => toggleGroup(group.id)}
+                    currentSection={currentSection}
+                    locale={preferences.locale}
+                    categoryLabels={dictionary.categories}
+                    onCategoryClick={() => undefined}
+                  />
+                ))}
+              </div>
+            </div>
+
             <div className="mt-3 grid gap-1 border-t border-line pt-3">
               <SidebarLink label={settingsItem.label} href={settingsItem.href}
                 active={currentSection === "settings"}
@@ -328,22 +459,57 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     active={item.id === currentSection} onClick={() => setMobileNavOpen(false)} />
                 ))}
               </div>
-              <div className="mt-3 grid gap-4">
-                {visibleCategoryGroups.map((group) => (
-                  <div key={group.id}>
-                    <p className="mb-1 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      {dictionary.sidebarNav[group.labelKey]}
-                    </p>
-                    <div className="grid gap-0.5">
-                      {group.categories.map((cat) => (
-                        <SidebarLink key={cat} label={dictionary.categories[cat]}
-                          href={localePath(preferences.locale, `/${cat}`)}
-                          active={currentSection === cat} onClick={() => setMobileNavOpen(false)} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+
+              {/* Atlas buckets — primary browse layer */}
+              <div className="mt-4">
+                <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  Browse
+                </p>
+                <div className="grid gap-0.5">
+                  {[...OUTCOME_BUCKETS].sort((a, b) => a.order - b.order).map((bucket) => {
+                    const active = isActiveBucket(bucket);
+                    return (
+                      <Link
+                        key={bucket.slug}
+                        href={`/explore/${bucket.slug}?country=${preferences.country}`}
+                        onClick={() => setMobileNavOpen(false)}
+                        className={clsx(
+                          "flex items-center gap-2.5 rounded-[18px] px-4 py-2.5 text-sm font-semibold transition-colors",
+                          active
+                            ? "bg-accent-emerald-soft text-accent-emerald-strong shadow-[0_0_0_1px_rgba(15,138,75,0.15)]"
+                            : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
+                        )}
+                      >
+                        <bucket.Icon className="h-4 w-4 shrink-0 text-accent-emerald" />
+                        <span className="truncate">{dictionary.homeAtlas[bucket.bucketKey].title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Collapsible category groups — backward-compat deep links */}
+              <div className="mt-4 border-t border-line pt-3">
+                <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  All categories
+                </p>
+                <div className="grid gap-0.5">
+                  {visibleCategoryGroups.map((group) => (
+                    <CollapsibleCategoryGroup
+                      key={group.id}
+                      group={group}
+                      label={dictionary.sidebarNav[group.labelKey]}
+                      isExpanded={expandedGroups.has(group.id)}
+                      onToggle={() => toggleGroup(group.id)}
+                      currentSection={currentSection}
+                      locale={preferences.locale}
+                      categoryLabels={dictionary.categories}
+                      onCategoryClick={() => setMobileNavOpen(false)}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-3 grid gap-1 border-t border-line pt-3">
                 <SidebarLink label={settingsItem.label} href={settingsItem.href}
                   active={currentSection === "settings"}
