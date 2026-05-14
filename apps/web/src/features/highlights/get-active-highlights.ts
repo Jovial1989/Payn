@@ -27,7 +27,7 @@ export async function getActiveHighlights(country: string, limit = 6): Promise<H
     .from("home_highlights")
     .select("*")
     .eq("is_active", true)
-    .or(`country.is.null,country.eq.${upper}`)
+    .or(`country.is.null,country.eq.EU,country.eq.${upper}`)
     .or(`expires_at.is.null,expires_at.gt.${now}`)
     .lte("published_at", now)
     .order("published_at", { ascending: false })
