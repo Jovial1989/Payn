@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { useRef, useEffect, useState } from "react";
+import { motion, useReducedMotion, useInView, animate } from "motion/react";
 import type { MarketplaceLocale } from "@payn/types";
 import { getDictionary, formatCopy } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
@@ -34,6 +35,35 @@ const FALLBACK_COLORS: Record<string, string> = {
 
 function providerBg(slug: string): string {
   return FALLBACK_COLORS[slug] ?? FALLBACK_COLORS.default;
+}
+
+// ─── Card motion variants ──────────────────────────────────────────────────────
+const cardVariants = {
+  rest:      { y: 0,  boxShadow: "0 0px 0px rgba(15,23,32,0)", borderColor: "rgba(17,24,39,0.08)" },
+  cardHover: { y: -4, boxShadow: "0 8px 24px rgba(15,23,32,0.10)", borderColor: "#10B981" },
+  tap:       { scale: 0.97, y: 0 },
+};
+const iconVariants = {
+  rest:      { scale: 1, rotate: 0 },
+  cardHover: { scale: 1.2, rotate: -8 },
+};
+
+// ─── AnimatedCounter ──────────────────────────────────────────────────────────
+function AnimatedCounter({ value, shouldReduce }: { value: number; shouldReduce: boolean | null }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+  const [display, setDisplay] = useState(shouldReduce ? value : 0);
+
+  useEffect(() => {
+    if (!isInView || shouldReduce) return;
+    const controls = animate(0, value, {
+      duration: 0.8, ease: "easeOut", delay: 0.1,
+      onUpdate: (latest) => setDisplay(Math.round(latest)),
+    });
+    return () => controls.stop();
+  }, [isInView, value, shouldReduce]);
+
+  return <span ref={ref}>{display}</span>;
 }
 
 function ProviderAvatar({ provider, index }: { provider: ProviderInfo; index: number }) {
@@ -107,13 +137,45 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
             `/explore/${bucket.slug}?country=${country}`,
           );
 
-          const card = (
+          const counterSuffix = isAvailable ? counterText.slice(String(count).length) : null;
+
+          const card = isAvailable && !shouldReduce ? (
+            <motion.div
+              className="block rounded-2xl border bg-white p-5 cursor-pointer"
+              variants={cardVariants}
+              initial="rest"
+              whileHover="cardHover"
+              whileTap="tap"
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <motion.span
+                  variants={iconVariants}
+                  transition={{ type: "spring", stiffness: 400, damping: 12 }}
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-accent-emerald" />
+                </motion.span>
+                <span className="text-[14px] font-semibold text-ink">{title}</span>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-ink-secondary">{description}</p>
+              {topProviders.length > 0 && (
+                <div className="mt-4 flex items-center">
+                  {topProviders.map((p, idx) => (
+                    <ProviderAvatar key={p.slug} provider={p} index={idx} />
+                  ))}
+                </div>
+              )}
+              <p className="mt-4 text-[12px] font-medium text-accent-emerald">
+                <AnimatedCounter value={count} shouldReduce={shouldReduce} />
+                {counterSuffix}
+                <span aria-hidden> →</span>
+              </p>
+            </motion.div>
+          ) : (
             <div
               className={[
-                "block rounded-2xl border bg-white p-5 transition-all duration-200",
-                isAvailable
-                  ? "cursor-pointer border-line hover:-translate-y-0.5 hover:border-[#10B981] hover:shadow-sm"
-                  : "cursor-default border-line opacity-50",
+                "block rounded-2xl border bg-white p-5",
+                isAvailable ? "cursor-pointer border-line" : "cursor-default border-line opacity-50",
               ].join(" ")}
             >
               <div className="flex items-center gap-2.5">
