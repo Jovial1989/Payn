@@ -1,5 +1,6 @@
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { OUTCOME_BUCKETS, type OutcomeBucket } from "./outcomes";
+import { KNOWN_LOGOS } from "./known-logos.generated";
 
 export interface ProviderInfo {
   name: string;
@@ -13,10 +14,6 @@ export interface OutcomeBucketCount {
   count: number;
   topProviders: ProviderInfo[];
 }
-
-const KNOWN_LOGOS = new Set([
-  "wise", "revolut", "n26", "klarna", "coinbase", "bnp-paribas", "santander", "smava", "auxmoney",
-]);
 
 function providerToSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
@@ -48,7 +45,7 @@ export function countOffersByOutcome(country: string): OutcomeBucketCount[] {
         name: offer.providerName,
         mark: offer.providerMark ?? offer.providerName.slice(0, 2).toUpperCase(),
         slug,
-        logoPath: KNOWN_LOGOS.has(slug) ? `/logos/${slug}.svg` : undefined,
+        logoPath: KNOWN_LOGOS.has(slug) ? `/logos/${slug}.png` : undefined,
       });
       if (topProviders.length >= 3) break;
     }
