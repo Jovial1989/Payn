@@ -266,6 +266,9 @@ type Dictionary = {
       goToProvider: string;
       bestFor: string;
     };
+    appWaitlist: {
+      headline: string;
+    };
   };
 };
 
@@ -742,6 +745,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Family & kids", description: "Kids' accounts, family budgeting" },
       bucketProtect: { title: "Protect", description: "Insurance: health, life, travel, property" },
       exploreBucket: { goToProvider: "Go to provider", bestFor: "Best for {audience}" },
+      appWaitlist: { headline: "iOS + Android apps in development. Get early access" },
     },
     metrics: baseMetrics,
   },
@@ -1166,6 +1170,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Familie & Kinder", description: "Kinderkonten, Familienbudget" },
       bucketProtect: { title: "Schützen", description: "Versicherung: Gesundheit, Leben, Reise, Eigentum" },
       exploreBucket: { goToProvider: "Zum Anbieter", bestFor: "Am besten für {audience}" },
+      appWaitlist: { headline: "iOS- und Android-Apps in Entwicklung. Frühzugang sichern" },
     },
     metrics: {
       ...baseMetrics,
@@ -1634,6 +1639,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Familia y niños", description: "Cuentas para niños, presupuesto familiar" },
       bucketProtect: { title: "Protege", description: "Seguros: salud, vida, viajes, propiedad" },
       exploreBucket: { goToProvider: "Ir al proveedor", bestFor: "Mejor para {audience}" },
+      appWaitlist: { headline: "Apps iOS + Android en desarrollo. Consigue acceso anticipado" },
     },
     metrics: {
       ...baseMetrics,
@@ -2078,6 +2084,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Famille & enfants", description: "Comptes enfants, budget familial" },
       bucketProtect: { title: "Protéger", description: "Assurance : santé, vie, voyage, propriété" },
       exploreBucket: { goToProvider: "Voir l'offre", bestFor: "Idéal pour {audience}" },
+      appWaitlist: { headline: "Apps iOS + Android en développement. Obtenez l'accès anticipé" },
     },
     metrics: {
       ...baseMetrics,
@@ -2520,6 +2527,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Famiglia & bambini", description: "Conti per bambini, budget familiare" },
       bucketProtect: { title: "Proteggi", description: "Assicurazione: salute, vita, viaggio, proprietà" },
       exploreBucket: { goToProvider: "Vai al fornitore", bestFor: "Ideale per {audience}" },
+      appWaitlist: { headline: "App iOS + Android in sviluppo. Ottieni l'accesso anticipato" },
     },
     metrics: {
       ...baseMetrics,
@@ -2962,6 +2970,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       bucketFamily: { title: "Família & filhos", description: "Contas para crianças, orçamento familiar" },
       bucketProtect: { title: "Proteger", description: "Seguros: saúde, vida, viagem, propriedade" },
       exploreBucket: { goToProvider: "Ir ao fornecedor", bestFor: "Ideal para {audience}" },
+      appWaitlist: { headline: "Apps iOS + Android em desenvolvimento. Acesso antecipado" },
     },
     metrics: {
       ...baseMetrics,
