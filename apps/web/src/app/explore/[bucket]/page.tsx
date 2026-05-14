@@ -6,6 +6,7 @@ import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getDictionary } from "@/lib/i18n";
 import type { MarketplaceLocale } from "@payn/types";
+import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
 
 interface PageProps {
   params: Promise<{ bucket: string }>;
@@ -82,48 +83,9 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {offers.map((offer) => (
-              <div
-                key={offer.id}
-                className="flex flex-col rounded-2xl border border-line bg-white p-5 shadow-subtle"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-emerald-soft text-[11px] font-extrabold text-accent-emerald-strong">
-                    {(offer.providerMark ?? offer.providerName.slice(0, 2)).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-[11px] font-medium text-ink-tertiary">
-                      {dictionary.categories[offer.category as keyof typeof dictionary.categories] ?? offer.category}
-                    </p>
-                    <p className="truncate text-[14px] font-semibold text-ink">{offer.providerName}</p>
-                  </div>
-                </div>
-                <p className="mt-2 text-[13px] leading-relaxed text-ink-secondary">{offer.title}</p>
-                {offer.metrics && offer.metrics.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-                    {offer.metrics.slice(0, 2).map((m) => (
-                      <div key={m.label}>
-                        <span className="block text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</span>
-                        <span className="text-[15px] font-bold tabular-nums text-ink">{m.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-auto pt-4">
-                  <a
-                    href={offer.affiliateLink ?? offer.providerWebsiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[13px] font-semibold text-accent-emerald hover:text-accent-emerald-strong"
-                  >
-                    Go to provider
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
+              <OfferCardAtlas key={offer.id} offer={offer} locale={locale} />
             ))}
           </div>
         )}
