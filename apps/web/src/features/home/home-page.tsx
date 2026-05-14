@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
@@ -68,6 +69,13 @@ const HERO_CARDS = [
 
 const impactSiteVerificationText = "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
 
+type HeroCardKey = (typeof HERO_CARDS)[number]["key"];
+const FLOAT_CONFIG: Record<HeroCardKey, { period: number; amplitude: number; defaultRotate: number }> = {
+  wise:    { period: 5,   amplitude: 6, defaultRotate: -1   },
+  revolut: { period: 4.5, amplitude: 5, defaultRotate:  0.5 },
+  tr:      { period: 6,   amplitude: 8, defaultRotate:  1   },
+};
+
 // ─── Main component ────────────────────────────────────────────────────────────
 export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
   const preferences = useMarketplacePreferences();
@@ -88,6 +96,8 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
 
   const { productCount, providerCount } = countTotalOffers(preferences.country);
   const buckets = useMemo(() => countOffersByOutcome(preferences.country), [preferences.country]);
+  const shouldReduce = useReducedMotion();
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   return (
     <div className="grid min-w-0 gap-8 lg:gap-10">
@@ -155,41 +165,61 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
             {/* Background glows */}
             <div className="pointer-events-none absolute right-6 top-12 h-56 w-56 rounded-full bg-accent-emerald/10 blur-3xl" />
 
-            {HERO_CARDS.map((card) => (
-              <div
-                key={card.key}
-                className={`${card.floatClass} motion-card absolute w-[204px] rounded-[22px] border border-line bg-white p-4 shadow-card ${card.posClass}`}
-                style={{ ["--motion-delay" as string]: card.motionDelay }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-[11px] font-extrabold text-white"
-                    style={{ backgroundColor: card.bg }}
-                  >
-                    {card.initials}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[10px] text-ink-tertiary">{card.category}</p>
-                    <p className="truncate text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
-                    {card.metricLabel}
-                  </p>
-                  <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
-                    {card.metricValue}
-                  </p>
-                </div>
-                <div
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                  style={card.badgeStyle}
+            {HERO_CARDS.map((card) => {
+              const fc = FLOAT_CONFIG[card.key];
+              const isHovered = hoveredCard === card.key;
+              const someHovered = hoveredCard !== null;
+              return (
+                <motion.div
+                  key={card.key}
+                  className={`motion-card absolute w-[204px] rounded-[22px] border border-line bg-white p-4 shadow-card ${card.posClass}`}
+                  initial={shouldReduce ? false : { rotate: fc.defaultRotate }}
+                  animate={
+                    shouldReduce ? {} :
+                    isHovered
+                      ? { y: -12, rotate: 0, scale: 1.05 }
+                      : someHovered
+                        ? { scale: 0.97, opacity: 0.6, y: 0, rotate: fc.defaultRotate }
+                        : { y: [0, -fc.amplitude, 0], rotate: fc.defaultRotate }
+                  }
+                  transition={
+                    someHovered || isHovered
+                      ? { duration: 0.3, ease: "easeOut" }
+                      : { duration: fc.period, repeat: Infinity, ease: "easeInOut" }
+                  }
+                  onMouseEnter={() => setHoveredCard(card.key)}
+                  onMouseLeave={() => setHoveredCard(null)}
                 >
-                  <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
-                  {heroBadges[card.key] ?? card.badge}
-                </div>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-[11px] font-extrabold text-white"
+                      style={{ backgroundColor: card.bg }}
+                    >
+                      {card.initials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[10px] text-ink-tertiary">{card.category}</p>
+                      <p className="truncate text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
+                      {card.metricLabel}
+                    </p>
+                    <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
+                      {card.metricValue}
+                    </p>
+                  </div>
+                  <div
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold"
+                    style={card.badgeStyle}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
+                    {heroBadges[card.key] ?? card.badge}
+                  </div>
+                </motion.div>
+              );
+            })}
 
             {/* Live signal pill */}
             <div className="absolute bottom-0 right-0 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-[11px] font-semibold text-ink-secondary shadow-subtle">
