@@ -16,6 +16,7 @@ import { localePath } from "@/lib/locale";
 import { WhatsNew } from "@/features/home/whats-new";
 import type { Highlight } from "@/features/highlights/get-active-highlights";
 import { ProviderStrip } from "@/features/home/provider-strip";
+import { AppWaitlistPill } from "@/features/home/app-waitlist-pill";
 import { HowItWorks } from "@/features/home/how-it-works";
 
 // ─── Hero preview data (static, presentational) ───────────────────────────────
@@ -274,6 +275,11 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
           PROVIDER STRIP
       ══════════════════════════════════════════════════════════ */}
       <ProviderStrip locale={locale} />
+
+      {/* ══════════════════════════════════════════════════════════
+          APP WAITLIST PILL
+      ══════════════════════════════════════════════════════════ */}
+      <AppWaitlistPill locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
           ATLAS GRID
