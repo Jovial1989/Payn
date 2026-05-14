@@ -9,8 +9,6 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const LOGOS_DIR = join(__dirname, "../public/logos");
 const MANIFEST_PATH = join(__dirname, "../src/features/catalog/known-logos.generated.ts");
-const CDN_BASE = "https://cdn.brandfetch.io";
-const MIN_BYTES = 500;
 const DELAY_MS = 250;
 
 // ─── Provider → domain mapping ────────────────────────────────────────────────
@@ -185,13 +183,16 @@ function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
-async function downloadLogo(domain: string, destPath: string): Promise<"ok" | "small" | "error"> {
-  const url = `${CDN_BASE}/${domain}/w/64/h/64/fallback/lettermark`;
+async function downloadLogo(domain: string, destPath: string): Promise<"ok" | "error"> {
+  // Google's favicon proxy fetches apple-touch-icon / high-res favicon from brand CDNs
+  const url = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=64`;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(10_000) });
     if (!res.ok) return "error";
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) return "error";
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.byteLength < MIN_BYTES) return "small";
+    if (buf.byteLength < 100) return "error";
     writeFileSync(destPath, buf);
     return "ok";
   } catch {
@@ -226,7 +227,7 @@ async function main() {
   const providers = [...allNames].filter((n) => !SKIP_PROVIDERS.has(n));
   console.log(`Found ${providers.length} unique providers\n`);
 
-  let downloaded = 0, skippedExists = 0, tooSmall = 0, noDomain = 0, errors = 0;
+  let downloaded = 0, skippedExists = 0, noDomain = 0, errors = 0;
   const succeededSlugs: string[] = [];
   const seenSlugs = new Set<string>();
 
@@ -265,9 +266,6 @@ async function main() {
       console.log(`✓  Downloaded: ${name} → ${slug}.png`);
       succeededSlugs.push(slug);
       downloaded++;
-    } else if (result === "small") {
-      console.log(`✗  Too small:  ${name} [${domain}]`);
-      tooSmall++;
     } else {
       console.log(`✗  Failed:     ${name} [${domain}]`);
       errors++;
@@ -298,9 +296,8 @@ ${manifestLines}
   console.log(`\n── Summary ────────────────────────────────────────`);
   console.log(`  Downloaded:  ${downloaded}`);
   console.log(`  Exists/skip: ${skippedExists}`);
-  console.log(`  Too small:   ${tooSmall} (Brandfetch placeholder)`);
   console.log(`  No domain:   ${noDomain}`);
-  console.log(`  Errors:      ${errors}`);
+  console.log(`  Errors/skip: ${errors}`);
   console.log(`  Manifest:    ${uniqueSlugs.length} logos registered`);
 }
 
