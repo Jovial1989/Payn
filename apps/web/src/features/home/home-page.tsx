@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
-import { motion, useReducedMotion, useMotionValue, animate } from "motion/react";
+import { useState, useMemo } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { ScrambleNumber } from "@/features/home/scramble-number";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
@@ -70,28 +71,8 @@ const HERO_CARDS = [
 
 const impactSiteVerificationText = "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
 
-// ─── NumberTicker ─────────────────────────────────────────────────────────────
-function NumberTicker({ value, suffix = "", decimals = 2 }: { value: number; suffix?: string; decimals?: number }) {
-  const shouldReduce = useReducedMotion();
-  const mv = useMotionValue(0);
-  const [display, setDisplay] = useState(shouldReduce ? value : 0);
-
-  useEffect(() => {
-    if (shouldReduce) { setDisplay(value); return; }
-    const controls = animate(mv, value, {
-      duration: 1.2,
-      ease: "easeOut",
-      delay: 0.3,
-      onUpdate: (latest: number) => setDisplay(latest),
-    });
-    return () => controls.stop();
-  }, [value, decimals, shouldReduce, mv]);
-
-  return <>{display.toFixed(decimals)}{suffix}</>;
-}
-
-// ─── Ticker values per card key ───────────────────────────────────────────────
-const TICKER_CONFIG: Record<string, { value: number; decimals: number; suffix: string }> = {
+// ─── ScrambleNumber config per card key ──────────────────────────────────────
+const SCRAMBLE_CONFIG: Record<string, { value: number; decimals: number; suffix: string }> = {
   wise:    { value: 0.41, decimals: 2, suffix: "%" },
   revolut: { value: 1,    decimals: 0, suffix: "%" },
   tr:      { value: 4.0,  decimals: 2, suffix: "%" },
@@ -246,8 +227,8 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
                       {card.metricLabel}
                     </p>
                     <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
-                      {TICKER_CONFIG[card.key]
-                        ? <NumberTicker {...TICKER_CONFIG[card.key]} />
+                      {SCRAMBLE_CONFIG[card.key]
+                        ? <ScrambleNumber {...SCRAMBLE_CONFIG[card.key]} />
                         : card.metricValue}
                     </p>
                   </div>
