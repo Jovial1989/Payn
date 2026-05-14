@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
-interface ScrambleNumberProps {
+// Module-level — survives ANY remount, persists for the page session
+const PLAYED_VALUES = new Set<string>();
+
+interface Props {
   value: number;
   decimals?: number;
   suffix?: string;
   durationMs?: number;
   scrambleFps?: number;
+  cacheKey?: string;
 }
 
 export function ScrambleNumber({
@@ -17,62 +21,58 @@ export function ScrambleNumber({
   suffix = "",
   durationMs = 800,
   scrambleFps = 30,
-}: ScrambleNumberProps) {
+  cacheKey,
+}: Props) {
   const shouldReduce = useReducedMotion();
-  const [display, setDisplay] = useState<string>(value.toFixed(decimals));
-  const startedRef = useRef(false);
+  const key = cacheKey ?? `scramble-${value}-${decimals}-${suffix}`;
+  const alreadyPlayed = PLAYED_VALUES.has(key);
+
+  const [display, setDisplay] = useState<string>(() => {
+    if (shouldReduce || alreadyPlayed) return value.toFixed(decimals);
+    return value.toFixed(decimals).replace(/\d/g, "0");
+  });
 
   useEffect(() => {
-    if (shouldReduce) {
+    if (shouldReduce || alreadyPlayed) {
       setDisplay(value.toFixed(decimals));
       return;
     }
-    // Guard against React strict-mode double-invocation in dev
-    if (startedRef.current) return;
-    startedRef.current = true;
+    PLAYED_VALUES.add(key);
 
-    const startTime = performance.now();
-    const frameInterval = 1000 / scrambleFps;
-    let lastFrame = startTime;
-    let rafId = 0;
-
-    const finalStr = value.toFixed(decimals);
+    const start = performance.now();
+    const frameMs = 1000 / scrambleFps;
+    let lastFrame = start;
+    let raf = 0;
 
     const tick = (now: number) => {
-      const elapsed = now - startTime;
+      const elapsed = now - start;
       const progress = Math.min(elapsed / durationMs, 1);
-
-      // Lock digits left-to-right in the final 30% of duration
       const lockProgress = Math.max(0, (progress - 0.7) / 0.3);
 
-      if (now - lastFrame >= frameInterval) {
+      if (now - lastFrame >= frameMs) {
         lastFrame = now;
-
         if (progress >= 1) {
-          setDisplay(finalStr);
+          setDisplay(value.toFixed(decimals));
           return;
         }
-
+        const finalStr = value.toFixed(decimals);
         const scrambled = finalStr
           .split("")
           .map((ch, i) => {
             if (ch === "." || ch === ",") return ch;
-            const lockThreshold = i / finalStr.length;
-            if (lockProgress > lockThreshold) return ch;
+            if (lockProgress > i / finalStr.length) return ch;
             return Math.floor(Math.random() * 10).toString();
           })
           .join("");
-
         setDisplay(scrambled);
       }
-
-      rafId = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // empty deps — runs ONCE on mount, never restarts on hover or parent re-render
+  }, []);
 
   return <>{display}{suffix}</>;
 }

@@ -72,10 +72,10 @@ const HERO_CARDS = [
 const impactSiteVerificationText = "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
 
 // ─── ScrambleNumber config per card key ──────────────────────────────────────
-const SCRAMBLE_CONFIG: Record<string, { value: number; decimals: number; suffix: string }> = {
-  wise:    { value: 0.41, decimals: 2, suffix: "%" },
-  revolut: { value: 1,    decimals: 0, suffix: "%" },
-  tr:      { value: 4.0,  decimals: 2, suffix: "%" },
+const SCRAMBLE_CONFIG: Record<string, { value: number; decimals: number; suffix: string; cacheKey: string }> = {
+  wise:    { value: 0.41, decimals: 2, suffix: "%", cacheKey: "hero-wise"    },
+  revolut: { value: 1,    decimals: 0, suffix: "%", cacheKey: "hero-revolut" },
+  tr:      { value: 4.0,  decimals: 2, suffix: "%", cacheKey: "hero-tr"      },
 };
 
 type HeroCardKey = (typeof HERO_CARDS)[number]["key"];
