@@ -35,12 +35,18 @@ export function WhatsNew({ highlights, locale }: WhatsNewProps) {
 
   return (
     <section className="w-full min-w-0">
-      <div className="mb-5">
+      <motion.div
+        className="mb-5"
+        initial={shouldReduce ? false : { opacity: 0, y: 12 }}
+        whileInView={shouldReduce ? {} : { opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <h2 className="text-[1.25rem] font-bold tracking-[-0.02em] text-ink">
           {atlas.whatsNew.sectionHeadline}
         </h2>
         <p className="mt-1 text-[13px] text-ink-secondary">{atlas.whatsNew.sectionSub}</p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {highlights.map((h, i) => {

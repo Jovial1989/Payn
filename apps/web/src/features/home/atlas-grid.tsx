@@ -111,12 +111,18 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
 
   return (
     <section className="mx-auto w-full min-w-0">
-      <div className="mb-8">
+      <motion.div
+        className="mb-8"
+        initial={shouldReduce ? false : { opacity: 0, y: 12 }}
+        whileInView={shouldReduce ? {} : { opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <h2 className="text-[1.5rem] font-bold tracking-[-0.025em] text-ink sm:text-[1.75rem]">
           {sectionHeadline}
         </h2>
         <p className="mt-1.5 text-[14px] text-ink-secondary">{atlas.atlas.sectionSub}</p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {buckets.map(({ bucket, count, topProviders }, i) => {
