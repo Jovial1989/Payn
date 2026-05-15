@@ -6,7 +6,19 @@ export async function POST() {
   const admin = createSupabaseAdminClient();
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
-  const rows = marketplaceOffers.map((o) => ({
+  // Dedupe by slug — static catalog spreads several arrays and a few slugs
+  // collide between mock-data and the newer expansion files. Slug is a unique
+  // constraint in product_offers, so the upsert would otherwise reject the batch.
+  // Last occurrence wins (the newer expansion-file versions come after mock-data).
+  const bySlug = new Map<(typeof marketplaceOffers)[number]["slug"], (typeof marketplaceOffers)[number]>();
+  const duplicateSlugs: string[] = [];
+  for (const o of marketplaceOffers) {
+    if (bySlug.has(o.slug)) duplicateSlugs.push(o.slug);
+    bySlug.set(o.slug, o);
+  }
+  const deduped = Array.from(bySlug.values());
+
+  const rows = deduped.map((o) => ({
     id: o.id,
     slug: o.slug,
     provider_name: o.providerName,
@@ -42,10 +54,15 @@ export async function POST() {
 
   await admin.from("admin_audit_log").insert({
     action: "seed_offers",
-    metadata: { count: rows.length },
+    metadata: { count: rows.length, duplicateSlugs },
   });
 
-  return NextResponse.json({ ok: true, seeded: rows.length });
+  return NextResponse.json({
+    ok: true,
+    seeded: rows.length,
+    static_total: marketplaceOffers.length,
+    duplicate_slugs: duplicateSlugs,
+  });
 }
 
 export async function GET() {
