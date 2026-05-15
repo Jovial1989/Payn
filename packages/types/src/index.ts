@@ -125,6 +125,7 @@ export interface MarketplaceOffer {
   providerName: string;
   title: string;
   subtitle: string;
+  bullets?: string[];
   metrics: MarketplaceMetric[];
   bestFor: string[];
   providerWebsiteUrl: string;
@@ -133,5 +134,7 @@ export interface MarketplaceOffer {
   linkType: "affiliate_redirect" | "lead_capture" | "embedded_partner";
   affiliatePriorityScore: number;
   updatedAt: string;
+  lastAiEnrichmentAt?: string | null;
+  lastHumanReviewAt?: string | null;
   attributes?: MarketplaceOfferAttributes;
 }
