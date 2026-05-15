@@ -8,10 +8,6 @@ import type {
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
-import {
-  type DecisionResultMetric,
-  type DecisionResultTag,
-} from "@/components/decision-result-row";
 import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import { InsuranceCompareTable } from "@/components/insurance-compare-table";
@@ -46,6 +42,9 @@ import {
   normalizeCountrySelection,
 } from "@/lib/countries";
 import type { UserProfile } from "@/lib/types";
+
+type DecisionResultMetric = { label: string; value: string };
+type DecisionResultTag = { label: string; tone?: "neutral" | "accent" | "muted" | "success" | "blue" | "purple" | "orange" };
 
 type CountryValue = string;
 type InsuranceSelection = MarketplaceInsuranceType;
