@@ -279,6 +279,7 @@ type Dictionary = {
     groupBusiness: string;
     expandSection: string;
     collapseSection: string;
+    refineResults: string;
   };
 };
 
@@ -766,6 +767,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Business",
       expandSection: "Show all",
       collapseSection: "Show less",
+      refineResults: "Refine results",
     },
     metrics: baseMetrics,
   },
@@ -1201,6 +1203,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Geschäft",
       expandSection: "Alle anzeigen",
       collapseSection: "Weniger anzeigen",
+      refineResults: "Ergebnisse verfeinern",
     },
     metrics: {
       ...baseMetrics,
@@ -1680,6 +1683,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Negocio",
       expandSection: "Mostrar todo",
       collapseSection: "Mostrar menos",
+      refineResults: "Refinar resultados",
     },
     metrics: {
       ...baseMetrics,
@@ -2135,6 +2139,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Entreprise",
       expandSection: "Tout afficher",
       collapseSection: "Afficher moins",
+      refineResults: "Affiner les résultats",
     },
     metrics: {
       ...baseMetrics,
@@ -2588,6 +2593,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Business",
       expandSection: "Mostra tutto",
       collapseSection: "Mostra meno",
+      refineResults: "Perfeziona i risultati",
     },
     metrics: {
       ...baseMetrics,
@@ -3041,6 +3047,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       groupBusiness: "Negócio",
       expandSection: "Mostrar tudo",
       collapseSection: "Mostrar menos",
+      refineResults: "Refinar resultados",
     },
     metrics: {
       ...baseMetrics,

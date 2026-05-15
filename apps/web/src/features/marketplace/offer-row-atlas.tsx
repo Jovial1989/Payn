@@ -1,0 +1,112 @@
+"use client";
+
+import Image from "next/image";
+import { motion, useReducedMotion } from "motion/react";
+import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
+import { getDictionary, formatCopy } from "@/lib/i18n";
+import { getProviderLogoPath } from "@/features/catalog/provider-logo";
+
+const rowVariants = {
+  rest:  { y: 0,  borderColor: "rgba(17,24,39,0.08)" },
+  hover: { y: -1, borderColor: "rgba(16,185,129,0.4)" },
+};
+
+interface OfferRowAtlasProps {
+  offer: MarketplaceOffer;
+  locale: string;
+}
+
+export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
+  const shouldReduce = useReducedMotion();
+  const dictionary = getDictionary(locale as MarketplaceLocale);
+  const t = dictionary.homeAtlas.exploreBucket;
+
+  const visibleMetrics = offer.metrics.slice(0, 4);
+  const firstBestFor = offer.bestFor?.[0];
+  const logoPath = getProviderLogoPath(offer.providerName);
+  const href = offer.affiliateLink || offer.providerWebsiteUrl;
+
+  return (
+    <motion.div
+      className="w-full overflow-hidden rounded-2xl border bg-white"
+      variants={shouldReduce ? undefined : rowVariants}
+      initial={shouldReduce ? undefined : "rest"}
+      whileHover={shouldReduce ? undefined : "hover"}
+      whileTap={shouldReduce ? undefined : { scale: 0.995 }}
+      transition={{ type: "tween", duration: 0.15 }}
+    >
+      <div className="flex items-center gap-4 p-4 sm:gap-6 sm:p-5">
+        {/* Logo + Title — left, fixed on sm+ */}
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:flex-[0_0_260px] sm:gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-accent-emerald-soft">
+            {logoPath ? (
+              <Image
+                src={logoPath}
+                alt={offer.providerName}
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain"
+              />
+            ) : (
+              <span className="text-[13px] font-extrabold text-accent-emerald-strong">
+                {offer.providerMark.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-bold leading-tight text-ink">{offer.title}</p>
+            <p className="mt-0.5 truncate text-[12px] text-ink-tertiary">
+              {offer.providerName} · {offer.category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+            </p>
+            {firstBestFor && (
+              <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-accent-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-accent-emerald-strong">
+                <span className="h-1 w-1 rounded-full bg-accent-emerald" />
+                {formatCopy(t.bestFor, { audience: firstBestFor })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Metrics — center, visible md+ */}
+        {visibleMetrics.length > 0 && (
+          <div className="hidden min-w-0 flex-1 items-center gap-4 md:flex lg:gap-6">
+            {visibleMetrics.map((m) => (
+              <div key={m.label} className="min-w-0">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
+                <p className="mt-0.5 text-[14px] font-bold tabular-nums leading-tight text-ink">{m.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CTA — right, fixed */}
+        <div className="shrink-0">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="flex items-center gap-1.5 rounded-xl bg-accent-emerald px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-emerald-strong sm:px-5 sm:py-2.5 sm:text-[14px]"
+          >
+            <span className="hidden sm:inline">{t.goToProvider}</span>
+            <span className="sm:hidden">Go</span>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M2 6.5h9M8 3l3.5 3.5L8 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      {/* Mobile metrics row — visible below md where center column is hidden */}
+      {visibleMetrics.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-3 md:hidden">
+          {visibleMetrics.map((m) => (
+            <div key={m.label}>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
+              <p className="mt-0.5 text-[13px] font-bold tabular-nums text-ink">{m.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}

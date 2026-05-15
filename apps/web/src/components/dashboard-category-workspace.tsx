@@ -8,7 +8,7 @@ import type {
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
-import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
+import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import { InsuranceCompareTable } from "@/components/insurance-compare-table";
 import {
@@ -19,10 +19,9 @@ import { Tag } from "@/components/tag";
 import type { DashboardOfferInsight } from "@/lib/dashboard";
 import type { FxQuotePayload } from "@/lib/fx-quote";
 import { supportedFxCurrencies } from "@/lib/fx-quote";
-import { getDictionary, getMetricLabel, translateTradeoff, translateUiToken } from "@/lib/i18n";
+import { getDictionary, getMetricLabel, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
-  getOfferTradeoff,
   normalizeDisplayText,
   parseMetricRange,
 } from "@/lib/marketplace";
@@ -888,6 +887,7 @@ export function DashboardCategoryWorkspace({
   const [activityFilter, setActivityFilter] = useState<InsuranceActivityFilter>(defaultWorkspaceState.activityFilter);
   const [visaCompliantOnly, setVisaCompliantOnly] = useState(defaultWorkspaceState.visaCompliantOnly);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [quote, setQuote] = useState<FxQuotePayload | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const updateCountry = (nextCountry: CountryValue) => {
@@ -1521,33 +1521,27 @@ export function DashboardCategoryWorkspace({
   );
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.categories[category]}
-                </p>
-                <h1 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">
-                  {category === "loans" && copy.loansTitle}
-                  {category === "transfers" && copy.transfersTitle}
-                  {category === "exchange" && copy.exchangeTitle}
-                  {category === "insurance" && copy.insuranceTitle}
-                </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-                  {category === "loans" && copy.loansDescription}
-                  {category === "transfers" && copy.transfersDescription}
-                  {category === "exchange" && copy.exchangeDescription}
-                  {category === "insurance" && copy.insuranceDescription}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link href={discoverHref} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-                  {copy.backToDiscover}
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {(category === "loans" || category === "transfers" || category === "exchange" || category === "insurance") && (
+      <section>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-accent-emerald-strong"
+        >
+          <span>{dictionary.sidebarNav.refineResults}</span>
+          <svg
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${filtersOpen ? "rotate-180" : ""}`}
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M3 4.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {filtersOpen && (
+          <div className="mt-4 rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {category === "loans" ? (
             <>
               <InputField label={copy.amount}>
@@ -1794,7 +1788,10 @@ export function DashboardCategoryWorkspace({
             </>
           ) : null}
             </div>
+          </div>
+        )}
       </section>
+      )}
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
@@ -1860,15 +1857,12 @@ export function DashboardCategoryWorkspace({
                   {locale === "de" ? "Ganz Europa anzeigen" : "Show pan-European options →"}
                 </button>
               )}
-              <a href={discoverHref} className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong">
-                {copy.backToDiscover}
-              </a>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {rankedResults.map((row) => (
-              <OfferCardAtlas key={row.offer.id} offer={row.offer} locale={locale} />
+              <OfferRowAtlas key={row.offer.id} offer={row.offer} locale={locale} />
             ))}
           </div>
         )}
@@ -1895,28 +1889,6 @@ export function DashboardCategoryWorkspace({
         )
       ) : null}
 
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.howRankingWorks}</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
-            <p className="text-sm font-semibold text-ink">{copy.whatChangesTitle}</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              {copy.whatChangesBody}
-            </p>
-          </div>
-          <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
-            <p className="text-sm font-semibold text-ink">{copy.nextStepTitle}</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              {copy.nextStepBody}
-            </p>
-          </div>
-        </div>
-        {topResult ? (
-          <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
-            {copy.currentLeadTradeoff}: {translateTradeoff(locale, getOfferTradeoff(topResult.offer))}
-          </p>
-        ) : null}
-      </section>
     </div>
   );
 }

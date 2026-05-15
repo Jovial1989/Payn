@@ -1,10 +1,8 @@
 "use client";
 
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { buttonStyles } from "@/components/button";
-import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
+import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import {
   ProductCompareTable,
@@ -273,6 +271,7 @@ export function DashboardCardsWorkspace({
           standard: "Standard",
           compare: "Vergleichen",
           added: "Hinzugefügt",
+          refineResults: "Ergebnisse verfeinern",
         }
       : {
           categoryEyebrow: "Cards",
@@ -316,6 +315,7 @@ export function DashboardCardsWorkspace({
           standard: "Standard",
           compare: "Compare",
           added: "Added",
+          refineResults: "Refine results",
         };
 
   const workspaceStateKey = "product-cards";
@@ -342,6 +342,7 @@ export function DashboardCardsWorkspace({
   const [minAtmLimit, setMinAtmLimit] = useState(defaultWorkspaceState.minAtmLimit);
   const [monthlySpend, setMonthlySpend] = useState(defaultWorkspaceState.monthlySpend);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     const persistedState = readPersistedProductWorkspaceState(
@@ -595,23 +596,26 @@ export function DashboardCardsWorkspace({
 
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
-      <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.categoryEyebrow}</p>
-            <h1 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">
-              {copy.title}
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-              {copy.description}
-            </p>
-          </div>
-          <Link href={discoverHref} className={buttonStyles({ variant: "secondary", size: "sm" })}>
-            {copy.backToDiscover}
-          </Link>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-accent-emerald-strong"
+        >
+          <span>{copy.refineResults}</span>
+          <svg
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${filtersOpen ? "rotate-180" : ""}`}
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M3 4.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {filtersOpen && (
+          <div className="mt-4 rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <InputField label={copy.search}>
             <input
               value={search}
@@ -699,7 +703,9 @@ export function DashboardCardsWorkspace({
               </button>
             </div>
           </InputField>
-        </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
@@ -735,9 +741,9 @@ export function DashboardCardsWorkspace({
             cta={copy.backToDiscover}
           />
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {rankedResults.map((row) => (
-              <OfferCardAtlas key={row.offer.id} offer={row.offer} locale={locale} />
+              <OfferRowAtlas key={row.offer.id} offer={row.offer} locale={locale} />
             ))}
           </div>
         )}
