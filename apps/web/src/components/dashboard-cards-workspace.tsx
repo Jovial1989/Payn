@@ -4,11 +4,7 @@ import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/button";
-import {
-  DecisionResultRow,
-  type DecisionResultMetric,
-  type DecisionResultTag,
-} from "@/components/decision-result-row";
+import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
 import {
   ProductCompareTable,
@@ -25,6 +21,9 @@ import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
 } from "@/lib/product-workspace-state";
+
+type DecisionResultMetric = { label: string; value: string };
+type DecisionResultTag = { label: string; tone?: "neutral" | "accent" | "muted" | "success" | "blue" | "purple" | "orange" };
 
 type CardTypeFilter = "all" | "credit" | "debit";
 
@@ -186,7 +185,7 @@ function InputField({
 }
 
 function fieldClassName() {
-  return "h-12 rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald/15 focus:bg-white";
+  return "h-12 rounded-[18px] border border-line bg-bg-surface px-4 text-sm text-ink outline-none transition-colors focus:border-accent-emerald/15 focus:bg-white";
 }
 
 function tagForResult(args: {
@@ -596,7 +595,7 @@ export function DashboardCardsWorkspace({
 
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
+      <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.categoryEyebrow}</p>
@@ -703,10 +702,10 @@ export function DashboardCardsWorkspace({
         </div>
       </section>
 
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
+      <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {topResults.map((row, index) => (
-            <div key={row.offer.id} className="rounded-[18px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 py-4">
+            <div key={row.offer.id} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                 {index === 0 ? copy.summaryBest : index === 1 ? copy.summaryTravel : copy.summaryCashback}
               </p>
@@ -719,64 +718,26 @@ export function DashboardCardsWorkspace({
         </div>
       </section>
 
-      <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{copy.rankedResults}</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-ink">
-              {copy.cardsRanked(rankedResults.length)}
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
-              {copy.rankedDescription}
-            </p>
-          </div>
+      <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <p className="text-sm text-ink-secondary">
+            {rankedResults.length === 1
+              ? `1 card in ${marketLabel}`
+              : `${rankedResults.length} cards in ${marketLabel}`}
+          </p>
         </div>
 
         {rankedResults.length === 0 ? (
-          <div className="mt-6">
-            <DashboardEmptyState
-              title={copy.noCardsTitle}
-              description={copy.noCardsDescription}
-              href={discoverHref}
-              cta={copy.backToDiscover}
-            />
-          </div>
+          <DashboardEmptyState
+            title={copy.noCardsTitle}
+            description={copy.noCardsDescription}
+            href={discoverHref}
+            cta={copy.backToDiscover}
+          />
         ) : (
-          <div className="mt-6 grid gap-3">
-            {rankedResults.map((row, index) => (
-              <DecisionResultRow
-                key={row.offer.id}
-                locale={locale}
-                offer={row.offer}
-                rank={index + 1}
-                summary={row.summary}
-                primaryLabel={copy.estimatedYearlyCost}
-                primaryValue={row.primaryValue}
-                metrics={row.metrics}
-                tags={row.tags}
-                why={index === 0 ? row.why : undefined}
-                highlighted={index < 3}
-                extraActions={
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCompareSelection((current) =>
-                        current.includes(row.offer.id)
-                          ? current.filter((id) => id !== row.offer.id)
-                          : [...current, row.offer.id].slice(0, 3),
-                      )
-                    }
-                    className={
-                      compareSelection.includes(row.offer.id)
-                        ? "inline-flex w-full items-center justify-center gap-2 rounded-full border border-accent-emerald/30 bg-accent-emerald-soft px-3 py-2 text-sm font-semibold text-accent-emerald-strong transition-colors hover:bg-accent-emerald-soft sm:w-auto"
-                        : "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:text-ink sm:w-auto"
-                    }
-                  >
-                    <span>{compareSelection.includes(row.offer.id) ? "[x]" : "[ ]"}</span>
-                    <span>{compareSelection.includes(row.offer.id) ? copy.added : copy.compare}</span>
-                  </button>
-                }
-              />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {rankedResults.map((row) => (
+              <OfferCardAtlas key={row.offer.id} offer={row.offer} locale={locale} />
             ))}
           </div>
         )}
