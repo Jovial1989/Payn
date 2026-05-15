@@ -31,7 +31,10 @@ export type OfferFormData = {
   notes?: string;
   attributes?: Record<string, unknown>;
   metrics?: unknown[];
+  bullets?: string[];
   data_source?: string;
+  last_ai_enrichment_at?: string | null;
+  last_human_review_at?: string | null;
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -97,6 +100,7 @@ export function AdminOfferFullForm({
       ...form,
       _fullUpsert: true,
       affiliate_priority_score: Number(form.affiliate_priority_score),
+      last_human_review_at: new Date().toISOString(),
     };
 
     try {
@@ -126,9 +130,29 @@ export function AdminOfferFullForm({
     }
   }
 
+  const aiEnrichedAt = offer?.last_ai_enrichment_at;
+  const humanReviewedAt = offer?.last_human_review_at;
+  const needsReview =
+    isEdit &&
+    aiEnrichedAt &&
+    (!humanReviewedAt || new Date(humanReviewedAt) < new Date(aiEnrichedAt));
+
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 rounded-[20px] border border-line bg-white p-6 shadow-card">
       <h2 className="text-sm font-bold text-ink">{isEdit ? "Edit offer" : "Create offer"}</h2>
+
+      {needsReview && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 4a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 1 8 5Zm0 6.5a.875.875 0 1 1 0-1.75.875.875 0 0 1 0 1.75Z" />
+          </svg>
+          <span>
+            AI-enriched on{" "}
+            <span className="font-semibold">{aiEnrichedAt!.slice(0, 10)}</span> — please review bullets,
+            best_for, and metrics, then save to mark as human-reviewed.
+          </span>
+        </div>
+      )}
 
       {/* Identity */}
       <div className="grid gap-4 sm:grid-cols-2">
