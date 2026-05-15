@@ -9,12 +9,12 @@ export async function POST() {
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   const { error } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .update({ is_monetised: false })
     .neq("id", "");
 
   const { count } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .select("*", { count: "exact", head: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

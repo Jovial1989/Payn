@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   // ── DB path ────────────────────────────────────────────────────────────────
   if (admin && source !== "static") {
-    let query = admin.from("marketplace_offers").select("*", { count: "exact" });
+    let query = admin.from("product_offers").select("*", { count: "exact" });
     if (category)              query = query.eq("category", category);
     if (status)                query = query.eq("status", status);
     if (monetised === "true")  query = query.eq("is_monetised", true);
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
   };
 
   const { data, error } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .insert(row)
     .select()
     .single();

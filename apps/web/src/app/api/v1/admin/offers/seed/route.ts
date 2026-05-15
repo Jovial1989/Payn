@@ -35,7 +35,7 @@ export async function POST() {
   }));
 
   const { error } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .upsert(rows, { onConflict: "id" });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,7 +53,7 @@ export async function GET() {
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   const { count } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .select("*", { count: "exact", head: true });
 
   return NextResponse.json({ db_count: count ?? 0, static_count: marketplaceOffers.length });

@@ -1,8 +1,8 @@
 -- Full admin CRUD for marketplace offers
 -- Also adds: admin audit log, user stats helpers, parser trigger log
 
--- ── marketplace_offers ──────────────────────────────────────────────────────
-create table if not exists marketplace_offers (
+-- ── product_offers ──────────────────────────────────────────────────────
+create table if not exists product_offers (
   id                     text primary key,
   slug                   text unique not null,
   provider_name          text not null,
@@ -31,16 +31,16 @@ create table if not exists marketplace_offers (
   updated_at             timestamptz not null default now()
 );
 
-create index if not exists marketplace_offers_category_idx       on marketplace_offers(category);
-create index if not exists marketplace_offers_status_idx         on marketplace_offers(status);
-create index if not exists marketplace_offers_provider_name_idx  on marketplace_offers(provider_name);
-create index if not exists marketplace_offers_is_monetised_idx   on marketplace_offers(is_monetised);
-create index if not exists marketplace_offers_created_at_idx     on marketplace_offers(created_at desc);
+create index if not exists product_offers_category_idx       on product_offers(category);
+create index if not exists product_offers_status_idx         on product_offers(status);
+create index if not exists product_offers_provider_name_idx  on product_offers(provider_name);
+create index if not exists product_offers_is_monetised_idx   on product_offers(is_monetised);
+create index if not exists product_offers_created_at_idx     on product_offers(created_at desc);
 
-alter table marketplace_offers enable row level security;
+alter table product_offers enable row level security;
 
-create policy "anon_read_active_marketplace_offers"
-  on marketplace_offers for select
+create policy "anon_read_active_product_offers"
+  on product_offers for select
   to anon, authenticated
   using (status = 'active');
 
@@ -50,8 +50,8 @@ returns trigger language plpgsql as $$
 begin new.updated_at = now(); return new; end;
 $$;
 
-create trigger marketplace_offers_updated_at
-  before update on marketplace_offers
+create trigger product_offers_updated_at
+  before update on product_offers
   for each row execute function touch_updated_at();
 
 -- ── admin_audit_log ──────────────────────────────────────────────────────────

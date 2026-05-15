@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   const startMs = Date.now();
 
   let query = admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .select("id, title, subtitle, category, provider_name, metrics, best_for, affiliate_link, bullets")
     .not("affiliate_link", "ilike", "%financeads.net%")
     .not("id", "ilike", "financeads-%")
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { error: updateError } = await admin
-        .from("marketplace_offers")
+        .from("product_offers")
         .update(update)
         .eq("id", row.id);
 

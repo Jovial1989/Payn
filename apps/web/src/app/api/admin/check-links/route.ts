@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   if (admin) {
     const { data } = await admin
-      .from("marketplace_offers")
+      .from("product_offers")
       .select("id, provider_name, affiliate_link")
       .eq("status", "active")
       .neq("affiliate_link", "");

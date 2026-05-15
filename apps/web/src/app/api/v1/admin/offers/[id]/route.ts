@@ -10,7 +10,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   const [dbRes, overrideRes, clicksRes] = await Promise.all([
-    admin.from("marketplace_offers").select("*").eq("id", id).maybeSingle(),
+    admin.from("product_offers").select("*").eq("id", id).maybeSingle(),
     admin.from("admin_offer_overrides").select("*").eq("offer_id", id).maybeSingle(),
     admin
       .from("offer_click_events")
@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
 
   const { data: existing } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .select("id, data_source")
     .eq("id", id)
     .maybeSingle();
@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     }
 
     const { data, error } = await admin
-      .from("marketplace_offers")
+      .from("product_offers")
       .update(update)
       .eq("id", id)
       .select()
@@ -130,7 +130,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   };
 
   const { data, error } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .upsert(row, { onConflict: "id" })
     .select()
     .single();
@@ -151,13 +151,13 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   const { data: existing } = await admin
-    .from("marketplace_offers")
+    .from("product_offers")
     .select("id, data_source, provider_name, title")
     .eq("id", id)
     .maybeSingle();
 
   if (existing && existing.data_source !== "static") {
-    const { error } = await admin.from("marketplace_offers").delete().eq("id", id);
+    const { error } = await admin.from("product_offers").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
     await admin.from("admin_audit_log").insert({

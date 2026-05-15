@@ -57,7 +57,7 @@ export default async function AdminParserPage() {
         .order("created_at", { ascending: false })
         .limit(30),
       admin
-        .from("marketplace_offers")
+        .from("product_offers")
         .select("*", { count: "exact", head: true }),
     ]);
 

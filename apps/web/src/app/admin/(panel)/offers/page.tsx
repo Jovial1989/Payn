@@ -39,7 +39,7 @@ export default async function AdminOffersPage({ searchParams }: Props) {
     const [ovRes, clickRes, countRes] = await Promise.all([
       admin.from("admin_offer_overrides").select("offer_id, affiliate_url, status"),
       admin.from("offer_click_events").select("offer_id"),
-      admin.from("marketplace_offers").select("*", { count: "exact", head: true }),
+      admin.from("product_offers").select("*", { count: "exact", head: true }),
     ]);
     overrides = Object.fromEntries((ovRes.data ?? []).map((r) => [r.offer_id, r]));
     for (const r of clickRes.data ?? []) {
@@ -48,7 +48,7 @@ export default async function AdminOffersPage({ searchParams }: Props) {
     dbCount = countRes.count ?? 0;
 
     if (source !== "static") {
-      let q = admin.from("marketplace_offers").select("*", { count: "exact" });
+      let q = admin.from("product_offers").select("*", { count: "exact" });
       if (category)              q = q.eq("category", category);
       if (status)                q = q.eq("status", status);
       if (monetised === "true")  q = q.eq("is_monetised", true);

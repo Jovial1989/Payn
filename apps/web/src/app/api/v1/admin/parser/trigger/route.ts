@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (action === "resync") {
-      // Re-seed static offers into marketplace_offers
+      // Re-seed static offers into product_offers
       const staticRes = await fetch(
         new URL("/api/v1/admin/offers/seed", req.url).toString(),
         { method: "POST" },
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (action === "dedupe") {
       // Delete duplicate offers (keep the one with max updated_at)
       const { data: dupes } = await admin
-        .from("marketplace_offers")
+        .from("product_offers")
         .select("slug, id, updated_at")
         .order("slug")
         .order("updated_at", { ascending: false });
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (toDelete.length > 0) {
-        await admin.from("marketplace_offers").delete().in("id", toDelete);
+        await admin.from("product_offers").delete().in("id", toDelete);
       }
 
       await admin.from("offer_ingestion_runs").update({

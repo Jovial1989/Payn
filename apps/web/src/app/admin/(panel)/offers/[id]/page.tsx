@@ -19,7 +19,7 @@ export default async function AdminOfferDetailPage({ params }: Props) {
 
   if (admin) {
     const [dbRes, clicksRes, countRes] = await Promise.all([
-      admin.from("marketplace_offers").select("*").eq("id", id).maybeSingle(),
+      admin.from("product_offers").select("*").eq("id", id).maybeSingle(),
       admin
         .from("offer_click_events")
         .select("id, country, language, device_type, source_page, is_monetised, created_at")
