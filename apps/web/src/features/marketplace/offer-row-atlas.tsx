@@ -21,7 +21,9 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const t = dictionary.homeAtlas.exploreBucket;
 
-  const visibleMetrics = offer.metrics.slice(0, 4);
+  const isCountryMetric = (label: string) => /countr/i.test(label);
+  const visibleMetrics = offer.metrics.filter((m) => !isCountryMetric(m.label)).slice(0, 4);
+  const bullets = offer.bullets?.filter(Boolean).slice(0, 3) ?? [];
   const firstBestFor = offer.bestFor?.[0];
   const logoPath = getProviderLogoPath(offer.providerName);
   const href = offer.affiliateLink || offer.providerWebsiteUrl;
@@ -67,8 +69,8 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
           </div>
         </div>
 
-        {/* Metrics — center, visible md+ */}
-        {visibleMetrics.length > 0 && (
+        {/* Metrics + bullets — center, visible md+ */}
+        {(visibleMetrics.length > 0 || bullets.length > 0) && (
           <div className="hidden min-w-0 flex-1 items-center gap-4 md:flex lg:gap-6">
             {visibleMetrics.map((m) => (
               <div key={m.label} className="min-w-0">
@@ -76,6 +78,16 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
                 <p className="mt-0.5 text-[14px] font-bold tabular-nums leading-tight text-ink">{m.value}</p>
               </div>
             ))}
+            {bullets.length > 0 && (
+              <ul className="grid min-w-0 flex-1 gap-0.5">
+                {bullets.map((b) => (
+                  <li key={b} className="flex items-start gap-1.5 truncate text-[11px] text-ink-secondary">
+                    <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-emerald" />
+                    <span className="truncate">{b}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -96,15 +108,29 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
         </div>
       </div>
 
-      {/* Mobile metrics row — visible below md where center column is hidden */}
-      {visibleMetrics.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-3 md:hidden">
-          {visibleMetrics.map((m) => (
-            <div key={m.label}>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
-              <p className="mt-0.5 text-[13px] font-bold tabular-nums text-ink">{m.value}</p>
+      {/* Mobile section — metrics + bullets, visible below md */}
+      {(visibleMetrics.length > 0 || bullets.length > 0) && (
+        <div className="border-t border-line px-4 py-3 md:hidden">
+          {visibleMetrics.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {visibleMetrics.map((m) => (
+                <div key={m.label}>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
+                  <p className="mt-0.5 text-[13px] font-bold tabular-nums text-ink">{m.value}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+          {bullets.length > 0 && (
+            <ul className={`grid gap-1 ${visibleMetrics.length > 0 ? "mt-3" : ""}`}>
+              {bullets.map((b) => (
+                <li key={b} className="flex items-start gap-2 text-[11px] text-ink-secondary">
+                  <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-emerald" />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </motion.div>

@@ -74,7 +74,9 @@ export function OfferCardAtlas({ offer, locale }: OfferCardAtlasProps) {
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const t = dictionary.homeAtlas.exploreBucket;
 
-  const visibleMetrics = offer.metrics.slice(0, 4);
+  const isCountryMetric = (label: string) => /countr/i.test(label);
+  const visibleMetrics = offer.metrics.filter((m) => !isCountryMetric(m.label)).slice(0, 4);
+  const bullets = offer.bullets?.filter(Boolean).slice(0, 4) ?? [];
   const firstBestFor = offer.bestFor?.[0];
 
   const href = offer.affiliateLink || offer.providerWebsiteUrl;
@@ -109,6 +111,18 @@ export function OfferCardAtlas({ offer, locale }: OfferCardAtlasProps) {
             <span className="h-1.5 w-1.5 rounded-full bg-accent-emerald" />
             {formatCopy(t.bestFor, { audience: firstBestFor })}
           </div>
+        )}
+
+        {/* Bullets */}
+        {bullets.length > 0 && (
+          <ul className="mb-3 grid gap-1">
+            {bullets.map((b) => (
+              <li key={b} className="flex items-start gap-2 text-[12px] text-ink-secondary">
+                <span className="mt-[4px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-emerald" />
+                {b}
+              </li>
+            ))}
+          </ul>
         )}
 
         {/* Metrics grid */}
