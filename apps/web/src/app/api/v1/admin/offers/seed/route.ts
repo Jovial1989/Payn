@@ -6,17 +6,25 @@ export async function POST() {
   const admin = createSupabaseAdminClient();
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
-  // Dedupe by slug — static catalog spreads several arrays and a few slugs
-  // collide between mock-data and the newer expansion files. Slug is a unique
-  // constraint in product_offers, so the upsert would otherwise reject the batch.
-  // Last occurrence wins (the newer expansion-file versions come after mock-data).
-  const bySlug = new Map<(typeof marketplaceOffers)[number]["slug"], (typeof marketplaceOffers)[number]>();
+  // Dedupe by id AND slug — static catalog spreads several arrays and a few
+  // entries collide (mock-data vs newer expansion files). Both `id` (PK) and
+  // `slug` (unique) constraints must be satisfied for the batch upsert, so we
+  // walk from the end keeping later occurrences (the newer expansion-file
+  // versions come after mock-data in the spread order).
+  const seenIds = new Set<string>();
+  const seenSlugs = new Set<string>();
+  const duplicateIds: string[] = [];
   const duplicateSlugs: string[] = [];
-  for (const o of marketplaceOffers) {
-    if (bySlug.has(o.slug)) duplicateSlugs.push(o.slug);
-    bySlug.set(o.slug, o);
+  const deduped: typeof marketplaceOffers = [];
+  for (let i = marketplaceOffers.length - 1; i >= 0; i--) {
+    const o = marketplaceOffers[i];
+    if (seenIds.has(o.id)) { duplicateIds.push(o.id); continue; }
+    if (seenSlugs.has(o.slug)) { duplicateSlugs.push(o.slug); continue; }
+    seenIds.add(o.id);
+    seenSlugs.add(o.slug);
+    deduped.push(o);
   }
-  const deduped = Array.from(bySlug.values());
+  deduped.reverse();
 
   const rows = deduped.map((o) => ({
     id: o.id,
@@ -54,13 +62,14 @@ export async function POST() {
 
   await admin.from("admin_audit_log").insert({
     action: "seed_offers",
-    metadata: { count: rows.length, duplicateSlugs },
+    metadata: { count: rows.length, duplicateIds, duplicateSlugs },
   });
 
   return NextResponse.json({
     ok: true,
     seeded: rows.length,
     static_total: marketplaceOffers.length,
+    duplicate_ids: duplicateIds,
     duplicate_slugs: duplicateSlugs,
   });
 }
