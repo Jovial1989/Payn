@@ -10,7 +10,7 @@ import type {
   OfferActivityRollup,
 } from "@/lib/dashboard";
 import type { SavedOffer, UserProfile } from "@/lib/types";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import {
   getBestValueToday,
   getCategoryMomentum,
@@ -68,12 +68,12 @@ function mapOfferRollups(rows: RpcOfferActivityRow[] | null | undefined): OfferA
     }));
 }
 
-function getOfferByIdMap() {
-  return new Map(marketplaceOffers.map((offer) => [offer.id, offer]));
+function getOfferByIdMap(offers: MarketplaceOffer[]) {
+  return new Map(offers.map((offer) => [offer.id, offer]));
 }
 
-function dedupeOffersByRecentActivity(activityRows: UserActivityRow[]) {
-  const offersById = getOfferByIdMap();
+function dedupeOffersByRecentActivity(activityRows: UserActivityRow[], offers: MarketplaceOffer[]) {
+  const offersById = getOfferByIdMap(offers);
   const seen = new Set<string>();
   const watchedOffers: MarketplaceOffer[] = [];
 
@@ -319,7 +319,8 @@ export async function getDashboardInsights(args: {
 }): Promise<DashboardInsights> {
   const { supabase, userId, profile } = args;
   const market = resolveProfileMarket(profile.home_country);
-  const offerById = getOfferByIdMap();
+  const marketplaceOffers = await listMarketplaceOffers();
+  const offerById = getOfferByIdMap(marketplaceOffers);
 
   const [{ data: savedData }, { data: activityData }, marketRollups, similarUserRollups, fx, crypto, news] =
     await Promise.all([
@@ -346,7 +347,7 @@ export async function getDashboardInsights(args: {
   const savedOffers = savedRows
     .map((row) => offerById.get(row.offer_id))
     .filter(Boolean) as MarketplaceOffer[];
-  const watchedOffers = dedupeOffersByRecentActivity(activityRows).filter(
+  const watchedOffers = dedupeOffersByRecentActivity(activityRows, marketplaceOffers).filter(
     (offer) => !savedOffers.some((savedOffer) => savedOffer.id === offer.id),
   );
   const providerClickCount = activityRows.filter((row) => row.action === "provider_click").length;
