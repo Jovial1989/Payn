@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
-import { checkAdminToken } from "@/lib/admin-api-auth";
 import { enrichOffer } from "@/lib/gemini-enrich";
 
 // Run-and-resume: each click handles up to MAX_OFFERS unenriched rows. Vercel
@@ -17,9 +16,7 @@ function sleep(ms: number) {
 }
 
 export async function POST(request: NextRequest) {
-  const authError = checkAdminToken(request);
-  if (authError) return authError;
-
+  // Auth handled by middleware (path is under /api/v1/admin/*).
   const admin = createSupabaseAdminClient();
   if (!admin) {
     return NextResponse.json({ error: "Supabase admin client unavailable" }, { status: 503 });

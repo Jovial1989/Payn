@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
-
 type EnrichResult = {
   totalEligible: number;
   enriched: number;
@@ -24,9 +22,8 @@ export function AdminEnrichmentControls() {
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/enrich-offers${force ? "?force=true" : ""}`, {
+      const res = await fetch(`/api/v1/admin/enrich-offers${force ? "?force=true" : ""}`, {
         method: "POST",
-        headers: { "x-admin-token": ADMIN_TOKEN },
       });
 
       if (!res.ok) {
