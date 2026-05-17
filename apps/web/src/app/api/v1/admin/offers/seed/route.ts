@@ -48,7 +48,9 @@ export async function POST() {
     is_featured: false,
     best_for: o.bestFor ?? [],
     metrics: o.metrics ?? [],
-    attributes: o.attributes ?? {},
+    // Pack providerUrls (per-country deep links) into attributes since the
+    // table has no dedicated column. Reader unpacks it back onto offer.providerUrls.
+    attributes: { ...(o.attributes ?? {}), providerUrls: o.providerUrls ?? null },
     tags: [],
     data_source: "static",
     updated_at: o.updatedAt ?? new Date().toISOString(),
