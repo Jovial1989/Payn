@@ -3,7 +3,13 @@ import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { checkAdminToken } from "@/lib/admin-api-auth";
 import { enrichOffer } from "@/lib/gemini-enrich";
 
-const MAX_OFFERS = 500;
+// Run-and-resume: each click handles up to MAX_OFFERS unenriched rows. Vercel
+// caps function duration; 60 offers × ~2s per Gemini call ≈ 2 min, safely inside
+// the 300s ceiling. The user clicks the button repeatedly until no eligible
+// rows remain (last_ai_enrichment_at filter skips already-done rows).
+export const maxDuration = 300;
+
+const MAX_OFFERS = 60;
 const SLEEP_MS = 200;
 
 function sleep(ms: number) {
