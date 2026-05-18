@@ -8,7 +8,7 @@
 - Implementing logo display, provider branding, metric cells
 
 ## TL;DR
-- **Two variants:** `OfferCardAtlas` (vertical, 3-col grid) for `/explore/[bucket]`; `OfferRowAtlas` (horizontal, 1-per-row) for all legacy category routes.
+- **Two variants:** `OfferRowAtlas` (horizontal, 1-per-row) is the default — used on `/explore/[bucket]` AND all 23 legacy category routes. `OfferCardAtlas` (vertical, 3-col grid) is kept available for future vertical-variant surfaces but is not currently mounted anywhere.
 - **Always filter COUNTRIES metric** — `offer.metrics.filter(m => !/countr/i.test(m.label))`. The country picker already filters; showing it again is redundant.
 - **Max 4 metrics shown**, max 5 bullets shown — truncate with `.slice(0, 4)`.
 - **Logo → initials fallback** via `getProviderLogoPath()` — never show a broken `<img>`.

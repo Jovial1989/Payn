@@ -31,8 +31,12 @@
 ### Atlas components in this codebase
 
 ```tsx
-// OfferCardAtlas — vertical card, 3-col grid — used on /explore/[bucket]
-// OfferRowAtlas  — horizontal row, 1-per-row — used on /banking, /cards, /loans etc.
+// OfferRowAtlas  — horizontal row, 1-per-row — used on /explore/[bucket] AND
+//                  all 23 legacy category routes (/banking, /cards, /loans, ...)
+// OfferCardAtlas — vertical card, 3-col grid — available but currently unused;
+//                  kept for any future surface that prefers the vertical variant
+//                  (was on /explore/[bucket] until 2026-05-17; unified to rows
+//                  because mixed-category buckets produced inconsistent fields)
 
 // AtlasGrid — the grid container on the /explore page:
 <AtlasGrid locale={locale} country={country} buckets={ATLAS_BUCKETS} />
