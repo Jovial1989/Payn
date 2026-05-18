@@ -6,7 +6,7 @@ import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getDictionary } from "@/lib/i18n";
 import type { MarketplaceLocale } from "@payn/types";
-import { OfferCardAtlas } from "@/features/explore/offer-card-atlas";
+import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 
 interface PageProps {
   params: Promise<{ bucket: string }>;
@@ -84,9 +84,9 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {offers.map((offer) => (
-              <OfferCardAtlas key={offer.id} offer={offer} locale={locale} />
+              <OfferRowAtlas key={offer.id} offer={offer} locale={locale} />
             ))}
           </div>
         )}
