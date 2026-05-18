@@ -1,5 +1,5 @@
 import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { fetchSource } from "@/server/offers/discovery/fetcher";
 import {
   findMatchingCuratedOffer,
@@ -97,6 +97,7 @@ export async function runDailyOfferImport({
   const normalized = dedupeNormalizedOffers(
     rawOffers.map(normalizeRawOffer).filter(Boolean) as NormalizedOfferRecord[],
   );
+  const marketplaceOffers = await listMarketplaceOffers();
   const productOffers = normalized.map((offer) =>
     mergeWithCuratedOffer(
       offer,
@@ -142,7 +143,10 @@ export async function listProductOffers({
   country?: string | null;
   category?: MarketplaceCategory | null;
 } = {}) {
-  const discovered = await loadPublishedDiscoveredOffers({ country, category });
+  const [discovered, marketplaceOffers] = await Promise.all([
+    loadPublishedDiscoveredOffers({ country, category }),
+    listMarketplaceOffers(),
+  ]);
   const discoveredOffers = discovered.map((offer) =>
     mergeWithCuratedOffer(
       offer,

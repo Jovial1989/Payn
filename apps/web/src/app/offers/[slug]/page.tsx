@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { MarketplaceMarket } from "@payn/types";
+import type { MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonStyles } from "@/components/button";
@@ -9,7 +9,6 @@ import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { matchesOfferCountrySelection } from "@/lib/countries";
 import { formatCopy, getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
 import {
@@ -20,15 +19,13 @@ import {
 import { getMatchReasons } from "@/lib/match-reasons";
 import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
-import { getOfferBySlug, listCategoryOffers, listRelatedOffers } from "@/server/catalog/catalog-service";
+import { getOfferBySlug, listCategoryOffers, listMarketplaceOffers, listRelatedOffers } from "@/server/catalog/catalog-service";
 
 function formatDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(new Date(value));
 }
 
-function resolveOfferMarket(preferredMarket: MarketplaceMarket, offerSlug: string): MarketplaceMarket {
-  const offer = marketplaceOffers.find((item) => item.slug === offerSlug);
-
+function resolveOfferMarket(preferredMarket: MarketplaceMarket, offer: MarketplaceOffer | null): MarketplaceMarket {
   if (!offer) {
     return "eu";
   }
@@ -58,8 +55,9 @@ function resolveOfferMarket(preferredMarket: MarketplaceMarket, offerSlug: strin
   return "eu";
 }
 
-export function generateStaticParams() {
-  return marketplaceOffers.map((offer) => ({ slug: offer.slug }));
+export async function generateStaticParams() {
+  const offers = await listMarketplaceOffers();
+  return offers.map((offer) => ({ slug: offer.slug }));
 }
 
 export async function generateMetadata({
@@ -94,7 +92,7 @@ export default async function OfferDetailPage({
     notFound();
   }
 
-  const resolvedMarket = resolveOfferMarket(preferences.market, offer.slug);
+  const resolvedMarket = resolveOfferMarket(preferences.market, offer);
   const categoryHref = localePath(preferences.locale, `/${offer.category}`);
   const categoryLabel = dictionary.categories[offer.category];
   const categoryOffers = await listCategoryOffers(offer.category);

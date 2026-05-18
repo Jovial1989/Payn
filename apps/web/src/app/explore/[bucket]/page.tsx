@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
 import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getDictionary } from "@/lib/i18n";
 import type { MarketplaceLocale } from "@payn/types";
@@ -26,6 +26,7 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
   const dictionary = getDictionary(locale);
   const atlas = dictionary.homeAtlas;
 
+  const marketplaceOffers = await listMarketplaceOffers();
   const offers = marketplaceOffers.filter(
     (o) =>
       bucket.categories.includes(o.category) &&

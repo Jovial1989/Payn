@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { MarketplaceLocale } from "@payn/types";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import {
   getLocalizedInsightValue,
   getLocalizedRecommendations,
@@ -823,7 +823,10 @@ export async function getMarketIntelligence({
 }): Promise<MarketIntelligencePayload> {
   const asset = marketIntelligenceAssets[assetId];
   const dictionary = getMarketIntelligenceCopy(locale);
-  const { series, attempts } = await resolveSeries(assetId, timeframe, debug);
+  const [{ series, attempts }, marketplaceOffers] = await Promise.all([
+    resolveSeries(assetId, timeframe, debug),
+    listMarketplaceOffers(),
+  ]);
 
   const availableOn = getInvestmentAccessMatches(
     marketplaceOffers.filter((offer) => offer.category === "investments"),
