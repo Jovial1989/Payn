@@ -4,7 +4,7 @@ import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
 import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getDictionary } from "@/lib/i18n";
-import type { MarketplaceLocale } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceLocale } from "@payn/types";
 import { BucketWorkspace } from "@/features/explore/bucket-workspace";
 
 interface PageProps {
@@ -69,6 +69,7 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
 
       <BucketWorkspace
         bucketSlug={bucket.slug}
+        bucketCategories={bucket.categories as MarketplaceCategory[]}
         offers={offers}
         locale={locale}
         countryName={countryName}
