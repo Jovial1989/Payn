@@ -113,7 +113,7 @@ export function filterMarketplaceOffers({
   return sortOffers(result, filters.sortBy, category);
 }
 
-function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: ExplorerCategory) {
+export function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: ExplorerCategory) {
   return [...offers].sort((left, right) => {
     switch (sortBy) {
       case "fees": {

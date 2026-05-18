@@ -5,7 +5,7 @@ import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getDictionary } from "@/lib/i18n";
 import type { MarketplaceLocale } from "@payn/types";
-import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
+import { BucketWorkspace } from "@/features/explore/bucket-workspace";
 
 interface PageProps {
   params: Promise<{ bucket: string }>;
@@ -67,25 +67,13 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
         </p>
       </div>
 
-      {offers.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-white px-8 py-16 text-center">
-          <p className="text-[15px] text-ink-secondary">
-            No options currently available in {countryName} for this category.
-          </p>
-          <Link
-            href={`/${locale}/explore`}
-            className="mt-4 inline-block text-[14px] font-medium text-accent-emerald hover:underline"
-          >
-            Browse all categories →
-          </Link>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {offers.map((offer) => (
-            <OfferRowAtlas key={offer.id} offer={offer} locale={locale} />
-          ))}
-        </div>
-      )}
+      <BucketWorkspace
+        bucketSlug={bucket.slug}
+        offers={offers}
+        locale={locale}
+        countryName={countryName}
+        marketLabel={countryName}
+      />
     </div>
   );
 }
