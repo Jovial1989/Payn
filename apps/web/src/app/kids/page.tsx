@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function KidsPage() {
-  return <ProductCategoryView category="kids" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function KidsPage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="kids" allOffers={allOffers} />;
 }

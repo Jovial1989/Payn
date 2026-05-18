@@ -1,6 +1,6 @@
 "use client";
 
-import type { MarketplaceCategory } from "@payn/types";
+import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
@@ -11,6 +11,7 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import {
+  filterCategoryOffersForCountry,
   getCategoryOffersForCountrySelection,
 } from "@/lib/countries";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
@@ -31,7 +32,16 @@ function mergeInsights(...buckets: DashboardOfferInsight[][]) {
   return merged;
 }
 
-export function ProductCategoryView({ category }: { category: MarketplaceCategory }) {
+export function ProductCategoryView({
+  category,
+  allOffers,
+}: {
+  category: MarketplaceCategory;
+  // Optional Supabase-sourced offer list passed down by the server page wrapper.
+  // When present, it's used for category filtering — that's how AI-enriched
+  // bullets reach guests. Falls back to the static catalog if absent.
+  allOffers?: MarketplaceOffer[];
+}) {
   const searchParams = useSearchParams();
   const { user, profile, loading } = useAuth();
   const preferences = useMarketplacePreferences();
@@ -67,11 +77,9 @@ export function ProductCategoryView({ category }: { category: MarketplaceCategor
     void loadInsights();
   }, [loadInsights]);
 
-  const categoryOffers = getCategoryOffersForCountrySelection(
-    preferences.country,
-    category,
-    productMarketScope,
-  );
+  const categoryOffers = allOffers
+    ? filterCategoryOffersForCountry(allOffers, preferences.country, category, productMarketScope)
+    : getCategoryOffersForCountrySelection(preferences.country, category, productMarketScope);
   const categoryInsights = insights
     ? mergeInsights(
         insights.recommended.filter((item) => item.offer.category === category),

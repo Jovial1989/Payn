@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function TaxPage() {
-  return <ProductCategoryView category="tax" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function TaxPage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="tax" allOffers={allOffers} />;
 }

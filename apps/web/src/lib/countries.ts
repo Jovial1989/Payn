@@ -365,6 +365,25 @@ export function getCategoryOffersForCountrySelection(
   );
 }
 
+// Variant that filters a caller-supplied offer array instead of the bundled
+// static catalog. Lets server components hand pre-fetched Supabase offers
+// (with AI-enriched bullets) down to client components so the category pages
+// don't have to fall back to the bullet-less static catalog for guests.
+// Fallback top-up via fallbackMarketplaceOffers is intentionally skipped here
+// since Supabase already holds the full curated catalog (303+ rows).
+export function filterCategoryOffersForCountry(
+  offers: MarketplaceOffer[],
+  countrySelection: string,
+  category: MarketplaceCategory,
+  scope: UserProfileMarketScope = "eu_fallback",
+) {
+  return offers.filter(
+    (offer) =>
+      offer.category === category &&
+      matchesOfferCountrySelection(offer, countrySelection, scope),
+  );
+}
+
 export function getActiveCategoriesForCountry(
   countrySelection: string,
   scope: UserProfileMarketScope = "eu_fallback",

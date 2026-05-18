@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function RemittancePage() {
-  return <ProductCategoryView category="remittance" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function RemittancePage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="remittance" allOffers={allOffers} />;
 }

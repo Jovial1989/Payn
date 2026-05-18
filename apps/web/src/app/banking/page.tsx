@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function BankingPage() {
-  return <ProductCategoryView category="banking" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function BankingPage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="banking" allOffers={allOffers} />;
 }

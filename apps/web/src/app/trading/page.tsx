@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function TradingPage() {
-  return <ProductCategoryView category="trading" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function TradingPage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="trading" allOffers={allOffers} />;
 }

@@ -1,4 +1,7 @@
 import { ProductCategoryView } from "@/components/product-category-view";
-export default function CashbackPage() {
-  return <ProductCategoryView category="cashback" />;
+import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
+
+export default async function CashbackPage() {
+  const allOffers = await listMarketplaceOffers();
+  return <ProductCategoryView category="cashback" allOffers={allOffers} />;
 }
