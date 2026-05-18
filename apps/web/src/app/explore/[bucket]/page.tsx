@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { SiteShell } from "@/components/site-shell";
 import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
 import { listMarketplaceOffers } from "@/server/catalog/catalog-service";
 import { getRequestPreferences } from "@/lib/request-preferences";
@@ -43,54 +42,50 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
   const Icon = bucket.Icon;
 
   return (
-    <SiteShell hideHero>
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        {/* Header */}
-        <div className="mb-10">
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-10">
+        <Link
+          href={`/${locale}/explore`}
+          className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-tertiary hover:text-ink"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M11.5 7h-9M6 3.5L2.5 7 6 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          All categories
+        </Link>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-emerald-soft text-accent-emerald">
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-[1.75rem] font-bold tracking-[-0.025em] text-ink">{title}</h1>
+            <p className="text-[14px] text-ink-secondary">{description}</p>
+          </div>
+        </div>
+        <p className="mt-3 text-[13px] text-ink-tertiary">
+          {offers.length} options available in {countryName}
+        </p>
+      </div>
+
+      {offers.length === 0 ? (
+        <div className="rounded-2xl border border-line bg-white px-8 py-16 text-center">
+          <p className="text-[15px] text-ink-secondary">
+            No options currently available in {countryName} for this category.
+          </p>
           <Link
             href={`/${locale}/explore`}
-            className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-tertiary hover:text-ink"
+            className="mt-4 inline-block text-[14px] font-medium text-accent-emerald hover:underline"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M11.5 7h-9M6 3.5L2.5 7 6 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            All categories
+            Browse all categories →
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-emerald-soft text-accent-emerald">
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-[1.75rem] font-bold tracking-[-0.025em] text-ink">{title}</h1>
-              <p className="text-[14px] text-ink-secondary">{description}</p>
-            </div>
-          </div>
-          <p className="mt-3 text-[13px] text-ink-tertiary">
-            {offers.length} options available in {countryName}
-          </p>
         </div>
-
-        {/* Offer cards */}
-        {offers.length === 0 ? (
-          <div className="rounded-2xl border border-line bg-white px-8 py-16 text-center">
-            <p className="text-[15px] text-ink-secondary">
-              No options currently available in {countryName} for this category.
-            </p>
-            <Link
-              href={`/${locale}/explore`}
-              className="mt-4 inline-block text-[14px] font-medium text-accent-emerald hover:underline"
-            >
-              Browse all categories →
-            </Link>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 sm:gap-4">
-            {offers.map((offer) => (
-              <OfferRowAtlas key={offer.id} offer={offer} locale={locale} />
-            ))}
-          </div>
-        )}
-      </div>
-    </SiteShell>
+      ) : (
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {offers.map((offer) => (
+            <OfferRowAtlas key={offer.id} offer={offer} locale={locale} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
