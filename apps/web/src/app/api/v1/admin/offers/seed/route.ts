@@ -56,9 +56,14 @@ export async function POST() {
     updated_at: o.updatedAt ?? new Date().toISOString(),
   }));
 
+  // defaultToNull: false — without this, supabase-js v2 sends NULL for every
+  // column not present in the row payload, which would wipe bullets,
+  // last_ai_enrichment_at, last_human_review_at on every re-sync. We want
+  // re-sync to refresh the static-sourced columns only and leave the
+  // AI-enrichment + human-review state alone.
   const { error } = await admin
     .from("product_offers")
-    .upsert(rows, { onConflict: "id" });
+    .upsert(rows, { onConflict: "id", defaultToNull: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
