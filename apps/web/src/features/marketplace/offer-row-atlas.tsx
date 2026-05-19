@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import { getDictionary, formatCopy } from "@/lib/i18n";
 import { getProviderLogoPath } from "@/features/catalog/provider-logo";
+import { localePath } from "@/lib/locale";
+import { getOfferHref } from "@/lib/marketplace";
 
 const rowVariants = {
   rest:  { y: 0,  borderColor: "rgba(17,24,39,0.08)" },
@@ -54,6 +57,7 @@ interface OfferRowAtlasProps {
 }
 
 export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
+  const router = useRouter();
   const shouldReduce = useReducedMotion();
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const t = dictionary.homeAtlas.exploreBucket;
@@ -68,10 +72,28 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
   const firstBestFor = offer.bestFor?.[0];
   const logoPath = getProviderLogoPath(offer.providerName);
   const href = offer.affiliateLink || offer.providerWebsiteUrl;
+  const detailHref = localePath(locale as MarketplaceLocale, getOfferHref(offer));
+
+  // Card-body click → /offers/<slug> (retention loop). The right-side CTA stays
+  // an <a target="_blank"> so the affiliate link keeps its tab/right-click/menu
+  // affordances and stopPropagation on its onClick prevents the row's navigation
+  // from firing too. Using onClick + role/keyboard on the wrapper instead of a
+  // nested <Link> avoids the HTML rule against nested anchors.
+  const navigateToDetail = () => router.push(detailHref);
 
   return (
     <motion.div
-      className="w-full overflow-hidden rounded-2xl border bg-white"
+      role="link"
+      tabIndex={0}
+      aria-label={`${offer.providerName} — ${offer.title}`}
+      onClick={navigateToDetail}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          navigateToDetail();
+        }
+      }}
+      className="w-full cursor-pointer overflow-hidden rounded-2xl border bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-emerald focus-visible:ring-offset-2"
       variants={shouldReduce ? undefined : rowVariants}
       initial={shouldReduce ? undefined : "rest"}
       whileHover={shouldReduce ? undefined : "hover"}
@@ -140,12 +162,15 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
           </div>
         )}
 
-        {/* CTA — right, fixed */}
+        {/* CTA — right, fixed. stopPropagation prevents the row's body-click
+            handler from also firing when the user actually wants the affiliate
+            link, not the detail page. */}
         <div className="shrink-0">
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer sponsored"
+            onClick={(event) => event.stopPropagation()}
             className="flex items-center gap-1.5 rounded-xl bg-accent-emerald px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-emerald-strong sm:px-5 sm:py-2.5 sm:text-[14px]"
           >
             <span className="hidden sm:inline">{t.goToProvider}</span>
