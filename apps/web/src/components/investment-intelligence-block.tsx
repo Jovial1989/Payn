@@ -687,7 +687,10 @@ export function InvestmentIntelligenceBlock({
                 {blockCopy.chartTitle}
               </p>
               <h2 className="mt-3 text-[30px] font-bold tracking-[-0.05em] text-ink sm:text-[36px]">
-                {marketIntelligenceAssets[resolvedAssetId].label} in {marketLabel ?? "your market"}
+                {marketIntelligenceAssets[resolvedAssetId].label}
+                <span className="ml-2 align-middle text-[14px] font-medium uppercase tracking-[0.2em] text-ink-tertiary sm:text-[16px]">
+                  · live market
+                </span>
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
                 {blockCopy.chartSubtitle}

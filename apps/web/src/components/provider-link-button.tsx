@@ -151,6 +151,8 @@ export function ProviderLinkButton({
         className={clsx(providerCtaStyles({ fullWidth }), "pressable", className)}
         disabled={!resolvedUrl || opening}
       >
+        {/* External-link glyph — replaces the previous padlock that read as
+            "locked content" rather than "opens at provider in new tab". */}
         <svg
           width="16"
           height="16"
@@ -163,8 +165,9 @@ export function ProviderLinkButton({
           aria-hidden="true"
           className="mr-2 shrink-0"
         >
-          <rect x="4.5" y="9" width="11" height="7.5" rx="2" />
-          <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
+          <path d="M11 4h5v5" />
+          <path d="M16 4l-7 7" />
+          <path d="M14 11v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4" />
         </svg>
         {label}
       </button>
