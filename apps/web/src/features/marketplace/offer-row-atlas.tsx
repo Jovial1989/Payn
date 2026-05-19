@@ -11,6 +11,43 @@ const rowVariants = {
   hover: { y: -1, borderColor: "rgba(16,185,129,0.4)" },
 };
 
+// Canonical metric ordering — when offers in the same category emit metrics
+// in different orders (one shows "Monthly fee" first, another "SEPA transfers"
+// first), the card row reads inconsistently. This priority list sorts each
+// offer's visibleMetrics into a stable display order so the eye scans them
+// the same way across a list. Lower number = higher priority. Anything not
+// matched lands at the end in original (data) order. Match is case-insensitive
+// against the leading word/phrase of the metric label.
+const METRIC_PRIORITY: ReadonlyArray<[RegExp, number]> = [
+  [/^monthly\s*(fee|premium)/i, 10],
+  [/^annual\s*fee/i, 11],
+  [/^fee\b/i, 12],
+  [/^(fx|foreign)\b/i, 20],
+  [/^spread/i, 21],
+  [/^conversion/i, 22],
+  [/^(transfer|sepa)\b/i, 30],
+  [/^speed/i, 31],
+  [/^corridor/i, 32],
+  [/^(apr|interest)/i, 40],
+  [/^cashback/i, 41],
+  [/^(amount|insured)/i, 50],
+  [/^term/i, 51],
+  [/^min(imum)?\b/i, 52],
+  [/^(currencies|currencies?)\b/i, 60],
+  [/^atm/i, 70],
+  [/^(cards|sub-ibans|access)/i, 80],
+  [/^deposit\s*protection/i, 90],
+  [/^region/i, 91],
+  [/^assets/i, 92],
+];
+
+function metricPriority(label: string): number {
+  for (const [pattern, weight] of METRIC_PRIORITY) {
+    if (pattern.test(label)) return weight;
+  }
+  return 999;
+}
+
 interface OfferRowAtlasProps {
   offer: MarketplaceOffer;
   locale: string;
@@ -22,7 +59,11 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
   const t = dictionary.homeAtlas.exploreBucket;
 
   const isCountryMetric = (label: string) => /countr/i.test(label);
-  const visibleMetrics = offer.metrics.filter((m) => !isCountryMetric(m.label)).slice(0, 4);
+  const visibleMetrics = offer.metrics
+    .filter((m) => !isCountryMetric(m.label))
+    .slice()
+    .sort((a, b) => metricPriority(a.label) - metricPriority(b.label))
+    .slice(0, 4);
   const bullets = offer.bullets?.filter(Boolean).slice(0, 3) ?? [];
   const firstBestFor = offer.bestFor?.[0];
   const logoPath = getProviderLogoPath(offer.providerName);
@@ -38,8 +79,11 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
       transition={{ type: "tween", duration: 0.15 }}
     >
       <div className="flex items-center gap-4 p-4 sm:gap-6 sm:p-5">
-        {/* Logo + Title — left, fixed on sm+ */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:flex-[0_0_260px] sm:gap-4">
+        {/* Logo + Title — left. Width steps up at md/lg so long names like
+            "Société Générale Compte Courant" or "BNP Paribas Personal Loan"
+            don't get clipped on mid-size desktops. Title also wraps to 2 lines
+            and uses native title attribute as fallback tooltip. */}
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:flex-[0_0_280px] sm:gap-4 lg:flex-[0_0_320px]">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-accent-emerald-soft">
             {logoPath ? (
               <Image
@@ -56,7 +100,12 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold leading-tight text-ink">{offer.title}</p>
+            <p
+              className="line-clamp-2 text-[15px] font-bold leading-tight text-ink"
+              title={offer.title}
+            >
+              {offer.title}
+            </p>
             <p className="mt-0.5 truncate text-[12px] text-ink-tertiary">
               {offer.providerName} · {offer.category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
             </p>
