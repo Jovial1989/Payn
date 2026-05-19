@@ -72,6 +72,7 @@ export default async function OutcomeBucketPage({ params, searchParams }: PagePr
         bucketCategories={bucket.categories as MarketplaceCategory[]}
         offers={offers}
         locale={locale}
+        country={country}
         countryName={countryName}
         marketLabel={countryName}
       />

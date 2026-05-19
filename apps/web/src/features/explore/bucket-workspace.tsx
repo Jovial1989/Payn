@@ -6,6 +6,7 @@ import type { MarketplaceCategory, MarketplaceLocale, MarketplaceOffer } from "@
 import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { sortOffers, type SortKey } from "@/lib/marketplace-engine";
 import { getDictionary } from "@/lib/i18n";
+import { countryToBaseCurrency } from "@/lib/country-currency";
 import { InvestmentIntelligenceBlock } from "@/components/investment-intelligence-block";
 import { FilterSheet } from "@/components/filter-sheet";
 import { CategoryPill } from "@/components/category-pill";
@@ -34,6 +35,9 @@ interface BucketWorkspaceProps {
   bucketCategories: MarketplaceCategory[];
   offers: MarketplaceOffer[];
   locale: MarketplaceLocale;
+  /** ISO country code (e.g. "FR") — used to flag offers priced in a
+   *  non-base currency. Optional for backwards compatibility. */
+  country?: string;
   countryName: string;
   marketLabel: string;
 }
@@ -43,9 +47,11 @@ export function BucketWorkspace({
   bucketCategories,
   offers,
   locale,
+  country,
   countryName,
   marketLabel,
 }: BucketWorkspaceProps) {
+  const baseCurrency = countryToBaseCurrency(country);
   const dictionary = getDictionary(locale);
   const [sortBy, setSortBy] = useState<SortKey>("relevance");
   const [query, setQuery] = useState("");
@@ -353,6 +359,7 @@ export function BucketWorkspace({
               // so the score and award compare against every offer in the
               // category market, not just what survived the current filters.
               marketContext={offers}
+              baseCurrency={baseCurrency ?? undefined}
             />
           ))}
         </div>

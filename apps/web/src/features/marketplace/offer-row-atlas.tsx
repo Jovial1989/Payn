@@ -14,6 +14,7 @@ import {
   rankOffer,
   type MetricRank,
 } from "@/features/marketplace/offer-ranking";
+import { extractOfferCurrency } from "@/features/marketplace/offer-currency";
 
 const rowVariants = {
   rest:  { y: 0,  borderColor: "rgba(17,24,39,0.08)" },
@@ -138,6 +139,11 @@ interface OfferRowAtlasProps {
    *  all rank against this set, so passing a filtered list will produce
    *  meaningless "best of 3" results. Omit to disable v2 visuals entirely. */
   marketContext?: MarketplaceOffer[];
+  /** ISO 4217 currency code that matches the user's market (e.g. "EUR"
+   *  for an FR viewer). When the offer's own pricing is in a different
+   *  currency we render a small amber pill so the difference doesn't get
+   *  lost in the column. Omit to suppress the badge. */
+  baseCurrency?: string;
   /** True when this offer is in the parent workspace's compare selection.
    *  When omitted, the Compare toggle isn't rendered at all (used for
    *  surfaces like /explore/<bucket> that don't have a compare table). */
@@ -151,6 +157,7 @@ export function OfferRowAtlas({
   offer,
   locale,
   marketContext,
+  baseCurrency,
   compareSelected,
   onToggleCompare,
 }: OfferRowAtlasProps) {
@@ -187,6 +194,17 @@ export function OfferRowAtlas({
     [offer, marketContext],
   );
   // segments calc removed — score bar no longer rendered.
+
+  // Currency badge — flags offers priced outside the user's market. We
+  // only render when both sides of the comparison are known and they
+  // disagree (e.g. USD-priced policy shown to a FR user where base is
+  // EUR). Suppressed when baseCurrency wasn't passed so older callers
+  // don't get a silent visual change.
+  const offerCurrency = extractOfferCurrency(offer);
+  const showCurrencyBadge =
+    Boolean(baseCurrency) &&
+    offerCurrency !== null &&
+    offerCurrency !== baseCurrency;
 
   // Card-body click → /offers/<slug> (retention loop). The right-side CTA stays
   // an <a target="_blank"> so the affiliate link keeps its tab/right-click/menu
@@ -246,9 +264,19 @@ export function OfferRowAtlas({
             >
               {offer.title}
             </p>
-            <p className="mt-0.5 truncate text-[12px] text-ink-tertiary">
-              {offer.providerName} · {offer.category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-            </p>
+            <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+              <p className="truncate text-[12px] text-ink-tertiary">
+                {offer.providerName} · {offer.category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              </p>
+              {showCurrencyBadge && (
+                <span
+                  className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-px text-[10px] font-bold tracking-wide text-amber-800"
+                  title={`Priced in ${offerCurrency}, not ${baseCurrency}`}
+                >
+                  {offerCurrency}
+                </span>
+              )}
+            </div>
             {firstBestFor && (
               <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-accent-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-accent-emerald-strong">
                 <span className="h-1 w-1 rounded-full bg-accent-emerald" />
