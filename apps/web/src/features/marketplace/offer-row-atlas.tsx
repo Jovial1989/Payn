@@ -73,6 +73,12 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
   const shouldReduce = useReducedMotion();
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const t = dictionary.homeAtlas.exploreBucket;
+  // Per-category CTA label (FIX-05 from UX audit) — "Open account" for
+  // banking/savings, "Check my rate" for loans, "Get quote" for insurance,
+  // etc. Falls back to the generic "Go to provider" if the category somehow
+  // isn't in the map.
+  const ctaLabel =
+    dictionary.offerCard.providerCta[offer.category] ?? t.goToProvider;
 
   const isCountryMetric = (label: string) => /countr/i.test(label);
   const visibleMetrics = offer.metrics
@@ -185,7 +191,7 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
             onClick={(event) => event.stopPropagation()}
             className="flex items-center gap-1.5 rounded-xl bg-accent-emerald px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-emerald-strong sm:px-5 sm:py-2.5 sm:text-[14px]"
           >
-            <span className="hidden sm:inline">{t.goToProvider}</span>
+            <span className="hidden sm:inline">{ctaLabel}</span>
             <span className="sm:hidden">Go</span>
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
               <path d="M2 6.5h9M8 3l3.5 3.5L8 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
