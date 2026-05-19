@@ -15,6 +15,12 @@ import {
   INSURANCE_SUBTYPE_ORDER,
   type InsuranceSubtype,
 } from "./insurance-subtypes";
+import {
+  inferTransferSpeed,
+  TRANSFER_SPEED_LABELS,
+  TRANSFER_SPEED_ORDER,
+  type TransferSpeed,
+} from "./transfer-speed";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -51,6 +57,11 @@ export function BucketWorkspace({
   const [activeInsuranceSubtype, setActiveInsuranceSubtype] = useState<
     InsuranceSubtype | ""
   >("");
+  // Transfer speed filter — same gate logic, applies to money-movement
+  // categories (transfers / exchange / remittance).
+  const [activeTransferSpeed, setActiveTransferSpeed] = useState<
+    TransferSpeed | ""
+  >("");
 
   // Only show categories that actually have offers in this country.
   const presentCategories = useMemo(() => {
@@ -85,6 +96,31 @@ export function BucketWorkspace({
     return counts;
   }, [insuranceOffers]);
 
+  // Same shape for transfers.
+  const transferOffers = useMemo(
+    () =>
+      offers.filter(
+        (o) =>
+          o.category === "transfers" ||
+          o.category === "exchange" ||
+          o.category === "remittance",
+      ),
+    [offers],
+  );
+  const showTransferSpeed =
+    transferOffers.length >= 8 &&
+    (activeCategory === "all" ||
+      activeCategory === "transfers" ||
+      activeCategory === "exchange" ||
+      activeCategory === "remittance");
+  const transferSpeedCounts = useMemo(() => {
+    const counts: Record<TransferSpeed, number> = {
+      instant: 0, fast: 0, "multi-day": 0, unknown: 0,
+    };
+    for (const o of transferOffers) counts[inferTransferSpeed(o)]++;
+    return counts;
+  }, [transferOffers]);
+
   const filteredAndSorted = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     let filtered = offers;
@@ -103,6 +139,18 @@ export function BucketWorkspace({
           inferInsuranceSubtype(o) === activeInsuranceSubtype,
       );
     }
+    if (activeTransferSpeed) {
+      filtered = filtered.filter((o) => {
+        if (
+          o.category !== "transfers" &&
+          o.category !== "exchange" &&
+          o.category !== "remittance"
+        ) {
+          return true;
+        }
+        return inferTransferSpeed(o) === activeTransferSpeed;
+      });
+    }
     if (trimmed) {
       filtered = filtered.filter(
         (o) =>
@@ -112,7 +160,15 @@ export function BucketWorkspace({
       );
     }
     return sortOffers(filtered, sortBy, "all");
-  }, [offers, sortBy, query, activeCategory, activeProvider, activeInsuranceSubtype]);
+  }, [
+    offers,
+    sortBy,
+    query,
+    activeCategory,
+    activeProvider,
+    activeInsuranceSubtype,
+    activeTransferSpeed,
+  ]);
 
   const investmentOffers = useMemo(
     () => offers.filter((o) => o.category === "investments"),
@@ -123,6 +179,7 @@ export function BucketWorkspace({
     activeCategory !== "all" ||
     activeProvider !== "" ||
     activeInsuranceSubtype !== "" ||
+    activeTransferSpeed !== "" ||
     query !== "";
 
   return (
@@ -199,6 +256,28 @@ export function BucketWorkspace({
             />
           )}
 
+          {showTransferSpeed && (
+            <FilterSheet
+              label="Speed"
+              value={activeTransferSpeed}
+              onChange={(v) => setActiveTransferSpeed(v as TransferSpeed | "")}
+              options={[
+                {
+                  value: "",
+                  label: "Any speed",
+                  hint: `${transferOffers.length} options`,
+                },
+                ...TRANSFER_SPEED_ORDER.filter(
+                  (k) => transferSpeedCounts[k] > 0,
+                ).map((k) => ({
+                  value: k,
+                  label: TRANSFER_SPEED_LABELS[k],
+                  hint: `${transferSpeedCounts[k]} ${transferSpeedCounts[k] === 1 ? "offer" : "offers"}`,
+                })),
+              ]}
+            />
+          )}
+
           {providerOptions.length > 1 && (
             <FilterSheet
               label="Provider"
@@ -225,6 +304,7 @@ export function BucketWorkspace({
                 setActiveCategory("all");
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
+                setActiveTransferSpeed("");
                 setQuery("");
               }}
               className="inline-flex h-10 items-center rounded-full bg-bg-surface px-4 text-[12px] font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
@@ -253,6 +333,7 @@ export function BucketWorkspace({
                 setActiveCategory("all");
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
+                setActiveTransferSpeed("");
                 setQuery("");
               }}
               className="mt-3 text-[14px] font-medium text-accent-emerald hover:underline"
