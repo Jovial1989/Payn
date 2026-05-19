@@ -63,6 +63,11 @@ function resolveCurrentSection(pathname: string | null): AppSection {
   if (pathname.includes("/login")) return "login";
   if (pathname.includes("/signup")) return "signup";
   if (pathname.includes("/discover")) return "discover";
+  // /explore/<bucket-slug> must short-circuit before the category loop —
+  // otherwise `pathname.includes("/travel")` accidentally matches
+  // /explore/travel-and-abroad and the header pretends the user is on the
+  // legacy /travel category page.
+  if (pathname.includes("/explore")) return "other";
   for (const cat of marketplaceCategories) {
     if (pathname.includes(`/${cat}`)) return cat;
   }
