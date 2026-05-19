@@ -31,9 +31,13 @@ export interface OutcomeBucket {
 }
 
 export const OUTCOME_BUCKETS: OutcomeBucket[] = [
-  { slug: "spend-smarter",    Icon: IconSpendSmarter,  bucketKey: "bucketSpendSmarter",  categories: ["cards", "debit", "cashback"],                          order: 1 },
+  // "travel" sub-category lives under Cards: those offers (Wise Travel Card,
+  // Revolut Premium Travel, Curve Travel, N26 You Travel, etc.) are cards
+  // with travel-focused perks — not money-movement products. Keeping them
+  // in Transfers & Exchange made users hunt across buckets for "travel cards".
+  { slug: "spend-smarter",    Icon: IconSpendSmarter,  bucketKey: "bucketSpendSmarter",  categories: ["cards", "debit", "travel", "cashback"],                order: 1 },
   { slug: "earn-on-cash",     Icon: IconEarnOnCash,    bucketKey: "bucketEarnOnCash",    categories: ["savings"],                                              order: 2 },
-  { slug: "travel-and-abroad",Icon: IconTravelAbroad,  bucketKey: "bucketTravel",        categories: ["transfers", "exchange", "travel", "remittance"],        order: 3 },
+  { slug: "travel-and-abroad",Icon: IconTravelAbroad,  bucketKey: "bucketTravel",        categories: ["transfers", "exchange", "remittance"],                  order: 3 },
   { slug: "daily-banking",    Icon: IconDailyBanking,  bucketKey: "bucketBanking",       categories: ["banking", "neobanks", "wallets"],                       order: 4 },
   { slug: "invest-and-grow",  Icon: IconInvestGrow,    bucketKey: "bucketInvest",        categories: ["investments", "trading", "crypto"],                     order: 5 },
   { slug: "big-purchases",    Icon: IconBigPurchases,  bucketKey: "bucketBigPurchases",  categories: ["loans", "bnpl"],                                        order: 6 },
