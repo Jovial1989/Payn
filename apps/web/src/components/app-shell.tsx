@@ -583,104 +583,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
-                  <label className="hidden items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm xl:flex">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      {dictionary.nav.country}
-                    </span>
-                    <select
-                      value={preferences.country}
-                      onChange={(event) => handleCountryChange(event.target.value)}
-                      className="bg-transparent text-sm font-semibold text-ink outline-none"
-                    >
-                      {preferences.availableCountries.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="hidden items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm xl:flex">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      {dictionary.nav.language}
-                    </span>
-                    <select
-                      value={preferences.locale}
-                      onChange={(event) => handleLanguageChange(event.target.value as typeof preferences.locale)}
-                      className="bg-transparent text-sm font-semibold text-ink outline-none"
-                    >
-                      {Object.entries(dictionary.locales).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <span className="hidden rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-tertiary sm:inline-flex xl:inline-flex">
-                    {preferences.currency}
-                  </span>
-
-                  {user ? (
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAccountMenuOpen((open) => !open);
-                          setMobileNavOpen(false);
-                        }}
-                        className="flex items-center gap-2 rounded-full border border-line bg-white px-2.5 py-2 transition-colors hover:bg-bg-surface"
-                      >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-accent-emerald/20 bg-accent-emerald-soft text-xs font-bold text-accent-emerald-strong">
-                          {avatarInitials}
-                        </span>
-                        <span className="hidden max-w-[180px] truncate text-sm font-semibold text-ink sm:inline">
-                          {displayName}
-                        </span>
-                      </button>
-
-                      {accountMenuOpen ? (
-                        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-40 grid min-w-[180px] gap-1 rounded-[18px] border border-line bg-white p-2 shadow-elevated">
-                          <Link
-                            href={localePath(preferences.locale, "/settings")}
-                            onClick={() => setAccountMenuOpen(false)}
-                            className="rounded-[14px] px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-bg-surface"
-                          >
-                            {uiCopy.dashboard.navItems.profile.label}
-                          </Link>
-                          {isAdmin ? (
-                            <Link
-                              href="/admin"
-                              onClick={() => setAccountMenuOpen(false)}
-                              className="rounded-[14px] px-3 py-2 text-sm font-semibold text-accent-emerald transition-colors hover:bg-accent-emerald-soft"
-                            >
-                              Admin panel
-                            </Link>
-                          ) : null}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAccountMenuOpen(false);
-                              void handleSignOut();
-                            }}
-                            className="rounded-[14px] px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-bg-surface"
-                          >
-                            {uiCopy.common.signOut}
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <Link
-                      href={localePath(preferences.locale, "/login")}
-                      onClick={handleSignInClick}
-                      className={buttonStyles({ variant: "secondary", size: "sm" })}
-                    >
-                      {uiCopy.auth.signIn}
-                    </Link>
-                  )}
-                </div>
+                {/* Right-side controls intentionally removed — Country/Language/
+                    Currency/Sign-in are already rendered by the global Header
+                    above. Keeping a single set of controls avoids the visual
+                    noise of stacked selectors flagged in FIX-04 of the UX audit. */}
               </div>
             </header>
 

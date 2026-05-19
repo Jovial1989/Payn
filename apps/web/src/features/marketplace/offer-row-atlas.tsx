@@ -51,6 +51,18 @@ function metricPriority(label: string): number {
   return 999;
 }
 
+// Region/internal-status labels don't belong on the "Best for X" pill — the
+// country picker already filters by region, and statuses like "Needs review"
+// are admin terms that leak when a curator forgets a real audience. Strip
+// these so we surface only a benefit-based or audience-based bestFor.
+const REGION_OR_STATUS_BESTFOR = /^(France|Germany|Italy|Spain|Portugal|Netherlands|UK|EU[\s-]?wide|EU\b|All Europe|Needs review)\b/i;
+
+function pickPrimaryBestFor(values: string[] | undefined): string | undefined {
+  if (!values || values.length === 0) return undefined;
+  const meaningful = values.find((v) => !REGION_OR_STATUS_BESTFOR.test(v));
+  return meaningful ?? values[0];
+}
+
 interface OfferRowAtlasProps {
   offer: MarketplaceOffer;
   locale: string;
@@ -69,7 +81,7 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
     .sort((a, b) => metricPriority(a.label) - metricPriority(b.label))
     .slice(0, 4);
   const bullets = offer.bullets?.filter(Boolean).slice(0, 3) ?? [];
-  const firstBestFor = offer.bestFor?.[0];
+  const firstBestFor = pickPrimaryBestFor(offer.bestFor);
   const logoPath = getProviderLogoPath(offer.providerName);
   const href = offer.affiliateLink || offer.providerWebsiteUrl;
   const detailHref = localePath(locale as MarketplaceLocale, getOfferHref(offer));
