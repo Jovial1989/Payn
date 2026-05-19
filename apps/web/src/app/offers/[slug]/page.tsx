@@ -125,7 +125,6 @@ export default async function OfferDetailPage({
                     {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Tag tone="accent">#{offerRank}</Tag>
                     {offer.bestFor.slice(0, 2).map((item) => (
                       <Tag key={item} tone="muted">
                         {normalizeDisplayText(item)}

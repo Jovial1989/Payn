@@ -51,7 +51,6 @@ export function OfferCard({
 
   // Social proof: deterministic count derived from rank
   const userCountK = RANK_USER_COUNTS[Math.min(rank - 1, RANK_USER_COUNTS.length - 1)] ?? 10;
-  const isTopRanked = rank <= 2;
 
   return (
     <article
@@ -72,15 +71,6 @@ export function OfferCard({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[13px] font-semibold text-ink">{offer.providerName}</p>
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-[#F2F3F4] text-ink-tertiary">
-                  #{rank}
-                </span>
-                {isTopRanked && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent-emerald">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-emerald" />
-                    {rank === 1 ? "Best today" : "Top pick"}
-                  </span>
-                )}
                 {offer.attributes?.isPartner ? <Tag tone="blue">{dictionary.offerCard.partnerLabel}</Tag> : null}
               </div>
               <Link href={localePath(locale, getOfferHref(offer))} className="mt-1 block">
@@ -155,12 +145,6 @@ export function OfferCard({
         >
           {dictionary.offerCard.reviewOffer} &rarr;
         </Link>
-        {rank === 1 && !onToggleCompare && (
-          <span className="ml-auto flex items-center gap-1.5 text-[11px] font-semibold text-accent-emerald">
-            <span className="text-[9px]">✦</span>
-            Best rate today
-          </span>
-        )}
         {onToggleCompare && (
           <button
             type="button"

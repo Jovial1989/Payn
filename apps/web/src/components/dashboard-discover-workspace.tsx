@@ -1513,13 +1513,12 @@ export function DashboardDiscoverWorkspace({
           </div>
         ) : previewRows.length > 0 ? (
           <div className="grid gap-3">
-            {previewRows.map((row, index) => (
+            {previewRows.map((row) => (
               <div
                 key={row.key}
                 className="grid gap-4 rounded-[24px] border border-[#EAEAEA] bg-white px-4 py-4 shadow-[0_8px_22px_rgba(17,24,39,0.04)] transition-all duration-200 hover:-translate-y-1 hover:bg-[#FCFCFD] hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center active:scale-[0.99]"
               >
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="w-8 pt-1 text-sm font-semibold text-ink-tertiary">#{index + 1}</div>
                   <ProviderLogo providerName={row.providerName} size="sm" />
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

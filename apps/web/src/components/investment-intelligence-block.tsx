@@ -429,11 +429,9 @@ function buildProviderRows(
 
 function InvestmentProviderRow({
   row,
-  index,
   blockCopy,
 }: {
   row: RankedProviderRow;
-  index: number;
   blockCopy: InvestmentUiCopy;
 }) {
   const minimumDeposit =
@@ -445,9 +443,7 @@ function InvestmentProviderRow({
     (blockCopy.providerCta === "Anbieter ansehen" ? "Multi-Asset-Zugang" : "Multi-asset access");
 
   return (
-    <article className="grid gap-4 rounded-[24px] border border-[#ECEDEF] bg-[#FCFCFD] px-4 py-5 shadow-[0_1px_0_rgba(17,24,39,0.02)] sm:px-5 xl:min-h-[188px] xl:grid-cols-[40px_minmax(0,1.2fr)_minmax(320px,0.95fr)_168px] xl:items-start xl:gap-6">
-      <div className="pt-1 text-sm font-semibold tabular-nums text-ink-tertiary">#{index + 1}</div>
-
+    <article className="grid gap-4 rounded-[24px] border border-[#ECEDEF] bg-[#FCFCFD] px-4 py-5 shadow-[0_1px_0_rgba(17,24,39,0.02)] sm:px-5 xl:min-h-[188px] xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.95fr)_168px] xl:items-start xl:gap-6">
       <div className="grid min-w-0 gap-4">
         <div className="grid min-w-0 gap-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
           <ProviderLogo providerName={row.match.offer.providerName} size="md" muted={false} />
@@ -916,11 +912,10 @@ export function InvestmentIntelligenceBlock({
           </div>
 
           <div className="mt-6 grid gap-3">
-            {providerRows.map((row, index) => (
+            {providerRows.map((row) => (
               <InvestmentProviderRow
                 key={`${row.match.offer.id}-${row.match.assetId}`}
                 row={row}
-                index={index}
                 blockCopy={blockCopy}
               />
             ))}
