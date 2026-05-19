@@ -12,10 +12,13 @@ export const discoverCopy = {
     ],
     quickStartLabel: "Or jump in:",
     quickStart: [
-      { label: "Send money", goal: "transfers" as const },
-      { label: "Borrow", goal: "loans" as const },
-      { label: "Save", goal: "savings" as const },
-      { label: "Spend abroad", goal: "travel" as const },
+      // Labels intentionally match the sidebar canonical names so the same
+      // category reads the same way wherever the user finds it (UX audit
+      // FIX-03). "Transfers" not "Send money", "Loans" not "Borrow", etc.
+      { label: "Transfers", goal: "transfers" as const },
+      { label: "Loans", goal: "loans" as const },
+      { label: "Savings", goal: "savings" as const },
+      { label: "Travel cards", goal: "travel" as const },
     ],
     continueCard: {
       prefix: "You were comparing",

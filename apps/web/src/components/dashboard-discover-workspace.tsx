@@ -135,29 +135,33 @@ function getGoalLabel(locale: MarketplaceLocale, goal: GoalId) {
           tax: "Steuererklärung",
         }
       : {
-          transfers: "Send money abroad",
-          loans: "Get a loan",
-          cards: "Find best card",
-          neobanks: "Choose a neobank",
-          savings: "Savings & interest",
-          banking: "Open an account",
-          exchange: "Exchange currency",
-          insurance: "Get insured",
-          investments: "Invest money",
-          crypto: "Buy crypto",
-          debit: "Find a debit card",
-          travel: "Travel card",
-          cashback: "Cashback card",
-          remittance: "Send to family abroad",
-          wallets: "Digital wallet",
+          // FIX-03: canonical category names so MOST-USED titles match the
+          // sidebar/jump-in/category-route labels. The action-y subtitle in
+          // getGoalDescription below carries the verb, the title stays a
+          // recognizable navigation token.
+          transfers: "Transfers",
+          loans: "Loans",
+          cards: "Cards",
+          neobanks: "Neobanks",
+          savings: "Savings",
+          banking: "Banking",
+          exchange: "Exchange",
+          insurance: "Insurance",
+          investments: "Investments",
+          crypto: "Crypto",
+          debit: "Debit cards",
+          travel: "Travel cards",
+          cashback: "Cashback cards",
+          remittance: "Remittance",
+          wallets: "Wallets",
           bnpl: "Buy now, pay later",
-          budgeting: "Track spending",
-          kids: "For kids",
-          trading: "Trading platform",
-          business: "Business account",
+          budgeting: "Budgeting",
+          kids: "Kids & Family",
+          trading: "Trading",
+          business: "Business",
           payroll: "Payroll",
           expense: "Expense management",
-          tax: "File taxes",
+          tax: "Tax",
         };
 
   return labels[goal];
