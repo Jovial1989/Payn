@@ -87,12 +87,17 @@ export function TodayStrip({
         <div className="h-px flex-1 bg-line" />
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none]">
+      {/* Horizontal scroll strip. The right-edge mask + scroll-snap make the
+          overflow obvious — without the mask the last card looks cut off and
+          users don't realize they can scroll. */}
+      <div
+        className="-mr-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pr-4 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:-mr-6 sm:pr-6 sm:[mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
+      >
         {STRIP_ITEMS.map((item) => (
           <Link
             key={item.id}
             href={getHref(item.category)}
-            className="group flex w-[200px] shrink-0 flex-col gap-3 rounded-[20px] border border-line bg-white p-4 shadow-card transition-all hover:border-accent-emerald/30 hover:shadow-[0_4px_12px_rgba(15,138,75,0.10)]"
+            className="group flex w-[200px] shrink-0 snap-start flex-col gap-3 rounded-[20px] border border-line bg-white p-4 shadow-card transition-all hover:border-accent-emerald/30 hover:shadow-[0_4px_12px_rgba(15,138,75,0.10)]"
           >
             <div className="flex items-center justify-between">
               <span className="text-xl">{item.icon}</span>

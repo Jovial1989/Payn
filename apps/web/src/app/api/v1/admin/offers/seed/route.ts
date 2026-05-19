@@ -26,7 +26,16 @@ export async function POST() {
   }
   deduped.reverse();
 
-  const rows = deduped.map((o) => ({
+  const rows = deduped.map((o) => {
+    // Placeholder rows for Financeads imports with unresolved provider identity
+    // must NOT reach the public catalog reader (which filters status='active').
+    // Detect: explicit "Unknown Provider" or a financeads-* id with zero
+    // priority score (the static "needs review" placeholder pattern).
+    const needsReview =
+      o.providerName === "Unknown Provider" ||
+      (o.id.startsWith("financeads-") && (o.affiliatePriorityScore ?? 0) === 0);
+
+    return {
     id: o.id,
     slug: o.slug,
     provider_name: o.providerName,
@@ -44,7 +53,7 @@ export async function POST() {
         o.linkType === "affiliate_redirect" &&
         o.attributes?.monetized === true,
     ),
-    status: "active",
+    status: needsReview ? "needs_review" : "active",
     is_featured: false,
     best_for: o.bestFor ?? [],
     metrics: o.metrics ?? [],
@@ -54,7 +63,8 @@ export async function POST() {
     tags: [],
     data_source: "static",
     updated_at: o.updatedAt ?? new Date().toISOString(),
-  }));
+    };
+  });
 
   // defaultToNull: false — without this, supabase-js v2 sends NULL for every
   // column not present in the row payload, which would wipe bullets,

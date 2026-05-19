@@ -641,14 +641,14 @@ export function InvestmentIntelligenceBlock({
     };
   }, [locale, resolvedAssetId, timeframe]);
 
-  // Fetch FX rate to convert USD prices to user's currency
+  // Fetch FX rate to convert USD prices to user's currency. One-retry-with-backoff
+  // because a single transient network blip would otherwise pin the price to the
+  // asset's native currency for the whole session (silent catch → no recovery).
   useEffect(() => {
-    // eurusd is a rate itself — no conversion needed
     if (resolvedAssetId === "eurusd") {
       setFxRate(null);
       return;
     }
-    // No conversion needed if asset is already in user's currency
     const assetCurrency = payload?.currency ?? "USD";
     if (!payload || assetCurrency === userCurrency) {
       setFxRate(null);
@@ -656,17 +656,25 @@ export function InvestmentIntelligenceBlock({
     }
 
     let cancelled = false;
-    const load = async () => {
+    const load = async (attempt = 0): Promise<void> => {
       try {
         const params = new URLSearchParams({ from: assetCurrency, to: userCurrency });
         const response = await fetch(`/api/v1/fx-quote?${params.toString()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error();
+        if (!response.ok) throw new Error(`fx-quote ${response.status}`);
         const data = (await response.json()) as { rate: number; unavailable?: boolean };
-        if (!cancelled && !data.unavailable) {
-          setFxRate(data.rate);
+        if (cancelled) return;
+        if (data.unavailable || typeof data.rate !== "number") {
+          throw new Error("fx-quote unavailable");
         }
-      } catch {
-        // silently fall back to native currency
+        setFxRate(data.rate);
+      } catch (err) {
+        if (cancelled) return;
+        if (attempt < 1) {
+          await new Promise((r) => setTimeout(r, 800));
+          if (!cancelled) await load(attempt + 1);
+          return;
+        }
+        console.warn("[InvestmentIntelligenceBlock] FX rate fetch failed, falling back to native currency", err);
       }
     };
     void load();

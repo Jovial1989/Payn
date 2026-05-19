@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import type { Highlight } from "@/features/highlights/get-active-highlights";
-import { getDictionary } from "@/lib/i18n";
+import { formatCopy, getDictionary } from "@/lib/i18n";
 import type { MarketplaceLocale } from "@payn/types";
 
 const KIND_COLORS: Record<Highlight["kind"], { bg: string; text: string; dot: string }> = {
@@ -15,9 +15,10 @@ const KIND_COLORS: Record<Highlight["kind"], { bg: string; text: string; dot: st
 interface WhatsNewProps {
   highlights: Highlight[];
   locale: string;
+  countryName: string;
 }
 
-export function WhatsNew({ highlights, locale }: WhatsNewProps) {
+export function WhatsNew({ highlights, locale, countryName }: WhatsNewProps) {
   const shouldReduce = useReducedMotion();
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const atlas = dictionary.homeAtlas;
@@ -43,7 +44,7 @@ export function WhatsNew({ highlights, locale }: WhatsNewProps) {
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
         <h2 className="text-[1.25rem] font-bold tracking-[-0.02em] text-ink">
-          {atlas.whatsNew.sectionHeadline}
+          {formatCopy(atlas.whatsNew.sectionHeadline, { country: countryName })}
         </h2>
         <p className="mt-1 text-[13px] text-ink-secondary">{atlas.whatsNew.sectionSub}</p>
       </motion.div>

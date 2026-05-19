@@ -270,7 +270,7 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
       {/* ══════════════════════════════════════════════════════════
           WHAT'S NEW — admin-managed highlights feed
       ══════════════════════════════════════════════════════════ */}
-      <WhatsNew highlights={highlights} locale={locale} />
+      <WhatsNew highlights={highlights} locale={locale} countryName={countryName} />
 
       {/* ══════════════════════════════════════════════════════════
           HOW IT WORKS
