@@ -448,9 +448,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     bestFor: ["Card consolidation", "Go Back in Time", "Cashback"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
-    providerWebsiteUrl: "https://curve.com",
-    affiliateLink: "https://www.curve.com/join-curve/",
-    updatedAt: "2026-03-22T00:00:00Z",
+    providerWebsiteUrl: "https://www.curve.com/en-gb/pricing/",
+    affiliateLink: "https://www.curve.com/en-gb/pricing/",
+    updatedAt: "2026-05-19T00:00:00Z",
   },
   {
     id: "card-klarna-spending",
