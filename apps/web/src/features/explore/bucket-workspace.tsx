@@ -9,6 +9,12 @@ import { getDictionary } from "@/lib/i18n";
 import { InvestmentIntelligenceBlock } from "@/components/investment-intelligence-block";
 import { FilterSheet } from "@/components/filter-sheet";
 import { CategoryPill } from "@/components/category-pill";
+import {
+  inferInsuranceSubtype,
+  INSURANCE_SUBTYPE_LABELS,
+  INSURANCE_SUBTYPE_ORDER,
+  type InsuranceSubtype,
+} from "./insurance-subtypes";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -39,6 +45,12 @@ export function BucketWorkspace({
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<MarketplaceCategory | "all">("all");
   const [activeProvider, setActiveProvider] = useState<string>("");
+  // Insurance subtype filter — only meaningful when the bucket contains
+  // insurance offers and there are enough of them to need slicing (single-
+  // digit catalogues read fine without an extra filter).
+  const [activeInsuranceSubtype, setActiveInsuranceSubtype] = useState<
+    InsuranceSubtype | ""
+  >("");
 
   // Only show categories that actually have offers in this country.
   const presentCategories = useMemo(() => {
@@ -53,6 +65,26 @@ export function BucketWorkspace({
     return Array.from(new Set(scope.map((o) => o.providerName))).sort();
   }, [offers, activeCategory]);
 
+  // Subtype counts and visibility — computed against the bucket's full
+  // insurance slice so a chosen Type still shows the others' offer counts
+  // (handy for "what else is in here?" decisions before resetting).
+  const insuranceOffers = useMemo(
+    () => offers.filter((o) => o.category === "insurance"),
+    [offers],
+  );
+  const showInsuranceSubtype =
+    bucketCategories.includes("insurance") &&
+    insuranceOffers.length >= 6 &&
+    (activeCategory === "all" || activeCategory === "insurance");
+
+  const insuranceSubtypeCounts = useMemo(() => {
+    const counts: Record<InsuranceSubtype, number> = {
+      health: 0, travel: 0, life: 0, auto: 0, device: 0, home: 0, other: 0,
+    };
+    for (const o of insuranceOffers) counts[inferInsuranceSubtype(o)]++;
+    return counts;
+  }, [insuranceOffers]);
+
   const filteredAndSorted = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     let filtered = offers;
@@ -61,6 +93,15 @@ export function BucketWorkspace({
     }
     if (activeProvider) {
       filtered = filtered.filter((o) => o.providerName === activeProvider);
+    }
+    if (activeInsuranceSubtype) {
+      // Apply subtype only to insurance rows; non-insurance rows in mixed
+      // buckets (kids, budgeting under "protect") pass through unchanged.
+      filtered = filtered.filter(
+        (o) =>
+          o.category !== "insurance" ||
+          inferInsuranceSubtype(o) === activeInsuranceSubtype,
+      );
     }
     if (trimmed) {
       filtered = filtered.filter(
@@ -71,14 +112,18 @@ export function BucketWorkspace({
       );
     }
     return sortOffers(filtered, sortBy, "all");
-  }, [offers, sortBy, query, activeCategory, activeProvider]);
+  }, [offers, sortBy, query, activeCategory, activeProvider, activeInsuranceSubtype]);
 
   const investmentOffers = useMemo(
     () => offers.filter((o) => o.category === "investments"),
     [offers],
   );
 
-  const hasAnyFilter = activeCategory !== "all" || activeProvider !== "" || query !== "";
+  const hasAnyFilter =
+    activeCategory !== "all" ||
+    activeProvider !== "" ||
+    activeInsuranceSubtype !== "" ||
+    query !== "";
 
   return (
     <div className="grid gap-6">
@@ -132,6 +177,28 @@ export function BucketWorkspace({
             interaction on mobile and desktop, no browser-default dropdown
             styling leaking through. */}
         <div className="flex flex-wrap items-center gap-3">
+          {showInsuranceSubtype && (
+            <FilterSheet
+              label="Insurance type"
+              value={activeInsuranceSubtype}
+              onChange={(v) => setActiveInsuranceSubtype(v as InsuranceSubtype | "")}
+              options={[
+                {
+                  value: "",
+                  label: "All types",
+                  hint: `${insuranceOffers.length} options`,
+                },
+                ...INSURANCE_SUBTYPE_ORDER.filter(
+                  (k) => insuranceSubtypeCounts[k] > 0,
+                ).map((k) => ({
+                  value: k,
+                  label: INSURANCE_SUBTYPE_LABELS[k],
+                  hint: `${insuranceSubtypeCounts[k]} ${insuranceSubtypeCounts[k] === 1 ? "offer" : "offers"}`,
+                })),
+              ]}
+            />
+          )}
+
           {providerOptions.length > 1 && (
             <FilterSheet
               label="Provider"
@@ -157,6 +224,7 @@ export function BucketWorkspace({
               onClick={() => {
                 setActiveCategory("all");
                 setActiveProvider("");
+                setActiveInsuranceSubtype("");
                 setQuery("");
               }}
               className="inline-flex h-10 items-center rounded-full bg-bg-surface px-4 text-[12px] font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
@@ -184,6 +252,7 @@ export function BucketWorkspace({
               onClick={() => {
                 setActiveCategory("all");
                 setActiveProvider("");
+                setActiveInsuranceSubtype("");
                 setQuery("");
               }}
               className="mt-3 text-[14px] font-medium text-accent-emerald hover:underline"
