@@ -64,6 +64,32 @@ const PROVIDER_HINTS: Record<string, InsuranceSubtype> = {
 export function inferInsuranceSubtype(offer: MarketplaceOffer): InsuranceSubtype {
   if (offer.category !== "insurance") return "other";
 
+  // 1. Structured signal — most offers ship with `attributes.insuranceType`
+  // or `attributes.subtype` already typed (added in PR 5 enrichment).
+  // Prefer it over keyword inference when present. Map "nomad" → "travel"
+  // since nomad-style policies are conceptually travel cover; adding a
+  // separate Nomad bucket would clutter the filter without giving users
+  // a clearer slice.
+  const attrs = (offer.attributes ?? {}) as Record<string, unknown>;
+  const raw = (attrs.insuranceType ?? attrs.subtype) as string | undefined;
+  if (typeof raw === "string") {
+    const normalized = raw.toLowerCase();
+    if (
+      normalized === "health" ||
+      normalized === "travel" ||
+      normalized === "life" ||
+      normalized === "auto" ||
+      normalized === "device" ||
+      normalized === "home"
+    ) {
+      return normalized;
+    }
+    if (normalized === "nomad" || normalized === "expat") return "travel";
+    if (normalized === "renters" || normalized === "property") return "home";
+    if (normalized === "motor" || normalized === "car") return "auto";
+  }
+
+  // 2. Keyword fallback for offers without typed attributes.
   const haystack = [
     offer.title ?? "",
     ...(offer.bestFor ?? []),
@@ -74,6 +100,7 @@ export function inferInsuranceSubtype(offer: MarketplaceOffer): InsuranceSubtype
     if (re.test(haystack)) return subtype;
   }
 
+  // 3. Provider-brand last resort.
   const hint = PROVIDER_HINTS[offer.providerName];
   if (hint) return hint;
 
