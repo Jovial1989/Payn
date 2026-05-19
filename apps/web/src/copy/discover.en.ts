@@ -1,8 +1,13 @@
 export const discoverCopy = {
   hero: {
-    eyebrow: "Compare across Europe",
-    headline: "Find money tools that actually fit you.",
-    subhead: "Cards, loans, transfers and savings — compare the real cost in seconds.",
+    // Eyebrow promises specificity ("30 markets") + currency ("live"). The
+    // previous wording — "Compare across Europe" — left the user wondering
+    // what exactly they were about to do.
+    eyebrow: "Live across 30 European markets",
+    // Two-line headline with the value verb up front. Promise + outcome.
+    headline: "Money tools, compared on the only thing that matters: cost.",
+    subhead:
+      "Cards, loans, transfers, savings, insurance — every European provider, every fee, every rate. We do the maths so you don't.",
     searchPlaceholder: [
       "Send €500 to Spain",
       "Best savings account in Germany",
@@ -24,6 +29,50 @@ export const discoverCopy = {
       prefix: "You were comparing",
       cta: "Continue →",
     },
+    // Live stat tiles render to the right of the headline on lg+. Each pulls
+    // its number from real catalogue data so the proof feels true on first
+    // load, not at the end of a marketing scroll.
+    stats: {
+      products: "products compared",
+      providers: "trusted providers",
+      markets: "European markets",
+      refresh: "Daily price refresh",
+      refreshSub: "Rates verified within 24h",
+    },
+  },
+
+  atlas: {
+    eyebrow: "Browse the catalogue",
+    heading: "Nine ways money moves. Pick one.",
+    subhead:
+      "Each tile groups the products that solve one job — so you stop guessing whether a travel card belongs under Transfers or Cards.",
+  },
+
+  trustBand: {
+    eyebrow: "Why Payn",
+    heading: "Built for the question \"which one's actually best for me?\"",
+    pillars: [
+      {
+        kicker: "Live data",
+        title: "Rates pulled daily",
+        body: "We refresh APRs, FX spreads and fees from every provider every day — not once a quarter when a press release goes out.",
+      },
+      {
+        kicker: "No pay-to-win",
+        title: "Ranking can't be bought",
+        body: "Position is decided by real outcome: fees, FX, APR, speed. We flag every affiliate link so you know which ones pay us.",
+      },
+      {
+        kicker: "Eligibility-first",
+        title: "Shown if you can actually get it",
+        body: "We filter by your country and basic eligibility before you click — no \"sorry, not available in your region\" dead-ends.",
+      },
+      {
+        kicker: "Human help",
+        title: "A person, not a chatbot",
+        body: "Stuck choosing? Email a real human at Payn. No upsell, no commission incentive — just a second opinion.",
+      },
+    ],
   },
 
   todayStrip: {

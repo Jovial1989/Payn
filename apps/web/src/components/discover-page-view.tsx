@@ -7,6 +7,7 @@ import { DashboardDiscoverWorkspace } from "@/components/dashboard-discover-work
 import { DiscoverHero } from "@/components/discover/hero";
 import { TodayStrip } from "@/components/discover/today-strip";
 import { HelpDecide } from "@/components/discover/help-decide";
+import { TrustBand } from "@/components/discover/trust-band";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
@@ -14,6 +15,12 @@ import { getOffersForCountrySelection } from "@/lib/countries";
 import type { DashboardInsights } from "@/lib/dashboard";
 import { localePath } from "@/lib/locale";
 import type { MarketplaceOffer } from "@payn/types";
+import { AtlasGrid } from "@/features/home/atlas-grid";
+import {
+  countOffersByOutcome,
+  countTotalOffers,
+} from "@/features/catalog/count-by-outcome";
+import { discoverCopy as t } from "@/copy/discover.en";
 
 function getRecentTrailOffers(insights: DashboardInsights | null) {
   if (!insights) return [] as MarketplaceOffer[];
@@ -58,6 +65,18 @@ export function DiscoverPageView({
   const recentTrail = useMemo(() => getRecentTrailOffers(insights), [insights]);
   const continueOffer = recentTrail[0] ?? insights?.savedOffers?.[0] ?? null;
 
+  // Live counts that feed the hero stat tiles AND the AtlasGrid below — both
+  // read from the same source so the page's "27 cards" pill and the hero's
+  // "X products" never disagree.
+  const { productCount, providerCount } = useMemo(
+    () => countTotalOffers(preferences.country),
+    [preferences.country],
+  );
+  const buckets = useMemo(
+    () => countOffersByOutcome(preferences.country),
+    [preferences.country],
+  );
+
   const handleGoalSelect = useCallback((goal: MarketplaceCategory) => {
     setActiveGoal(goal);
     // Scroll the workspace into view after a short paint delay
@@ -85,18 +104,54 @@ export function DiscoverPageView({
         ready={!loading}
       />
 
-      <div className="grid gap-8">
-        {/* § 3.1 Hero */}
+      <div className="grid gap-8 lg:gap-10">
+        {/* § 1 — Hero with live proof tiles. */}
         <DiscoverHero
           locale={preferences.locale}
           onGoalSelect={handleGoalSelect}
           continueOffer={continueOffer}
+          productCount={productCount}
+          providerCount={providerCount}
         />
 
-        {/* § 3.2 What people are checking today */}
+        {/* § 2 — What people are checking today. Keeps a sense of motion just
+                  below the fold so the page never feels static. */}
         <TodayStrip getHref={categoryHref} />
 
-        {/* § 3.3 + 3.4 Browse by goal + Quick check */}
+        {/* § 3 — Atlas bucket grid. This is the primary navigation surface for
+                  /discover — nine tiles, each opens a curated cluster of
+                  products. Replaces the previous "browse by goal" pill row
+                  that was hidden inside the workspace. */}
+        <section className="grid gap-2">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
+                {t.atlas.eyebrow}
+              </p>
+              <h2 className="mt-2 text-[1.5rem] font-bold tracking-[-0.025em] text-ink sm:text-[1.75rem]">
+                {t.atlas.heading}
+              </h2>
+              <p className="mt-1.5 max-w-[60ch] text-[14px] text-ink-secondary">
+                {t.atlas.subhead}
+              </p>
+            </div>
+          </div>
+          <AtlasGrid
+            country={preferences.country}
+            locale={preferences.locale}
+            buckets={buckets}
+          />
+        </section>
+
+        {/* § 4 — Why Payn trust band. Dark, high-contrast panel that breaks
+                  the white rhythm and ties the brand promise to four concrete
+                  proof points. */}
+        <TrustBand />
+
+        {/* § 5 — Interactive quick-check workspace. Same component as before,
+                  now positioned after the user has seen the catalogue scope
+                  and the trust pillars, so the "tell me about your situation"
+                  ask lands with more reason to engage. */}
         <div ref={workspaceRef}>
           <DashboardDiscoverWorkspace
             locale={preferences.locale}
@@ -111,7 +166,7 @@ export function DiscoverPageView({
           />
         </div>
 
-        {/* § 3.5 Help me decide */}
+        {/* § 6 — Help me decide. */}
         <HelpDecide contactHref={localePath(preferences.locale, "/contact")} />
       </div>
     </>

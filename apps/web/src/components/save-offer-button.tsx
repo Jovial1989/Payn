@@ -22,11 +22,20 @@ export function SaveOfferButton({
   variant = "ghost",
   size = "md",
   className,
+  mode = "label",
+  stopPropagation = false,
 }: {
   offer: MarketplaceOffer;
   variant?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** "label" (default) renders the full text button used on PDPs. "icon"
+   *  renders a compact 32px bookmark glyph used on hover-revealed catalogue
+   *  card actions where vertical space is at a premium. */
+  mode?: "label" | "icon";
+  /** When the button sits inside a row that itself navigates on click
+   *  (OfferRowAtlas), parents pass true so we don't fire the row's link. */
+  stopPropagation?: boolean;
 }) {
   const router = useRouter();
   const { country, locale } = useMarketplacePreferences();
@@ -120,10 +129,51 @@ export function SaveOfferButton({
     }
   };
 
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    if (stopPropagation) event.stopPropagation();
+    void handleToggle();
+  };
+
+  if (mode === "icon") {
+    // Compact bookmark glyph for catalogue cards. Active state fills the
+    // bookmark + tints the surface emerald so the user gets unambiguous
+    // feedback without a copy change. Title attribute carries the label that
+    // the text-mode button shows inline.
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        aria-pressed={saved}
+        title={saved ? uiCopy.common.savedOffer : uiCopy.common.saveOffer}
+        className={clsx(
+          "inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all",
+          saved
+            ? "border-accent-emerald/40 bg-accent-emerald-soft text-accent-emerald-strong"
+            : "border-line bg-white text-ink-tertiary hover:border-accent-emerald/40 hover:text-accent-emerald-strong",
+          loading && "opacity-60",
+          className,
+        )}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill={saved ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.6"
+          aria-hidden="true"
+        >
+          <path d="M3 1.5h8v11l-4-2.6-4 2.6V1.5z" strokeLinejoin="round" />
+        </svg>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={handleToggle}
+      onClick={handleClick}
       disabled={loading}
       className={clsx(buttonStyles({ variant, size }), className)}
     >

@@ -97,10 +97,16 @@ export function TodayStrip({
           <Link
             key={item.id}
             href={getHref(item.category)}
-            className="group flex w-[200px] shrink-0 snap-start flex-col gap-3 rounded-[20px] border border-line bg-white p-4 shadow-card transition-all hover:border-accent-emerald/30 hover:shadow-[0_4px_12px_rgba(15,138,75,0.10)]"
+            className="group flex w-[200px] shrink-0 snap-start flex-col gap-3 rounded-xl border border-line bg-white p-4 shadow-subtle transition-all hover:-translate-y-px hover:border-accent-emerald/30 hover:shadow-card"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xl">{item.icon}</span>
+              {/* Emoji + glyph chars have inconsistent optical baselines
+                  (₿ sits low, ✈ sits high). Putting each in a fixed-size
+                  square tile with flex centering levels the row — no more
+                  icons that look "off" against each other. */}
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-emerald-soft/60 text-[18px] leading-none">
+                <span className="translate-y-[-1px]">{item.icon}</span>
+              </span>
               <span className="rounded-full bg-accent-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-accent-emerald-strong">
                 {item.offerCount} offers
               </span>

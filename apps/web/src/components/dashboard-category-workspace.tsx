@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonStyles } from "@/components/button";
 import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { DashboardEmptyState } from "@/components/dashboard-primitives";
+import { CategoryPill } from "@/components/category-pill";
 import { InsuranceCompareTable } from "@/components/insurance-compare-table";
 import {
   ProductCompareTable,
@@ -1675,16 +1676,13 @@ export function DashboardCategoryWorkspace({
                 <InputField label={copy.protectionType}>
                   <div className="flex flex-wrap gap-2">
                     {availableInsuranceTypes.map((type) => (
-                      <button
+                      <CategoryPill
                         key={type}
-                        type="button"
+                        label={getInsuranceTypeLabel(type, locale)}
+                        active={insuranceType === type}
+                        groupId="insurance-type"
                         onClick={() => setInsuranceType(type)}
-                        className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                          insuranceType === type ? "bg-accent-emerald text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
-                        }`}
-                      >
-                        {getInsuranceTypeLabel(type, locale)}
-                      </button>
+                      />
                     ))}
                   </div>
                 </InputField>
@@ -1862,7 +1860,26 @@ export function DashboardCategoryWorkspace({
         ) : (
           <div className="flex flex-col gap-3 sm:gap-4">
             {rankedResults.map((row) => (
-              <OfferRowAtlas key={row.offer.id} offer={row.offer} locale={locale} />
+              <OfferRowAtlas
+                key={row.offer.id}
+                offer={row.offer}
+                locale={locale}
+                // Pass the unfiltered category market (`offers`), not the
+                // user-filtered `rankedResults` — the Payn score must rank
+                // against every card/loan in this country, not the 3 on the
+                // screen after a slider change.
+                marketContext={offers}
+                compareSelected={compareSelection.includes(row.offer.id)}
+                onToggleCompare={() =>
+                  setCompareSelection((current) =>
+                    current.includes(row.offer.id)
+                      ? current.filter((id) => id !== row.offer.id)
+                      : current.length >= 3
+                        ? current
+                        : [...current, row.offer.id],
+                  )
+                }
+              />
             ))}
           </div>
         )}

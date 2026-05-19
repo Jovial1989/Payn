@@ -140,40 +140,126 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   }
 
   if (!user) {
+    // Guest dashboard — was previously a dead-end with just "Sign in".
+    // Replaced with a value-first sell: three feature tiles with concrete
+    // example chips drawn from the same signal we already publish on
+    // home (WhatsNew), a single primary CTA, and a frictionless
+    // "Continue as guest" escape that wins findability but loses the
+    // attention war against the sign-up button.
+    const featureTiles: Array<{
+      key: string;
+      title: string;
+      example: string;
+      icon: React.ReactNode;
+    }> = [
+      {
+        key: "track",
+        title: "Track rate drops",
+        example: "Wise cut transfer fees 0.05% last week",
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 17l5-5 4 4 5-7 4 5" />
+            <path d="M16 9h5v5" />
+          </svg>
+        ),
+      },
+      {
+        key: "save",
+        title: "Save your shortlist",
+        example: "Keep the 3 cards you're comparing in one place",
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 3h14v18l-7-4.5L5 21V3z" />
+          </svg>
+        ),
+      },
+      {
+        key: "alerts",
+        title: "Get rate alerts",
+        example: "ING raised easy-access savings 3.8% → 4.0%",
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 8a6 6 0 0112 0c0 6 3 7 3 7H3s3-1 3-7z" />
+            <path d="M10 21a2 2 0 004 0" />
+          </svg>
+        ),
+      },
+    ];
+    const signInHref = `${localePath(preferences.locale, "/login")}?next=${encodeURIComponent(localePath(preferences.locale, "/dashboard"))}`;
+
     return (
-      <div className="grid gap-6">
+      <div className="grid gap-10">
         {pageView}
-        <DashboardSectionCard
-          eyebrow={uiCopy.dashboard.guestEyebrow}
-          title={uiCopy.dashboard.guestTitle}
-          description={
-            preferences.locale === "de"
-              ? "Das Dashboard ist jetzt das Kontrollzentrum für angemeldete Nutzer. Discover und alle Produktseiten bleiben für Gäste offen, während dein Konto Entscheidungspfad, Einstellungen und Empfehlungen speichert."
-              : "Dashboard is now the signed-in control center. Discover and every product page stay open to guests, while your account keeps the decision trail, settings, and recommendations."
-          }
-        >
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`${localePath(preferences.locale, "/login")}?next=${encodeURIComponent(localePath(preferences.locale, "/dashboard"))}`}
-              onClick={() =>
-                trackSignInClicked({
-                  country: preferences.country,
-                  language: preferences.locale,
-                  loggedIn: false,
-                })
-              }
-              className={buttonStyles({ variant: "primary", size: "lg" })}
+
+        <header className="max-w-prose-base">
+          <p className="eyebrow-cap" data-tone="emerald">
+            {uiCopy.dashboard.guestEyebrow}
+          </p>
+          <h1 className="display-lead mt-3 text-[1.75rem] sm:text-[2.25rem]">
+            Save the offers you're comparing.
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-secondary">
+            One account, your shortlist across cards, savings, transfers and
+            loans — with alerts when providers move their rates.
+          </p>
+        </header>
+
+        <div className="grid gap-3 md:grid-cols-3 md:gap-4">
+          {featureTiles.map((tile, i) => (
+            <div
+              key={tile.key}
+              className="group relative overflow-hidden rounded-3xl border border-line bg-white p-5 shadow-subtle transition-all hover:-translate-y-px hover:border-accent-emerald/25 hover:shadow-card"
             >
-              {uiCopy.auth.signIn}
-            </Link>
-            <Link
-              href={discoverHref}
-              className={buttonStyles({ variant: "secondary", size: "lg" })}
-            >
-              {productEntryActionLabel}
-            </Link>
-          </div>
-        </DashboardSectionCard>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-emerald-soft text-accent-emerald-strong transition-transform group-hover:scale-105">
+                <span className="block h-6 w-6">{tile.icon}</span>
+              </div>
+              <p className="mt-4 text-[15px] font-bold tracking-tight-1 text-ink">
+                {tile.title}
+              </p>
+              <p className="mt-2 rounded-xl border border-line bg-bg-surface px-3 py-2 text-[12px] leading-snug text-ink-secondary">
+                <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-accent-emerald align-middle" />
+                {tile.example}
+              </p>
+              {/* Subtle skewed accent that breaks text monotony per the
+                  "abstract visuals" spec — corner gradient only, no raster. */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -bottom-12 -right-10 h-32 w-32 rotate-[18deg] rounded-full bg-accent-emerald/5 blur-2xl"
+                style={{ animationDelay: `${i * 0.2}s` }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-5">
+          <Link
+            href={signInHref}
+            onClick={() =>
+              trackSignInClicked({
+                country: preferences.country,
+                language: preferences.locale,
+                loggedIn: false,
+              })
+            }
+            className={buttonStyles({ variant: "primary", size: "lg" })}
+          >
+            Create account
+          </Link>
+          {/* Plain-text guest escape — wins findability, loses the attention
+              war against the primary CTA. No competing button. */}
+          <Link
+            href={discoverHref}
+            className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink-tertiary transition-colors hover:text-ink"
+          >
+            {productEntryActionLabel}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        </div>
+        <p className="text-[12px] text-ink-tertiary">
+          30 seconds · email and password · no card asked
+        </p>
       </div>
     );
   }

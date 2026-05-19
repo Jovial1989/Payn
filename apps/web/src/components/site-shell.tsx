@@ -10,6 +10,8 @@ import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import { categoryGroups } from "@/lib/marketplace";
 import { getActiveCategoriesForCountry } from "@/lib/countries";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { AffiliateDisclosureBanner } from "@/components/affiliate-disclosure-banner";
 
 export function SiteShell({
   children,
@@ -41,7 +43,7 @@ export function SiteShell({
   );
 
   return (
-    <div className="min-h-screen bg-bg text-ink">
+    <div className="min-h-screen bg-bg pb-20 text-ink md:pb-0">
       <main className="mx-auto flex max-w-[1240px] flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8 lg:px-8 lg:py-10">
         {!hideHero && title && description && (
           <section className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
@@ -152,6 +154,8 @@ export function SiteShell({
           </div>
         </div>
       </footer>
+      <MobileBottomNav />
+      <AffiliateDisclosureBanner />
     </div>
   );
 }

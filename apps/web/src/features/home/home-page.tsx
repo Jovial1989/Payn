@@ -19,9 +19,18 @@ import type { Highlight } from "@/features/highlights/get-active-highlights";
 import { ProviderStrip } from "@/features/home/provider-strip";
 import { AppWaitlistPill } from "@/features/home/app-waitlist-pill";
 import { HowItWorks } from "@/features/home/how-it-works";
+import { Manifesto } from "@/features/home/manifesto";
+import { SavingsSpotlight } from "@/features/home/savings-spotlight";
+import { TopPicksStrip } from "@/features/home/top-picks-strip";
+import type { MarketplaceOffer } from "@payn/types";
 
 // ─── Hero preview data (static, presentational) ───────────────────────────────
 const HERO_CARDS = [
+  // Positions tightened so badges and neighbouring logos no longer share
+  // the same Y-band (was: Wise.bottom = ~200, Revolut.top = 96 → pill of
+  // Wise sat next to logo of Revolut). Cards are now stacked vertically
+  // along a true Z-pattern with badges moved to top-right corners, so
+  // each card's "BEST VALUE" sticker reads as a sticker, not a stray pill.
   {
     key: "wise",
     provider: "Wise",
@@ -49,7 +58,7 @@ const HERO_CARDS = [
     badgeStyle: { background: "#EEF2FF", color: "#3730A3" } as React.CSSProperties,
     dotColor: "bg-indigo-400",
     floatClass: "floating-layer-delayed",
-    posClass: "right-0 top-[96px]",
+    posClass: "right-0 top-[164px]",
     motionDelay: "180ms",
   },
   {
@@ -64,7 +73,7 @@ const HERO_CARDS = [
     badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
     dotColor: "bg-emerald-400",
     floatClass: "floating-layer",
-    posClass: "left-[16px] bottom-0",
+    posClass: "left-[20px] bottom-0",
     motionDelay: "300ms",
   },
 ] as const;
@@ -86,7 +95,19 @@ const FLOAT_CONFIG: Record<HeroCardKey, { period: number; amplitude: number; def
 };
 
 // ─── Main component ────────────────────────────────────────────────────────────
-export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
+export function HomePage({
+  highlights = [],
+  topPicks = [],
+  countryMarket = [],
+}: {
+  highlights?: Highlight[];
+  /** Top 3 category-diverse winners picked server-side from the country's
+   *  full market. Used by TopPicksStrip to surface Card v2 visuals on home. */
+  topPicks?: MarketplaceOffer[];
+  /** Full unfiltered country market — fed to each OfferRowAtlas as
+   *  marketContext so award ribbons and score bars rank correctly. */
+  countryMarket?: MarketplaceOffer[];
+}) {
   const preferences = useMarketplacePreferences();
   const { user, loading } = useAuth();
   const { locale } = preferences;
@@ -160,7 +181,10 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
               {formatCopy(dictionary.homeAtlas.hero.sub, { country: countryName })}
             </p>
 
-            {/* CTA */}
+            {/* CTA cluster. Primary: open the catalogue. Secondary: launch
+                the Year Builder — the differentiating bet. We give it a
+                subtle sparkle dot indicator to nudge curiosity without
+                competing for visual weight against the primary action. */}
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={exploreHref}
@@ -170,6 +194,16 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
+              </Link>
+              <Link
+                href={localePath(locale, "/year")}
+                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-line bg-white px-5 text-[14px] font-semibold text-ink shadow-subtle transition-all hover:-translate-y-px hover:border-accent-emerald/40 hover:text-accent-emerald-strong hover:shadow-card active:scale-[0.98]"
+              >
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-accent-emerald/50" />
+                  <span className="relative inline-block h-2 w-2 rounded-full bg-accent-emerald" />
+                </span>
+                Build my year
               </Link>
             </div>
 
@@ -192,7 +226,7 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
               return (
                 <motion.div
                   key={card.key}
-                  className={`motion-card absolute w-[204px] rounded-[22px] border border-line bg-white p-4 shadow-card ${card.posClass}`}
+                  className={`motion-card absolute w-[208px] rounded-xl border border-line bg-white p-4 shadow-card ${card.posClass}`}
                   initial={shouldReduce ? false : { rotate: fc.defaultRotate }}
                   animate={
                     shouldReduce ? {} :
@@ -210,9 +244,23 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
                   onMouseEnter={() => setHoveredCard(card.key)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
-                  <div className="flex items-center gap-2.5">
+                  {/* Badge moved to top-right corner — was previously a pill
+                      below the metric value, which on a floating layout put
+                      it next to the neighbouring card's logo (the user
+                      called this out). Absolute-positioning here means each
+                      card carries its own sticker that can't bleed into a
+                      sibling card no matter how the floats animate. */}
+                  <div
+                    className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em]"
+                    style={card.badgeStyle}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
+                    {heroBadges[card.key] ?? card.badge}
+                  </div>
+
+                  <div className="flex items-center gap-3 pr-16">
                     <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-[11px] font-extrabold text-white"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] text-[11px] font-extrabold text-white"
                       style={{ backgroundColor: card.bg }}
                     >
                       {card.initials}
@@ -222,22 +270,13 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
                       <p className="truncate text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink-tertiary">
-                      {card.metricLabel}
-                    </p>
-                    <p className="mt-0.5 text-[2rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
+                  <div className="mt-4">
+                    <p className="eyebrow-cap">{card.metricLabel}</p>
+                    <p className="mt-1 text-[2.1rem] font-extrabold leading-none tracking-tight-3 tabular-nums text-ink">
                       {SCRAMBLE_CONFIG[card.key]
                         ? <ScrambleNumber {...SCRAMBLE_CONFIG[card.key]} />
                         : card.metricValue}
                     </p>
-                  </div>
-                  <div
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                    style={card.badgeStyle}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
-                    {heroBadges[card.key] ?? card.badge}
                   </div>
                 </motion.div>
               );
@@ -266,6 +305,35 @@ export function HomePage({ highlights = [] }: { highlights?: Highlight[] }) {
           ATLAS GRID
       ══════════════════════════════════════════════════════════ */}
       <AtlasGrid country={preferences.country} locale={locale} buckets={buckets} />
+
+      {/* ══════════════════════════════════════════════════════════
+          SAVINGS SPOTLIGHT — concrete "what does this actually cost
+          me" proof. Sits between Atlas and Manifesto so the visitor
+          goes: "here are the buckets → here's what a bucket saves
+          you in real money → here's why we built this."
+      ══════════════════════════════════════════════════════════ */}
+      <SavingsSpotlight locale={locale} />
+
+      {/* ══════════════════════════════════════════════════════════
+          TOP PICKS — Card v2 visuals brought to the homepage. Three
+          category-diverse winners picked server-side, rendered with
+          the same OfferRowAtlas (ribbons, score bar, glyphs) used in
+          the catalogue. Skipped when the country market is empty.
+      ══════════════════════════════════════════════════════════ */}
+      {topPicks.length > 0 && (
+        <TopPicksStrip
+          picks={topPicks}
+          marketContext={countryMarket}
+          locale={locale}
+          countryLabel={countryName}
+        />
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          MANIFESTO — dark brand-statement panel. The page's "this is
+          who we are" moment, with proof tiles cluster.
+      ══════════════════════════════════════════════════════════ */}
+      <Manifesto locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
           WHAT'S NEW — admin-managed highlights feed

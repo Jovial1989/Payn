@@ -25,9 +25,12 @@
     --emerald-strong: #0b6d3b;
     --emerald-soft: #ddf4e7;
     --emerald-glow: rgba(15, 138, 75, 0.18);
-    --shadow-soft: 0 10px 30px rgba(15, 23, 32, 0.05);
-    --shadow-hover: 0 18px 42px rgba(15, 23, 32, 0.08);
-    --shadow-floating: 0 24px 64px rgba(15, 23, 32, 0.1);
+    /* Two-layer shadows — same ladder as Tailwind's tokens. Replaces the
+       Photoshop-flavoured 30/48/64px single-blur shadows with grounded
+       tight+diffuse pairs used by Apple, Stripe, Linear. */
+    --shadow-soft:     0 1px 3px rgba(15, 23, 32, 0.04), 0 8px 16px rgba(15, 23, 32, 0.05);
+    --shadow-hover:    0 4px 8px rgba(15, 23, 32, 0.06), 0 20px 36px rgba(15, 23, 32, 0.09);
+    --shadow-floating: 0 8px 16px rgba(15, 23, 32, 0.08), 0 24px 48px rgba(15, 23, 32, 0.12);
     --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
   }
@@ -67,6 +70,47 @@
   ::selection {
     background: rgba(15, 138, 75, 0.18);
     color: #111827;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Typography utility classes — canonical eyebrow + display so eyebrow
+   never competes with H1 by accident. Use `.eyebrow-cap` for the 11px
+   uppercase label, `.display-lead` for the page-opening 4rem statement.
+   Both ship with the right tracking + weight so component authors don't
+   guess. Replaces the inline ad-hoc values that produced the
+   "EUROPE'S FULL FINANCIAL INVENTORY" / "You have more options" rhythm
+   conflict the user called out on the home hero.
+   ──────────────────────────────────────────────────────────────────── */
+@layer components {
+  .eyebrow-cap {
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+  }
+  .eyebrow-cap[data-tone="emerald"] {
+    color: var(--emerald-strong);
+  }
+
+  .display-lead {
+    font-family: var(--font-display), sans-serif;
+    font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    color: var(--ink-primary);
+  }
+
+  .display-hero {
+    font-family: var(--font-display), sans-serif;
+    font-size: clamp(2.6rem, 5.6vw, 4.4rem);
+    line-height: 0.92;
+    font-weight: 800;
+    letter-spacing: -0.062em;
+    color: var(--ink-primary);
   }
 }
 
@@ -367,10 +411,17 @@
     pointer-events: none;
   }
 
+  /* Skeleton shimmer — opacity-based so it works on any background, and
+     tuned to the premium spec: 0.04 → 0.06 → 0.04 (was 0.08+ which is
+     too aggressive on financial data). 1.6s with a symmetric ease so it
+     doesn't feel nervous. */
   .skeleton-block {
-    background: linear-gradient(90deg, #eef2ee 20%, #f7faf7 35%, #eef2ee 50%);
+    background: linear-gradient(90deg,
+      rgba(17, 24, 39, 0.04) 25%,
+      rgba(17, 24, 39, 0.06) 50%,
+      rgba(17, 24, 39, 0.04) 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.8s linear infinite;
+    animation: shimmer 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   /* Range slider light theme */

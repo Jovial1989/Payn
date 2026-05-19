@@ -1520,7 +1520,13 @@ export function DashboardDiscoverWorkspace({
             {previewRows.map((row) => (
               <div
                 key={row.key}
-                className="grid gap-4 rounded-[24px] border border-[#EAEAEA] bg-white px-4 py-4 shadow-[0_8px_22px_rgba(17,24,39,0.04)] transition-all duration-200 hover:-translate-y-1 hover:bg-[#FCFCFD] hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center active:scale-[0.99]"
+                // Lock the two columns to deterministic widths so cards
+                // share row heights and the right column hugs both top and
+                // bottom edges (no dead air between logo and price). The
+                // right column is a flex column with justify-between so the
+                // primaryValue floats top, the CTA floats bottom regardless
+                // of how much content the left column emits.
+                className="group/preview grid gap-5 rounded-3xl border border-line bg-white px-5 py-5 shadow-subtle transition-all duration-200 hover:-translate-y-px hover:border-accent-emerald/25 hover:shadow-card active:scale-[0.99] sm:grid-cols-[minmax(0,1fr)_200px] sm:items-stretch"
               >
                 <div className="flex min-w-0 items-start gap-3">
                   <ProviderLogo providerName={row.providerName} size="sm" />
@@ -1528,7 +1534,7 @@ export function DashboardDiscoverWorkspace({
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold text-ink">{row.providerName}</p>
                       <span className="text-sm text-ink-tertiary">·</span>
-                      <p className="text-base font-bold tracking-[-0.02em] text-ink">{row.title}</p>
+                      <p className="text-base font-bold tracking-tight-1 text-ink">{row.title}</p>
                     </div>
                     <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{row.secondary}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -1544,14 +1550,14 @@ export function DashboardDiscoverWorkspace({
                   </div>
                 </div>
 
-                <div className="sm:text-right">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                    {row.primaryLabel}
-                  </p>
-                  <p className="mt-2 text-[28px] font-bold tracking-[-0.06em] text-ink tabular-nums">{row.primaryValue}</p>
+                <div className="flex flex-col justify-between gap-3 sm:items-end sm:text-right">
+                  <div>
+                    <p className="eyebrow-cap">{row.primaryLabel}</p>
+                    <p className="mt-1 text-[28px] font-extrabold tracking-tight-3 text-ink tabular-nums">{row.primaryValue}</p>
+                  </div>
                   <Link
                     href={row.href}
-                    className={`${buttonStyles({ variant: "secondary", size: "sm" })} mt-3 w-full justify-center sm:w-auto`}
+                    className={`${buttonStyles({ variant: "secondary", size: "sm" })} w-full justify-center sm:w-auto`}
                   >
                     {copy.checkDetails}
                   </Link>

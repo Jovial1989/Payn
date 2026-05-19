@@ -9,6 +9,7 @@ import {
   type ProductCompareEntry,
 } from "@/components/product-compare-table";
 import { Tag } from "@/components/tag";
+import { CategoryPill } from "@/components/category-pill";
 import { getMetricLabel, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
@@ -654,16 +655,13 @@ export function DashboardCardsWorkspace({
           <InputField label={copy.cardType}>
             <div className="flex flex-wrap gap-2">
               {(["all", "credit", "debit"] as CardTypeFilter[]).map((item) => (
-                <button
+                <CategoryPill
                   key={item}
-                  type="button"
+                  label={item === "all" ? copy.all : item === "credit" ? copy.credit : copy.debit}
+                  active={cardType === item}
+                  groupId="cards-workspace-type"
                   onClick={() => setCardType(item)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    cardType === item ? "bg-accent-emerald text-white" : "bg-[#F1F2F4] text-ink-secondary hover:text-ink"
-                  }`}
-                >
-                  {item === "all" ? copy.all : item === "credit" ? copy.credit : copy.debit}
-                </button>
+                />
               ))}
             </div>
           </InputField>
@@ -743,7 +741,24 @@ export function DashboardCardsWorkspace({
         ) : (
           <div className="flex flex-col gap-3 sm:gap-4">
             {rankedResults.map((row) => (
-              <OfferRowAtlas key={row.offer.id} offer={row.offer} locale={locale} />
+              <OfferRowAtlas
+                key={row.offer.id}
+                offer={row.offer}
+                locale={locale}
+                // Full unfiltered card market for this country — keeps the
+                // score honest when the user narrows by type/use-case.
+                marketContext={offers}
+                compareSelected={compareSelection.includes(row.offer.id)}
+                onToggleCompare={() =>
+                  setCompareSelection((current) =>
+                    current.includes(row.offer.id)
+                      ? current.filter((id) => id !== row.offer.id)
+                      : current.length >= 3
+                        ? current
+                        : [...current, row.offer.id],
+                  )
+                }
+              />
             ))}
           </div>
         )}

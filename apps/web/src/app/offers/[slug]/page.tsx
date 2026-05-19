@@ -3,23 +3,57 @@ import type { MarketplaceMarket, MarketplaceOffer } from "@payn/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonStyles } from "@/components/button";
-import { OfferCard } from "@/components/offer-card";
 import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
+import { VerdictBar } from "@/features/offers/verdict-bar";
+import { PdpStickySummary } from "@/features/offers/pdp-sticky-summary";
+import { CardsCostEstimator } from "@/features/offers/cards-cost-estimator";
+import { LoansCostEstimator } from "@/features/offers/loans-cost-estimator";
+import { TransfersCostEstimator } from "@/features/offers/transfers-cost-estimator";
+import { SavingsCostEstimator } from "@/features/offers/savings-cost-estimator";
+import { MobileScrollHide } from "@/components/mobile-scroll-hide";
+import { PdpDeepDive } from "@/features/offers/pdp-deep-dive";
+import { SmartCrossSell } from "@/features/offers/smart-cross-sell";
+import type { MarketplaceCategory } from "@payn/types";
+
+// Card-shaped categories where the cost estimator can apply (we score on
+// annualFeeAmount / fxFeePercent / cashbackPercent / atmFreeLimit).
+const CARD_CATEGORIES = new Set(["cards", "debit", "travel", "cashback"]);
+// Loan-shaped categories where the loan estimator can apply (it parses APR
+// range from the metric value).
+const LOAN_CATEGORIES = new Set(["loans", "bnpl"]);
+// Money-movement categories where the transfer cost calculator applies.
+const TRANSFER_CATEGORIES = new Set(["transfers", "exchange", "remittance"]);
+// Yield-bearing categories where the savings calculator applies.
+const SAVINGS_CATEGORIES = new Set(["savings"]);
+
+// Used by the PdpDeepDive to write copy that reads naturally
+// ("the application path you'll be sent to…").
+const CATEGORY_NOUN: Partial<Record<MarketplaceCategory, string>> = {
+  cards: "card", debit: "debit card", travel: "travel card", cashback: "cashback card",
+  loans: "loan", bnpl: "buy-now-pay-later plan",
+  transfers: "transfer service", exchange: "exchange", remittance: "remittance service",
+  banking: "account", neobanks: "neobank account", wallets: "wallet",
+  savings: "savings account",
+  investments: "investment account", trading: "trading account", crypto: "crypto exchange",
+  insurance: "insurance policy",
+  business: "business account", payroll: "payroll service",
+  tax: "tax tool", expense: "expense tool",
+  budgeting: "budgeting app", kids: "kids' account",
+};
 import { matchesOfferCountrySelection } from "@/lib/countries";
-import { formatCopy, getDictionary, getMetricLabel, translateMatchReason, translateTradeoff } from "@/lib/i18n";
+import { formatCopy, getDictionary, getMetricLabel, translateTradeoff } from "@/lib/i18n";
 import {
   getOfferTradeoff,
   matchesOfferMarket,
   normalizeDisplayText,
 } from "@/lib/marketplace";
-import { getMatchReasons } from "@/lib/match-reasons";
 import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
-import { getOfferBySlug, listCategoryOffers, listMarketplaceOffers, listRelatedOffers } from "@/server/catalog/catalog-service";
+import { getOfferBySlug, listCategoryOffers, listMarketplaceOffers } from "@/server/catalog/catalog-service";
 
 function formatDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(new Date(value));
@@ -96,14 +130,15 @@ export default async function OfferDetailPage({
   const categoryHref = localePath(preferences.locale, `/${offer.category}`);
   const categoryLabel = dictionary.categories[offer.category];
   const categoryOffers = await listCategoryOffers(offer.category);
-  const offerRank = Math.max(categoryOffers.findIndex((item) => item.slug === offer.slug) + 1, 1);
-  const reasons = getMatchReasons(offer, offerRank);
-  const relatedOffers = (await listRelatedOffers(offer, 4))
-    .filter((candidate) => matchesOfferCountrySelection(candidate, preferences.country))
-    .slice(0, 2);
+  // Country-scoped full market — used by SmartCrossSell to pick a single
+  // cross-category complement (e.g. on a card PDP we recommend a savings
+  // account from the same country market).
+  const allOffers = await listMarketplaceOffers();
+  const countryMarket = allOffers.filter((candidate) =>
+    matchesOfferCountrySelection(candidate, preferences.country),
+  );
   const tradeoff = getOfferTradeoff(offer);
   const primaryMetric = offer.metrics[0];
-  const secondaryMetrics = offer.metrics.slice(1, 4);
 
   return (
     <>
@@ -114,7 +149,7 @@ export default async function OfferDetailPage({
         market={resolvedMarket}
       />
       <section className="grid gap-5">
-        <div className="rounded-[32px] border border-line bg-white p-6 shadow-card sm:p-8">
+        <div className="rounded-4xl border border-line bg-white p-6 shadow-card sm:p-8">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex items-start gap-4">
@@ -144,24 +179,28 @@ export default async function OfferDetailPage({
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-tertiary">
+                <p className="eyebrow-cap">
                   {primaryMetric
                     ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
                     : categoryLabel}
                 </p>
-                <h1 className="mt-3 text-[3rem] font-extrabold leading-none tracking-[-0.07em] text-ink sm:text-[4.5rem]">
+                <h1 className="display-hero mt-3 tabular-nums">
                   {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
                 </h1>
-                <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-secondary">
+                <p className="mt-4 max-w-prose-base text-base leading-relaxed text-ink-secondary">
                   {normalizeDisplayText(offer.subtitle)}
                 </p>
               </div>
 
-              <div className="rounded-[28px] bg-[#F7F9F7] p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.offerDetail.primaryAction}
-                </p>
-                <div className="mt-4 grid gap-3">
+              {/* Primary action panel — the "PRIMARY ACTION" eyebrow used
+                  to live here. It was a design-system artefact that leaked
+                  into prod: a label on a CTA that already speaks for itself.
+                  Now the panel reads directly: button + reassurance copy.
+                  The dictionary value is intentionally kept (empty string)
+                  so future locales can re-introduce a contextual eyebrow
+                  if needed without re-plumbing markup. */}
+              <div className="rounded-3xl bg-[#F7F9F7] p-5">
+                <div className="grid gap-3">
                   <ProviderLinkButton
                     offer={offer}
                     label={dictionary.offerCard.providerCta[offer.category]}
@@ -179,121 +218,96 @@ export default async function OfferDetailPage({
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[28px] border border-line bg-white p-6 shadow-card lg:col-span-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              {dictionary.offerDetail.ratesTitle}
-            </p>
-            <div className="mt-5 grid gap-4">
-              {offer.metrics.map((metric) => (
-                <div key={metric.label}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                    {normalizeDisplayText(getMetricLabel(preferences.locale, metric.label))}
-                  </p>
-                  <p className="mt-1 text-xl font-bold tracking-[-0.04em] text-ink">
-                    {normalizeDisplayText(metric.value)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Top sticky summary — slides in as the user scrolls past the
+            hero. Desktop-only (mobile has the bottom sticky already). */}
+        <PdpStickySummary
+          offer={offer}
+          ctaLabel={dictionary.offerCard.providerCta[offer.category]}
+        />
 
-          <div className="rounded-[28px] border border-line bg-white p-6 shadow-card lg:col-span-2">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.offerDetail.benefitsTitle}
-                </p>
-                <div className="mt-4 grid gap-3">
-                  {(reasons.length > 0 ? reasons : ["Visible pricing", "Provider context"]).map((reason) => (
-                    <div key={reason} className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#DDF4E7] text-accent-emerald">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                          <path d="M3.5 8l3 3 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                      <p className="text-sm leading-relaxed text-ink-secondary">
-                        {normalizeDisplayText(translateMatchReason(preferences.locale, reason))}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        {/* Verdict Bar — sits between hero and pricing grid. Answers
+            "is this actually good?" before the user has to read the table. */}
+        <VerdictBar offer={offer} categoryMarket={categoryOffers} />
 
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {dictionary.offerDetail.tradeoffsTitle}
-                </p>
-                <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
-                  {normalizeDisplayText(translateTradeoff(preferences.locale, tradeoff))}
-                </p>
-                {secondaryMetrics.length > 0 ? (
-                  <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                    {secondaryMetrics.map((metric) => (
-                      <div key={metric.label} className="rounded-[20px] bg-[#F7F9F7] px-4 py-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                          {normalizeDisplayText(getMetricLabel(preferences.locale, metric.label))}
-                        </p>
-                        <p className="mt-1 text-base font-bold text-ink">
-                          {normalizeDisplayText(metric.value)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Cost Estimator — category-specific. Each estimator
+            self-checks for the required data and renders nothing when
+            missing, so PDP gracefully degrades. Four families now:
+            cards (annualFee/FX/cashback), loans (APR/term/amount),
+            transfers (fee/spread), savings (rate). */}
+        {CARD_CATEGORIES.has(offer.category) && (
+          <CardsCostEstimator offer={offer} />
+        )}
+        {LOAN_CATEGORIES.has(offer.category) && (
+          <LoansCostEstimator offer={offer} />
+        )}
+        {TRANSFER_CATEGORIES.has(offer.category) && (
+          <TransfersCostEstimator offer={offer} />
+        )}
+        {SAVINGS_CATEGORIES.has(offer.category) && (
+          <SavingsCostEstimator offer={offer} />
+        )}
 
-        <div className="sticky bottom-4 z-20 rounded-[28px] border border-line bg-white/92 p-4 shadow-[0_20px_46px_rgba(15,23,32,0.14)] backdrop-blur">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+        {/* Deep-dive accordions — replaces the old 3-col Pricing/Benefits/
+            Tradeoffs grid with 5 progressive-disclosure sections:
+            Pricing & fees, What you get, Things to watch (with computed
+            weaknesses from the ranking helper), Who can apply, and
+            Editor's note. Earns trust by surfacing weaknesses competitors
+            hide. */}
+        <PdpDeepDive
+          offer={offer}
+          categoryMarket={categoryOffers}
+          locale={preferences.locale}
+          tradeoffText={normalizeDisplayText(translateTradeoff(preferences.locale, tradeoff))}
+          editorialContext={{
+            categoryNoun: CATEGORY_NOUN[offer.category] ?? "product",
+          }}
+        />
+
+        {/* Mobile-only sticky bottom CTA, now wrapped in MobileScrollHide so
+            it disappears while the user is scrolling down (reading) and
+            reappears the moment they swipe up. Twitter/X pattern — keeps
+            the action reachable without fighting the affiliate banner or
+            blocking long-form reading. */}
+        <MobileScrollHide
+          className="sticky bottom-[calc(72px+env(safe-area-inset-bottom))] z-20 -mx-2 rounded-3xl border border-line bg-white/92 p-4 shadow-floating backdrop-blur md:hidden"
+          // sticky bottom anchored above mobile bottom-nav (~64px) +
+          // safe-area inset for the iPhone home-bar.
+        >
+          <div
+            className="flex items-center justify-between gap-3"
+            style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="min-w-0">
+              <p className="truncate text-[11px] font-medium text-ink-tertiary">
                 {primaryMetric
                   ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
                   : categoryLabel}
               </p>
-              <p className="mt-1 text-2xl font-extrabold tracking-[-0.05em] text-ink">
+              <p className="mt-0.5 truncate text-[17px] font-extrabold tracking-tight-1 text-ink">
                 {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <ProviderLinkButton
-                offer={offer}
-                label={dictionary.offerCard.providerCta[offer.category]}
-                source="offer_detail_sticky"
-              />
-            </div>
+            <ProviderLinkButton
+              offer={offer}
+              label={dictionary.offerCard.providerCta[offer.category]}
+              source="offer_detail_sticky"
+            />
           </div>
-        </div>
+        </MobileScrollHide>
       </section>
 
-      {relatedOffers.length > 0 && (
-        <section>
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
-                {dictionary.offerDetail.related}
-              </p>
-              <h2 className="mt-4 text-h2 text-ink">{categoryLabel}</h2>
-            </div>
-            <Link href={categoryHref} className="text-sm font-semibold text-ink-secondary transition-colors hover:text-ink">
-              {dictionary.offerDetail.viewAll} {categoryLabel.toLowerCase()}
-            </Link>
-          </div>
-          <div className="grid gap-4">
-            {relatedOffers.map((relatedOffer, index) => (
-              <OfferCard
-                key={relatedOffer.id}
-                offer={relatedOffer}
-                rank={index + 2}
-                locale={preferences.locale}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Smart cross-sell — replaces the old generic "More <category>"
+          carousel. Two contextual strips:
+            1. Cheaper alternatives in the same category with a concrete
+               "what you trade away" delta line per row.
+            2. One cross-category complement (cards → savings, etc.) that
+               feels like a recommendation, not a catalogue dump. */}
+      <SmartCrossSell
+        offer={offer}
+        categoryMarket={categoryOffers}
+        countryMarket={countryMarket}
+        locale={preferences.locale}
+      />
     </>
   );
 }

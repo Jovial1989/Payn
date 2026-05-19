@@ -19,6 +19,21 @@ import { getUiCopy } from "@/lib/ui-copy";
 import { marketplaceCategories } from "@/lib/marketplace";
 import { getActiveCategoriesForCountry } from "@/lib/countries";
 import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { AffiliateDisclosureBanner } from "@/components/affiliate-disclosure-banner";
+import { categoryGroups } from "@/lib/marketplace";
+
+// Resolve the pillar label for a given category by walking the 5+1
+// canonical groups in `categoryGroups`. Returns null if the category
+// isn't classified — caller falls back to "Payn / Section".
+function findPillarForCategory(
+  category: string,
+  dictionary: ReturnType<typeof getDictionary>,
+): string | null {
+  const group = categoryGroups.find((g) => (g.categories as string[]).includes(category));
+  if (!group) return null;
+  return dictionary.sidebarNav[group.labelKey];
+}
 
 type AppNavItem = {
   id: "dashboard" | "discover" | MarketplaceCategory | "settings";
@@ -372,7 +387,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-bg text-ink">
+    <div className="min-h-screen overflow-x-clip bg-bg text-ink pb-20 md:pb-0">
       <div className="mx-auto flex max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
         <aside className="hidden overflow-hidden rounded-[24px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
           <Link href={localePath(preferences.locale, "/")} className="flex items-center gap-3 border-b border-line px-5 py-5 transition-colors hover:bg-bg-surface">
@@ -569,18 +584,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </svg>
                   </button>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                      <Link href={localePath(preferences.locale, "/")} className="transition-colors hover:text-ink">
-                        {uiCopy.common.home}
-                      </Link>
-                      <span>/</span>
-                      <span className="truncate">{currentSectionTitle}</span>
-                    </div>
-                    <h1 className="mt-1 truncate text-base font-bold tracking-tight text-ink sm:text-lg">
-                      {currentSectionTitle}
-                    </h1>
-                  </div>
+                  {/* Breadcrumb — kills the "HOME PAYN Payn" double-prefix.
+                      Was: uppercase "HOME / Section" + duplicate H1 below.
+                      Now: a single nested breadcrumb `Payn / {Pillar} / {Section}`
+                      with proper visual hierarchy. Page content owns its
+                      own H1 — the shell only carries the trail. */}
+                  {(() => {
+                    const pillar = currentSection !== "dashboard" && currentSection !== "settings" && currentSection !== "discover" && currentSection !== "offers" && currentSection !== "other"
+                      ? findPillarForCategory(currentSection, dictionary)
+                      : null;
+                    return (
+                      <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
+                        <ol className="flex items-center gap-1.5 text-[12px] text-ink-tertiary">
+                          <li>
+                            <Link
+                              href={localePath(preferences.locale, "/")}
+                              className="font-medium transition-colors hover:text-ink"
+                            >
+                              Payn
+                            </Link>
+                          </li>
+                          {pillar && (
+                            <>
+                              <li className="text-line-strong" aria-hidden="true">/</li>
+                              <li className="font-medium">{pillar}</li>
+                            </>
+                          )}
+                          <li className="text-line-strong" aria-hidden="true">/</li>
+                          <li className="min-w-0 flex-1 truncate font-bold text-ink">
+                            {currentSectionTitle}
+                          </li>
+                        </ol>
+                      </nav>
+                    );
+                  })()}
                 </div>
 
                 {/* Right-side controls intentionally removed — Country/Language/
@@ -594,6 +631,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+      <MobileBottomNav />
+      <AffiliateDisclosureBanner />
     </div>
   );
 }

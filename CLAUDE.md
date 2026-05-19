@@ -103,3 +103,9 @@ Font stack: Manrope, -apple-system, BlinkMacSystemFont, sans-serif
 - Named exports (no default exports for components)
 - Path alias: `@/*` maps to `./src/*`
 - Server components by default, `"use client"` only when needed
+
+## Deploy Workflow
+- IMPORTANT: After every code change run `vercel --prod --yes` from the monorepo root
+- payn.online is aliased to the production deployment — no separate "deploy to prod" step needed
+- Always verify with `next build` first; never deploy a build that fails typecheck or has warnings
+- Do not ask before deploying — assume the user wants every change live

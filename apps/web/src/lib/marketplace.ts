@@ -75,13 +75,25 @@ export type CategoryGroup = {
   categories: MarketplaceCategory[];
 };
 
+// 5 + 1 canonical pillars. Same hierarchy applies in sidebar, footer and
+// breadcrumbs — the spec's "5-6 core FinTech pillars" mandate.
+//
+// Reusing existing `groupX` keys so we don't break the i18n contract; the
+// LABELS in i18n.ts have been rewritten to match the new pillar names.
+//
+//   Spend    → cards, debit, travel, cashback  (everyday outflow)
+//   Save     → savings, banking, neobanks, investments, trading, crypto
+//   Move     → transfers, exchange, remittance, wallets  (cross-border + p2p)
+//   Borrow   → loans, bnpl
+//   Protect  → insurance, kids, budgeting  (risk + control)
+//   Business → business, payroll, tax, expense  (separate vertical)
 export const categoryGroups: CategoryGroup[] = [
-  { id: "banking",   labelKey: "groupBankingCards",     categories: ["banking", "neobanks", "savings", "debit", "cards", "wallets"] },
-  { id: "transfers", labelKey: "groupSendExchange",     categories: ["transfers", "remittance", "exchange", "travel"] },
-  { id: "borrow",    labelKey: "groupBorrowPayLater",   categories: ["loans", "bnpl"] },
-  { id: "invest",    labelKey: "groupInvestTrade",      categories: ["investments", "trading", "crypto"] },
-  { id: "lifestyle", labelKey: "groupProtectLifestyle", categories: ["insurance", "cashback", "budgeting", "kids"] },
-  { id: "business",  labelKey: "groupBusiness",         categories: ["business", "payroll", "tax", "expense"] },
+  { id: "spend",    labelKey: "groupBankingCards",     categories: ["cards", "debit", "travel", "cashback"] },
+  { id: "save",     labelKey: "groupInvestTrade",      categories: ["savings", "banking", "neobanks", "investments", "trading", "crypto"] },
+  { id: "move",     labelKey: "groupSendExchange",     categories: ["transfers", "exchange", "remittance", "wallets"] },
+  { id: "borrow",   labelKey: "groupBorrowPayLater",   categories: ["loans", "bnpl"] },
+  { id: "protect",  labelKey: "groupProtectLifestyle", categories: ["insurance", "kids", "budgeting"] },
+  { id: "business", labelKey: "groupBusiness",         categories: ["business", "payroll", "tax", "expense"] },
 ];
 
 export const marketDefinitions: Record<

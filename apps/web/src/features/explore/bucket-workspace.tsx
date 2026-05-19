@@ -7,6 +7,8 @@ import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { sortOffers, type SortKey } from "@/lib/marketplace-engine";
 import { getDictionary } from "@/lib/i18n";
 import { InvestmentIntelligenceBlock } from "@/components/investment-intelligence-block";
+import { FilterSheet } from "@/components/filter-sheet";
+import { CategoryPill } from "@/components/category-pill";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -94,6 +96,7 @@ export function BucketWorkspace({
           <CategoryPill
             label="All"
             active={activeCategory === "all"}
+            groupId={`bucket-${bucketSlug}`}
             onClick={() => {
               setActiveCategory("all");
               setActiveProvider("");
@@ -104,6 +107,7 @@ export function BucketWorkspace({
               key={cat}
               label={dictionary.categories[cat] ?? cat}
               active={activeCategory === cat}
+              groupId={`bucket-${bucketSlug}`}
               onClick={() => {
                 setActiveCategory(cat);
                 setActiveProvider("");
@@ -123,41 +127,29 @@ export function BucketWorkspace({
           className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink-tertiary outline-none focus:border-accent-emerald sm:max-w-xs"
         />
 
+        {/* Filter row — native <select>s replaced with FilterSheet pill
+            buttons that open a BottomSheet. Premium-product feel, same
+            interaction on mobile and desktop, no browser-default dropdown
+            styling leaking through. */}
         <div className="flex flex-wrap items-center gap-3">
           {providerOptions.length > 1 && (
-            <label className="flex items-center gap-2 text-sm text-ink-secondary">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Provider
-              </span>
-              <select
-                value={activeProvider}
-                onChange={(event) => setActiveProvider(event.target.value)}
-                className="rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent-emerald"
-              >
-                <option value="">All</option>
-                {providerOptions.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
-            </label>
+            <FilterSheet
+              label="Provider"
+              value={activeProvider}
+              onChange={setActiveProvider}
+              options={[
+                { value: "", label: "All providers", hint: `${providerOptions.length} options` },
+                ...providerOptions.map((p) => ({ value: p, label: p })),
+              ]}
+            />
           )}
 
-          <label className="flex items-center gap-2 text-sm text-ink-secondary">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-              Sort
-            </span>
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value as SortKey)}
-              className="rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent-emerald"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <FilterSheet
+            label="Sort"
+            value={sortBy}
+            onChange={(v) => setSortBy(v as SortKey)}
+            options={SORT_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+          />
 
           {hasAnyFilter && (
             <button
@@ -167,7 +159,7 @@ export function BucketWorkspace({
                 setActiveProvider("");
                 setQuery("");
               }}
-              className="rounded-xl bg-bg-surface px-3 py-2 text-xs font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
+              className="inline-flex h-10 items-center rounded-full bg-bg-surface px-4 text-[12px] font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
             >
               Reset
             </button>
@@ -203,7 +195,15 @@ export function BucketWorkspace({
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
           {filteredAndSorted.map((offer) => (
-            <OfferRowAtlas key={offer.id} offer={offer} locale={locale} />
+            <OfferRowAtlas
+              key={offer.id}
+              offer={offer}
+              locale={locale}
+              // Full bucket market — `offers`, not `filteredAndSorted` —
+              // so the score and award compare against every offer in the
+              // category market, not just what survived the current filters.
+              marketContext={offers}
+            />
           ))}
         </div>
       )}
@@ -211,27 +211,7 @@ export function BucketWorkspace({
   );
 }
 
-function CategoryPill({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "rounded-full border px-4 py-1.5 text-[13px] font-semibold transition-colors",
-        active
-          ? "border-accent-emerald bg-accent-emerald-soft text-accent-emerald-strong"
-          : "border-line bg-white text-ink-secondary hover:border-line-strong hover:text-ink",
-      )}
-    >
-      {label}
-    </button>
-  );
-}
+// CategoryPill moved to a shared component at @/components/category-pill —
+// see the import at the top of this file. The local stub used to live
+// here; consolidating means future polish lands once across BucketWorkspace,
+// DashboardCardsWorkspace and DashboardCategoryWorkspace.

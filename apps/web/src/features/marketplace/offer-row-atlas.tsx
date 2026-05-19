@@ -2,12 +2,18 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import { getDictionary, formatCopy } from "@/lib/i18n";
 import { getProviderLogoPath } from "@/features/catalog/provider-logo";
 import { localePath } from "@/lib/locale";
 import { getOfferHref } from "@/lib/marketplace";
+import { SaveOfferButton } from "@/components/save-offer-button";
+import {
+  rankOffer,
+  type MetricRank,
+} from "@/features/marketplace/offer-ranking";
 
 const rowVariants = {
   rest:  { y: 0,  borderColor: "rgba(17,24,39,0.08)" },
@@ -63,16 +69,96 @@ function pickPrimaryBestFor(values: string[] | undefined): string | undefined {
   return meaningful ?? values[0];
 }
 
+// ─── Per-metric comparative glyph ─────────────────────────────────────────────
+//
+// Tiny indicator under each metric value telling the user how this offer
+// stacks up against the others in the visible list. Colors come from design
+// tokens (emerald = win, ink-tertiary = neutral, amber = below average).
+const RANK_GLYPH: Record<MetricRank, { label: string; cls: string } | null> = {
+  best:    { label: "↓ best",       cls: "text-accent-emerald-strong" },
+  good:    { label: "↓ good",       cls: "text-accent-emerald-strong" },
+  avg:     { label: "─ avg",        cls: "text-ink-tertiary" },
+  worst:   { label: "↑ above avg",  cls: "text-amber-600" },
+  unknown: null,
+};
+
+function MetricRankGlyph({ rank }: { rank: MetricRank }) {
+  const meta = RANK_GLYPH[rank];
+  if (!meta) return null;
+  return (
+    <span
+      className={`mt-0.5 inline-block text-[9px] font-semibold uppercase tracking-[0.14em] ${meta.cls}`}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
+// ─── Award ribbon ─────────────────────────────────────────────────────────────
+//
+// Absolute-positioned top-right ribbon when this offer is the outright winner
+// on a high-value metric. Folded-corner SVG so it reads as an award, not just
+// another tag.
+function AwardRibbon({ label }: { label: string }) {
+  return (
+    <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-accent-emerald to-[#10B981] px-3 py-1 shadow-[0_4px_12px_rgba(15,138,75,0.22)]">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+        <path
+          d="M5 0.5l1.2 2.5 2.8.4-2 2 .5 2.8L5 6.9 2.5 8.2l.5-2.8-2-2 2.8-.4L5 .5z"
+          fill="white"
+        />
+      </svg>
+      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-white">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ─── Score visual REMOVED (P0 trust + compliance fix) ─────────────────────────
+//
+// The previous 0-100 "Payn score" bar was kicked out: a composite financial
+// score reads as advisory under EBA/MiCA guidance on product comparison.
+// Even with a "verified" checkmark it's a regulator-pleaser, not a
+// regulator-clearer.
+//
+// Card now leans entirely on objective signals the ranking helper already
+// emits:
+//   • award ribbon (top-right) — one factual win per offer ("Lowest FX")
+//   • per-metric comparative glyphs ("↓ best in market") under each value
+// Both are FACTUAL statements about a typed attribute relative to the full
+// category market. No composite, no opinion, no number-out-of-100.
+
 interface OfferRowAtlasProps {
   offer: MarketplaceOffer;
   locale: string;
+  /** Full category market context — MUST be the unfiltered set of offers in
+   *  the same category (e.g. all 28 cards if this row is a card), not the
+   *  filtered visible list. The score, comparative glyphs, and award ribbon
+   *  all rank against this set, so passing a filtered list will produce
+   *  meaningless "best of 3" results. Omit to disable v2 visuals entirely. */
+  marketContext?: MarketplaceOffer[];
+  /** True when this offer is in the parent workspace's compare selection.
+   *  When omitted, the Compare toggle isn't rendered at all (used for
+   *  surfaces like /explore/<bucket> that don't have a compare table). */
+  compareSelected?: boolean;
+  /** Toggles this offer in/out of the compare drawer. Pair with
+   *  `compareSelected`. */
+  onToggleCompare?: () => void;
 }
 
-export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
+export function OfferRowAtlas({
+  offer,
+  locale,
+  marketContext,
+  compareSelected,
+  onToggleCompare,
+}: OfferRowAtlasProps) {
   const router = useRouter();
   const shouldReduce = useReducedMotion();
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const t = dictionary.homeAtlas.exploreBucket;
+
   // Per-category CTA label (FIX-05 from UX audit) — "Open account" for
   // banking/savings, "Check my rate" for loans, "Get quote" for insurance,
   // etc. Falls back to the generic "Go to provider" if the category somehow
@@ -91,6 +177,16 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
   const logoPath = getProviderLogoPath(offer.providerName);
   const href = offer.affiliateLink || offer.providerWebsiteUrl;
   const detailHref = localePath(locale as MarketplaceLocale, getOfferHref(offer));
+
+  // Ranking only runs when the parent passes the category market. Memoised
+  // so a re-render from hover state doesn't re-walk the whole category each
+  // time. Score, glyphs, and award all compare against this full market —
+  // never against the filtered visible list.
+  const ranking = useMemo(
+    () => (marketContext && marketContext.length > 1 ? rankOffer(offer, marketContext) : null),
+    [offer, marketContext],
+  );
+  // segments calc removed — score bar no longer rendered.
 
   // Card-body click → /offers/<slug> (retention loop). The right-side CTA stays
   // an <a target="_blank"> so the affiliate link keeps its tab/right-click/menu
@@ -111,13 +207,17 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
           navigateToDetail();
         }
       }}
-      className="w-full cursor-pointer overflow-hidden rounded-2xl border bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-emerald focus-visible:ring-offset-2"
+      className="group relative w-full cursor-pointer overflow-hidden rounded-2xl border bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-emerald focus-visible:ring-offset-2"
       variants={shouldReduce ? undefined : rowVariants}
       initial={shouldReduce ? undefined : "rest"}
       whileHover={shouldReduce ? undefined : "hover"}
+      // Tactile press feedback (M3 from the audit) — iOS-style "give" on
+      // tap that makes every interactive surface feel native.
       whileTap={shouldReduce ? undefined : { scale: 0.995 }}
       transition={{ type: "tween", duration: 0.15 }}
     >
+      {ranking?.award && <AwardRibbon label={ranking.award} />}
+
       <div className="flex items-center gap-4 p-4 sm:gap-6 sm:p-5">
         {/* Logo + Title — left. Width steps up at md/lg so long names like
             "Société Générale Compte Courant" or "BNP Paribas Personal Loan"
@@ -158,57 +258,132 @@ export function OfferRowAtlas({ offer, locale }: OfferRowAtlasProps) {
           </div>
         </div>
 
-        {/* Metrics + bullets — center, visible md+ */}
+        {/* Metrics + bullets — center, visible md+.
+            Locked grid: every metric column is now a flex item with a
+            fixed 112px basis and a 144px ceiling, so when one offer has
+            "FX FEE (WEEKDAY)" and the next has "FX FEE", the value rows
+            still line up across stacked offers (the user called this out).
+            Labels truncate with a native title tooltip rather than wrap
+            into a second line that pushes value baselines down. */}
         {(visibleMetrics.length > 0 || bullets.length > 0) && (
           <div className="hidden min-w-0 flex-1 items-center gap-4 md:flex lg:gap-6">
             {visibleMetrics.map((m) => (
-              <div key={m.label} className="min-w-0">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
-                <p className="mt-0.5 text-[14px] font-bold tabular-nums leading-tight text-ink">{m.value}</p>
+              <div
+                key={m.label}
+                className="flex min-w-0 flex-1 basis-[112px] flex-col"
+                style={{ maxWidth: 144 }}
+              >
+                <p
+                  className="truncate text-[11px] font-medium text-ink-tertiary"
+                  title={m.label}
+                >
+                  {m.label}
+                </p>
+                <p className="mt-0.5 truncate text-[17px] font-extrabold tabular-nums leading-tight tracking-tight-1 text-ink">
+                  {m.value}
+                </p>
+                {ranking?.metricRanks[m.label] && (
+                  <MetricRankGlyph rank={ranking.metricRanks[m.label]} />
+                )}
               </div>
             ))}
-            {bullets.length > 0 && (
+            {bullets.length > 0 && ranking === null && (
               <ul className="grid min-w-0 flex-1 gap-0.5">
                 {bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-1.5 truncate text-[11px] text-ink-secondary">
+                  <li
+                    key={b}
+                    className="flex items-start gap-1.5 text-[11px] text-ink-secondary"
+                    title={b}
+                  >
                     <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-emerald" />
-                    <span className="truncate">{b}</span>
+                    {/* line-clamp-2 + title tooltip kills the "worldwi..."
+                        single-line cut the user flagged on the catalogue. */}
+                    <span className="line-clamp-2">{b}</span>
                   </li>
                 ))}
               </ul>
             )}
+            {/* Score bar removed (P0 compliance fix). Award ribbon and
+                per-metric glyphs carry the ranking signal without a
+                composite "X/100" that reads as advice. */}
           </div>
         )}
 
-        {/* CTA — right, fixed. stopPropagation prevents the row's body-click
-            handler from also firing when the user actually wants the affiliate
-            link, not the detail page. */}
-        <div className="shrink-0">
+        {/* CTA — right, fixed. Save + Compare icons fade in on row hover
+            so the resting state stays clean. stopPropagation on both
+            onClick handlers keeps the row's body-click handler from firing
+            when the user actually wants the inner action.
+
+            Compare icon is rendered only when the parent provides
+            `onToggleCompare` — workspaces with a compare table (dashboards)
+            wire it; surfaces without one (e.g. /explore/<bucket>) don't. */}
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="hidden gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 data-[compare-active=true]:opacity-100 sm:flex"
+               data-compare-active={compareSelected ? "true" : "false"}>
+            {onToggleCompare && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleCompare();
+                }}
+                aria-pressed={Boolean(compareSelected)}
+                title={compareSelected ? "Remove from compare" : "Add to compare"}
+                className={[
+                  "inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all",
+                  compareSelected
+                    ? "border-accent-emerald/40 bg-accent-emerald-soft text-accent-emerald-strong"
+                    : "border-line bg-white text-ink-tertiary hover:border-accent-emerald/40 hover:text-accent-emerald-strong",
+                ].join(" ")}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 4.5h8L8 2.5M12 9.5H4L6 11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+            <SaveOfferButton
+              offer={offer}
+              mode="icon"
+              stopPropagation
+            />
+          </div>
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer sponsored"
             onClick={(event) => event.stopPropagation()}
-            className="flex items-center gap-1.5 rounded-xl bg-accent-emerald px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-emerald-strong sm:px-5 sm:py-2.5 sm:text-[14px]"
+            // Explicit height (h-10 = 40px on sm+, h-9 = 36px on mobile)
+            // so icon and text share a deterministic vertical centre —
+            // fixes the "arrow slides off baseline" the user spotted.
+            // strokeWidth standardised to 2 (was 1.8) — matches all other
+            // action arrows on the page.
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-accent-emerald px-4 text-[13px] font-semibold leading-none text-white shadow-[0_4px_10px_rgba(15,138,75,0.20)] transition-all hover:bg-accent-emerald-strong hover:shadow-[0_6px_14px_rgba(15,138,75,0.28)] active:scale-[0.98] sm:h-10 sm:px-5 sm:text-[14px]"
           >
             <span className="hidden sm:inline">{ctaLabel}</span>
             <span className="sm:hidden">Go</span>
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-              <path d="M2 6.5h9M8 3l3.5 3.5L8 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
         </div>
       </div>
 
-      {/* Mobile section — metrics + bullets, visible below md */}
+      {/* Mobile section — metrics + bullets, visible below md. Score bar is
+          desktop-only so the mobile row stays compact; we still surface the
+          comparative glyphs under each metric value for parity. */}
       {(visibleMetrics.length > 0 || bullets.length > 0) && (
         <div className="border-t border-line px-4 py-3 md:hidden">
           {visibleMetrics.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {visibleMetrics.map((m) => (
                 <div key={m.label}>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{m.label}</p>
-                  <p className="mt-0.5 text-[13px] font-bold tabular-nums text-ink">{m.value}</p>
+                  <p className="text-[11px] font-medium text-ink-tertiary">
+                    {m.label}
+                  </p>
+                  <p className="mt-0.5 text-[15px] font-bold tabular-nums text-ink">{m.value}</p>
+                  {ranking?.metricRanks[m.label] && (
+                    <MetricRankGlyph rank={ranking.metricRanks[m.label]} />
+                  )}
                 </div>
               ))}
             </div>
