@@ -22,6 +22,11 @@ import {
   TRANSFER_SPEED_ORDER,
   type TransferSpeed,
 } from "./transfer-speed";
+import {
+  isCardCategory,
+  isMonthlyFeeFree,
+  isFxFeeZero,
+} from "./card-fee-filters";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -68,6 +73,12 @@ export function BucketWorkspace({
   const [activeTransferSpeed, setActiveTransferSpeed] = useState<
     TransferSpeed | ""
   >("");
+  // Card-specific binary filters. "" = no constraint, "yes" = keep only
+  // free / zero-FX cards. Kept as 2-value strings rather than booleans so
+  // FilterSheet can list "All" + "Free only" as proper menu options with
+  // counts.
+  const [activeCardMonthly, setActiveCardMonthly] = useState<"" | "free">("");
+  const [activeCardFx, setActiveCardFx] = useState<"" | "zero">("");
 
   // Only show categories that actually have offers in this country.
   const presentCategories = useMemo(() => {
@@ -127,6 +138,24 @@ export function BucketWorkspace({
     return counts;
   }, [transferOffers]);
 
+  // Card filters mirror the same shape — visible when the bucket has a
+  // critical mass of cards in the user's market.
+  const cardOffers = useMemo(
+    () => offers.filter((o) => isCardCategory(o.category)),
+    [offers],
+  );
+  const showCardFeeFilters =
+    cardOffers.length >= 8 &&
+    (activeCategory === "all" || isCardCategory(activeCategory));
+  const freeMonthlyCount = useMemo(
+    () => cardOffers.filter(isMonthlyFeeFree).length,
+    [cardOffers],
+  );
+  const zeroFxCount = useMemo(
+    () => cardOffers.filter(isFxFeeZero).length,
+    [cardOffers],
+  );
+
   const filteredAndSorted = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     let filtered = offers;
@@ -157,6 +186,18 @@ export function BucketWorkspace({
         return inferTransferSpeed(o) === activeTransferSpeed;
       });
     }
+    if (activeCardMonthly === "free") {
+      // Non-card rows pass through unchanged so a mixed bucket can keep
+      // showing kids' accounts / business cards alongside.
+      filtered = filtered.filter(
+        (o) => !isCardCategory(o.category) || isMonthlyFeeFree(o),
+      );
+    }
+    if (activeCardFx === "zero") {
+      filtered = filtered.filter(
+        (o) => !isCardCategory(o.category) || isFxFeeZero(o),
+      );
+    }
     if (trimmed) {
       filtered = filtered.filter(
         (o) =>
@@ -174,6 +215,8 @@ export function BucketWorkspace({
     activeProvider,
     activeInsuranceSubtype,
     activeTransferSpeed,
+    activeCardMonthly,
+    activeCardFx,
   ]);
 
   const investmentOffers = useMemo(
@@ -186,6 +229,8 @@ export function BucketWorkspace({
     activeProvider !== "" ||
     activeInsuranceSubtype !== "" ||
     activeTransferSpeed !== "" ||
+    activeCardMonthly !== "" ||
+    activeCardFx !== "" ||
     query !== "";
 
   return (
@@ -284,6 +329,38 @@ export function BucketWorkspace({
             />
           )}
 
+          {showCardFeeFilters && freeMonthlyCount > 0 && (
+            <FilterSheet
+              label="Monthly fee"
+              value={activeCardMonthly}
+              onChange={(v) => setActiveCardMonthly(v as "" | "free")}
+              options={[
+                { value: "", label: "Any", hint: `${cardOffers.length} options` },
+                {
+                  value: "free",
+                  label: "Free only",
+                  hint: `${freeMonthlyCount} ${freeMonthlyCount === 1 ? "offer" : "offers"}`,
+                },
+              ]}
+            />
+          )}
+
+          {showCardFeeFilters && zeroFxCount > 0 && (
+            <FilterSheet
+              label="FX fee"
+              value={activeCardFx}
+              onChange={(v) => setActiveCardFx(v as "" | "zero")}
+              options={[
+                { value: "", label: "Any", hint: `${cardOffers.length} options` },
+                {
+                  value: "zero",
+                  label: "0% only",
+                  hint: `${zeroFxCount} ${zeroFxCount === 1 ? "offer" : "offers"}`,
+                },
+              ]}
+            />
+          )}
+
           {providerOptions.length > 1 && (
             <FilterSheet
               label="Provider"
@@ -311,6 +388,8 @@ export function BucketWorkspace({
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
                 setActiveTransferSpeed("");
+                setActiveCardMonthly("");
+                setActiveCardFx("");
                 setQuery("");
               }}
               className="inline-flex h-10 items-center rounded-full bg-bg-surface px-4 text-[12px] font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
@@ -340,6 +419,8 @@ export function BucketWorkspace({
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
                 setActiveTransferSpeed("");
+                setActiveCardMonthly("");
+                setActiveCardFx("");
                 setQuery("");
               }}
               className="mt-3 text-[14px] font-medium text-accent-emerald hover:underline"
