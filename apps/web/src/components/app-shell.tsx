@@ -136,6 +136,39 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
+// Inline icon set for sidebar items that previously rendered without one.
+// Stroke-based, currentColor-driven so they inherit text-ink-tertiary /
+// hover colours from the SidebarLink wrapper. Keeping these inline (no
+// external icon library) is consistent with the SearchIcon / ChevronIcon
+// pattern already in this file.
+function DashboardIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="5" height="5" rx="1.2" />
+      <rect x="9" y="2" width="5" height="5" rx="1.2" />
+      <rect x="2" y="9" width="5" height="5" rx="1.2" />
+      <rect x="9" y="9" width="5" height="5" rx="1.2" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="2.2" />
+      <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11.5 7h-9M6 3.5L2.5 7 6 10.5" />
+    </svg>
+  );
+}
+
 // Unified Atlas-bucket node: the bucket name is a link to /explore/<slug>,
 // the chevron toggles a child list of the bucket's sub-categories (e.g.
 // "Daily banking" → Banking / Neobanks / Wallets). Single-category buckets
@@ -263,7 +296,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const systemItems = useMemo<AppNavItem[]>(
     () => [
-      { id: "dashboard", label: uiCopy.dashboard.navItems.dashboard.label, href: localePath(preferences.locale, "/dashboard") },
+      {
+        id: "dashboard",
+        label: uiCopy.dashboard.navItems.dashboard.label,
+        href: localePath(preferences.locale, "/dashboard"),
+        icon: <DashboardIcon className="h-4 w-4 shrink-0" />,
+      },
       {
         id: "discover",
         label: productEntryActionLabel,
@@ -274,11 +312,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     [preferences.locale, productEntryActionLabel, uiCopy.dashboard.navItems],
   );
 
+  // Settings now ships with its own icon so it stops looking orphaned at
+  // the bottom of the sidebar — every other sidebar item has one (per UX
+  // audit). Same SidebarLink wiring as systemItems[].
   const settingsItem = useMemo<AppNavItem>(
     () => ({
       id: "settings",
       label: uiCopy.dashboard.navItems.profile.label,
       href: localePath(preferences.locale, "/settings"),
+      icon: <SettingsIcon className="h-4 w-4 shrink-0" />,
       disabledWhenLoggedOut: true,
     }),
     [preferences.locale, uiCopy.dashboard.navItems],
@@ -390,16 +432,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen overflow-x-clip bg-bg text-ink pb-20 md:pb-0">
       <div className="mx-auto flex max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
         <aside className="hidden overflow-hidden rounded-[24px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
-          <Link href={localePath(preferences.locale, "/")} className="flex items-center gap-3 border-b border-line px-5 py-5 transition-colors hover:bg-bg-surface">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-accent-emerald/15 bg-accent-emerald-soft">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 12L8 4L12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-emerald-strong" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-lg font-bold tracking-tight text-ink">Payn</p>
-              <p className="text-xs text-ink-tertiary">{uiCopy.common.backToSite}</p>
-            </div>
+          {/* Compact back-link — the full-size Payn lockup used to live here,
+              which doubled the brand mark already visible in the outer page
+              header. Per UX audit: one Payn at the top, a quiet arrow inside
+              the dashboard shell. */}
+          <Link
+            href={localePath(preferences.locale, "/")}
+            className="flex items-center gap-2 border-b border-line px-5 py-3 text-[13px] font-medium text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5" />
+            <span>{uiCopy.common.backToSite}</span>
           </Link>
 
           <div className="hidden flex-1 overflow-y-auto px-3 py-4 lg:block">
@@ -457,17 +499,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   href={localePath(preferences.locale, "/")}
                   onClick={() => setMobileNavOpen(false)}
-                  className="flex min-w-0 items-center gap-3"
+                  className="flex min-w-0 items-center gap-2 text-[13px] font-medium text-ink-tertiary transition-colors hover:text-ink"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-accent-emerald/15 bg-accent-emerald-soft">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M4 12L8 4L12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-emerald-strong" />
-                    </svg>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-bold tracking-tight text-ink">Payn</p>
-                    <p className="text-xs text-ink-tertiary">{uiCopy.common.backToSite}</p>
-                  </div>
+                  <ArrowLeftIcon className="h-3.5 w-3.5" />
+                  <span>{uiCopy.common.backToSite}</span>
                 </Link>
 
                 <button
