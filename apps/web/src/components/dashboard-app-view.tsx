@@ -342,52 +342,81 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
           </div>
         </DashboardSectionCard>
 
-        <DashboardSectionCard
-          eyebrow="Activity"
-          title="Recent activity"
-          description="Your latest shortlist actions and signals, kept lightweight."
-        >
-          <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="metric-tile rounded-[22px] p-5">
-              {recentActivity.length > 0 ? (
-                <div className="grid gap-3">
-                  {recentActivity.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 shadow-[0_4px_18px_rgba(15,23,32,0.04)]"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                          {item.label}
-                        </p>
-                        <p className="mt-1 truncate text-sm font-semibold text-ink">
-                          {item.title}
-                        </p>
-                      </div>
+        {/* Activity block — used to always render three "SAVED 0 / VIEWED 0
+            / SUGGESTIONS 3" tiles, which shouted nothing-here as a metric
+            instead of inviting a first action. Now: when the user has no
+            saved or viewed offers, we hide the zero tiles entirely and
+            show a single "start your shortlist" CTA. Once they have at
+            least one activity, the original list + tile-grid layout
+            comes back. */}
+        {(() => {
+          const hasActivity = savedOffers.length > 0 || watchedOffers.length > 0;
+          return (
+            <DashboardSectionCard
+              eyebrow="Activity"
+              title="Recent activity"
+              description={
+                hasActivity
+                  ? "Your latest shortlist actions and signals, kept lightweight."
+                  : `Save or open offers to build your shortlist. ${bestOffers.length} suggestions are waiting on the right.`
+              }
+            >
+              {hasActivity ? (
+                <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="metric-tile rounded-[22px] p-5">
+                    <div className="grid gap-3">
+                      {recentActivity.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 shadow-[0_4px_18px_rgba(15,23,32,0.04)]"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                              {item.label}
+                            </p>
+                            <p className="mt-1 truncate text-sm font-semibold text-ink">
+                              {item.title}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                    {[
+                      { label: "Saved", value: savedOffers.length },
+                      { label: "Viewed", value: watchedOffers.length },
+                      { label: "Suggestions", value: bestOffers.length },
+                    ].map((stat) => (
+                      <div key={stat.label} className="rounded-[24px] border border-line bg-white px-5 py-4 shadow-card">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{stat.label}</p>
+                        <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-ink">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <p className="text-sm leading-relaxed text-ink-secondary">
-                  Open or save offers to start building your activity trail.
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              {[
-                { label: "Saved", value: savedOffers.length },
-                { label: "Viewed", value: watchedOffers.length },
-                { label: "Suggestions", value: bestOffers.length },
-              ].map((stat) => (
-                <div key={stat.label} className="rounded-[24px] border border-line bg-white px-5 py-4 shadow-card">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">{stat.label}</p>
-                  <p className="mt-2 text-[1.75rem] font-bold leading-none tracking-[-0.04em] text-ink">{stat.value}</p>
+                <div className="flex flex-col gap-4 rounded-[22px] border border-dashed border-line bg-bg-surface px-6 py-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+                  <div className="max-w-prose-base">
+                    <p className="text-[15px] font-bold tracking-tight-1 text-ink">
+                      Your saved cards will live here.
+                    </p>
+                    <p className="mt-1.5 text-[13px] text-ink-secondary">
+                      Open any offer and hit Save — we&apos;ll keep your shortlist warm and surface rate changes.
+                    </p>
+                  </div>
+                  <Link
+                    href={discoverHref}
+                    className={`${buttonStyles({ variant: "primary", size: "md" })} shrink-0`}
+                  >
+                    Browse the catalogue
+                  </Link>
                 </div>
-              ))}
-            </div>
-          </div>
-        </DashboardSectionCard>
+              )}
+            </DashboardSectionCard>
+          );
+        })()}
 
         <DashboardSectionCard
           eyebrow="Explore"
