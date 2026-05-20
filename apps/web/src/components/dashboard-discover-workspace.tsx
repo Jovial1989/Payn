@@ -1150,11 +1150,20 @@ export function DashboardDiscoverWorkspace({
           callsite that linked /discover?intent=loans still lands on the
           loan-aware Quick check + Best for you below. */}
 
-      {/* Quick check */}
-      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
+      {/* Quick check — visually below Three good fits via `order-2`. The
+          DOM order is preserved so the workspace's state flow (form →
+          previewRows) stays clean; we only flip the visual stacking so
+          the page leads with the actionable picks, not the form. */}
+      <section className="order-2 rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
         <div className="mb-6 flex items-center gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
             {locale === "de" ? "Schnellcheck" : "Quick check"}
+          </p>
+          <p className="text-[11px] text-ink-tertiary">·</p>
+          <p className="text-[11px] text-ink-tertiary">
+            {locale === "de"
+              ? "Anpassen für genauere Zahlen oben"
+              : "Tune for sharper numbers above"}
           </p>
           <div className="h-px flex-1 bg-line" />
         </div>
@@ -1374,8 +1383,12 @@ export function DashboardDiscoverWorkspace({
       {/* Best for you — promoted from a quiet sub-section to the page's
           conversion surface. Emerald eyebrow + display-lead heading +
           subtitle so the user understands these aren't generic picks,
-          they're scoped to whatever they entered above. */}
-      <section className="rounded-[28px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/40 to-white px-6 py-8 shadow-card sm:px-8">
+          they're scoped to whatever they entered above.
+
+          `order-1` puts this above Quick check visually. The form state
+          still flows top-to-bottom in the DOM; we're only flipping the
+          visual stack so users hit the answer first. */}
+      <section className="order-1 rounded-[28px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/40 to-white px-6 py-8 shadow-card sm:px-8">
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-prose-base">
             <p className="eyebrow-cap" data-tone="emerald">
