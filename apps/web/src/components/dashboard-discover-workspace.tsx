@@ -590,7 +590,6 @@ export function DashboardDiscoverWorkspace({
     [defaultCountry],
   );
   const [workspaceStateLoaded, setWorkspaceStateLoaded] = useState(false);
-  const [showAllGoals, setShowAllGoals] = useState(false);
   const lastAppliedIntentRef = useRef<GoalId | null>(null);
   const lastPreferredCountryRef = useRef(defaultCountry);
   const [selectedGoal, setSelectedGoal] = useState<GoalId>(defaultWorkspaceState.selectedGoal);
@@ -1144,132 +1143,12 @@ export function DashboardDiscoverWorkspace({
 
   return (
     <div className="mx-auto grid max-w-[1100px] gap-6">
-      {/* Most-used goals */}
-      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
-        <div className="mb-6 flex items-center gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-            {locale === "de" ? "Meist gesucht" : "Most-used"}
-          </p>
-          <div className="h-px flex-1 bg-line" />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(["transfers", "loans", "cards", "savings", "exchange", "neobanks"] as GoalId[]).map((goal) => {
-            const count = offers.filter((o) => o.category === goal).length;
-            return (
-              <button
-                key={goal}
-                type="button"
-                onClick={() => setSelectedGoal(goal)}
-                className={clsx(
-                  "group rounded-[28px] border px-5 py-5 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.985]",
-                  selectedGoal === goal
-                    ? "border-accent-emerald bg-accent-emerald text-white"
-                    : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
-                )}
-              >
-                <div className="flex items-start gap-4">
-                  <CategoryIcon
-                    category={goal}
-                    size="lg"
-                    className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-base font-semibold tracking-[-0.02em]">{getGoalLabel(locale, goal)}</p>
-                      {count > 0 && (
-                        <span
-                          className={clsx(
-                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                            selectedGoal === goal
-                              ? "bg-white/20 text-white"
-                              : "bg-accent-emerald-soft text-accent-emerald-strong",
-                          )}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      className={clsx(
-                        "mt-2 max-w-[22rem] text-sm leading-relaxed",
-                        selectedGoal === goal ? "text-white/80" : "text-ink-secondary",
-                      )}
-                    >
-                      {getGoalDescription(locale, goal)}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* More ways to compare */}
-        <div className="mt-6">
-          <div className="mb-4 flex items-center gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              {locale === "de" ? "Weitere Vergleiche" : "More ways to compare"}
-            </p>
-            <div className="h-px flex-1 bg-line" />
-          </div>
-          {!showAllGoals ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm text-ink-secondary">
-                {locale === "de"
-                  ? "Außerdem: Kinderkonto, Payroll, Ausgaben-Tracking, Steuererklärung, Geschäftskonto und mehr."
-                  : "Also: kids’ banking, payroll, expense tracking, tax filing, business accounts, and more."}
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowAllGoals(true)}
-                className="shrink-0 rounded-full border border-line bg-bg-surface px-4 py-1.5 text-sm font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
-              >
-                {locale === "de" ? "Alle 17 anzeigen →" : "Show all 17 →"}
-              </button>
-            </div>
-          ) : (
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {goalOptions
-                .filter((g) => !(["transfers", "loans", "cards", "savings", "exchange", "neobanks"] as GoalId[]).includes(g))
-                .map((goal) => {
-                  const count = offers.filter((o) => o.category === goal).length;
-                  return (
-                    <button
-                      key={goal}
-                      type="button"
-                      onClick={() => setSelectedGoal(goal)}
-                      className={clsx(
-                        "flex items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-150 hover:shadow-[0_4px_12px_rgba(17,24,39,0.07)]",
-                        selectedGoal === goal
-                          ? "border-accent-emerald bg-accent-emerald text-white"
-                          : "border-[#EAEAEA] bg-white text-ink hover:bg-[#FCFCFD]",
-                      )}
-                    >
-                      <CategoryIcon
-                        category={goal}
-                        size="sm"
-                        className={selectedGoal === goal ? "border-accent-emerald/20 bg-white/20 text-white shadow-none" : ""}
-                      />
-                      <span className="flex-1 text-sm font-semibold">{getGoalLabel(locale, goal)}</span>
-                      {count > 0 && (
-                        <span
-                          className={clsx(
-                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                            selectedGoal === goal
-                              ? "bg-white/20 text-white"
-                              : "bg-accent-emerald-soft text-accent-emerald-strong",
-                          )}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Most-used + More-ways-to-compare sections used to live here. Both
+          duplicated the AtlasGrid at the page level (§3) — three rows of
+          category cards on the same scroll. Cut per UX audit: the goal is
+          still drivable via `initialIntent` (URL → workspace state) so any
+          callsite that linked /discover?intent=loans still lands on the
+          loan-aware Quick check + Best for you below. */}
 
       {/* Quick check */}
       <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">

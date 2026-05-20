@@ -7,7 +7,6 @@ import { DashboardDiscoverWorkspace } from "@/components/dashboard-discover-work
 import { DiscoverHero } from "@/components/discover/hero";
 import { TodayStrip } from "@/components/discover/today-strip";
 import { HelpDecide } from "@/components/discover/help-decide";
-import { TrustBand } from "@/components/discover/trust-band";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
@@ -143,15 +142,12 @@ export function DiscoverPageView({
           />
         </section>
 
-        {/* § 4 — Why Payn trust band. Dark, high-contrast panel that breaks
-                  the white rhythm and ties the brand promise to four concrete
-                  proof points. */}
-        <TrustBand />
-
-        {/* § 5 — Interactive quick-check workspace. Same component as before,
-                  now positioned after the user has seen the catalogue scope
-                  and the trust pillars, so the "tell me about your situation"
-                  ask lands with more reason to engage. */}
+        {/* § 4 — Interactive quick-check workspace. Trust band lived here
+                  previously, but it was marketing aimed at unconvinced
+                  visitors — for logged-in /discover users it just delayed
+                  the actionable surface, so we moved straight from the
+                  Atlas grid into the calculator. Brand-promise content
+                  still lives on the landing page. */}
         <div ref={workspaceRef}>
           <DashboardDiscoverWorkspace
             locale={preferences.locale}
@@ -166,7 +162,7 @@ export function DiscoverPageView({
           />
         </div>
 
-        {/* § 6 — Help me decide. */}
+        {/* § 5 — Help me decide. */}
         <HelpDecide contactHref={localePath(preferences.locale, "/contact")} />
       </div>
     </>
