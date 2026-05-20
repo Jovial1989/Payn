@@ -623,11 +623,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       Was: uppercase "HOME / Section" + duplicate H1 below.
                       Now: a single nested breadcrumb `Payn / {Pillar} / {Section}`
                       with proper visual hierarchy. Page content owns its
-                      own H1 — the shell only carries the trail. */}
+                      own H1 — the shell only carries the trail.
+
+                      Special cases — leaf segment is suppressed when:
+                        • section is "other" (e.g. /explore/<bucket> where the
+                          page already renders its own header + back-link)
+                        • section is "offers" (PDP — the page hero IS the
+                          identity; "Payn / Offer detail" added noise)
+                        • leaf would resolve to literal "Payn" (the "other"
+                          fallback, which would print "Payn / Payn"). */}
                   {(() => {
                     const pillar = currentSection !== "dashboard" && currentSection !== "settings" && currentSection !== "discover" && currentSection !== "offers" && currentSection !== "other"
                       ? findPillarForCategory(currentSection, dictionary)
                       : null;
+                    const showLeaf =
+                      currentSection !== "other" &&
+                      currentSection !== "offers" &&
+                      currentSectionTitle !== "Payn";
                     return (
                       <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
                         <ol className="flex items-center gap-1.5 text-[12px] text-ink-tertiary">
@@ -645,10 +657,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               <li className="font-medium">{pillar}</li>
                             </>
                           )}
-                          <li className="text-line-strong" aria-hidden="true">/</li>
-                          <li className="min-w-0 flex-1 truncate font-bold text-ink">
-                            {currentSectionTitle}
-                          </li>
+                          {showLeaf && (
+                            <>
+                              <li className="text-line-strong" aria-hidden="true">/</li>
+                              <li className="min-w-0 flex-1 truncate font-bold text-ink">
+                                {currentSectionTitle}
+                              </li>
+                            </>
+                          )}
                         </ol>
                       </nav>
                     );
