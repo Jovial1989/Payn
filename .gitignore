@@ -21,3 +21,9 @@ backend/.env
 
 .vercel
 .env*.local
+
+# Catch any .env*.tmp file before it can be staged with `git add -A`.
+# We had apps/web/.env.production.tmp untracked with GEMINI_API_KEY in
+# it during dev; the existing `.env*.local` glob did not match.
+.env*.tmp
+_tmp_*
