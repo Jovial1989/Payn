@@ -21,6 +21,8 @@ import { getActiveCategoriesForCountry } from "@/lib/countries";
 import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { AffiliateDisclosureBanner } from "@/components/affiliate-disclosure-banner";
+import { CompareProvider } from "@/features/compare/compare-store";
+import { CompareBar } from "@/features/compare/compare-bar";
 import { categoryGroups } from "@/lib/marketplace";
 
 // Resolve the pillar label for a given category by walking the 5+1
@@ -429,6 +431,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
+    <CompareProvider>
     <div className="min-h-screen overflow-x-clip bg-bg text-ink pb-20 md:pb-0">
       <div className="mx-auto flex max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
         <aside className="hidden overflow-hidden rounded-[24px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
@@ -684,6 +687,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <MobileBottomNav />
       <AffiliateDisclosureBanner />
+      <CompareBar locale={preferences.locale} />
     </div>
+    </CompareProvider>
   );
 }

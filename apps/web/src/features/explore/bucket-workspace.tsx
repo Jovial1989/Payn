@@ -42,6 +42,7 @@ import {
   getInvestmentSubFilters,
   matchesInvestmentSubFilters,
 } from "./investments-deep-filters";
+import { useCompare } from "@/features/compare/compare-store";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -72,6 +73,7 @@ export function BucketWorkspace({
   marketLabel,
 }: BucketWorkspaceProps) {
   const baseCurrency = countryToBaseCurrency(country);
+  const compare = useCompare();
   const dictionary = getDictionary(locale);
   const [sortBy, setSortBy] = useState<SortKey>("relevance");
   const [query, setQuery] = useState("");
@@ -949,6 +951,11 @@ export function BucketWorkspace({
               // category market, not just what survived the current filters.
               marketContext={offers}
               baseCurrency={baseCurrency ?? undefined}
+              compareSelected={compare.has(offer.slug)}
+              onToggleCompare={() => {
+                if (!compare.has(offer.slug) && compare.full) return;
+                compare.toggle(offer.slug);
+              }}
             />
           ))}
         </div>
