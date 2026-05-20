@@ -780,33 +780,162 @@ export function BucketWorkspace({
       </p>
 
       {filteredAndSorted.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-white px-8 py-12 text-center">
-          <p className="text-[15px] text-ink-secondary">
+        <div className="rounded-2xl border border-line bg-white px-8 py-12">
+          <p className="text-center text-[15px] text-ink-secondary">
             {hasAnyFilter
               ? `No matches in ${countryName} with the current filters.`
               : `No options currently available in ${countryName} for this category.`}
           </p>
-          {hasAnyFilter && (
-            <button
-              type="button"
-              onClick={() => {
-                setActiveCategory("all");
-                setActiveProvider("");
-                setActiveInsuranceSubtype("");
-                setActiveInsuranceSubFilters({});
-                setActiveTransferSpeed("");
-                setActiveTransferFee("");
-                setActiveCardMonthly("");
-                setActiveCardFx("");
-                setActiveLoanFilters({});
-                setActiveInvestmentFilters({});
-                setQuery("");
-              }}
-              className="mt-3 text-[14px] font-medium text-accent-emerald hover:underline"
-            >
-              Clear filters
-            </button>
-          )}
+          {hasAnyFilter && (() => {
+            // Each active filter becomes a removable chip — the user
+            // can drop one constraint at a time instead of nuking
+            // everything and starting over. Built declaratively so
+            // adding a new filter just means appending one more push.
+            type Chip = { key: string; label: string; clear: () => void };
+            const chips: Chip[] = [];
+            if (query) {
+              chips.push({
+                key: "q",
+                label: `Search: "${query}"`,
+                clear: () => setQuery(""),
+              });
+            }
+            if (activeCategory !== "all") {
+              chips.push({
+                key: "category",
+                label: `Category: ${dictionary.categories[activeCategory] ?? activeCategory}`,
+                clear: () => setActiveCategory("all"),
+              });
+            }
+            if (activeProvider) {
+              chips.push({
+                key: "provider",
+                label: `Provider: ${activeProvider}`,
+                clear: () => setActiveProvider(""),
+              });
+            }
+            if (activeInsuranceSubtype) {
+              chips.push({
+                key: "subtype",
+                label: `Type: ${INSURANCE_SUBTYPE_LABELS[activeInsuranceSubtype]}`,
+                clear: () => {
+                  setActiveInsuranceSubtype("");
+                  setActiveInsuranceSubFilters({});
+                },
+              });
+            }
+            for (const [k, v] of Object.entries(activeInsuranceSubFilters)) {
+              const f = getInsuranceSubFilters(activeInsuranceSubtype).find((x) => x.key === k);
+              const opt = f?.options.find((o) => o.value === v);
+              if (!f || !opt) continue;
+              chips.push({
+                key: `ins.${k}`,
+                label: `${f.label}: ${opt.label}`,
+                clear: () => setActiveInsuranceSubFilters((prev) => {
+                  const { [k]: _omit, ...rest } = prev;
+                  return rest;
+                }),
+              });
+            }
+            if (activeTransferSpeed) {
+              chips.push({
+                key: "speed",
+                label: `Speed: ${TRANSFER_SPEED_LABELS[activeTransferSpeed]}`,
+                clear: () => setActiveTransferSpeed(""),
+              });
+            }
+            if (activeTransferFee === "free") {
+              chips.push({
+                key: "fee",
+                label: "Fee: Free transfers",
+                clear: () => setActiveTransferFee(""),
+              });
+            }
+            if (activeCardMonthly === "free") {
+              chips.push({
+                key: "monthly-fee",
+                label: "Monthly fee: Free only",
+                clear: () => setActiveCardMonthly(""),
+              });
+            }
+            if (activeCardFx === "zero") {
+              chips.push({
+                key: "fx-fee",
+                label: "FX fee: 0% only",
+                clear: () => setActiveCardFx(""),
+              });
+            }
+            for (const [k, v] of Object.entries(activeLoanFilters)) {
+              const f = getLoanSubFilters().find((x) => x.key === k);
+              const opt = f?.options.find((o) => o.value === v);
+              if (!f || !opt) continue;
+              chips.push({
+                key: `loan.${k}`,
+                label: `${f.label}: ${opt.label}`,
+                clear: () => setActiveLoanFilters((prev) => {
+                  const { [k]: _omit, ...rest } = prev;
+                  return rest;
+                }),
+              });
+            }
+            for (const [k, v] of Object.entries(activeInvestmentFilters)) {
+              const f = getInvestmentSubFilters().find((x) => x.key === k);
+              const opt = f?.options.find((o) => o.value === v);
+              if (!f || !opt) continue;
+              chips.push({
+                key: `inv.${k}`,
+                label: `${f.label}: ${opt.label}`,
+                clear: () => setActiveInvestmentFilters((prev) => {
+                  const { [k]: _omit, ...rest } = prev;
+                  return rest;
+                }),
+              });
+            }
+
+            return (
+              <div className="mt-5 flex flex-col items-center gap-3">
+                <p className="text-[12px] text-ink-tertiary">
+                  Drop a constraint to widen the search:
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {chips.map((chip) => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={chip.clear}
+                      className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-[12px] font-semibold text-ink-secondary transition-colors hover:border-accent-emerald/40 hover:text-ink"
+                    >
+                      <span>{chip.label}</span>
+                      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-bg-surface text-ink-tertiary transition-colors group-hover:bg-accent-emerald group-hover:text-white">
+                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                          <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                        </svg>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory("all");
+                    setActiveProvider("");
+                    setActiveInsuranceSubtype("");
+                    setActiveInsuranceSubFilters({});
+                    setActiveTransferSpeed("");
+                    setActiveTransferFee("");
+                    setActiveCardMonthly("");
+                    setActiveCardFx("");
+                    setActiveLoanFilters({});
+                    setActiveInvestmentFilters({});
+                    setQuery("");
+                  }}
+                  className="text-[13px] font-medium text-accent-emerald hover:underline"
+                >
+                  Clear all filters
+                </button>
+              </div>
+            );
+          })()}
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
