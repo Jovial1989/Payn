@@ -320,7 +320,10 @@ export function OfferRowAtlas({
                 >
                   {m.label}
                 </p>
-                <p className="mt-0.5 truncate text-[17px] font-extrabold tabular-nums leading-tight tracking-tight-1 text-ink">
+                <p
+                  className="mt-0.5 truncate text-[17px] font-extrabold tabular-nums leading-tight tracking-tight-1 text-ink"
+                  title={m.value}
+                >
                   {m.value}
                 </p>
                 <MetricRankSlot rank={ranking?.metricRanks[m.label]} />
