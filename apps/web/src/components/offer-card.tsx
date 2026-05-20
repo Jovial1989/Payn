@@ -10,8 +10,16 @@ import { getMatchReasons } from "@/lib/match-reasons";
 import { getOfferDecisionBadge } from "@/lib/offer-badges";
 import { getOfferHref, normalizeDisplayText } from "@/lib/marketplace";
 
-// Deterministic user count by rank — gives credibility signal without randomness
-const RANK_USER_COUNTS = [120, 84, 60, 44, 33, 24, 18, 13];
+// Rewrite a bare-zero metric value as a friendlier word so the card
+// headline doesn't read "EUR 0" (which looks like a placeholder /
+// loading state) or "0%" (which can read as "data missing"). Anything
+// else passes through unchanged.
+function friendlyHeroValue(raw: string): string {
+  const v = raw.trim();
+  if (/^(eur|usd|gbp|chf)\s*0(\.0+)?$/i.test(v)) return "Free";
+  if (/^0(\.0+)?\s*%$/.test(v)) return "0%";
+  return raw;
+}
 
 export function OfferCard({
   offer,
@@ -49,9 +57,6 @@ export function OfferCard({
     .slice(0, 2);
   const secondaryMetrics = offer.metrics.slice(1, 5);
 
-  // Social proof: deterministic count derived from rank
-  const userCountK = RANK_USER_COUNTS[Math.min(rank - 1, RANK_USER_COUNTS.length - 1)] ?? 10;
-
   return (
     <article
       className="premium-card premium-card-hover motion-card group overflow-hidden rounded-[24px]"
@@ -86,37 +91,44 @@ export function OfferCard({
           </div>
         </div>
 
-        {/* Primary metric — Robinhood-style big number */}
+        {/* Primary metric — Robinhood-style big number, with "EUR 0" /
+            "0%" rewritten as a friendlier word so the headline isn't a
+            bare zero that reads as a placeholder. */}
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-tertiary">
             {supportLabel}
           </p>
-          <p className="mt-2 text-[2.7rem] font-extrabold leading-none tracking-[-0.07em] tabular-nums text-ink">
-            {primaryMetric ? normalizeDisplayText(primaryMetric.value) : "—"}
-          </p>
-          {/* Social proof */}
-          <p className="mt-2 text-[12px] font-medium text-ink-tertiary">
-            {userCountK * 10 + rank * 5} users checked today &middot; {offer.countryCodes.slice(0, 3).join(", ")}
+          <p className="mt-2 text-[2.4rem] font-extrabold leading-none tracking-[-0.06em] tabular-nums text-ink sm:text-[2.7rem]">
+            {primaryMetric ? friendlyHeroValue(primaryMetric.value) : "—"}
           </p>
 
           {benefitBullets[0] ? (
-            <p className="mt-2 text-[14px] font-medium text-ink-secondary">
+            <p className="mt-3 text-[14px] font-medium text-ink-secondary">
               {benefitBullets[0]}
             </p>
           ) : null}
+
           {secondaryMetrics.length > 0 && (
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {secondaryMetrics.map((m) => (
-                <div key={m.label} className="rounded-2xl border border-line bg-[#FAFBFA] px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+            // 2-col cap — the card sits inside a 3-col dashboard grid, so
+            // a 4-col internal grid produced ~70px columns and wrapped
+            // values like "Saveback up to 1%" or "Free up to EUR 100"
+            // into 3-4 tiny lines. Two columns gives ~140px which lets
+            // a typical metric value sit on one line.
+            <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3">
+              {secondaryMetrics.slice(0, 4).map((m) => (
+                <div key={m.label} className="min-w-0">
+                  <dt className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                     {normalizeDisplayText(getMetricLabel(locale, m.label))}
-                  </p>
-                  <p className="mt-0.5 text-[13px] font-bold text-ink">
+                  </dt>
+                  <dd
+                    className="mt-0.5 truncate text-[14px] font-bold text-ink"
+                    title={normalizeDisplayText(m.value)}
+                  >
                     {normalizeDisplayText(m.value)}
-                  </p>
+                  </dd>
                 </div>
               ))}
-            </div>
+            </dl>
           )}
         </div>
 
@@ -133,18 +145,16 @@ export function OfferCard({
         )}
       </div>
 
-      {/* CTA footer */}
+      {/* CTA footer — one primary action + optional Compare. The
+          "Check details" secondary link is gone (the entire header is
+          a Link to the PDP, so the card body already navigates there
+          on click of the title), removing the dual-CTA confusion the
+          user flagged on the dashboard cards. */}
       <div className="flex flex-wrap items-center gap-3 border-t border-[#F0F2F0] px-5 py-4 sm:px-6">
         <ProviderLinkButton
           offer={offer}
           label={dictionary.offerCard.providerCta[offer.category]}
         />
-        <Link
-          href={localePath(locale, getOfferHref(offer))}
-          className="pressable text-[13px] font-semibold text-ink-secondary transition-colors hover:text-ink"
-        >
-          {dictionary.offerCard.reviewOffer} &rarr;
-        </Link>
         {onToggleCompare && (
           <button
             type="button"
