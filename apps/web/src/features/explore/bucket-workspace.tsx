@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MarketplaceCategory, MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import { OfferRowAtlas } from "@/features/marketplace/offer-row-atlas";
 import { sortOffers, type SortKey } from "@/lib/marketplace-engine";
@@ -110,6 +110,120 @@ export function BucketWorkspace({
   const [activeInvestmentFilters, setActiveInvestmentFilters] = useState<
     Record<string, string>
   >({});
+
+  // ─── URL state sync ─────────────────────────────────────────────────────
+  //
+  // Filters live in component state, but we also mirror them into the URL
+  // so a link like /explore/protect?subtype=travel&trip-length=long is
+  // shareable and survives a reload. Reserved param `country` is owned by
+  // the bucket page above us — we touch only filter keys.
+  //
+  // Strategy:
+  //   • On mount, hydrate from URL once (hydratedRef gates the writer so
+  //     the hydration pass itself doesn't immediately push the same
+  //     values back to the URL).
+  //   • On any filter change after hydration, serialise back to URL via
+  //     history.replaceState — no router.push, no extra history entry per
+  //     filter click.
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const get = (k: string) => params.get(k) ?? "";
+
+    if (get("q")) setQuery(get("q"));
+    if (get("sort")) setSortBy(get("sort") as SortKey);
+    if (get("category")) {
+      setActiveCategory(get("category") as MarketplaceCategory | "all");
+    }
+    if (get("provider")) setActiveProvider(get("provider"));
+    if (get("subtype")) {
+      setActiveInsuranceSubtype(get("subtype") as InsuranceSubtype | "");
+    }
+    if (get("speed")) {
+      setActiveTransferSpeed(get("speed") as TransferSpeed | "");
+    }
+    if (get("fee")) setActiveTransferFee(get("fee") as "" | "free");
+    if (get("monthly-fee")) {
+      setActiveCardMonthly(get("monthly-fee") as "" | "free");
+    }
+    if (get("fx-fee")) setActiveCardFx(get("fx-fee") as "" | "zero");
+
+    // Deep-filter dicts — collect any URL param whose key starts with
+    // the dict's family prefix.
+    const ins: Record<string, string> = {};
+    const loan: Record<string, string> = {};
+    const inv: Record<string, string> = {};
+    for (const [k, v] of params.entries()) {
+      if (k.startsWith("ins.")) ins[k.slice(4)] = v;
+      else if (k.startsWith("loan.")) loan[k.slice(5)] = v;
+      else if (k.startsWith("inv.")) inv[k.slice(4)] = v;
+    }
+    if (Object.keys(ins).length) setActiveInsuranceSubFilters(ins);
+    if (Object.keys(loan).length) setActiveLoanFilters(loan);
+    if (Object.keys(inv).length) setActiveInvestmentFilters(inv);
+
+    hydratedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!hydratedRef.current) return;
+
+    // Preserve any non-filter param the parent owns (e.g. `country`).
+    const next = new URLSearchParams(window.location.search);
+    const filterKeys = [
+      "q", "sort", "category", "provider",
+      "subtype", "speed", "fee", "monthly-fee", "fx-fee",
+    ];
+    for (const k of filterKeys) next.delete(k);
+    for (const k of Array.from(next.keys())) {
+      if (k.startsWith("ins.") || k.startsWith("loan.") || k.startsWith("inv.")) {
+        next.delete(k);
+      }
+    }
+
+    if (query) next.set("q", query);
+    if (sortBy !== "relevance") next.set("sort", sortBy);
+    if (activeCategory !== "all") next.set("category", activeCategory);
+    if (activeProvider) next.set("provider", activeProvider);
+    if (activeInsuranceSubtype) next.set("subtype", activeInsuranceSubtype);
+    if (activeTransferSpeed) next.set("speed", activeTransferSpeed);
+    if (activeTransferFee) next.set("fee", activeTransferFee);
+    if (activeCardMonthly) next.set("monthly-fee", activeCardMonthly);
+    if (activeCardFx) next.set("fx-fee", activeCardFx);
+    for (const [k, v] of Object.entries(activeInsuranceSubFilters)) {
+      if (v) next.set(`ins.${k}`, v);
+    }
+    for (const [k, v] of Object.entries(activeLoanFilters)) {
+      if (v) next.set(`loan.${k}`, v);
+    }
+    for (const [k, v] of Object.entries(activeInvestmentFilters)) {
+      if (v) next.set(`inv.${k}`, v);
+    }
+
+    const qs = next.toString();
+    const nextUrl = qs
+      ? `${window.location.pathname}?${qs}`
+      : window.location.pathname;
+    if (nextUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [
+    query,
+    sortBy,
+    activeCategory,
+    activeProvider,
+    activeInsuranceSubtype,
+    activeInsuranceSubFilters,
+    activeTransferSpeed,
+    activeTransferFee,
+    activeCardMonthly,
+    activeCardFx,
+    activeLoanFilters,
+    activeInvestmentFilters,
+  ]);
 
   // Only show categories that actually have offers in this country.
   const presentCategories = useMemo(() => {
