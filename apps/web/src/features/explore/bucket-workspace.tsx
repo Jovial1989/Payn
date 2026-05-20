@@ -22,6 +22,7 @@ import {
 } from "./insurance-deep-filters";
 import {
   inferTransferSpeed,
+  isTransferFree,
   TRANSFER_SPEED_LABELS,
   TRANSFER_SPEED_ORDER,
   type TransferSpeed,
@@ -93,6 +94,7 @@ export function BucketWorkspace({
   const [activeTransferSpeed, setActiveTransferSpeed] = useState<
     TransferSpeed | ""
   >("");
+  const [activeTransferFee, setActiveTransferFee] = useState<"" | "free">("");
   // Card-specific binary filters. "" = no constraint, "yes" = keep only
   // free / zero-FX cards. Kept as 2-value strings rather than booleans so
   // FilterSheet can list "All" + "Free only" as proper menu options with
@@ -166,6 +168,10 @@ export function BucketWorkspace({
     for (const o of transferOffers) counts[inferTransferSpeed(o)]++;
     return counts;
   }, [transferOffers]);
+  const transferFreeCount = useMemo(
+    () => transferOffers.filter(isTransferFree).length,
+    [transferOffers],
+  );
 
   // Card filters mirror the same shape — visible when the bucket has a
   // critical mass of cards in the user's market.
@@ -247,6 +253,18 @@ export function BucketWorkspace({
         return inferTransferSpeed(o) === activeTransferSpeed;
       });
     }
+    if (activeTransferFee === "free") {
+      filtered = filtered.filter((o) => {
+        if (
+          o.category !== "transfers" &&
+          o.category !== "exchange" &&
+          o.category !== "remittance"
+        ) {
+          return true;
+        }
+        return isTransferFree(o);
+      });
+    }
     if (activeCardMonthly === "free") {
       // Non-card rows pass through unchanged so a mixed bucket can keep
       // showing kids' accounts / business cards alongside.
@@ -289,6 +307,7 @@ export function BucketWorkspace({
     activeInsuranceSubtype,
     activeInsuranceSubFilters,
     activeTransferSpeed,
+    activeTransferFee,
     activeCardMonthly,
     activeCardFx,
     activeLoanFilters,
@@ -306,6 +325,7 @@ export function BucketWorkspace({
     activeInsuranceSubtype !== "" ||
     Object.keys(activeInsuranceSubFilters).length > 0 ||
     activeTransferSpeed !== "" ||
+    activeTransferFee !== "" ||
     activeCardMonthly !== "" ||
     activeCardFx !== "" ||
     Object.keys(activeLoanFilters).length > 0 ||
@@ -470,6 +490,26 @@ export function BucketWorkspace({
             />
           )}
 
+          {showTransferSpeed && transferFreeCount > 0 && (
+            <FilterSheet
+              label="Fee"
+              value={activeTransferFee}
+              onChange={(v) => setActiveTransferFee(v as "" | "free")}
+              options={[
+                {
+                  value: "",
+                  label: "Any",
+                  hint: `${transferOffers.length} options`,
+                },
+                {
+                  value: "free",
+                  label: "Free transfers",
+                  hint: `${transferFreeCount} ${transferFreeCount === 1 ? "offer" : "offers"}`,
+                },
+              ]}
+            />
+          )}
+
           {showCardFeeFilters && freeMonthlyCount > 0 && (
             <FilterSheet
               label="Monthly fee"
@@ -606,6 +646,7 @@ export function BucketWorkspace({
                 setActiveInsuranceSubtype("");
                 setActiveInsuranceSubFilters({});
                 setActiveTransferSpeed("");
+                setActiveTransferFee("");
                 setActiveCardMonthly("");
                 setActiveCardFx("");
                 setActiveLoanFilters({});
@@ -640,6 +681,7 @@ export function BucketWorkspace({
                 setActiveInsuranceSubtype("");
                 setActiveInsuranceSubFilters({});
                 setActiveTransferSpeed("");
+                setActiveTransferFee("");
                 setActiveCardMonthly("");
                 setActiveCardFx("");
                 setActiveLoanFilters({});

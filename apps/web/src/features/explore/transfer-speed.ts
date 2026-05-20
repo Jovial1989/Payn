@@ -61,3 +61,42 @@ export const TRANSFER_SPEED_ORDER: TransferSpeed[] = [
   "multi-day",
   "unknown",
 ];
+
+// ─── Transfer fee bracket ────────────────────────────────────────────────────
+//
+// Same money-movement scope as inferTransferSpeed. Looks at the headline
+// fee metric and buckets into free / paid. A provider that offers a free
+// tier alongside paid tiers ("Free – 1.5%") qualifies as "free" since the
+// user's question is "can I send without paying a fee?", not "is every
+// rail free?". The binary keeps the filter pill compact (one toggle in
+// the row, not a three-bucket dropdown).
+
+export type TransferFeeBracket = "free" | "paid";
+
+const TRANSFER_CATEGORIES = new Set([
+  "transfers",
+  "exchange",
+  "remittance",
+]);
+
+function transferFeeMetric(offer: MarketplaceOffer) {
+  return offer.metrics.find((m) => /\bfee\b/i.test(m.label));
+}
+
+export function isTransferFree(offer: MarketplaceOffer): boolean {
+  if (!TRANSFER_CATEGORIES.has(offer.category)) return false;
+  const m = transferFeeMetric(offer);
+  if (!m) return false;
+  const v = m.value.toLowerCase();
+  // Explicit "free" wording wins (covers "Free", "Free – 1.5%",
+  // "Free (SEPA)", "Free (>1k)", etc.).
+  if (/\bfree\b/.test(v)) return true;
+  // "EUR 0", "USD 0", "0 EUR", "0%" with no other non-zero percent.
+  if (/\b(eur|usd|gbp|chf)\s*0\b/.test(v)) return true;
+  if (/\b0\s*(eur|usd|gbp|chf)\b/.test(v)) return true;
+  if (/^\s*0\s*%/.test(v) && !/[1-9]\s*%/.test(v.replace(/0\s*%[^%]*/, " "))) {
+    return true;
+  }
+  return false;
+}
+
