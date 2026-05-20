@@ -17,6 +17,10 @@ import {
   type InsuranceSubtype,
 } from "./insurance-subtypes";
 import {
+  getInsuranceSubFilters,
+  matchesInsuranceSubFilters,
+} from "./insurance-deep-filters";
+import {
   inferTransferSpeed,
   TRANSFER_SPEED_LABELS,
   TRANSFER_SPEED_ORDER,
@@ -68,6 +72,12 @@ export function BucketWorkspace({
   const [activeInsuranceSubtype, setActiveInsuranceSubtype] = useState<
     InsuranceSubtype | ""
   >("");
+  // Subtype-specific deep filters (Travel → trip length / activity / med
+  // cover, Health → coverage area / premium, etc.). Keyed by the per-filter
+  // string id so the surface can grow without ballooning state hooks.
+  const [activeInsuranceSubFilters, setActiveInsuranceSubFilters] = useState<
+    Record<string, string>
+  >({});
   // Transfer speed filter — same gate logic, applies to money-movement
   // categories (transfers / exchange / remittance).
   const [activeTransferSpeed, setActiveTransferSpeed] = useState<
@@ -174,6 +184,19 @@ export function BucketWorkspace({
           inferInsuranceSubtype(o) === activeInsuranceSubtype,
       );
     }
+    if (
+      activeInsuranceSubtype &&
+      Object.keys(activeInsuranceSubFilters).length > 0
+    ) {
+      filtered = filtered.filter((o) => {
+        if (o.category !== "insurance") return true;
+        return matchesInsuranceSubFilters(
+          o,
+          activeInsuranceSubFilters,
+          activeInsuranceSubtype,
+        );
+      });
+    }
     if (activeTransferSpeed) {
       filtered = filtered.filter((o) => {
         if (
@@ -214,6 +237,7 @@ export function BucketWorkspace({
     activeCategory,
     activeProvider,
     activeInsuranceSubtype,
+    activeInsuranceSubFilters,
     activeTransferSpeed,
     activeCardMonthly,
     activeCardFx,
@@ -228,6 +252,7 @@ export function BucketWorkspace({
     activeCategory !== "all" ||
     activeProvider !== "" ||
     activeInsuranceSubtype !== "" ||
+    Object.keys(activeInsuranceSubFilters).length > 0 ||
     activeTransferSpeed !== "" ||
     activeCardMonthly !== "" ||
     activeCardFx !== "" ||
@@ -289,7 +314,13 @@ export function BucketWorkspace({
             <FilterSheet
               label="Insurance type"
               value={activeInsuranceSubtype}
-              onChange={(v) => setActiveInsuranceSubtype(v as InsuranceSubtype | "")}
+              onChange={(v) => {
+                // Switching subtype clears the sub-filters — Health's
+                // "Coverage area" makes no sense once you're filtering
+                // Auto policies.
+                setActiveInsuranceSubtype(v as InsuranceSubtype | "");
+                setActiveInsuranceSubFilters({});
+              }}
               options={[
                 {
                   value: "",
@@ -306,6 +337,56 @@ export function BucketWorkspace({
               ]}
             />
           )}
+
+          {/* Subtype-specific deep filters — only render the options that
+              actually match at least one offer in the current subtype
+              slice, and skip the whole filter when no option has hits. */}
+          {activeInsuranceSubtype &&
+            (() => {
+              const subtypeOffers = insuranceOffers.filter(
+                (o) => inferInsuranceSubtype(o) === activeInsuranceSubtype,
+              );
+              return getInsuranceSubFilters(activeInsuranceSubtype).map((f) => {
+                const liveOptions = f.options
+                  .map((opt) => ({
+                    ...opt,
+                    count: subtypeOffers.filter(opt.test).length,
+                  }))
+                  .filter((opt) => opt.count > 0);
+                if (liveOptions.length === 0) return null;
+                const value = activeInsuranceSubFilters[f.key] ?? "";
+                return (
+                  <FilterSheet
+                    key={f.key}
+                    label={f.label}
+                    value={value}
+                    onChange={(v) => {
+                      setActiveInsuranceSubFilters((prev) => {
+                        if (!v) {
+                          // Remove the key when user picks the "Any" row
+                          // so hasAnyFilter stays clean.
+                          const { [f.key]: _omit, ...rest } = prev;
+                          return rest;
+                        }
+                        return { ...prev, [f.key]: v };
+                      });
+                    }}
+                    options={[
+                      {
+                        value: "",
+                        label: "Any",
+                        hint: `${subtypeOffers.length} options`,
+                      },
+                      ...liveOptions.map((opt) => ({
+                        value: opt.value,
+                        label: opt.label,
+                        hint: `${opt.count} ${opt.count === 1 ? "offer" : "offers"}`,
+                      })),
+                    ]}
+                  />
+                );
+              });
+            })()}
 
           {showTransferSpeed && (
             <FilterSheet
@@ -387,6 +468,7 @@ export function BucketWorkspace({
                 setActiveCategory("all");
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
+                setActiveInsuranceSubFilters({});
                 setActiveTransferSpeed("");
                 setActiveCardMonthly("");
                 setActiveCardFx("");
@@ -418,6 +500,7 @@ export function BucketWorkspace({
                 setActiveCategory("all");
                 setActiveProvider("");
                 setActiveInsuranceSubtype("");
+                setActiveInsuranceSubFilters({});
                 setActiveTransferSpeed("");
                 setActiveCardMonthly("");
                 setActiveCardFx("");
