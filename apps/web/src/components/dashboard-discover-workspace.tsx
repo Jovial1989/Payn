@@ -1371,20 +1371,32 @@ export function DashboardDiscoverWorkspace({
         </div>
       </section>
 
-      {/* Best for you */}
-      <section className="rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+      {/* Best for you — promoted from a quiet sub-section to the page's
+          conversion surface. Emerald eyebrow + display-lead heading +
+          subtitle so the user understands these aren't generic picks,
+          they're scoped to whatever they entered above. */}
+      <section className="rounded-[28px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/40 to-white px-6 py-8 shadow-card sm:px-8">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-prose-base">
+            <p className="eyebrow-cap" data-tone="emerald">
               {locale === "de" ? "Am besten für dich" : "Best for you"}
             </p>
-            <div className="h-px w-8 bg-line" />
+            <h2 className="display-lead mt-2 text-[1.75rem] sm:text-[2rem]">
+              {copy.step3Title}
+            </h2>
+            <p className="mt-2 text-[14px] text-ink-secondary">
+              {locale === "de"
+                ? "Drei Optionen, sortiert nach Endkosten in deinem Markt — kein Marketing-Ranking."
+                : "Three picks ranked by what they'd actually cost in your market — not by who pays us."}
+            </p>
           </div>
-          <Link href={continueHref} className={buttonStyles({ variant: "primary", size: "sm" })}>
+          <Link
+            href={continueHref}
+            className={`${buttonStyles({ variant: "primary", size: "sm" })} shrink-0`}
+          >
             {openFullLabel}
           </Link>
         </div>
-        <h2 className="mb-4 text-xl font-bold tracking-[-0.02em] text-ink">{copy.step3Title}</h2>
         {showUnavailable && (
           <div className="mb-4 rounded-[16px] border border-line bg-bg-surface px-4 py-3 text-sm text-ink-secondary">
             {copy.marketUnavailable}
