@@ -295,6 +295,40 @@ export function BucketWorkspace({
         </div>
       )}
 
+      {/* Insurance subtype — promoted from a popover pill to an inline
+          segment so the primary slicer of 38 insurance offers is always
+          one click away, not hidden inside a dropdown. Deep filters
+          (Coverage area, Trip length, etc.) stay as popovers below. */}
+      {showInsuranceSubtype && (
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryPill
+            label="All types"
+            active={activeInsuranceSubtype === ""}
+            badge={insuranceOffers.length}
+            groupId="insurance-subtype"
+            onClick={() => {
+              setActiveInsuranceSubtype("");
+              setActiveInsuranceSubFilters({});
+            }}
+          />
+          {INSURANCE_SUBTYPE_ORDER.filter(
+            (k) => insuranceSubtypeCounts[k] > 0,
+          ).map((k) => (
+            <CategoryPill
+              key={k}
+              label={INSURANCE_SUBTYPE_LABELS[k]}
+              active={activeInsuranceSubtype === k}
+              badge={insuranceSubtypeCounts[k]}
+              groupId="insurance-subtype"
+              onClick={() => {
+                setActiveInsuranceSubtype(k);
+                setActiveInsuranceSubFilters({});
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Search + provider + sort row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
@@ -310,34 +344,6 @@ export function BucketWorkspace({
             interaction on mobile and desktop, no browser-default dropdown
             styling leaking through. */}
         <div className="flex flex-wrap items-center gap-3">
-          {showInsuranceSubtype && (
-            <FilterSheet
-              label="Insurance type"
-              value={activeInsuranceSubtype}
-              onChange={(v) => {
-                // Switching subtype clears the sub-filters — Health's
-                // "Coverage area" makes no sense once you're filtering
-                // Auto policies.
-                setActiveInsuranceSubtype(v as InsuranceSubtype | "");
-                setActiveInsuranceSubFilters({});
-              }}
-              options={[
-                {
-                  value: "",
-                  label: "All types",
-                  hint: `${insuranceOffers.length} options`,
-                },
-                ...INSURANCE_SUBTYPE_ORDER.filter(
-                  (k) => insuranceSubtypeCounts[k] > 0,
-                ).map((k) => ({
-                  value: k,
-                  label: INSURANCE_SUBTYPE_LABELS[k],
-                  hint: `${insuranceSubtypeCounts[k]} ${insuranceSubtypeCounts[k] === 1 ? "offer" : "offers"}`,
-                })),
-              ]}
-            />
-          )}
-
           {/* Subtype-specific deep filters — only render the options that
               actually match at least one offer in the current subtype
               slice, and skip the whole filter when no option has hits. */}

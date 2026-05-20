@@ -88,10 +88,23 @@ function MetricRankGlyph({ rank }: { rank: MetricRank }) {
   if (!meta) return null;
   return (
     <span
-      className={`mt-0.5 inline-block text-[9px] font-semibold uppercase tracking-[0.14em] ${meta.cls}`}
+      className={`inline-block text-[9px] font-semibold uppercase tracking-[0.14em] ${meta.cls}`}
     >
       {meta.label}
     </span>
+  );
+}
+
+// Reserved-height slot for the metric rank glyph. Renders the glyph when
+// the rank exists, an empty placeholder of the same height when it
+// doesn't — so a row of metrics where only some columns rank doesn't
+// pull adjacent cells up by 12px. Killed the "rippled labels" effect
+// the user flagged on the catalogue.
+function MetricRankSlot({ rank }: { rank: MetricRank | undefined }) {
+  return (
+    <div className="mt-0.5 h-[13px] leading-none">
+      {rank ? <MetricRankGlyph rank={rank} /> : null}
+    </div>
   );
 }
 
@@ -310,9 +323,7 @@ export function OfferRowAtlas({
                 <p className="mt-0.5 truncate text-[17px] font-extrabold tabular-nums leading-tight tracking-tight-1 text-ink">
                   {m.value}
                 </p>
-                {ranking?.metricRanks[m.label] && (
-                  <MetricRankGlyph rank={ranking.metricRanks[m.label]} />
-                )}
+                <MetricRankSlot rank={ranking?.metricRanks[m.label]} />
               </div>
             ))}
             {bullets.length > 0 && ranking === null && (
@@ -409,9 +420,7 @@ export function OfferRowAtlas({
                     {m.label}
                   </p>
                   <p className="mt-0.5 text-[15px] font-bold tabular-nums text-ink">{m.value}</p>
-                  {ranking?.metricRanks[m.label] && (
-                    <MetricRankGlyph rank={ranking.metricRanks[m.label]} />
-                  )}
+                  <MetricRankSlot rank={ranking?.metricRanks[m.label]} />
                 </div>
               ))}
             </div>
