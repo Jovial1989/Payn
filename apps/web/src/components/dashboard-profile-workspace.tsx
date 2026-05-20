@@ -296,39 +296,46 @@ export function DashboardProfileWorkspace({
             </Tag>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+          {/* Identity form — restyled per UX audit. The previous design wrapped
+              each input in its own card with a grey input-on-grey-card stack,
+              which made the fields look like inactive read-only labels. The
+              eyebrow text was uppercase 11px — "shouty caps in tiny type" per
+              the audit. New treatment is one container per logical block, a
+              regular sentence-case label, and a solid white input with a clear
+              emerald focus ring (Apple-style). */}
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+            <label className="grid gap-1.5">
+              <span className="text-[13px] font-medium text-ink-secondary">
                 {copy.firstName}
               </span>
               <input
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 placeholder={copy.addFirstName}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-tertiary outline-none transition-colors focus:border-accent-emerald focus:ring-2 focus:ring-accent-emerald-soft"
               />
             </label>
 
-            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+            <label className="grid gap-1.5">
+              <span className="text-[13px] font-medium text-ink-secondary">
                 {copy.lastName}
               </span>
               <input
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
                 placeholder={copy.addLastName}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-tertiary outline-none transition-colors focus:border-accent-emerald focus:ring-2 focus:ring-accent-emerald-soft"
               />
             </label>
 
-            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+            <label className="grid gap-1.5">
+              <span className="text-[13px] font-medium text-ink-secondary">
                 {copy.countryOfResidence}
               </span>
               <select
                 value={homeCountry}
                 onChange={(event) => setHomeCountry(event.target.value)}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink outline-none transition-colors focus:border-accent-emerald focus:ring-2 focus:ring-accent-emerald-soft"
               >
                 <option value="">{copy.chooseCountry}</option>
                 {countryOptions.map((option) => (
@@ -339,14 +346,14 @@ export function DashboardProfileWorkspace({
               </select>
             </label>
 
-            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+            <label className="grid gap-1.5">
+              <span className="text-[13px] font-medium text-ink-secondary">
                 {copy.preferredLanguage}
               </span>
               <select
                 value={preferredLocale}
                 onChange={(event) => setPreferredLocale(event.target.value as MarketplaceLocale)}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink outline-none transition-colors focus:border-accent-emerald focus:ring-2 focus:ring-accent-emerald-soft"
               >
                 {supportedLocales.map((value) => (
                   <option key={value} value={value}>
@@ -356,14 +363,14 @@ export function DashboardProfileWorkspace({
               </select>
             </label>
 
-            <label className="grid gap-2 rounded-[20px] border border-[#EAEAEA] bg-white px-4 py-4">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+            <label className="grid gap-1.5">
+              <span className="text-[13px] font-medium text-ink-secondary">
                 {copy.profileType}
               </span>
               <select
                 value={userType}
                 onChange={(event) => setUserType(event.target.value as UserProfile["user_type"])}
-                className="h-11 rounded-[16px] border border-[#EAEAEA] bg-[#F7F7F8] px-4 text-sm font-semibold text-ink outline-none transition-all duration-200 focus:border-accent-emerald/15 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink outline-none transition-colors focus:border-accent-emerald focus:ring-2 focus:ring-accent-emerald-soft"
               >
                 {userTypes.map((option) => (
                   <option key={option.id} value={option.id}>
