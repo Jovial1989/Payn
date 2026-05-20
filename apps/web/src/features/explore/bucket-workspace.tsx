@@ -36,6 +36,11 @@ import {
   getLoanSubFilters,
   matchesLoanSubFilters,
 } from "./loans-deep-filters";
+import {
+  isInvestmentCategory,
+  getInvestmentSubFilters,
+  matchesInvestmentSubFilters,
+} from "./investments-deep-filters";
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
@@ -97,6 +102,10 @@ export function BucketWorkspace({
   // Loan / BNPL deep filters — same Record<string,string> shape as the
   // insurance sub-filters, keyed by the per-filter id.
   const [activeLoanFilters, setActiveLoanFilters] = useState<
+    Record<string, string>
+  >({});
+  // Investment / Trading / Crypto deep filters.
+  const [activeInvestmentFilters, setActiveInvestmentFilters] = useState<
     Record<string, string>
   >({});
 
@@ -186,6 +195,15 @@ export function BucketWorkspace({
     loanOffers.length >= 6 &&
     (activeCategory === "all" || isLoanCategory(activeCategory));
 
+  // Investments / Trading / Crypto slice + gate.
+  const investmentOffers = useMemo(
+    () => offers.filter((o) => isInvestmentCategory(o.category)),
+    [offers],
+  );
+  const showInvestmentFilters =
+    investmentOffers.length >= 6 &&
+    (activeCategory === "all" || isInvestmentCategory(activeCategory));
+
   const filteredAndSorted = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     let filtered = offers;
@@ -246,6 +264,13 @@ export function BucketWorkspace({
         (o) => !isLoanCategory(o.category) || matchesLoanSubFilters(o, activeLoanFilters),
       );
     }
+    if (Object.keys(activeInvestmentFilters).length > 0) {
+      filtered = filtered.filter(
+        (o) =>
+          !isInvestmentCategory(o.category) ||
+          matchesInvestmentSubFilters(o, activeInvestmentFilters),
+      );
+    }
     if (trimmed) {
       filtered = filtered.filter(
         (o) =>
@@ -267,6 +292,7 @@ export function BucketWorkspace({
     activeCardMonthly,
     activeCardFx,
     activeLoanFilters,
+    activeInvestmentFilters,
   ]);
 
   const investmentOffers = useMemo(
@@ -283,6 +309,7 @@ export function BucketWorkspace({
     activeCardMonthly !== "" ||
     activeCardFx !== "" ||
     Object.keys(activeLoanFilters).length > 0 ||
+    Object.keys(activeInvestmentFilters).length > 0 ||
     query !== "";
 
   return (
@@ -511,6 +538,46 @@ export function BucketWorkspace({
               );
             })}
 
+          {showInvestmentFilters &&
+            getInvestmentSubFilters().map((f) => {
+              const liveOptions = f.options
+                .map((opt) => ({
+                  ...opt,
+                  count: investmentOffers.filter(opt.test).length,
+                }))
+                .filter((opt) => opt.count > 0);
+              if (liveOptions.length === 0) return null;
+              const value = activeInvestmentFilters[f.key] ?? "";
+              return (
+                <FilterSheet
+                  key={f.key}
+                  label={f.label}
+                  value={value}
+                  onChange={(v) => {
+                    setActiveInvestmentFilters((prev) => {
+                      if (!v) {
+                        const { [f.key]: _omit, ...rest } = prev;
+                        return rest;
+                      }
+                      return { ...prev, [f.key]: v };
+                    });
+                  }}
+                  options={[
+                    {
+                      value: "",
+                      label: "Any",
+                      hint: `${investmentOffers.length} options`,
+                    },
+                    ...liveOptions.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                      hint: `${opt.count} ${opt.count === 1 ? "offer" : "offers"}`,
+                    })),
+                  ]}
+                />
+              );
+            })}
+
           {providerOptions.length > 1 && (
             <FilterSheet
               label="Provider"
@@ -542,6 +609,7 @@ export function BucketWorkspace({
                 setActiveCardMonthly("");
                 setActiveCardFx("");
                 setActiveLoanFilters({});
+                setActiveInvestmentFilters({});
                 setQuery("");
               }}
               className="inline-flex h-10 items-center rounded-full bg-bg-surface px-4 text-[12px] font-semibold text-ink-secondary transition-colors hover:bg-bg-overlay hover:text-ink"
@@ -575,6 +643,7 @@ export function BucketWorkspace({
                 setActiveCardMonthly("");
                 setActiveCardFx("");
                 setActiveLoanFilters({});
+                setActiveInvestmentFilters({});
                 setQuery("");
               }}
               className="mt-3 text-[14px] font-medium text-accent-emerald hover:underline"
