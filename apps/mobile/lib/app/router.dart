@@ -146,21 +146,45 @@ CustomTransitionPage<void> _buildTransitionPage({
       if (PaynMotion.reduce(context)) {
         return child;
       }
+      // Two-layer iOS-grade transition:
+      //   • Incoming page (animation): fade up + slight scale.
+      //   • Outgoing page (secondaryAnimation): parallax — fades slightly
+      //     and drifts up a touch so the new content feels like it lands
+      //     ON TOP of something, not blinks in from nowhere.
       final fade = CurvedAnimation(parent: animation, curve: PaynMotion.ease);
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.035),
+        begin: const Offset(0, 0.06),
         end: Offset.zero,
       ).animate(fade);
       final scale = Tween<double>(
-        begin: 0.98,
+        begin: 0.975,
         end: 1,
-      ).animate(CurvedAnimation(parent: animation, curve: PaynMotion.ease));
+      ).animate(fade);
+
+      final outgoingFade = CurvedAnimation(
+        parent: secondaryAnimation,
+        curve: PaynMotion.ease,
+      );
+      final outgoingSlide = Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(0, -0.02),
+      ).animate(outgoingFade);
+      final outgoingOpacity = Tween<double>(
+        begin: 1,
+        end: 0.85,
+      ).animate(outgoingFade);
 
       return FadeTransition(
-        opacity: fade,
+        opacity: outgoingOpacity,
         child: SlideTransition(
-          position: slide,
-          child: ScaleTransition(scale: scale, child: child),
+          position: outgoingSlide,
+          child: FadeTransition(
+            opacity: fade,
+            child: SlideTransition(
+              position: slide,
+              child: ScaleTransition(scale: scale, child: child),
+            ),
+          ),
         ),
       );
     },
