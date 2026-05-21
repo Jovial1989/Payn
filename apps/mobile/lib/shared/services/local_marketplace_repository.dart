@@ -327,6 +327,51 @@ class LocalMarketplaceRepository {
           _ =>
             'Low fees do not remove market risk, platform complexity, or custody tradeoffs.',
         };
+      case PaynCategory.banking:
+        return switch (languageCode) {
+          'de' =>
+            'Einlagen-, Verfügbarkeits- und Kontogebühren können sich nach den ersten Monaten ändern.',
+          'es' =>
+            'Las tarifas de depósito, disponibilidad y cuenta pueden cambiar después de los primeros meses.',
+          _ =>
+            'Deposit protection, availability, and account fees may shift after the first months.',
+        };
+      case PaynCategory.crypto:
+        return switch (languageCode) {
+          'de' =>
+            'Spread, Verwahrung und Lizenzierung variieren stark zwischen den Anbietern.',
+          'es' =>
+            'El spread, la custodia y la licencia varían bastante entre proveedores.',
+          _ =>
+            'Spread, custody, and licensing vary considerably between providers.',
+        };
+      case PaynCategory.business:
+        return switch (languageCode) {
+          'de' =>
+            'Geschäftskonten-Vorteile hängen von Umsatz, Teamgrösse und Land ab.',
+          'es' =>
+            'Las ventajas de cuenta de negocio dependen de la facturación, el equipo y el país.',
+          _ =>
+            'Business-account perks depend on turnover, team size, and country of registration.',
+        };
+      case PaynCategory.budgeting:
+        return switch (languageCode) {
+          'de' =>
+            'Funktionen entwickeln sich schnell, Datenintegrationen und Banken können wechseln.',
+          'es' =>
+            'Las funciones evolucionan rápido y las integraciones bancarias pueden cambiar.',
+          _ =>
+            'Features evolve quickly and bank integrations can shift release-to-release.',
+        };
+      case PaynCategory.kids:
+        return switch (languageCode) {
+          'de' =>
+            'Limits und Auszahlungen unterscheiden sich je nach Alter und Aufsichtsrolle.',
+          'es' =>
+            'Los límites y los retiros varían según la edad y el rol de supervisión.',
+          _ =>
+            'Limits and payouts vary by age tier and supervising-account role.',
+        };
     }
   }
 
@@ -561,6 +606,36 @@ class LocalMarketplaceRepository {
           'de' => 'Investments',
           'es' => 'Inversiones',
           _ => 'Investments',
+        };
+      case PaynCategory.banking:
+        return switch (languageCode) {
+          'de' => 'Banking',
+          'es' => 'Banca',
+          _ => 'Banking',
+        };
+      case PaynCategory.crypto:
+        return switch (languageCode) {
+          'de' => 'Krypto',
+          'es' => 'Cripto',
+          _ => 'Crypto',
+        };
+      case PaynCategory.business:
+        return switch (languageCode) {
+          'de' => 'Business',
+          'es' => 'Negocio',
+          _ => 'Business',
+        };
+      case PaynCategory.budgeting:
+        return switch (languageCode) {
+          'de' => 'Budget',
+          'es' => 'Presupuesto',
+          _ => 'Budgeting',
+        };
+      case PaynCategory.kids:
+        return switch (languageCode) {
+          'de' => 'Kinder',
+          'es' => 'Niños',
+          _ => 'Kids',
         };
     }
   }

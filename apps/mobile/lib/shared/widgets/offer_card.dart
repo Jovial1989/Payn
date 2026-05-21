@@ -510,6 +510,12 @@ class _OfferCardState extends State<OfferCard> {
         return l10n.offerCtaCoverPrice;
       case PaynCategory.investments:
         return l10n.offerCtaOpenDetails;
+      case PaynCategory.banking:
+      case PaynCategory.crypto:
+      case PaynCategory.business:
+      case PaynCategory.budgeting:
+      case PaynCategory.kids:
+        return l10n.offerCtaOpenProvider;
     }
   }
 
@@ -526,6 +532,12 @@ class _OfferCardState extends State<OfferCard> {
         return l10n.offerDetailsPolicy;
       case PaynCategory.investments:
         return l10n.offerDetailsPlatform;
+      case PaynCategory.banking:
+      case PaynCategory.crypto:
+      case PaynCategory.business:
+      case PaynCategory.budgeting:
+      case PaynCategory.kids:
+        return l10n.offerDetailsCard;
     }
   }
 }

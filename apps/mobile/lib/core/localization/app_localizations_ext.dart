@@ -22,6 +22,16 @@ extension PaynCategoryL10n on PaynCategory {
         return l10n.categoryInsurance;
       case PaynCategory.investments:
         return l10n.categoryInvestments;
+      case PaynCategory.banking:
+        return l10n.categoryBanking;
+      case PaynCategory.crypto:
+        return l10n.categoryCrypto;
+      case PaynCategory.business:
+        return l10n.categoryBusiness;
+      case PaynCategory.budgeting:
+        return l10n.categoryBudgeting;
+      case PaynCategory.kids:
+        return l10n.categoryKids;
     }
   }
 }
