@@ -7,7 +7,7 @@ import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
-import 'package:payn_mobile/shared/widgets/offer_card.dart';
+import 'package:payn_mobile/shared/widgets/offer_row.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
@@ -191,23 +191,16 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               sliver: SliverList.separated(
                 itemCount: picks.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = picks[index];
-                  return OfferCard(
+                  // Browse list — use compact OfferRow so 5-6 offers fit
+                  // on a phone viewport. The full-size OfferCard still
+                  // ships inside /offer/<id> for the detail surface.
+                  return OfferRow(
                     offer: item.offer,
-                    reasons: item.reasons,
-                    tradeoff: item.tradeoff,
-                    saved: controller.isSaved(item.offer.id),
                     onTap: () => context.push('/offer/${item.offer.id}'),
-                    onSave: () => controller.toggleSaved(item.offer.id),
-                    onProviderTap:
-                        () => showProviderHandoffSheet(
-                          context,
-                          offer: item.offer,
-                        ),
                     rankLabel: '#${index + 1}',
-                    showCategory: true,
                     motionIndex: index,
                   );
                 },

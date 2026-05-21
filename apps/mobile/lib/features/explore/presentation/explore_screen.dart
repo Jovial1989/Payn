@@ -12,10 +12,9 @@ import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
 import 'package:payn_mobile/shared/widgets/insight_card.dart';
 import 'package:payn_mobile/shared/widgets/market_chart.dart';
-import 'package:payn_mobile/shared/widgets/offer_card.dart';
+import 'package:payn_mobile/shared/widgets/offer_row.dart';
 import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
-import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
@@ -429,41 +428,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     )
                     : SliverList.separated(
                       itemCount: results.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final item = results[index];
-                        return OfferCard(
+                        // Compact OfferRow — save / compare / provider-handoff
+                        // moves into the detail surface. Each row stays a
+                        // single tap target (~108pt) so 5-6 fit per
+                        // viewport instead of the previous one-card-per-
+                        // screen takeover.
+                        return OfferRow(
                           offer: item.offer,
-                          reasons: item.reasons,
-                          tradeoff: item.tradeoff,
-                          saved: controller.isSaved(item.offer.id),
                           onTap: () => context.push('/offer/${item.offer.id}'),
-                          onSave: () => controller.toggleSaved(item.offer.id),
-                          onProviderTap:
-                              () => showProviderHandoffSheet(
-                                context,
-                                offer: item.offer,
-                              ),
-                          footer: _CompareFooter(
-                            selected: controller.isCompared(item.offer.id),
-                            enabled:
-                                controller.isCompared(item.offer.id) ||
-                                controller.compareCount < 3,
-                            onTap: () async {
-                              final accepted = await controller.toggleCompare(
-                                item.offer.id,
-                              );
-                              if (!accepted && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.savedCompareLimit),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          showCategory:
-                              controller.selectedExploreCategory == null,
                           rankLabel: '#${index + 1}',
                           motionIndex: index,
                         );
@@ -926,41 +901,10 @@ class _IntentSummaryBar extends StatelessWidget {
   }
 }
 
-class _CompareFooter extends StatelessWidget {
-  const _CompareFooter({
-    required this.selected,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.l10n;
-
-    return OutlinedButton.icon(
-      onPressed: enabled ? onTap : null,
-      icon: Icon(
-        selected
-            ? Icons.check_box_rounded
-            : Icons.check_box_outline_blank_rounded,
-        size: 18,
-      ),
-      label: Text(selected ? l10n.compareSelected : l10n.savedAddToCompare),
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(46),
-        foregroundColor: selected ? PaynColors.accent : PaynColors.text,
-        textStyle: theme.textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
+// _CompareFooter removed alongside the OfferCard → OfferRow swap. The
+// row no longer carries a per-card compare toggle; the compare flow
+// will live inside the detail screen + a dedicated compare bottom-sheet
+// in the next pass.
 
 class _StickyExploreControls extends SliverPersistentHeaderDelegate {
   const _StickyExploreControls({
