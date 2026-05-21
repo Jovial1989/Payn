@@ -469,11 +469,6 @@ export function BucketWorkspace({
     activeSavingsFilters,
   ]);
 
-  const investmentOffers = useMemo(
-    () => offers.filter((o) => o.category === "investments"),
-    [offers],
-  );
-
   const hasAnyFilter =
     activeCategory !== "all" ||
     activeProvider !== "" ||

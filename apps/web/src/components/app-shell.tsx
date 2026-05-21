@@ -674,10 +674,90 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   })()}
                 </div>
 
-                {/* Right-side controls intentionally removed — Country/Language/
-                    Currency/Sign-in are already rendered by the global Header
-                    above. Keeping a single set of controls avoids the visual
-                    noise of stacked selectors flagged in FIX-04 of the UX audit. */}
+                {/* Account control — logged-in users get a compact avatar
+                    button that opens a menu with their identity + Settings +
+                    Sign out. Logged-out users see a Sign in / Create
+                    account pair. Both states needed because the dashboard
+                    routes don't render the marketing-site header above. */}
+                <div className="relative flex shrink-0 items-center gap-2">
+                  {user ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setAccountMenuOpen((v) => !v)}
+                        aria-haspopup="menu"
+                        aria-expanded={accountMenuOpen}
+                        className="group inline-flex items-center gap-2 rounded-full border border-line bg-white py-1 pl-1 pr-3 text-[13px] font-semibold text-ink shadow-subtle transition-all hover:border-accent-emerald/40 hover:shadow-card"
+                      >
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent-emerald-soft text-[11px] font-bold text-accent-emerald-strong">
+                          {avatarInitials}
+                        </span>
+                        <span className="hidden max-w-[120px] truncate sm:inline">
+                          {displayName}
+                        </span>
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true" className={`transition-transform ${accountMenuOpen ? "rotate-180" : ""}`}>
+                          <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      {accountMenuOpen && (
+                        <>
+                          <button
+                            type="button"
+                            aria-label="Close account menu"
+                            onClick={() => setAccountMenuOpen(false)}
+                            className="fixed inset-0 z-30 cursor-default bg-transparent"
+                          />
+                          <div
+                            role="menu"
+                            className="absolute right-0 top-full z-40 mt-2 w-[240px] overflow-hidden rounded-2xl border border-line bg-white shadow-elevated"
+                          >
+                            <div className="border-b border-line px-4 py-3">
+                              <p className="truncate text-[13px] font-bold text-ink">{displayName}</p>
+                              {user.email && (
+                                <p className="mt-0.5 truncate text-[12px] text-ink-tertiary">{user.email}</p>
+                              )}
+                            </div>
+                            <div className="py-1">
+                              <Link
+                                href={settingsItem.href}
+                                onClick={() => setAccountMenuOpen(false)}
+                                className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+                              >
+                                <SettingsIcon className="h-3.5 w-3.5" />
+                                <span>Settings</span>
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={handleSignOut}
+                                className="flex w-full items-center gap-2 border-t border-line px-4 py-2.5 text-left text-[13px] font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M6 3H3v10h3M10 11l3-3-3-3M5 8h8" />
+                                </svg>
+                                <span>Sign out</span>
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href={`${localePath(preferences.locale, "/login")}?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/")}`}
+                        className="inline-flex h-9 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
+                      >
+                        Sign in
+                      </Link>
+                      <Link
+                        href={localePath(preferences.locale, "/signup")}
+                        className={buttonStyles({ variant: "primary", size: "sm" })}
+                      >
+                        Create account
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </header>
 
