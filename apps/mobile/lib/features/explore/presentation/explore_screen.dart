@@ -21,25 +21,32 @@ import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
 
-// Order of Explore category pills, aligned with the web Atlas grid on
-// /discover. Cards / Transfers / Banking / Investments / Loans /
-// Insurance / Business / Family & Kids / Budgeting. Categories that
-// don't have a 1:1 PaynCategory match yet (savings, debit, travel,
-// cashback, neobanks, wallets, trading, remittance, bnpl, payroll,
-// tax, expense) will fold into their parent bucket once the mobile
-// enum picks up subtypes.
+// Order of Explore category pills, aligned with the 9-bucket web Atlas
+// grid on /discover (Cards / Savings & Deposits / Transfers & Exchange
+// / Banking / Investments / Loans & BNPL / Business / Family & Kids /
+// Insurance).
+//
+// On mobile we collapse a few enum members that the web bucket UI
+// also collapses:
+//   • exchange  → folded into Transfers & Exchange (label-only here;
+//     the controller still filters on the transfers enum alone until
+//     bucket-aware filtering lands).
+//   • crypto    → folded into Investments.
+//   • budgeting → folded into Family & Kids visually.
+//
+// The PaynCategory enum has no `savings` member yet, so the
+// "Savings & Deposits" pill is intentionally absent. Adding it
+// requires extending the enum + tagging the savings offers in the
+// static catalog — bigger schema change deferred to its own pass.
 const List<PaynCategory> _exploreBucketOrder = <PaynCategory>[
   PaynCategory.cards,
   PaynCategory.transfers,
-  PaynCategory.exchange,
   PaynCategory.banking,
   PaynCategory.investments,
-  PaynCategory.crypto,
   PaynCategory.loans,
-  PaynCategory.insurance,
   PaynCategory.business,
   PaynCategory.kids,
-  PaynCategory.budgeting,
+  PaynCategory.insurance,
 ];
 
 // Web-aligned labels — overrides the default localizedLabel() for the
@@ -48,16 +55,20 @@ const List<PaynCategory> _exploreBucketOrder = <PaynCategory>[
 String _bucketLabel(PaynCategory category, AppLocalizations l10n) {
   switch (category) {
     case PaynCategory.cards:
-      // Web bucket: "Cards" covering debit / credit / travel /
-      // cashback. The default label is "Credit Cards" which is too
-      // narrow for the bucket scope.
+      // Web bucket "Cards" covers debit / credit / travel / cashback;
+      // the default mobile label is "Credit Cards" which is too narrow.
       return 'Cards';
+    case PaynCategory.transfers:
+      // Web bucket "Transfers & Exchange" combines transfers +
+      // exchange. Label-only fold for now.
+      return 'Transfers & Exchange';
+    case PaynCategory.investments:
+      // "Investments" bucket on web also includes crypto + trading.
+      return 'Investments';
     case PaynCategory.loans:
       return 'Loans & BNPL';
     case PaynCategory.kids:
       return 'Family & Kids';
-    case PaynCategory.budgeting:
-      return 'Budgeting';
     case PaynCategory.business:
       return 'Business';
     default:
