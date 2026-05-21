@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
+import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
@@ -19,6 +20,50 @@ import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
 
 enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
+
+// Order of Explore category pills, aligned with the web Atlas grid on
+// /discover. Cards / Transfers / Banking / Investments / Loans /
+// Insurance / Business / Family & Kids / Budgeting. Categories that
+// don't have a 1:1 PaynCategory match yet (savings, debit, travel,
+// cashback, neobanks, wallets, trading, remittance, bnpl, payroll,
+// tax, expense) will fold into their parent bucket once the mobile
+// enum picks up subtypes.
+const List<PaynCategory> _exploreBucketOrder = <PaynCategory>[
+  PaynCategory.cards,
+  PaynCategory.transfers,
+  PaynCategory.exchange,
+  PaynCategory.banking,
+  PaynCategory.investments,
+  PaynCategory.crypto,
+  PaynCategory.loans,
+  PaynCategory.insurance,
+  PaynCategory.business,
+  PaynCategory.kids,
+  PaynCategory.budgeting,
+];
+
+// Web-aligned labels — overrides the default localizedLabel() for the
+// few cases where the web bucket name reads better than the raw
+// category enum label.
+String _bucketLabel(PaynCategory category, AppLocalizations l10n) {
+  switch (category) {
+    case PaynCategory.cards:
+      // Web bucket: "Cards" covering debit / credit / travel /
+      // cashback. The default label is "Credit Cards" which is too
+      // narrow for the bucket scope.
+      return 'Cards';
+    case PaynCategory.loans:
+      return 'Loans & BNPL';
+    case PaynCategory.kids:
+      return 'Family & Kids';
+    case PaynCategory.budgeting:
+      return 'Budgeting';
+    case PaynCategory.business:
+      return 'Business';
+    default:
+      return category.localizedLabel(l10n);
+  }
+}
 
 class _NumberRange {
   const _NumberRange({this.min, this.max});
@@ -231,7 +276,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: PaynCategory.values.length + 1,
+                        itemCount: _exploreBucketOrder.length + 1,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (context, index) {
                           if (index == 0) {
@@ -247,11 +292,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               },
                             );
                           }
-                          final category = PaynCategory.values[index - 1];
+                          // Iterate by web-aligned bucket order, not raw
+                          // PaynCategory.values. Labels are remapped to
+                          // match the web Atlas grid ("Cards" not "Credit
+                          // Cards", "Loans & BNPL" not "Loans", "Family
+                          // & Kids" not "Kids' accounts").
+                          final category = _exploreBucketOrder[index - 1];
                           final count =
                               controller.categoryCounts[category] ?? 0;
                           return _ControlChip(
-                            label: category.localizedLabel(l10n),
+                            label: _bucketLabel(category, l10n),
                             detail: '$count',
                             selected:
                                 controller.selectedExploreCategory == category,
