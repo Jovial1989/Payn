@@ -98,15 +98,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ],
                 ),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.start,
+                // Compact Explore header — was "LIVE RANKING / What do you
+                // need? / 117 ranked offers in All Europe" + a row of
+                // current-filter-value chips (EUR25K · 60 mo · All
+                // Europe · All) that looked random because they always
+                // showed defaults. Now: small eyebrow, larger count,
+                // single Filters CTA. Filter values are only surfaced
+                // INSIDE the filter sheet itself.
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 280),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
                             l10n.exploreLiveRanking.toUpperCase(),
@@ -117,13 +122,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               letterSpacing: 1.4,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.exploreBestOptions,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontSize: 26,
-                            ),
-                          ),
                           const SizedBox(height: 6),
                           Text(
                             l10n.exploreRankedOffersInMarket(
@@ -132,28 +130,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 l10n,
                               ),
                             ),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: PaynColors.textSecondary,
-                              fontSize: 14,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                              color: PaynColors.text,
                             ),
-                          ),
-                          const SizedBox(height: 14),
-                          _IntentSummaryBar(
-                            amount: formatCurrencyLabel(
-                              controller.exploreFilters.amount,
-                              controller.preferences.market,
-                            ),
-                            term: controller.exploreFilters.term,
-                            country: controller.preferences.market
-                                .localizedLabel(l10n),
-                            category:
-                                controller.selectedExploreCategory
-                                    ?.localizedLabel(l10n) ??
-                                l10n.exploreAll,
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 10),
                     _FilterButton(
                       count: controller.activeFilterCount,
                       onTap: () {
@@ -858,48 +845,11 @@ class _CatalogErrorBanner extends StatelessWidget {
   }
 }
 
-class _IntentSummaryBar extends StatelessWidget {
-  const _IntentSummaryBar({
-    required this.amount,
-    required this.term,
-    required this.country,
-    required this.category,
-  });
-
-  final String amount;
-  final int term;
-  final String country;
-  final String category;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final items = <String>[amount, '$term mo', country, category];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: <Widget>[
-        for (final item in items)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: PaynColors.surfaceRaised,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: PaynColors.outlineSubtle),
-            ),
-            child: Text(
-              item,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: PaynColors.text,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
+// _IntentSummaryBar removed — it lived in the Explore header to surface
+// the current filter values (amount / term / country / category) but
+// for guest users it just printed the defaults (EUR25K · 60mo · All
+// Europe · All), reading as random noise. Filter values are now
+// surfaced only inside the filter sheet where they actually edit.
 
 // _CompareFooter removed alongside the OfferCard → OfferRow swap. The
 // row no longer carries a per-card compare toggle; the compare flow
