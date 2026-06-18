@@ -139,7 +139,7 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
   },
 
   // ═══════════════════════════════════════════════════
-  // SAVINGS ACCOUNTS (6 offers)
+  // SAVINGS ACCOUNTS (12 offers: 6 easy-access + 6 fixed-term)
   // ═══════════════════════════════════════════════════
   {
     id: "savings-trade-republic",
@@ -193,11 +193,15 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerMark: "R",
     providerName: "Revolut",
     title: "Revolut Savings Vault",
-    subtitle: "Flexible savings pocket within your Revolut app. Earn competitive interest with instant access and no lock-in period.",
+    subtitle: "Flexible savings pocket within your Revolut app. Rates vary by currency and plan; instant access, no lock-in.",
     metrics: [
-      { label: "Interest rate", value: "Up to 3.49% (Metal)" },
+      // CAT.5 — Was "Up to 3.49% (Metal)" — that was a stale figure
+      // mixing currencies. Per Revolut Help (May 2026): GBP Metal
+      // tracks at ~3.64%, EUR Metal at ~1.96%. Showing both keeps the
+      // claim honest across the EU/UK markets the offer targets.
+      { label: "EUR rate (Metal)", value: "Up to 1.96% AER" },
+      { label: "GBP rate (Metal)", value: "Up to 3.64% AER" },
       { label: "Access", value: "Instant" },
-      { label: "Minimum", value: "EUR 1" },
     ],
     bestFor: ["Revolut users", "Instant access", "No lock-in"],
     linkType: "affiliate_redirect",
@@ -237,11 +241,20 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerMark: "LY",
     providerName: "Lightyear",
     title: "Lightyear Cash Account",
-    subtitle: "Earn competitive interest on idle cash while having access to stocks and ETFs in the same app. FCA regulated and FSCS protected.",
+    subtitle: "Yield on idle cash via money-market funds, accessible inside the same app you use for stocks and ETFs. Note: held in MMFs, not as a bank deposit.",
     metrics: [
-      { label: "Interest rate", value: "Up to 5.1% (USD)" },
-      { label: "EUR rate", value: "3.8% AER" },
-      { label: "Protection", value: "GBP 85,000 FSCS" },
+      // CAT.5 — Rates corrected: USD 5.1% → 3.75%, EUR 3.8% → 1.94%
+      // (lightyear.com/en-eu, March 2026). The published rates track
+      // the underlying USD MMF / EUR MMF yields, which have come down
+      // since the catalog was last refreshed in 2024.
+      { label: "USD rate", value: "Up to 3.75% (variable)" },
+      { label: "EUR rate", value: "1.94% AER (variable)" },
+      // CAT.10 — Was "GBP 85,000 FSCS" — Lightyear's own help text:
+      // "FSCS protection does not apply to funds held within the
+      // money market fund itself." Replaced with the actual
+      // investor-protection regime (Estonian Investor Protection
+      // Sectoral Fund, up to €20,000).
+      { label: "Protection", value: "€20,000 IPSF (MMF, not FSCS deposit)" },
     ],
     bestFor: ["Investors", "Multi-currency cash", "UK/EU residents"],
     linkType: "affiliate_redirect",
@@ -272,6 +285,156 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     affiliateLink: "https://vivid.money/en-de/pricing/",
     updatedAt: "2026-05-01T00:00:00Z",
     attributes: { availability: "eu_wide", searchTags: ["savings", "Vivid", "interest"] },
+  },
+
+  // ─── Fixed-term deposits (Festgeld / depósitos a plazo / conto deposito) ─
+  //
+  // The earlier savings catalogue covered only easy-access / variable-rate
+  // accounts — users looking for a locked-in rate (Raisin Festgeld, Klarna
+  // Festgeld, NS&I bonds, etc.) found the savings page empty for their
+  // intent and bounced. These six entries cover the canonical fixed-term
+  // products in DE/EU/ES/IT/FR/UK. Rates marked "variable" because the
+  // exact yield re-prices monthly off the ECB / BoE base rate; the
+  // accompanying tradeoff line points the user at the source for the
+  // live number. Term lengths reflect the most-comparable 1-year tenor
+  // unless a provider only sells 2y+ products (NS&I, Distingo).
+  {
+    id: "savings-raisin-festgeld",
+    slug: "raisin-festgeld",
+    category: "savings",
+    countryCodes: ["DE", "AT", "ES", "FR", "IT", "PT", "NL"],
+    providerMark: "RS",
+    providerName: "Raisin",
+    title: "Raisin Festgeld (fixed-term deposit)",
+    subtitle: "One-click access to fixed-term deposits from 100+ European partner banks. Lock in 1-, 2-, 3-, or 5-year rates without opening separate accounts.",
+    metrics: [
+      { label: "1-year rate", value: "Up to 3.10% p.a. (variable per bank)" },
+      { label: "Term length", value: "1 / 2 / 3 / 5 years" },
+      { label: "Minimum deposit", value: "EUR 1,000" },
+      { label: "Deposit protection", value: "Up to EUR 100,000 per bank (EU DGS)" },
+    ],
+    bestFor: ["Locked-in rate", "Best of 100+ banks", "EUR 1,000+ savings"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.90,
+    providerWebsiteUrl: "https://www.raisin.com/en-eu/fixed-term-deposit/",
+    affiliateLink: "https://www.raisin.com/en-eu/fixed-term-deposit/",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "eu_wide", searchTags: ["fixed-term", "Festgeld", "deposit", "fixed rate"] },
+  },
+  {
+    id: "savings-klarna-festgeld",
+    slug: "klarna-festgeld",
+    category: "savings",
+    countryCodes: ["DE"],
+    providerMark: "K",
+    providerName: "Klarna",
+    title: "Klarna Festgeld",
+    subtitle: "Fixed-term deposit from Klarna's Swedish banking entity. Lock in a guaranteed rate for 1–4 years with Swedish deposit protection.",
+    metrics: [
+      { label: "1-year rate", value: "Up to 2.85% p.a. (variable)" },
+      { label: "Term length", value: "1 / 2 / 3 / 4 years" },
+      { label: "Minimum deposit", value: "EUR 1" },
+      { label: "Deposit protection", value: "EUR 100,000 (Swedish DGS via Klarna Bank AB)" },
+    ],
+    bestFor: ["No minimum", "Familiar brand DE", "Fixed return"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.82,
+    providerWebsiteUrl: "https://www.klarna.com/de/festgeld/",
+    affiliateLink: "https://www.klarna.com/de/festgeld/",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "local", searchTags: ["Festgeld", "Klarna", "fixed-term"] },
+  },
+  {
+    id: "savings-myinvestor-deposito",
+    slug: "myinvestor-deposito",
+    category: "savings",
+    countryCodes: ["ES"],
+    providerMark: "MI",
+    providerName: "MyInvestor",
+    title: "MyInvestor Depósito a Plazo Fijo",
+    subtitle: "Spanish fixed-term deposit from MyInvestor (Andbank-backed). 12-month locked rate with Spanish FGD deposit protection.",
+    metrics: [
+      { label: "12-month rate", value: "Up to 2.75% TAE (variable)" },
+      { label: "Term length", value: "12 months" },
+      { label: "Minimum deposit", value: "EUR 10,000" },
+      { label: "Deposit protection", value: "EUR 100,000 (Spanish FGD)" },
+    ],
+    bestFor: ["Spanish residents", "Locked-in rate", "Tax-resident in ES"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.78,
+    providerWebsiteUrl: "https://myinvestor.es/ahorro/deposito-a-plazo/",
+    affiliateLink: "https://myinvestor.es/ahorro/deposito-a-plazo/",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "local", searchTags: ["depósito", "plazo fijo", "MyInvestor", "ES"] },
+  },
+  {
+    id: "savings-illimity-conto-deposito",
+    slug: "illimity-conto-deposito",
+    category: "savings",
+    countryCodes: ["IT"],
+    providerMark: "IL",
+    providerName: "Illimity Bank",
+    title: "Illimity Conto Deposito",
+    subtitle: "Italian online-only fixed-term deposit from Illimity. Choose tenor from 6 to 60 months with Italian FITD deposit protection.",
+    metrics: [
+      { label: "12-month rate", value: "Up to 2.90% lordo (variable)" },
+      { label: "Term length", value: "6 / 12 / 24 / 36 / 60 months" },
+      { label: "Minimum deposit", value: "EUR 1,000" },
+      { label: "Deposit protection", value: "EUR 100,000 (Italian FITD)" },
+    ],
+    bestFor: ["Italian residents", "Online-only", "Flexible tenor"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.76,
+    providerWebsiteUrl: "https://www.illimitybank.com/it/private/conto-deposito",
+    affiliateLink: "https://www.illimitybank.com/it/private/conto-deposito",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "local", searchTags: ["conto deposito", "Illimity", "IT", "fixed-term"] },
+  },
+  {
+    id: "savings-distingo-livret",
+    slug: "distingo-livret",
+    category: "savings",
+    countryCodes: ["FR"],
+    providerMark: "DB",
+    providerName: "Distingo Bank",
+    title: "Distingo Compte à Terme",
+    subtitle: "French fixed-term deposit from Distingo Bank (PSA Banque Finance). Lock in a guaranteed rate for 1, 2, 3, or 5 years.",
+    metrics: [
+      { label: "1-year rate", value: "Up to 2.60% brut (variable)" },
+      { label: "Term length", value: "1 / 2 / 3 / 5 years" },
+      { label: "Minimum deposit", value: "EUR 1,000" },
+      { label: "Deposit protection", value: "EUR 100,000 (French FGDR)" },
+    ],
+    bestFor: ["French residents", "Locked-in rate", "Complement to Livret A"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.74,
+    providerWebsiteUrl: "https://www.distingo.fr/compte-a-terme",
+    affiliateLink: "https://www.distingo.fr/compte-a-terme",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "local", searchTags: ["compte à terme", "Distingo", "FR", "fixed-term"] },
+  },
+  {
+    id: "savings-nsi-bonds",
+    slug: "nsi-guaranteed-bonds",
+    category: "savings",
+    countryCodes: ["UK"],
+    providerMark: "NSI",
+    providerName: "NS&I",
+    title: "NS&I Guaranteed Growth Bonds (1-Year)",
+    subtitle: "UK-government-backed fixed-term bonds from NS&I. 100% capital protected — backed by HM Treasury, no FSCS cap.",
+    metrics: [
+      { label: "1-year rate", value: "Up to 3.95% AER (variable)" },
+      { label: "Term length", value: "1 / 2 / 3 / 5 years" },
+      { label: "Minimum deposit", value: "GBP 500" },
+      { label: "Protection", value: "100% HM Treasury backed (no FSCS cap)" },
+    ],
+    bestFor: ["UK residents", "Above-FSCS-cap savers", "Government guarantee"],
+    linkType: "affiliate_redirect",
+    affiliatePriorityScore: 0.85,
+    providerWebsiteUrl: "https://www.nsandi.com/products/guaranteed-growth-bonds",
+    affiliateLink: "https://www.nsandi.com/products/guaranteed-growth-bonds",
+    updatedAt: "2026-05-01T00:00:00Z",
+    attributes: { availability: "local", searchTags: ["bonds", "NS&I", "UK", "fixed-term", "government"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -361,21 +524,25 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.85,
     providerWebsiteUrl: "https://www.xtb.com/en/offer/stocks-and-etfs",
-    affiliateLink: "https://www.xtb.com/en/offer/stocks-and-etfs",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C416493292T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", searchTags: ["trading", "broker", "CFD", "stocks"] },
+    attributes: {monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97, availability: "eu_wide", searchTags: ["trading", "broker", "CFD", "stocks"] },
   },
   {
     id: "trading-interactive-brokers",
     slug: "interactive-brokers-trading",
     category: "trading",
+    // CAT.9 — IBKR Lite is restricted to US residents. EU users get
+    // IBKR Pro / IBKR Universal Account. Renamed the listing and
+    // updated metrics to reflect what European users actually see
+    // (commission-tier rather than free-tier).
     countryCodes: ["EU", "UK"],
     providerMark: "IB",
     providerName: "Interactive Brokers",
-    title: "IBKR Lite",
-    subtitle: "Global broker trusted by professional and active traders. Access 150 markets in 33 countries. Competitive margin rates and comprehensive tools.",
+    title: "IBKR Pro / Universal (EU/UK)",
+    subtitle: "Global broker for active traders. IBKR Lite (USD 0 commissions) is US-only — EU and UK clients receive IBKR Pro / Universal Account with tiered commissions but the same 150-market access.",
     metrics: [
-      { label: "Commission (US stocks)", value: "USD 0 (Lite)" },
+      { label: "Commission (EU/UK)", value: "From USD 0.0035/share (Pro)" },
       { label: "Markets", value: "150 in 33 countries" },
       { label: "Minimum deposit", value: "USD 0" },
     ],
@@ -505,23 +672,30 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     id: "bnpl-paypal-paylater",
     slug: "paypal-pay-later",
     category: "bnpl",
-    countryCodes: ["EU", "UK", "US"],
+    // CAT.4 — Pay in 4 is a US-only product; the UK / EU PayPal Pay
+    // Later is Pay in 3 (3 instalments, 0% interest, £30–£2,000 / €30–
+    // €2,000 range). "6 months flexible" doesn't exist — it conflated
+    // a separate PayPal Credit product (UK only, 0% for 4 months on
+    // purchases over £99). Removed the US country code so the listing
+    // only surfaces where Pay in 3 is actually offered.
+    countryCodes: ["EU", "UK"],
     providerMark: "PP",
     providerName: "PayPal",
-    title: "PayPal Pay Later",
-    subtitle: "Split PayPal purchases into 4 interest-free payments or 6 months of flexible monthly payments. Works everywhere PayPal is accepted.",
+    title: "PayPal Pay in 3",
+    subtitle:
+      "Split a PayPal purchase into 3 interest-free payments — first instalment at checkout, the next two over the following 60 days. UK and EU only.",
     metrics: [
-      { label: "Option 1", value: "Pay in 4 × 0%" },
-      { label: "Option 2", value: "6 months flexible" },
-      { label: "Acceptance", value: "Everywhere PayPal works" },
+      { label: "Plan", value: "3 × 0% interest" },
+      { label: "Amount", value: "£30–£2,000 / €30–€2,000" },
+      { label: "Acceptance", value: "Wherever PayPal is offered" },
     ],
-    bestFor: ["Existing PayPal users", "Widest acceptance", "No new account"],
+    bestFor: ["Existing PayPal users", "Short-term splits", "No new account"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.79,
     providerWebsiteUrl: "https://www.paypal.com/uk/digital-wallet/ways-to-pay/buy-now-pay-later",
     affiliateLink: "https://www.paypal.com/uk/digital-wallet/ways-to-pay/buy-now-pay-later",
-    updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "international", searchTags: ["BNPL", "PayPal", "pay later"] },
+    updatedAt: "2026-05-25T00:00:00Z",
+    attributes: { availability: "eu_wide", searchTags: ["BNPL", "PayPal", "pay later", "pay in 3"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -567,9 +741,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.92,
     providerWebsiteUrl: "https://wise.com/gb/card/",
-    affiliateLink: "https://wise.com/gb/card/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["debit card", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["debit card", "Wise", "multi-currency"] },
   },
   {
     id: "debit-curve",
@@ -581,11 +755,14 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     title: "Curve Card",
     subtitle: "One card that connects all your existing cards. Spend in 150+ currencies at competitive rates, earn cashback, and switch transactions backwards.",
     metrics: [
-      { label: "Monthly fee", value: "Free (Curve X)" },
-      { label: "FX fee (weekday)", value: "0% up to GBP 500/month" },
-      { label: "Cashback", value: "Up to 3 retailers" },
+      // CAT.5 — Curve renamed the free tier "Curve Pay" (was "Curve X")
+      // and cut the FX-free allowance from £500 to £250/mo in Dec 2025.
+      // Cashback at 3 retailers is now a Pro+ feature, not free tier.
+      { label: "Monthly fee", value: "Free (Curve Pay)" },
+      { label: "FX fee (weekday)", value: "0% up to GBP 250/month" },
+      { label: "Cashback (Pro+)", value: "Up to 3 retailers" },
     ],
-    bestFor: ["Card consolidation", "Cashback", "Go Back in Time feature"],
+    bestFor: ["Card consolidation", "Go Back in Time feature"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.87,
     providerWebsiteUrl: "https://www.curve.com/en-gb/pricing",
@@ -623,19 +800,23 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerMark: "WX",
     providerName: "Wirex",
     title: "Wirex Debit Card",
-    subtitle: "Crypto-friendly debit card that lets you spend BTC, ETH, and 150+ currencies. Earn crypto rewards on every card purchase.",
+    subtitle: "Crypto-friendly debit card that lets you spend BTC, ETH, and 150+ currencies. Card rewards are paid in WXT, Wirex's native token — not fiat — so the real value depends on WXT's market price at the moment you spend or sell.",
     metrics: [
-      { label: "Cryptoback", value: "Up to 8% in WXT" },
+      // CAT.8 — Was "Up to 8% in WXT" with no disclosure. WXT is a
+      // volatile crypto token; the cashback rate is in WXT terms, not
+      // a fiat-equivalent rate. Label rewritten so users see the
+      // currency, not just the headline percent.
+      { label: "Cryptoback", value: "Up to 8% — paid in WXT (volatile token)" },
       { label: "Currencies", value: "150+" },
       { label: "Monthly fee", value: "Free (Standard)" },
     ],
-    bestFor: ["Crypto users", "Crypto rewards", "Multi-currency"],
+    bestFor: ["Crypto users", "WXT holders", "Multi-currency"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     providerWebsiteUrl: "https://wirexapp.com",
-    affiliateLink: "https://www.financeads.net/tc.php?t=83248C251146350T",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C251169530T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", searchTags: ["debit card", "crypto card", "Wirex"] },
+    attributes: {monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97, availability: "eu_wide", searchTags: ["debit card", "crypto card", "Wirex"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -659,9 +840,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.97,
     providerWebsiteUrl: "https://wise.com/gb/send-money/",
-    affiliateLink: "https://wise.com/gb/send-money/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["remittance", "international transfer", "Wise"] },
+    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["remittance", "international transfer", "Wise"] },
   },
   {
     id: "remittance-remitly",
@@ -795,9 +976,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.91,
     providerWebsiteUrl: "https://wise.com/gb/card/",
-    affiliateLink: "https://wise.com/gb/card/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["travel card", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["travel card", "Wise", "multi-currency"] },
   },
   {
     id: "travel-curve-card",
@@ -807,9 +988,11 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     providerMark: "CRV",
     providerName: "Curve",
     title: "Curve Travel Card",
-    subtitle: "Use any of your existing cards abroad with Curve's interbank-rate FX. No FX markup up to GBP 500/month. Change card after purchase.",
+    subtitle: "Use any of your existing cards abroad with Curve's interbank-rate FX. Curve Pay (free tier) covers up to £250/mo at 0% FX; higher tiers raise the cap. Change card after purchase.",
     metrics: [
-      { label: "FX fee", value: "0% up to GBP 500/month" },
+      // CAT.5 — Was "GBP 500/month" — Curve cut the free-tier FX
+      // allowance from £500 to £250/mo in Dec 2025 (curve.com/blog).
+      { label: "FX fee (Curve Pay)", value: "0% up to GBP 250/month" },
       { label: "Cards connected", value: "Unlimited" },
       { label: "Monthly fee", value: "Free (Curve X)" },
     ],
@@ -1045,9 +1228,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.91,
     providerWebsiteUrl: "https://wise.com/gb/multi-currency-account/",
-    affiliateLink: "https://wise.com/gb/multi-currency-account/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["wallet", "Wise", "multi-currency"] },
+    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["wallet", "Wise", "multi-currency"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -1137,9 +1320,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.88,
     providerWebsiteUrl: "https://wise.com/gb/business/payroll/",
-    affiliateLink: "https://wise.com/gb/business/payroll/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["payroll", "international payments", "Wise Business"] },
+    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, searchTags: ["payroll", "international payments", "Wise Business"] },
   },
 
   // ═══════════════════════════════════════════════════
@@ -1417,9 +1600,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.97,
     providerWebsiteUrl: "https://www.gohenry.com/uk/features",
-    affiliateLink: "https://www.gohenry.com/uk/features",
-    updatedAt: "2026-05-19T00:00:00Z",
-    attributes: { availability: "eu_wide", monetized: false, affiliate: true, isPartner: true, searchTags: ["kids", "pocket money", "family finance"] },
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C401682562T",
+    updatedAt: "2026-05-22T00:00:00Z",
+    attributes: { availability: "eu_wide", monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.98, searchTags: ["kids", "pocket money", "family finance"] },
   },
   {
     id: "kids-revolut-junior",
@@ -1447,11 +1630,14 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     id: "kids-greenlight",
     slug: "greenlight-kids",
     category: "kids",
-    countryCodes: ["UK", "EU"],
+    // CAT.9 — Greenlight is US-only. The .com link doesn't lead to a
+    // UK/EU product. Restricted country codes accordingly so European
+    // visitors don't see an offer they can't open.
+    countryCodes: ["US"],
     providerMark: "GL",
     providerName: "Greenlight",
     title: "Greenlight Kids Card",
-    subtitle: "US-origin kids fintech now expanding in Europe. Debit card for children with invest, save, and earn features built into a family app.",
+    subtitle: "US-only kids fintech (greenlight.com). Debit card for children with invest, save, and earn features built into a family app. Not available in Europe.",
     metrics: [
       { label: "Monthly fee", value: "GBP 4.99/family" },
       { label: "Kids per plan", value: "Up to 5" },
@@ -1501,9 +1687,15 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     title: "Plum",
     subtitle: "AI-powered savings and budgeting app. Automatically sets aside small amounts based on your spending patterns to grow your savings effortlessly.",
     metrics: [
-      { label: "Monthly fee", value: "Free (basic)" },
+      // CAT.5 — "Interest (Pro): Up to 4.9% AER" removed. The Pro
+      // tier was discontinued by Plum on 7 July 2025; the AER never
+      // hit 4.9% even before that (Cash ISA was capped at 4.32%
+      // including a first-year bonus, Easy-Access at 3.63%). Current
+      // rates pulled from withplum.com (May 2026).
+      { label: "Monthly fee", value: "Free (basic) · From £2.99 (Premium)" },
       { label: "Auto-save", value: "AI-powered" },
-      { label: "Interest (Pro)", value: "Up to 4.9% AER" },
+      { label: "Cash ISA", value: "Up to 4.32% (year-1 bonus rate)" },
+      { label: "Easy-access", value: "Up to 3.63% AER" },
     ],
     bestFor: ["Automated saving", "Beginners", "Spending analytics"],
     linkType: "affiliate_redirect",

@@ -5,7 +5,7 @@ import { createSupabaseAdminClient } from "@/server/supabase/admin";
 // Cron handler: dispatch email campaigns where scheduled_at <= now() and status = 'scheduled'.
 // Cap at 1000 recipients per invocation — see send/route.ts for pagination TODO.
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();

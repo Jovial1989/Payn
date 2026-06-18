@@ -9,6 +9,7 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import { getCategoryOffersForCountrySelection, getCountryLabel } from "@/lib/countries";
 import { parseSearch } from "@/lib/discover/parseSearch";
+import { trackAnalyticsEvent, AnalyticsEvent } from "@/lib/analytics";
 
 export const PAYN_OPEN_CHAT_EVENT = "payn:open-chat";
 
@@ -181,6 +182,13 @@ export function ChatWidget() {
     };
   }, [open, isSheetLayout]);
 
+  // Analytics: ChatOpened — fires when the widget transitions to open
+  useEffect(() => {
+    if (open) {
+      trackAnalyticsEvent(AnalyticsEvent.ChatOpened);
+    }
+  }, [open]);
+
   useEffect(() => {
     const textarea = inputRef.current;
 
@@ -280,6 +288,11 @@ export function ChatWidget() {
     async (text: string) => {
       if (!text.trim() || loading) return;
 
+      trackAnalyticsEvent(AnalyticsEvent.ChatMessageSent, {
+        message_length: text.trim().length,
+        is_first_message: messages.length === 0,
+      });
+
       const userMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
@@ -328,22 +341,7 @@ export function ChatWidget() {
         return;
       }
 
-      // Unknown goal — ask one follow-up question, skip the API
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: locale === "de"
-            ? "Was möchtest du tun — Geld senden, leihen, sparen, eine Karte finden oder etwas anderes?"
-            : "What are you trying to do — send money, borrow, save, get a card, or something else?",
-          timestamp: Date.now(),
-        },
-      ]);
-      setLoading(false);
-      return;
-
-      // Legacy AI path (kept for future use, currently unreachable)
+      // AI path — fast-path answers + Gemini for everything parseSearch doesn't handle
       try {
         const res = await fetch("/api/v1/chat", {
           method: "POST",

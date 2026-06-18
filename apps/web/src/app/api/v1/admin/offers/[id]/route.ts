@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
@@ -80,8 +81,23 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       "is_monetised","status","is_featured","best_for","metrics","attributes","tags","notes",
     ];
     const update: Record<string, unknown> = {};
+    // SEC-FIX PAYN-A11: enforce types to prevent corrupt data (CWE-20)
+    // Must match the product_offers.status CHECK constraint exactly — "ok" is NOT valid.
+    const VALID_STATUSES = new Set(["active", "inactive", "needs_review", "archived"]);
     for (const key of allowed) {
-      if (key in body) update[key] = body[key];
+      if (!(key in body)) continue;
+      if (key === "affiliate_priority_score") {
+        const n = Number(body[key]);
+        if (!isFinite(n)) continue;
+        update[key] = n;
+      } else if (key === "is_monetised" || key === "is_featured") {
+        update[key] = Boolean(body[key]);
+      } else if (key === "status") {
+        if (!VALID_STATUSES.has(String(body[key]))) continue;
+        update[key] = body[key];
+      } else {
+        update[key] = body[key];
+      }
     }
 
     const { data, error } = await admin
@@ -98,6 +114,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       metadata: { fields: Object.keys(update) },
     });
 
+    revalidateTag("catalog", {});
     return NextResponse.json({ ok: true, offer: data });
   }
 
@@ -142,6 +159,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     metadata: { promoted_from_static: true },
   });
 
+  revalidateTag("catalog", {});
   return NextResponse.json({ ok: true, offer: data });
 }
 
@@ -165,6 +183,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       metadata: { provider_name: existing.provider_name, title: existing.title },
     });
 
+    revalidateTag("catalog", {});
     return NextResponse.json({ ok: true, deleted: true });
   }
 
@@ -179,5 +198,6 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     metadata: { archived_static: true },
   });
 
+  revalidateTag("catalog", {});
   return NextResponse.json({ ok: true, archived: true });
 }

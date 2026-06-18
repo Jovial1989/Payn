@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 const KINDS = [
   { value: "rate_change",    label: "Rate change" },
@@ -58,9 +58,7 @@ export default function EditHighlightPage() {
   });
 
   useEffect(() => {
-    fetch(`/api/admin/highlights/${id}`, {
-      headers: { "x-admin-token": ADMIN_TOKEN },
-    })
+    fetch(`/api/admin/highlights/${id}`)
       .then((r) => r.json())
       .then((data: Record<string, unknown>) => {
         setForm({
@@ -97,7 +95,7 @@ export default function EditHighlightPage() {
     try {
       const res = await fetch(`/api/admin/highlights/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
           country: form.country || null,
@@ -127,7 +125,6 @@ export default function EditHighlightPage() {
     try {
       const res = await fetch(`/api/admin/highlights/${id}`, {
         method: "DELETE",
-        headers: { "x-admin-token": ADMIN_TOKEN },
       });
       if (res.ok) {
         router.replace("/admin/highlights");

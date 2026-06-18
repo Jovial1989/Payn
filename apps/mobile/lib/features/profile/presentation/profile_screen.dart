@@ -11,7 +11,6 @@ import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
 import 'package:payn_mobile/shared/widgets/analytics_view_tracker.dart';
-import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/selection_bottom_sheet.dart';
 import 'package:payn_mobile/shared/widgets/section_card.dart';
@@ -100,12 +99,10 @@ class ProfileScreen extends StatelessWidget {
               children:
                   interestLabels.entries.map((entry) {
                     final selected = preferences.interests.contains(entry.key);
-                    return FilterChip(
+                    return _InterestChip(
+                      label: localizedInterestLabel(entry.key, context.l10n),
                       selected: selected,
-                      label: Text(
-                        localizedInterestLabel(entry.key, context.l10n),
-                      ),
-                      onSelected: (_) {
+                      onTap: () {
                         final next = List<String>.from(preferences.interests);
                         if (selected) {
                           next.remove(entry.key);
@@ -115,35 +112,66 @@ class ProfileScreen extends StatelessWidget {
                         controller.updatePreferences(
                           preferences.copyWith(interests: next),
                         );
+                        unawaited(
+                          controller.analytics.track(
+                            AnalyticsEvents.interestsUpdated,
+                            properties: controller.analytics.buildDefaultProperties(
+                              preferences: preferences,
+                              loggedIn: controller.isAuthenticated,
+                              extra: <String, dynamic>{
+                                'interest': entry.key,
+                                'action': selected ? 'removed' : 'added',
+                                'total_interests': next.length,
+                              },
+                            ),
+                          ),
+                        );
                       },
-                      selectedColor: PaynColors.accentSurfaceStrong,
-                      checkmarkColor: PaynColors.accent,
-                      side: const BorderSide(color: PaynColors.outlineSubtle),
-                      visualDensity: VisualDensity.compact,
                     );
                   }).toList(),
             ),
           ),
           const SizedBox(height: 16),
           SectionCard(
-            title: l10n.profileSecurityTitle,
-            subtitle: l10n.profileSecuritySubtitle,
+            title: 'How it works',
             child: Column(
-              children: <Widget>[
-                _InfoRow(
-                  icon: Icons.open_in_new_rounded,
-                  title: l10n.profileExternalHandoff,
-                  description: l10n.profileExternalHandoffDescription,
+              children: const [
+                _HowItWorksStep(
+                  number: '1',
+                  title: 'We collect offers',
+                  body:
+                      'Our team sources loans, cards, transfers, and exchange products from regulated European providers.',
                 ),
-                const SizedBox(height: 12),
-                _InfoRow(
-                  icon: Icons.lock_outline_rounded,
-                  title: l10n.profileLocalPreferences,
-                  description: l10n.profileLocalPreferencesDescription,
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1, color: PaynColors.outlineSubtle),
+                ),
+                _HowItWorksStep(
+                  number: '2',
+                  title: 'We rank them for you',
+                  body:
+                      'Offers are scored by cost, product fit, and provider quality. Your market and preferences adjust the ranking.',
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1, color: PaynColors.outlineSubtle),
+                ),
+                _HowItWorksStep(
+                  number: '3',
+                  title: 'You compare for free',
+                  body:
+                      'Payn is free to use. We earn commission when you apply through us — always disclosed, never affects ranking order.',
                 ),
               ],
             ),
           ),
+          // P2.13 — The previous "Security" SectionCard rendered two
+          // explanatory _InfoRow widgets (external handoff, local
+          // preferences) that were marketing copy, not user controls.
+          // Per the audit those belong in /about, not Profile. Profile
+          // now flows directly from interests → account actions with
+          // no info-cards in between, so each row on screen is an
+          // action the user can take.
           const SizedBox(height: 16),
           SectionCard(
             title: l10n.profileAccountTitle,
@@ -158,6 +186,10 @@ class ProfileScreen extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: PaynColors.accent,
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: () {
                               unawaited(
                                 controller.analytics.track(
@@ -209,6 +241,19 @@ class ProfileScreen extends StatelessWidget {
               .toList(),
       onSelected: (market) async {
         await controller.setMarket(market);
+        unawaited(
+          controller.analytics.track(
+            AnalyticsEvents.profileUpdated,
+            properties: controller.analytics.buildDefaultProperties(
+              preferences: controller.preferences,
+              loggedIn: controller.isAuthenticated,
+              extra: <String, dynamic>{
+                'field': 'country',
+                'value': market.name,
+              },
+            ),
+          ),
+        );
       },
     );
   }
@@ -237,6 +282,20 @@ class ProfileScreen extends StatelessWidget {
               .toList(),
       onSelected: (code) async {
         await controller.setLocale(code);
+        unawaited(
+          controller.analytics.track(
+            AnalyticsEvents.profileUpdated,
+            properties: controller.analytics.buildDefaultProperties(
+              preferences: controller.preferences,
+              loggedIn: controller.isAuthenticated,
+              language: code,
+              extra: <String, dynamic>{
+                'field': 'language',
+                'value': code,
+              },
+            ),
+          ),
+        );
       },
     );
   }
@@ -247,14 +306,30 @@ class ProfileScreen extends StatelessWidget {
             .where((language) => language.code == code)
             .firstOrNull;
     if (match == null) return code.toUpperCase();
-    return '${match.native} - ${match.localizedLabel(l10n)}';
+    // P2.12 — When the language's native name matches its localized
+    // label (e.g. English user reading "English" — localized = "English",
+    // native = "English"), we used to render "English - English" which
+    // reads like a duplication bug. Collapse to a single label in that
+    // case. Cross-language users still see e.g. "English - Anglais".
+    final native = match.native;
+    final localized = match.localizedLabel(l10n);
+    if (native.toLowerCase() == localized.toLowerCase()) return native;
+    return '$native - $localized';
   }
 }
 
 class _ProfileHero extends StatelessWidget {
   const _ProfileHero({required this.controller});
 
-  final dynamic controller;
+  // MOB.3 — Was `final dynamic controller;`. Dart resolves extension
+  // methods at compile time from the receiver's static type, so a
+  // call like `controller.preferences.market.localizedLabel(l10n)`
+  // through a dynamic `controller` returns `dynamic` for `.market`,
+  // and the extension `PaynMarketL10n.localizedLabel` never binds —
+  // we got a NoSuchMethodError at runtime instead. Typing the field
+  // strictly fixes the dispatch (and gives us autocomplete + compile
+  // checks back).
+  final AppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -264,41 +339,40 @@ class _ProfileHero extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF7FBF8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [PaynColors.surfaceDark, PaynColors.surfaceElevatedDark],
         ),
         borderRadius: BorderRadius.circular(PaynRadius.panel),
-        border: Border.all(color: PaynColors.outlineSubtle),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
       ),
       child: Row(
         children: <Widget>[
+          // P3.1 — Guest avatar used to render the brand mark (PaynMark)
+          // inside an empty surface-dim square, which read like a blank
+          // placeholder rather than a profile slot. Guests now see a
+          // person-outline icon so the visual language matches the
+          // authenticated state (filled person), with the surface-dim
+          // background and a dashed border signalling "sign in to fill
+          // this in".
           Container(
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color:
-                  controller.isAuthenticated
-                      ? PaynColors.text
-                      : PaynColors.surfaceDim,
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
             ),
             alignment: Alignment.center,
-            child:
-                controller.isAuthenticated
-                    ? const Icon(
-                      Icons.person_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    )
-                    : const PaynMark(size: 18, strokeWidth: 2.4),
+            child: controller.isAuthenticated
+                ? const Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  )
+                : Icon(
+                    Icons.person_outline_rounded,
+                    color: Colors.white.withValues(alpha: 0.6),
+                    size: 26,
+                  ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -310,7 +384,9 @@ class _ProfileHero extends StatelessWidget {
                       ? (controller.session.email ??
                           context.l10n.profileSignedIn)
                       : context.l10n.profileGuestMode,
-                  style: theme.textTheme.titleLarge,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: PaynColors.textInverse,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -322,7 +398,7 @@ class _ProfileHero extends StatelessWidget {
                       )
                       : context.l10n.profileGuestSummary,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: PaynColors.textSecondary,
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -409,16 +485,20 @@ class _SettingRow extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
+// P2.13 — `_InfoRow` deleted along with the Security SectionCard it
+// only supported. Profile no longer renders marketing copy; if we
+// later add an /about screen we can resurrect this widget there.
+
+class _HowItWorksStep extends StatelessWidget {
+  const _HowItWorksStep({
+    required this.number,
     required this.title,
-    required this.description,
+    required this.body,
   });
 
-  final IconData icon;
+  final String number;
   final String title;
-  final String description;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
@@ -426,25 +506,33 @@ class _InfoRow extends StatelessWidget {
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+      children: [
         Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: PaynColors.surfaceDim,
-            borderRadius: BorderRadius.circular(14),
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(
+            color: PaynColors.accent,
+            shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 18, color: PaynColors.textSecondary),
+          alignment: Alignment.center,
+          child: Text(
+            number,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+            children: [
               Text(title, style: theme.textTheme.labelLarge),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
-                description,
+                body,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: PaynColors.textSecondary,
                 ),
@@ -453,6 +541,101 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// P2.2 — Interests chip with a much stronger selected vs unselected
+/// visual delta than the stock FilterChip:
+///
+///   * unselected: white surface, subtle outline, secondary text — reads
+///     as a neutral option.
+///   * selected: emerald fill, white text, ✓ leading icon, soft glow —
+///     reads as a confirmed tag.
+///
+/// The 180 ms tween makes the toggle feel tactile.
+class _InterestChip extends StatelessWidget {
+  const _InterestChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: selected ? PaynColors.accent : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? PaynColors.accent : PaynColors.outlineSubtle,
+            width: 1,
+          ),
+          boxShadow: selected
+              ? <BoxShadow>[
+                  BoxShadow(
+                    color: PaynColors.accent.withValues(alpha: 0.22),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : const <BoxShadow>[],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    child: selected
+                        ? const Padding(
+                            padding: EdgeInsets.only(right: 6),
+                            child: Icon(
+                              Icons.check_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  Text(
+                    label,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: selected
+                          ? Colors.white
+                          : PaynColors.textSecondary,
+                      fontWeight: selected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

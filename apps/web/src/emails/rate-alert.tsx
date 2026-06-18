@@ -1,5 +1,10 @@
-import { Heading, Text, Button, Section, Hr } from "@react-email/components";
-import { EmailLayout } from "./_layout";
+import { Button, Hr, Section, Text } from "@react-email/components";
+import {
+  ButtonStyles,
+  ColorTokens,
+  EmailLayout,
+  TextStyles,
+} from "./_layout";
 
 export interface RateAlertEmailProps {
   firstName?: string;
@@ -22,36 +27,83 @@ export default function RateAlertEmail({
 }: RateAlertEmailProps) {
   const greeting = firstName ? `Hi ${firstName},` : "Hi,";
   return (
-    <EmailLayout preview={`${providerName} updated the ${productName} rate.`} unsubscribeUrl={unsubscribeUrl}>
-      <Text style={{ fontSize: "14px", color: "#6b7280", marginTop: "24px" }}>{greeting}</Text>
-      <Heading style={{ fontSize: "22px", marginTop: "8px", color: "#1F2937" }}>
-        {providerName} updated the {productName} rate.
-      </Heading>
-      <Section style={{ marginTop: "20px", backgroundColor: "#f9fafb", borderRadius: "8px", padding: "20px" }}>
-        <Text style={{ fontSize: "13px", color: "#6b7280", margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+    <EmailLayout
+      preview={`${providerName} updated the ${productName} rate.`}
+      unsubscribeUrl={unsubscribeUrl}
+    >
+      <Text style={TextStyles.eyebrow}>Rate alert</Text>
+      <Text style={TextStyles.heading}>
+        {providerName} changed {productName}
+      </Text>
+      <Text style={TextStyles.body}>
+        {greeting} we picked up a rate change on one of the offers you saved.
+        Here&apos;s what moved:
+      </Text>
+
+      <Section
+        style={{
+          backgroundColor: ColorTokens.surfaceMuted,
+          borderRadius: 16,
+          padding: "20px 22px",
+          margin: "20px 0 8px",
+          border: `1px solid ${ColorTokens.lineSubtle}`,
+        }}
+      >
+        <Text
+          style={{
+            ...TextStyles.eyebrow,
+            color: ColorTokens.inkTertiary,
+            margin: 0,
+          }}
+        >
           Previous rate
         </Text>
-        <Text style={{ fontSize: "24px", color: "#9ca3af", margin: "4px 0 16px", textDecoration: "line-through" }}>
+        <Text
+          style={{
+            fontFamily: TextStyles.heading.fontFamily,
+            fontSize: 22,
+            fontWeight: 700,
+            color: ColorTokens.inkTertiary,
+            textDecoration: "line-through",
+            margin: "4px 0 16px",
+          }}
+        >
           {oldRate}
         </Text>
-        <Hr style={{ borderColor: "#e5e7eb" }} />
-        <Text style={{ fontSize: "13px", color: "#6b7280", margin: "16px 0 4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+        <Hr style={{ margin: "8px 0 16px", borderColor: ColorTokens.lineSubtle }} />
+        <Text
+          style={{
+            ...TextStyles.eyebrow,
+            color: ColorTokens.accent,
+            margin: "0 0 4px",
+          }}
+        >
           New rate
         </Text>
-        <Text style={{ fontSize: "32px", fontWeight: 700, color: "#10B981", margin: "4px 0 0" }}>
+        <Text
+          style={{
+            fontFamily: TextStyles.heading.fontFamily,
+            fontSize: 34,
+            lineHeight: "40px",
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            color: ColorTokens.accent,
+            margin: 0,
+          }}
+        >
           {newRate}
         </Text>
       </Section>
-      <Section style={{ marginTop: "24px" }}>
-        <Button
-          href={productUrl}
-          style={{ backgroundColor: "#10B981", color: "white", padding: "12px 24px", borderRadius: "8px", textDecoration: "none", fontSize: "16px", fontWeight: 500 }}
-        >
+
+      <Section style={{ marginTop: 24, textAlign: "center" }}>
+        <Button href={productUrl} style={ButtonStyles.primary}>
           See updated offer
         </Button>
       </Section>
-      <Text style={{ fontSize: "13px", color: "#9ca3af", marginTop: "24px" }}>
-        You received this because you saved this offer in Payn. Account emails will continue.
+
+      <Text style={TextStyles.muted}>
+        You&apos;re getting this because you saved this offer in Payn. Critical
+        account messages will keep arriving regardless of preferences.
       </Text>
     </EmailLayout>
   );

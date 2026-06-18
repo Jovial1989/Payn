@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 type Campaign = { id: string; status: string };
 
@@ -15,7 +15,7 @@ export function AdminPushCampaignActions({ campaign }: { campaign: Campaign }) {
     setBusy(true);
     const res = await fetch(`/api/admin/push/campaigns/${campaign.id}`, {
       method: "PATCH",
-      headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: act }),
     });
     if (res.ok && act === "duplicate") {

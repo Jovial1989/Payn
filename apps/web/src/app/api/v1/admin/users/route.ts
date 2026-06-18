@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const userIds = users.map((u) => u.id);
 
   const { data: profiles } = userIds.length
-    ? await admin.from("user_profiles").select("*").in("user_id", userIds)
+    ? await admin.from("user_profiles").select("user_id, first_name, last_name, home_country, user_type, onboarding_completed, created_at, updated_at").in("user_id", userIds) // SEC-FIX PAYN-A22: explicit fields only
     : { data: [] };
 
   const profileMap = Object.fromEntries(

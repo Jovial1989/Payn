@@ -8,7 +8,54 @@ import {
   marketplaceCategories,
 } from "@/lib/marketplace";
 
-export type SortKey = "relevance" | "fees" | "speed" | "recommended";
+export type SortKey = "realCost" | "relevance" | "fees" | "speed" | "recommended";
+
+// Labels we treat as a "real cost" signal. Lower is better. Mirrors the set
+// the existing `fees` case parsed, so both sorts read the same metrics.
+const COST_METRIC_LABELS = [
+  "Fee",
+  "Fees",
+  "Annual fee",
+  "Monthly fee",
+  "Spread",
+  "FX markup",
+  "Conversion fee",
+] as const;
+
+/**
+ * Normalised true-cost signal for an offer. Returns the lowest parseable cost
+ * metric (in whatever unit the metric is quoted), or `null` when the offer
+ * exposes no parseable cost — those must sort to the BOTTOM, never the top, so
+ * "no data" can never win a cost-first ranking.
+ */
+export function getRealCostSignal(offer: MarketplaceOffer): number | null {
+  return parseMetricRange(getMetricValue(offer, [...COST_METRIC_LABELS])).min;
+}
+
+/**
+ * Cost-first comparator. Cheapest first; offers without a parseable cost sink
+ * to the bottom; ties (equal or both-unparseable costs) fall back to the
+ * disclosed affiliate-priority tie-breaker.
+ */
+function compareByRealCost(left: MarketplaceOffer, right: MarketplaceOffer) {
+  const leftCost = getRealCostSignal(left);
+  const rightCost = getRealCostSignal(right);
+
+  if (leftCost === null && rightCost === null) {
+    return right.affiliatePriorityScore - left.affiliatePriorityScore;
+  }
+  if (leftCost === null) {
+    return 1;
+  }
+  if (rightCost === null) {
+    return -1;
+  }
+  if (leftCost !== rightCost) {
+    return leftCost - rightCost;
+  }
+
+  return right.affiliatePriorityScore - left.affiliatePriorityScore;
+}
 
 export interface MarketplaceFilterState {
   query: string;
@@ -27,7 +74,9 @@ export const defaultMarketplaceFilters: MarketplaceFilterState = {
   subtype: "",
   amount: 25000,
   term: 60,
-  sortBy: "relevance",
+  // Brand promise: ranked by real cost, not commission. The default order
+  // leads with the lowest true cost; affiliate priority is only a tie-breaker.
+  sortBy: "realCost",
 };
 
 export function getScopedOffers({
@@ -116,9 +165,17 @@ export function filterMarketplaceOffers({
 export function sortOffers(offers: MarketplaceOffer[], sortBy: SortKey, category: ExplorerCategory) {
   return [...offers].sort((left, right) => {
     switch (sortBy) {
+      case "realCost": {
+        // Preserve the cross-category grouping the "all" view relies on, then
+        // order by real cost (cheapest first) within each category.
+        if (left.category !== right.category && category === "all") {
+          return marketplaceCategories.indexOf(left.category) - marketplaceCategories.indexOf(right.category);
+        }
+        return compareByRealCost(left, right);
+      }
       case "fees": {
-        const leftFee = parseMetricRange(getMetricValue(left, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
-        const rightFee = parseMetricRange(getMetricValue(right, ["Fee", "Fees", "Annual fee", "Monthly fee", "Spread", "FX markup", "Conversion fee"])).min ?? 999;
+        const leftFee = getRealCostSignal(left) ?? 999;
+        const rightFee = getRealCostSignal(right) ?? 999;
         return leftFee - rightFee;
       }
       case "speed": {

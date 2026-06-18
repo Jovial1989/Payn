@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
+// SEC-FIX PAYN-A10: quote all columns and neutralise formula injection (CWE-1236)
+const csvSafe = (v: unknown): string => {
+  const s = String(v ?? "").replace(/"/g, '""');
+  // Prefix formula-triggering chars with single quote
+  const safe = s.replace(/^([=+\-@\t\r])/, "'$1");
+  return `"${safe}"`;
+};
+
 export async function GET() {
   const admin = createSupabaseAdminClient();
   if (!admin) {
@@ -23,11 +31,16 @@ export async function GET() {
     header,
     ...rows.map((r) =>
       [
-        r.id, r.offer_id ?? "", r.provider_id ?? "", r.user_id ?? "",
-        r.country ?? "", r.language ?? "", r.device_type ?? "",
-        `"${(r.source_page ?? "").replace(/"/g, '""')}"`,
-        r.is_monetised ? "true" : "false",
-        r.created_at,
+        csvSafe(r.id),
+        csvSafe(r.offer_id),
+        csvSafe(r.provider_id),
+        csvSafe(r.user_id),
+        csvSafe(r.country),
+        csvSafe(r.language),
+        csvSafe(r.device_type),
+        csvSafe(r.source_page),
+        csvSafe(r.is_monetised ? "true" : "false"),
+        csvSafe(r.created_at),
       ].join(","),
     ),
   ].join("\n");

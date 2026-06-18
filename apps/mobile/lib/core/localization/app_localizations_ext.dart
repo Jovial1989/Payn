@@ -24,6 +24,8 @@ extension PaynCategoryL10n on PaynCategory {
         return l10n.categoryInvestments;
       case PaynCategory.banking:
         return l10n.categoryBanking;
+      case PaynCategory.savings:
+        return l10n.categorySavings;
       case PaynCategory.crypto:
         return l10n.categoryCrypto;
       case PaynCategory.business:

@@ -5,12 +5,25 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Apply the Google Services plugin ONLY when google-services.json is
+// present, so the codebase compiles cleanly before Firebase is set up.
+// Once you drop the file in apps/mobile/android/app/google-services.json
+// (downloaded from Firebase Console → Project Settings → Android app),
+// the next build will auto-include it.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "online.payn.payn_mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications relies on Java 8+ time APIs that
+        // aren't present on older Android runtimes — desugaring backfills
+        // them so the plugin's AAR metadata check passes.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -41,4 +54,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

@@ -7,6 +7,7 @@ import { supplementalMarketplaceOffers } from "@/features/catalog/marketplace-ex
 import { featuredOffers as coreOffers } from "@/features/catalog/mock-data";
 import { newCategoriesOffers } from "@/features/catalog/new-categories-catalog";
 import { catalogExpansionOffers } from "@/features/catalog/catalog-expansion";
+import { financeadsMonetizedOffers } from "@/features/catalog/financeads-monetized";
 
 type InsuranceSeed = {
   id: string;
@@ -364,7 +365,9 @@ const generatedInsuranceCatalog: InsuranceSeed[] = [
     insuranceType: "health",
     countryCodes: ["EU", "UK"],
     providerWebsiteUrl: "https://www.allianzcare.com/en/individuals/expat-health-insurance.html",
-    affiliateLink: "https://www.cignaglobal.com/health-insurance/",
+    // CAT.2 — affiliateLink previously routed to cignaglobal.com (a
+    // direct competitor). Removed; falls back to the real Allianz Care
+    // site so users who clicked the Allianz brand actually reach it.
     affiliatePriorityScore: 0.85,
     priceAmount: 84,
     coverageAmount: 2500000,
@@ -687,9 +690,13 @@ const generatedInsuranceCatalog: InsuranceSeed[] = [
     insuranceType: "nomad",
     countryCodes: ["EU", "UK"],
     providerWebsiteUrl: "https://safetywing.com/nomad-insurance/",
-    affiliateLink: "https://www.ergo.de/de/Produkte/Fahrzeuge/kfz-versicherung.html",
+    // CAT.2 — affiliateLink previously pointed at ergo.de (German car
+    // insurance) — a clear partner-feed misroute. Removed so the click
+    // falls back to providerWebsiteUrl (the real SafetyWing site).
+    // CAT.5 — Price corrected: $45 was 2024 pricing, current 2026
+    // Essential plan (18–39) is $62.72 per 4-week period.
     affiliatePriorityScore: 0.9,
-    priceAmount: 45,
+    priceAmount: 62,
     coverageAmount: 250000,
     medicalCoverage: 250000,
     deductibleAmount: 0,
@@ -818,7 +825,9 @@ const generatedInsuranceCatalog: InsuranceSeed[] = [
     insuranceType: "nomad",
     countryCodes: ["EU", "UK"],
     providerWebsiteUrl: "https://www.allianz-partners.com/en_global/products/travel.html",
-    affiliateLink: "https://www.passportcard.com/nomad/",
+    // CAT.2 — affiliateLink previously routed to passportcard.com (a
+    // separate brand with its own listing further down). Removed so
+    // the click reaches Allianz Partners as the brand promises.
     affiliatePriorityScore: 0.79,
     priceAmount: 72,
     coverageAmount: 1500000,
@@ -1121,7 +1130,10 @@ const expandedOffers: MarketplaceOffer[] = [
     subtitle:
       "Rolling international cover for remote workers and frequent movers who need monthly flexibility rather than a fixed-trip policy.",
     metrics: [
-      { label: "Price", value: "USD 45 / 4 weeks" },
+      // CAT.5 — Was $45 / 4 weeks (2024 pricing). SafetyWing
+      // Essential plan, 18–39 yrs, May 2026: $62.72 per 4-week
+      // period (safetywing.com).
+      { label: "Price", value: "USD 62.72 / 4 weeks (Essential, 18–39)" },
       { label: "Rolling monthly", value: "Monthly renewal while abroad" },
       { label: "Countries covered", value: "180+ countries" },
       { label: "Medical emergencies", value: "Travel medical and urgent care" },
@@ -1354,7 +1366,7 @@ const expandedOffers: MarketplaceOffer[] = [
       "Crypto access with a stronger exchange-style workflow, better suited to users who care about tighter pricing and direct market access.",
     metrics: [
       { label: "Access", value: "BTC, ETH and major crypto pairs" },
-      { label: "Crypto fee", value: "From 0.16% maker / 0.26% taker" },
+      { label: "Trading fee", value: "0.16–0.26% per trade" },
       { label: "Savings plan", value: "Recurring buys available" },
     ],
     bestFor: ["Crypto", "Tighter pricing", "Repeat buyers"],
@@ -1599,7 +1611,7 @@ const expandedOffers: MarketplaceOffer[] = [
     ],
     bestFor: ["Assurance vie", "Long-term savings", "Tax-efficient savings"],
     providerWebsiteUrl: "https://www.linxea.com/assurance-vie/linxea-avenir-2/",
-    affiliateLink: "https://www.linxea.com/assurance-vie/linxea-avenir-2/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C432495606T",
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.85,
     updatedAt: "2026-04-30T00:00:00Z",
@@ -1607,7 +1619,7 @@ const expandedOffers: MarketplaceOffer[] = [
       subtype: "assurance_vie",
       isPartner: true,
       affiliate: true,
-      monetized: false,
+      monetized: true,
       riskProfile: "balanced",
       feeProfile: "low",
       availability: "local",
@@ -1644,15 +1656,17 @@ const expandedOffers: MarketplaceOffer[] = [
     ],
     bestFor: ["P2P", "Passive income", "Fixed returns"],
     providerWebsiteUrl: "https://iuvo-group.com/en/investors/",
-    affiliateLink: "https://iuvo-group.com/en/investors/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C226841413T",
     linkType: "affiliate_redirect",
-    affiliatePriorityScore: 0.84,
-    updatedAt: "2026-04-30T00:00:00Z",
+    affiliatePriorityScore: 0.93,
+    updatedAt: "2026-05-22T00:00:00Z",
     attributes: {
       subtype: "p2p",
       isPartner: true,
       affiliate: true,
-      monetized: false,
+      monetized: true,
+      dataSource: "affiliate",
+      confidenceScore: 0.97,
       riskProfile: "balanced",
       feeProfile: "medium",
       availability: "eu_wide",
@@ -1683,7 +1697,7 @@ const expandedOffers: MarketplaceOffer[] = [
     ],
     bestFor: ["Crypto", "Security", "Hardware wallet"],
     providerWebsiteUrl: "https://trezor.io/trezor-model-t",
-    affiliateLink: "https://trezor.io/trezor-model-t",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C5142119968T",
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     updatedAt: "2026-04-30T00:00:00Z",
@@ -1691,7 +1705,7 @@ const expandedOffers: MarketplaceOffer[] = [
       subtype: "crypto_wallet",
       isPartner: true,
       affiliate: true,
-      monetized: false,
+      monetized: true,
       riskProfile: "balanced",
       feeProfile: "medium",
       availability: "international",
@@ -1810,11 +1824,14 @@ const expandedInvestmentOffers: MarketplaceOffer[] = [
     id: "investment-freetrade-eu",
     slug: "freetrade-eu-investing",
     category: "investments",
-    countryCodes: ["EU", "UK"],
+    // CAT.9 — Freetrade is UK-only (FCA authorised, no continental
+    // EU passporting). The previous ["EU","UK"] surfacing surfaced
+    // the broker to users it can't onboard.
+    countryCodes: ["UK"],
     providerMark: "FT",
     providerName: "Freetrade",
     title: "Freetrade Investing",
-    subtitle: "Simple stock and ETF investing for users who prioritize clean UX and long-term portfolio building.",
+    subtitle: "Simple stock and ETF investing with clean UX. UK only — not available to continental EU residents.",
     metrics: [
       { label: "Access", value: "Stocks and ETFs" },
       { label: "Fee model", value: "Plan and FX costs vary" },
@@ -1854,12 +1871,11 @@ const expandedInvestmentOffers: MarketplaceOffer[] = [
     ],
     bestFor: ["Active investors", "European coverage", "Market tools"],
     providerWebsiteUrl: "https://www.xtb.com/en/offer/stocks-and-etfs",
-    affiliateLink: "https://www.xtb.com/en/offer/stocks-and-etfs",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C416493292T",
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.75,
     updatedAt: "2026-04-30T00:00:00Z",
-    attributes: {
-      subtype: "brokerage",
+    attributes: {monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97, subtype: "brokerage",
       riskProfile: "growth",
       feeProfile: "medium",
       availability: "eu_wide",
@@ -1873,6 +1889,7 @@ const expandedInvestmentOffers: MarketplaceOffer[] = [
 ];
 
 export const marketplaceOffers = [
+  ...financeadsMonetizedOffers,
   ...catalogExpansionOffers,
   ...coreOffers,
   ...expandedOffers,

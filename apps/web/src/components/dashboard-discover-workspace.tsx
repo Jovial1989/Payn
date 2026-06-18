@@ -799,7 +799,7 @@ export function DashboardDiscoverWorkspace({
         return [] as PreviewRow[];
       }
 
-      return offers
+      const scored = offers
         .filter(
           (offer) =>
             offer.category === selectedGoal &&
@@ -829,22 +829,45 @@ export function DashboardDiscoverWorkspace({
               result.speedHours,
               locale,
             )}`,
-            tags: [
-              result.totalFeeSource <= 3 ? translateUiToken(locale, "Cheapest") : "",
-              result.speedHours <= 1 ? translateUiToken(locale, "Fastest") : "",
-              selectedCountry ? translateUiToken(locale, "Country fit") : translateUiToken(locale, "Live quote"),
-            ].filter(Boolean),
             href: categoryHref(selectedGoal),
-          } satisfies PreviewRow;
+            recipientAmount: result.finalAmount,
+            speedHours: result.speedHours,
+            countryTag: selectedCountry
+              ? translateUiToken(locale, "Country fit")
+              : translateUiToken(locale, "Live quote"),
+          };
         })
-        .filter((row): row is PreviewRow => Boolean(row))
-        .sort((left, right) => {
-          const leftValue = Number.parseFloat(left.primaryValue.replace(/[^\d.-]/g, ""));
-          const rightValue = Number.parseFloat(right.primaryValue.replace(/[^\d.-]/g, ""));
-          return rightValue - leftValue;
-        })
-        .filter((row, index, source) => source.findIndex((item) => item.providerName === row.providerName) === index)
+        .filter((row): row is NonNullable<typeof row> => Boolean(row))
+        .sort((left, right) => right.recipientAmount - left.recipientAmount)
+        .filter(
+          (row, index, source) =>
+            source.findIndex((item) => item.providerName === row.providerName) === index,
+        )
         .slice(0, 3);
+
+      // Rank-relative badges. "Cheapest" goes ONLY to the offer(s) that
+      // genuinely deliver the most to the recipient (ties allowed) — not to
+      // every low-fee row, which made all three cards say "Cheapest".
+      // "Fastest" goes only to the quickest of the shown picks.
+      const topRecipient = scored.length ? Math.max(...scored.map((r) => r.recipientAmount)) : 0;
+      const minSpeed = scored.length ? Math.min(...scored.map((r) => r.speedHours)) : 0;
+      return scored.map(
+        (row) =>
+          ({
+            key: row.key,
+            providerName: row.providerName,
+            title: row.title,
+            primaryLabel: row.primaryLabel,
+            primaryValue: row.primaryValue,
+            secondary: row.secondary,
+            tags: [
+              row.recipientAmount === topRecipient ? translateUiToken(locale, "Cheapest") : "",
+              scored.length > 1 && row.speedHours === minSpeed ? translateUiToken(locale, "Fastest") : "",
+              row.countryTag,
+            ].filter(Boolean),
+            href: row.href,
+          }) satisfies PreviewRow,
+      );
     }
 
     if (selectedGoal === "loans") {
@@ -908,7 +931,10 @@ export function DashboardDiscoverWorkspace({
       return offers
         .filter((offer) => offer.category === "cards")
         .map((offer) => {
-          const annualFee = offer.attributes?.annualFeeAmount ?? parseMetricRange(getMetricValue(offer, ["Annual fee"])).min ?? 0;
+          const annualFee = offer.attributes?.annualFeeAmount
+            ?? parseMetricRange(getMetricValue(offer, ["Annual fee"])).min
+            // Monthly fee fallback — annualise so the yearly cost calculator is correct.
+            ?? (parseMetricRange(getMetricValue(offer, ["Monthly fee"])).min ?? 0) * 12;
           const fxFee = offer.attributes?.fxFeePercent ?? parseMetricRange(getMetricValue(offer, ["FX fee"])).min ?? 1;
           const cashback = offer.attributes?.cashbackPercent ?? parseMetricRange(getMetricValue(offer, ["Cashback"])).max ?? 0;
           const atmLimit = offer.attributes?.atmFreeLimit ?? parseMetricRange(getMetricValue(offer, ["ATM", "ATM limit"])).max ?? 0;
@@ -1154,7 +1180,9 @@ export function DashboardDiscoverWorkspace({
           DOM order is preserved so the workspace's state flow (form →
           previewRows) stays clean; we only flip the visual stacking so
           the page leads with the actionable picks, not the form. */}
-      <section className="order-2 rounded-[28px] border border-line bg-white px-6 py-8 shadow-card sm:px-8">
+      {/* RESP.13 — Quick check section: px-4 py-6 on mobile to match
+          the rest of the discover surface. */}
+      <section className="order-2 rounded-[24px] border border-line bg-white px-4 py-6 shadow-card sm:rounded-[28px] sm:px-8 sm:py-8">
         <div className="mb-6 flex items-center gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
             {locale === "de" ? "Schnellcheck" : "Quick check"}
@@ -1378,6 +1406,28 @@ export function DashboardDiscoverWorkspace({
             </MiniField>
           ) : null}
         </div>
+
+        {/* WEB.5 — Quick-check form is reactive (every input auto-
+            recalculates the offers above), but the user reported the
+            section felt unfinished without a closing CTA. This button
+            scrolls back to the "Best for you" results section above
+            so the form has a clear "done, show me the picks" exit. */}
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              const target = document.getElementById("best-for-you");
+              target?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className={`${buttonStyles({ variant: "primary", size: "md" })}`}
+          >
+            See updated picks
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2.5 6h7M6.5 3l3 3-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       </section>
 
       {/* Best for you — promoted from a quiet sub-section to the page's
@@ -1388,7 +1438,16 @@ export function DashboardDiscoverWorkspace({
           `order-1` puts this above Quick check visually. The form state
           still flows top-to-bottom in the DOM; we're only flipping the
           visual stack so users hit the answer first. */}
-      <section className="order-1 rounded-[28px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/40 to-white px-6 py-8 shadow-card sm:px-8">
+      {/* RESP.13 — "Best for you / Three good fits" panel was px-6 on
+          mobile which left the inner offer cards (px-5) only ~280px
+          of content width, causing "TorFX · TorFX Personal Transfer"
+          to clip past the right edge. Now px-4 on mobile to give
+          cards back their breathing room. */}
+      <section
+        id="best-for-you"
+        className="order-1 rounded-[24px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/40 to-white px-4 py-6 shadow-card sm:rounded-[28px] sm:px-8 sm:py-8"
+        style={{ scrollMarginTop: "84px" }}
+      >
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-prose-base">
             <p className="eyebrow-cap" data-tone="emerald">
@@ -1402,6 +1461,18 @@ export function DashboardDiscoverWorkspace({
                 ? "Drei Optionen, sortiert nach Endkosten in deinem Markt — kein Marketing-Ranking."
                 : "Three picks ranked by what they'd actually cost in your market — not by who pays us."}
             </p>
+            {(selectedGoal === "transfers" || selectedGoal === "exchange") &&
+              Number(selectedGoal === "transfers" ? transferAmount : exchangeAmount) > 0 && (
+                <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[13px] font-semibold text-ink shadow-subtle ring-1 ring-accent-emerald/15">
+                  {locale === "de" ? "Du sendest" : "You send"}{" "}
+                  {formatCurrency(
+                    locale,
+                    Number(selectedGoal === "transfers" ? transferAmount : exchangeAmount),
+                    selectedGoal === "transfers" ? transferFromCurrency : exchangeFromCurrency,
+                  )}{" "}
+                  → {selectedGoal === "transfers" ? transferToCurrency : exchangeToCurrency}
+                </p>
+              )}
           </div>
           <Link
             href={continueHref}
@@ -1430,15 +1501,28 @@ export function DashboardDiscoverWorkspace({
                 // right column is a flex column with justify-between so the
                 // primaryValue floats top, the CTA floats bottom regardless
                 // of how much content the left column emits.
-                className="group/preview grid gap-5 rounded-3xl border border-line bg-white px-5 py-5 shadow-subtle transition-all duration-200 hover:-translate-y-px hover:border-accent-emerald/25 hover:shadow-card active:scale-[0.99] sm:grid-cols-[minmax(0,1fr)_200px] sm:items-stretch"
+                // RESP.13 — px-4 on mobile (was px-5), corner radius
+                // shrunk to match the parent section; min-w-0 keeps
+                // long provider+product strings from forcing the
+                // grid wider than the section.
+                className="group/preview grid min-w-0 gap-4 rounded-[20px] border border-line bg-white px-4 py-4 shadow-subtle transition-all duration-200 hover:-translate-y-px hover:border-accent-emerald/25 hover:shadow-card active:scale-[0.99] sm:gap-5 sm:rounded-3xl sm:px-5 sm:py-5 sm:grid-cols-[minmax(0,1fr)_200px] sm:items-stretch"
               >
                 <div className="flex min-w-0 items-start gap-3">
                   <ProviderLogo providerName={row.providerName} size="sm" />
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                  {/* RESP.13 — `min-w-0` on the inner column + the
+                      flex-wrap row guarantees the bold title can wrap
+                      to a second line when "Provider · Product name"
+                      exceeds the column width. The previous markup
+                      relied on flex-wrap alone, but a long title
+                      could still bust the row when no whitespace
+                      breakpoint existed early enough. */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <p className="text-sm font-semibold text-ink">{row.providerName}</p>
                       <span className="text-sm text-ink-tertiary">·</span>
-                      <p className="text-base font-bold tracking-tight-1 text-ink">{row.title}</p>
+                      <p className="min-w-0 break-words text-[15px] font-bold tracking-tight-1 text-ink sm:text-base">
+                        {row.title}
+                      </p>
                     </div>
                     <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{row.secondary}</p>
                     <div className="mt-3 flex flex-wrap gap-2">

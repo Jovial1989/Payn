@@ -1,7 +1,6 @@
+import Link from "next/link";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { AdminParserControls } from "@/components/admin-parser-controls";
-import { AdminPushTestForm } from "@/components/admin-push-test-form";
-import { AdminEnrichmentControls } from "@/components/admin-enrichment-controls";
 
 type IngestionRun = {
   id: string;
@@ -86,21 +85,27 @@ export default async function AdminParserPage() {
     <div className="grid gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-[-0.03em] text-ink">Parser / Import</h1>
+        <h1 className="text-2xl font-bold tracking-[-0.03em] text-ink">Import</h1>
         <p className="mt-1 text-sm text-ink-secondary">
-          {dbOfferCount.toLocaleString()} offers in DB
+          {dbOfferCount.toLocaleString()} offers in DB — bulk ingestion: re-sync the static
+          catalog, remove duplicates, or upload a CSV.
           {notConfigured && (
             <span className="ml-2 font-semibold text-red-500">
               — SUPABASE_SERVICE_ROLE_KEY not set
             </span>
           )}
         </p>
+        <p className="mt-2 text-xs text-ink-tertiary">
+          Looking to verify links or fix conditions? That moved to{" "}
+          <Link href="/admin/offer-health" className="font-semibold text-accent-emerald hover:underline">
+            Offer Health
+          </Link>
+          .
+        </p>
       </div>
 
-      {/* Controls */}
+      {/* Ingestion controls */}
       <AdminParserControls />
-      <AdminPushTestForm />
-      <AdminEnrichmentControls />
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
         {/* Run history */}

@@ -12,37 +12,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Payn';
 
   @override
-  String get categoryLoans => 'Loans';
+  String get categoryLoans => 'Borrowing';
 
   @override
-  String get categoryCards => 'Credit Cards';
+  String get categoryCards => 'Cards';
 
   @override
-  String get categoryBanking => 'Banking';
+  String get categoryBanking => 'Bank accounts';
 
   @override
-  String get categoryTransfers => 'Money Transfers';
+  String get categoryTransfers => 'Sending money';
 
   @override
-  String get categoryExchange => 'Exchange';
+  String get categoryExchange => 'Currency exchange';
 
   @override
   String get categoryInsurance => 'Insurance';
 
   @override
-  String get categoryInvestments => 'Investments';
+  String get categoryInvestments => 'Investing';
 
   @override
   String get categoryCrypto => 'Crypto';
 
   @override
-  String get categoryBusiness => 'Business Banking';
+  String get categoryBusiness => 'For business';
 
   @override
-  String get categoryBudgeting => 'Budgeting & Finance';
+  String get categoryBudgeting => 'Family budgeting';
 
   @override
-  String get categoryKids => 'Kids & Family';
+  String get categoryKids => 'Family';
+
+  @override
+  String get categorySavings => 'Saving';
 
   @override
   String get profileTypePersonal => 'Personal';
@@ -99,7 +102,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localePortuguese => 'Portuguese';
 
   @override
-  String get homeLiveRanking => 'Live ranking';
+  String get homeLiveRanking => 'Live FX rates';
 
   @override
   String get homeHeroTitle => 'Best options for you';
@@ -148,7 +151,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Compare fees, speed, and eligibility before you apply.';
 
   @override
-  String get homeBestOffersInCountryTitle => 'Best offers in your country';
+  String get homeBestOffersInCountryTitle => 'Best offers right now';
 
   @override
   String homeBestOffersInCountryBody(Object provider, Object market) {
@@ -215,7 +218,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedCompare => 'Compare';
 
   @override
-  String get savedRecent => 'Recent';
+  String get savedRecent => 'Recently viewed';
 
   @override
   String get savedCompareLimit => 'Compare supports up to 3 offers.';
@@ -290,7 +293,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileInterestsSubtitle =>
-      'Tune future recommendations toward the categories you care about.';
+      'Tap topics you care about. We\'ll show those first.';
 
   @override
   String get profileSecurityTitle => 'Security';
@@ -410,7 +413,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can change this at any time from your profile.';
 
   @override
-  String get exploreLiveRanking => 'Live ranking';
+  String get exploreLiveRanking => 'Live FX rates';
 
   @override
   String get exploreBestOptions => 'What do you need?';
@@ -476,11 +479,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreApply => 'Apply';
 
   @override
-  String get exploreMarketIntelligenceTitle => 'Market intelligence';
+  String get exploreMarketIntelligenceTitle => 'Market today';
 
   @override
   String get exploreMarketIntelligenceSubtitle =>
-      'Track live market context before moving into investment products.';
+      'See how the market\'s moving before you invest.';
 
   @override
   String get offerDecisionReviewed => 'Reviewed';
@@ -674,7 +677,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreSortFastest => 'Fastest';
 
   @override
-  String get exploreSortRecommended => 'Recommended';
+  String get exploreSortRecommended => 'Top picks';
 
   @override
   String get exploreMarketDataUnavailable =>
@@ -708,12 +711,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get marketAssetPriceFutures => 'Futures price';
 
   @override
-  String get splashTagline => 'Move money with more clarity';
+  String get splashTagline => 'Every money option, in one place';
 
   @override
   String get routerError => 'We could not open that route.';
 
   @override
   String get catalogSyncError =>
-      'Latest marketplace data could not be synced. Cached offers are shown.';
+      'Latest offers could not be synced. Cached offers are shown.';
 }

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 export function AdminMailMessageActions({
   messageId,
@@ -21,7 +21,7 @@ export function AdminMailMessageActions({
     setBusy(true);
     await fetch(`/api/admin/mail/messages/${messageId}`, {
       method: "PATCH",
-      headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({ status: "failed" }),
     });
     router.refresh();

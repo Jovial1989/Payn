@@ -6,8 +6,8 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
   adminUsername: process.env.ADMIN_USERNAME ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
-  adminSessionSecret: process.env.ADMIN_SESSION_SECRET ?? "dev-secret-change-me",
-  adminApiToken: process.env.ADMIN_API_TOKEN ?? "",
+  // SEC-FIX PAYN-A24: adminSessionSecret removed — use getSecret() in admin-auth-edge.ts directly
+adminApiToken: process.env.ADMIN_API_TOKEN ?? "",
   firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFromAddress: process.env.EMAIL_FROM_ADDRESS ?? "Payn <noreply@payn.online>",

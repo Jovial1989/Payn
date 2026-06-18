@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:payn_mobile/core/localization/supported_languages.dart';
 import 'package:payn_mobile/core/storage/local_store.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/dashboard_analytics_service.dart';
-import 'package:payn_mobile/shared/services/local_auth_repository.dart';
+import 'package:payn_mobile/shared/services/supabase_auth_service.dart';
 import 'package:payn_mobile/shared/services/local_marketplace_repository.dart';
 import 'package:payn_mobile/shared/services/market_intelligence_service.dart';
 import 'package:payn_mobile/shared/services/marketplace_catalog_service.dart';
@@ -16,7 +17,7 @@ import 'package:payn_mobile/shared/services/marketplace_catalog_service.dart';
 class AppController extends ChangeNotifier {
   AppController({
     required this.store,
-    required this.authRepository,
+    required this.authService,
     required this.marketplaceRepository,
     required this.analytics,
     required this.dashboardAnalyticsService,
@@ -29,11 +30,14 @@ class AppController extends ChangeNotifier {
   static const String _recentKey = 'payn.mobile.recent';
   static const String _compareKey = 'payn.mobile.compare';
   static const String _localeGateKey = 'payn.mobile.locale_gate_done';
+  static const String _onboardingKey = 'payn.mobile.onboarding_done';
   static const String _catalogKey = 'payn.mobile.catalog_manifest';
 
   final LocalStore store;
-  final LocalAuthRepository authRepository;
+  final SupabaseAuthService authService;
   final LocalMarketplaceRepository marketplaceRepository;
+
+  StreamSubscription<UserSession>? _authSub;
   final AnalyticsService analytics;
   final DashboardAnalyticsService dashboardAnalyticsService;
   final MarketIntelligenceService marketIntelligenceService;
@@ -47,6 +51,7 @@ class AppController extends ChangeNotifier {
   List<String> _recentOfferIds = <String>[];
   List<String> _compareOfferIds = <String>[];
   bool _localeGateDone = false;
+  bool _onboardingDone = false;
   MarketplaceCatalogManifest? _catalogManifest;
   bool _catalogLoading = true;
   String? _catalogError;
@@ -57,6 +62,7 @@ class AppController extends ChangeNotifier {
   PaynCategory? get selectedExploreCategory => _selectedExploreCategory;
   bool get isAuthenticated => _session.isAuthenticated;
   bool get localeGateDone => _localeGateDone;
+  bool get onboardingDone => _onboardingDone;
   String get languageCode => _preferences.languageCode;
   bool get catalogLoading => _catalogLoading;
   String? get catalogError => _catalogError;
@@ -85,7 +91,14 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> restore() async {
-    _session = await authRepository.restoreSession();
+    _session = authService.currentSession;
+
+    // Subscribe to Supabase auth state changes so OAuth callbacks
+    // and token refreshes automatically update the app session.
+    _authSub = authService.authStateChanges.listen((session) {
+      _session = session;
+      notifyListeners();
+    });
 
     final rawPreferences = await store.readString(_preferencesKey);
     if (rawPreferences != null && rawPreferences.isNotEmpty) {
@@ -105,13 +118,18 @@ class AppController extends ChangeNotifier {
 
     _savedOfferIds = await store.readStringList(_savedKey);
     _recentOfferIds = await store.readStringList(_recentKey);
-    _compareOfferIds =
-        (await store.readStringList(
-          _compareKey,
-        )).where(_savedOfferIds.contains).take(3).toList();
+    // MOB.7 — Compare is decoupled from Saved. The previous code filtered
+    // restored compare IDs by `_savedOfferIds.contains`, which forced every
+    // compare entry to also live in Saved and made the user think the
+    // "+" toggle saved the offer. They're now two independent sets:
+    //   • Saved   = unbounded backlog (bookmark)
+    //   • Compare = side-by-side shortlist, max 3
+    _compareOfferIds = (await store.readStringList(_compareKey)).take(3).toList();
 
     final localeGateRaw = await store.readString(_localeGateKey);
     _localeGateDone = localeGateRaw == '1';
+    final onboardingRaw = await store.readString(_onboardingKey);
+    _onboardingDone = onboardingRaw == '1';
     await _restoreCatalogManifest();
     await analytics.setUserId(_session.isAuthenticated ? _session.email : null);
 
@@ -183,6 +201,12 @@ class AppController extends ChangeNotifier {
     }
   }
 
+  Future<void> completeOnboarding() async {
+    _onboardingDone = true;
+    notifyListeners();
+    await store.saveString(_onboardingKey, '1');
+  }
+
   Future<void> completeLocaleGate({
     required PaynMarket market,
     required String language,
@@ -223,6 +247,16 @@ class AppController extends ChangeNotifier {
     }
 
     _selectedExploreCategory = category;
+    // Quick-filter chips are per-category; carrying one across a category
+    // switch would mean (e.g.) "APR Under 5%" filters the Cards list down
+    // to zero. Drop it whenever the bucket changes.
+    if (_exploreFilters.quickFilter.isNotEmpty ||
+        _exploreFilters.subtype.isNotEmpty) {
+      _exploreFilters = _exploreFilters.copyWith(
+        quickFilter: '',
+        subtype: '',
+      );
+    }
 
     if (category != null) {
       unawaited(
@@ -253,7 +287,24 @@ class AppController extends ChangeNotifier {
   Future<void> toggleSaved(String offerId) async {
     if (_savedOfferIds.contains(offerId)) {
       _savedOfferIds.remove(offerId);
-      _compareOfferIds.remove(offerId);
+      // MOB.7 — Was: also remove from compare. Compare is now independent
+      // — a user can unsave an offer they previously bookmarked while
+      // keeping it pinned for side-by-side comparison.
+      final offer = marketplaceRepository.offerById(offerId);
+      if (offer != null) {
+        unawaited(
+          analytics.track(
+            AnalyticsEvents.offerSavedRemoved,
+            properties: analytics.buildDefaultProperties(
+              preferences: _preferences,
+              loggedIn: isAuthenticated,
+              category: offer.category,
+              offerId: offer.id,
+              provider: offer.providerName,
+            ),
+          ),
+        );
+      }
     } else {
       _savedOfferIds = <String>[offerId, ..._savedOfferIds];
 
@@ -282,6 +333,22 @@ class AppController extends ChangeNotifier {
     if (_compareOfferIds.contains(offerId)) {
       _compareOfferIds.remove(offerId);
       await store.saveStringList(_compareKey, _compareOfferIds);
+      final offer = marketplaceRepository.offerById(offerId);
+      if (offer != null) {
+        unawaited(
+          analytics.track(
+            AnalyticsEvents.compareRemoved,
+            properties: analytics.buildDefaultProperties(
+              preferences: _preferences,
+              loggedIn: isAuthenticated,
+              category: offer.category,
+              offerId: offer.id,
+              provider: offer.providerName,
+              extra: <String, dynamic>{'compare_count': _compareOfferIds.length},
+            ),
+          ),
+        );
+      }
       notifyListeners();
       return true;
     }
@@ -293,10 +360,10 @@ class AppController extends ChangeNotifier {
     _compareOfferIds = <String>[..._compareOfferIds, offerId];
     await store.saveStringList(_compareKey, _compareOfferIds);
     final offer = marketplaceRepository.offerById(offerId);
-    if (offer != null && _compareOfferIds.length == 2) {
+    if (offer != null) {
       unawaited(
         analytics.track(
-          AnalyticsEvents.compareStarted,
+          AnalyticsEvents.compareAdded,
           properties: analytics.buildDefaultProperties(
             preferences: _preferences,
             loggedIn: isAuthenticated,
@@ -307,6 +374,21 @@ class AppController extends ChangeNotifier {
           ),
         ),
       );
+      if (_compareOfferIds.length == 2) {
+        unawaited(
+          analytics.track(
+            AnalyticsEvents.compareStarted,
+            properties: analytics.buildDefaultProperties(
+              preferences: _preferences,
+              loggedIn: isAuthenticated,
+              category: offer.category,
+              offerId: offer.id,
+              provider: offer.providerName,
+              extra: <String, dynamic>{'compare_count': _compareOfferIds.length},
+            ),
+          ),
+        );
+      }
     }
     notifyListeners();
     return true;
@@ -346,11 +428,32 @@ class AppController extends ChangeNotifier {
       return 'Password must be at least 6 characters.';
     }
 
-    _session = await authRepository.signIn(
-      email: normalizedEmail,
-      password: password,
-    );
-    await analytics.setUserId(_session.email);
+    // MOB.3 — Wrap the repository call + analytics + notifyListeners
+    // in a single try block. Without this, any thrown exception
+    // (repository failure, analytics SDK throwing on a malformed
+    // user id, a listener panicking during notifyListeners) bubbles
+    // up to the UI's awaited Future and we lose the chance to render
+    // a friendly inline error.
+    try {
+      _session = await authService.signIn(
+        email: normalizedEmail,
+        password: password,
+      );
+    } catch (e) {
+      return 'Sign-in failed. Please check your credentials.';
+    }
+
+    try {
+      await analytics.setUserId(_session.email);
+      await analytics.track(
+        AnalyticsEvents.signInCompleted,
+        properties: analytics.buildDefaultProperties(
+          preferences: _preferences,
+          loggedIn: true,
+          extra: <String, dynamic>{'method': 'email'},
+        ),
+      );
+    } catch (_) {}
     notifyListeners();
     return null;
   }
@@ -367,20 +470,57 @@ class AppController extends ChangeNotifier {
       return 'Password must be at least 6 characters.';
     }
 
-    _session = await authRepository.signUp(
-      email: normalizedEmail,
-      password: password,
-    );
-    await analytics.setUserId(_session.email);
+    try {
+      _session = await authService.signUp(
+        email: normalizedEmail,
+        password: password,
+      );
+    } catch (e) {
+      return 'Could not create the account. Please try again.';
+    }
+
+    try {
+      await analytics.setUserId(_session.email);
+      await analytics.track(
+        AnalyticsEvents.signUpCompleted,
+        properties: analytics.buildDefaultProperties(
+          preferences: _preferences,
+          loggedIn: true,
+          extra: <String, dynamic>{'method': 'email'},
+        ),
+      );
+    } catch (_) {}
     notifyListeners();
     return null;
   }
 
+  /// Launches the system browser for OAuth. Session update arrives via
+  /// [authStateChanges] when the browser redirects back to the deep link.
+  Future<void> signInWithOAuth(OAuthProvider provider) async {
+    await authService.signInWithOAuth(provider);
+  }
+
+  /// Native Google Sign-In (iOS account picker, no browser).
+  Future<void> signInWithGoogle() async {
+    await authService.signInWithGoogle();
+    // Explicitly pull the fresh session — the authStateChanges stream can
+    // arrive late on first sign-in, leaving the router unrefreshed.
+    _session = authService.currentSession;
+    await analytics.setUserId(_session.isAuthenticated ? _session.email : null);
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
-    await authRepository.signOut();
+    await authService.signOut();
     _session = const UserSession.guest();
     await analytics.setUserId(null);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 
   bool isSaved(String offerId) => _savedOfferIds.contains(offerId);
@@ -418,6 +558,21 @@ class AppController extends ChangeNotifier {
 
   bool get isUsingExploreFallback => exploreResults.isEmpty;
 
+  /// P0.5 — Total offers available in the currently-selected category
+  /// (no filters applied), scoped to the user's market. Used by the
+  /// Explore header to render "N of M" when filters shrink the visible
+  /// list. When no category is selected, returns the total of all
+  /// in-market offers so the heading still reconciles against the All
+  /// pill's count.
+  int get exploreCategoryTotal {
+    return marketplaceRepository
+        .offersForMarket(
+          _preferences.market,
+          category: _selectedExploreCategory,
+        )
+        .length;
+  }
+
   List<RankedOffer> get exploreVisibleResults {
     final exact = exploreResults;
     if (exact.isNotEmpty) {
@@ -442,21 +597,45 @@ class AppController extends ChangeNotifier {
   }
 
   List<RankedOffer> get homeRecommendations {
+    // One offer per (provider × category) pair — Revolut card ≠ Revolut savings,
+    // so each can appear, but two Revolut cards can't both show up.
+    final seenSlots = <String>{};
     return _rankOffers(
       filters: const ExploreFilters(),
       category: null,
       excludeSaved: isAuthenticated,
-    ).take(4).toList();
+    )
+        .where(
+          (item) => seenSlots.add(
+            '${item.offer.providerName}:${item.offer.category.name}',
+          ),
+        )
+        .take(5)
+        .toList();
   }
 
   List<RankedOffer> get trendingOffers {
     final ids = homeRecommendations.map((item) => item.offer.id).toSet();
+    // Exclude (provider × category) slots already used in homeRecommendations.
+    final usedSlots = homeRecommendations
+        .map((item) => '${item.offer.providerName}:${item.offer.category.name}')
+        .toSet();
+    final seenSlots = <String>{...usedSlots};
     return _rankOffers(
       filters: const ExploreFilters(),
       category: null,
       personalize: false,
       excludeSaved: false,
-    ).where((item) => !ids.contains(item.offer.id)).take(4).toList();
+    )
+        .where(
+          (item) =>
+              !ids.contains(item.offer.id) &&
+              seenSlots.add(
+                '${item.offer.providerName}:${item.offer.category.name}',
+              ),
+        )
+        .take(4)
+        .toList();
   }
 
   List<TrendSignal> get trendSignals {
@@ -507,6 +686,7 @@ class AppController extends ChangeNotifier {
     if (_exploreFilters.provider.isNotEmpty) count += 1;
     if (_exploreFilters.feature.isNotEmpty) count += 1;
     if (_exploreFilters.subtype.isNotEmpty) count += 1;
+    if (_exploreFilters.quickFilter.isNotEmpty) count += 1;
     if (_selectedExploreCategory == PaynCategory.loans) {
       if (_exploreFilters.amount != 25000) count += 1;
       if (_exploreFilters.term != 60) count += 1;

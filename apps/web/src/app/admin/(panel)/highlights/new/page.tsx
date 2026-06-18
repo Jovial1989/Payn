@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 const KINDS = [
   { value: "rate_change",    label: "Rate change" },
@@ -50,7 +50,7 @@ export default function NewHighlightPage() {
     try {
       const res = await fetch("/api/admin/highlights", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
           country: form.country || null,

@@ -55,7 +55,7 @@ export function PdpDeepDive({
   const weaknesses = computeWeaknesses(offer, ranking?.metricRanks);
 
   return (
-    <section className="rounded-3xl border border-line bg-white p-6 shadow-subtle sm:p-8">
+    <section className="rounded-[24px] border border-line bg-white p-4 shadow-subtle sm:rounded-3xl sm:p-8">
       <div className="mb-5 max-w-prose-base">
         <p className="eyebrow-cap">Everything you should know</p>
         <h2 className="display-lead mt-2 text-[1.5rem] sm:text-[1.75rem]">

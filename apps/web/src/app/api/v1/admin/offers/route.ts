@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
@@ -27,8 +28,10 @@ export async function GET(request: NextRequest) {
     if (monetised === "true")  query = query.eq("is_monetised", true);
     if (monetised === "false") query = query.eq("is_monetised", false);
     if (search) {
+      // SEC-FIX PAYN-A08: strip PostgREST metacharacters before interpolation
+      const safeSearch = search.replace(/[(),%]/g, "");
       query = query.or(
-        `provider_name.ilike.%${search}%,title.ilike.%${search}%,id.ilike.%${search}%`,
+        `provider_name.ilike.%${safeSearch}%,title.ilike.%${safeSearch}%`,
       );
     }
 
@@ -155,5 +158,6 @@ export async function POST(request: NextRequest) {
     metadata: { provider_name, title, category },
   });
 
+  revalidateTag("catalog", {});
   return NextResponse.json({ ok: true, offer: data }, { status: 201 });
 }

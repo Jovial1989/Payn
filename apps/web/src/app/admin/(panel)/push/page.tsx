@@ -71,7 +71,7 @@ export default async function AdminPushPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line">
-              {["Title", "Audience", "Status", "Scheduled / Sent", "Delivered", "Failed", "CTR"].map((h) => (
+              {["Title", "Audience", "Status", "Scheduled / Sent", "Delivered", "Failed"].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                   {h}
                 </th>
@@ -81,7 +81,7 @@ export default async function AdminPushPage() {
           <tbody className="divide-y divide-line">
             {campaigns.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-ink-tertiary">
+                <td colSpan={6} className="px-4 py-10 text-center text-sm text-ink-tertiary">
                   No campaigns yet — create your first one.
                 </td>
               </tr>
@@ -106,7 +106,6 @@ export default async function AdminPushPage() {
                 </td>
                 <td className="px-4 py-3 text-ink">{c.delivered_count.toLocaleString()}</td>
                 <td className="px-4 py-3 text-ink-secondary">{c.failed_count.toLocaleString()}</td>
-                <td className="px-4 py-3 text-ink-tertiary">—</td>
               </tr>
             ))}
           </tbody>

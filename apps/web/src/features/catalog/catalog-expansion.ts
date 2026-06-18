@@ -339,19 +339,23 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.94,
     providerWebsiteUrl: "https://snoop.app/features/",
-    affiliateLink: "https://snoop.app/features/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C396478792T",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "local", monetized: false, affiliate: true, isPartner: true, searchTags: ["budgeting", "money saving", "Snoop", "open banking", "UK"] },
+    attributes: { availability: "local", monetized: true, affiliate: true, isPartner: true, searchTags: ["budgeting", "money saving", "Snoop", "open banking", "UK"] },
   },
   {
     id: "budgeting-cleo",
     slug: "cleo-ai-budgeting",
     category: "budgeting",
-    countryCodes: ["UK", "EU"],
+    // CAT.9 — Cleo is US + UK only (meetcleo.com). Continental EU
+    // visitors land on a page that can't onboard them. Restricted to
+    // UK; US fallback isn't shown because the marketplace only serves
+    // EU/UK countries.
+    countryCodes: ["UK"],
     providerMark: "CL",
     providerName: "Cleo",
     title: "Cleo AI Assistant",
-    subtitle: "AI-powered money assistant that analyses your spending, helps with budgeting, and provides a savings-challenge mode. Popular with younger users.",
+    subtitle: "AI money assistant for spending insights and budgeting. UK and US only — not currently available in continental Europe.",
     metrics: [
       { label: "Monthly fee", value: "Free (Plus from GBP 5.99)" },
       { label: "AI features", value: "Chat-based spending insights" },
@@ -471,7 +475,7 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     title: "Kraken Crypto Exchange",
     subtitle: "Established crypto exchange with low fees, staking rewards, and 220+ coins. Regulated in multiple EU jurisdictions. Trusted by 10M+ users.",
     metrics: [
-      { label: "Fee", value: "From 0.16% maker / 0.26% taker" },
+      { label: "Trading fee", value: "0.16–0.26% per trade" },
       { label: "Coins", value: "220+" },
       { label: "Staking", value: "Up to 21% APY" },
     ],
@@ -667,9 +671,9 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.95,
     providerWebsiteUrl: "https://wise.com/business",
-    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676594T",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "international", monetized: false, affiliate: true, isPartner: true, searchTags: ["business", "Wise Business", "international payments", "multi-currency"] },
+    attributes: { availability: "international", monetized: true, affiliate: true, isPartner: true, searchTags: ["business", "Wise Business", "international payments", "multi-currency"] },
   },
 
   // ═══════════════════════════════════════════════════

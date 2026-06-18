@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { localePath } from "@/lib/locale";
+// WEB.2 — `useCompare` import dropped along with the docked CompareBar.
+// Banner sits at its single static offset above the nav again.
 
 // ─── AffiliateDisclosureBanner ─────────────────────────────────────────────────
 //

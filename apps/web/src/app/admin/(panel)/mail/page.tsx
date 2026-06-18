@@ -138,6 +138,14 @@ export default async function AdminMailPage({
         ))}
       </div>
 
+      {/* What goes where */}
+      <div className="flex flex-wrap gap-x-5 gap-y-1 rounded-xl bg-bg-surface px-4 py-2.5 text-xs text-ink-secondary">
+        <span><strong className="text-ink">Inbox</strong> — every email that was sent</span>
+        <span><strong className="text-ink">Compose</strong> — one-off email to specific addresses</span>
+        <span><strong className="text-ink">Campaigns</strong> — bulk send to an audience segment</span>
+        <span><strong className="text-ink">Templates</strong> — reusable content library</span>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[

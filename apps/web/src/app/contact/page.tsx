@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { buttonStyles } from "@/components/button";
+import { MotionReveal } from "@/components/motion-reveal";
 import { ChatLaunchButton } from "@/components/chat-launch-button";
 import { SiteShell } from "@/components/site-shell";
 import { getDictionary } from "@/lib/i18n";
@@ -17,8 +18,8 @@ export default async function ContactPage() {
       description={dictionary.contact.description}
     >
       <div className="grid gap-5">
-        <section className="grid gap-5 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
+        <MotionReveal as="section" className="grid gap-5 lg:grid-cols-2">
+          <div className="rounded-[24px] border border-line bg-white p-5 sm:rounded-[28px] sm:p-8">
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.contact.chatTitle}
             </p>
@@ -33,7 +34,7 @@ export default async function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-line bg-[#F7F8F9] p-6 sm:p-8">
+          <div className="rounded-[24px] border border-line bg-bg-surface p-5 sm:rounded-[28px] sm:p-8">
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">
               {dictionary.contact.reachTitle}
             </p>
@@ -42,16 +43,21 @@ export default async function ContactPage() {
               {dictionary.contact.reachBody}
             </p>
             <a
-              href="mailto:petrov.cpay@gmail.com"
+              href="mailto:hello@payn.online"
               className={buttonStyles({ variant: "secondary", size: "lg" }) + " w-full justify-center sm:w-auto"}
             >
               {dictionary.contact.emailCta}
             </a>
-            <p className="mt-4 text-sm text-ink-tertiary">petrov.cpay@gmail.com</p>
+            {/* BUG-013 — Was petrov.cpay@gmail.com (a personal Gmail
+                address). A financial-marketplace contact link on a
+                private inbox kills trust and breaks DKIM/SPF for the
+                payn.online domain. Routed to the corporate alias
+                instead. */}
+            <p className="mt-4 text-sm text-ink-tertiary">hello@payn.online</p>
           </div>
-        </section>
+        </MotionReveal>
 
-        <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
+        <MotionReveal as="section" className="rounded-[24px] border border-line bg-white p-5 sm:rounded-[28px] sm:p-8">
           <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)] md:items-center">
             <div className="overflow-hidden rounded-[22px] border border-line bg-bg-surface">
               <Image
@@ -86,7 +92,7 @@ export default async function ContactPage() {
               </a>
             </div>
           </div>
-        </section>
+        </MotionReveal>
       </div>
     </SiteShell>
   );

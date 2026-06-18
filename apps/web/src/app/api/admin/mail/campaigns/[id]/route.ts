@@ -3,7 +3,7 @@ import { checkAdminToken } from "@/lib/admin-api-auth";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -17,7 +17,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 // PATCH — update status (cancel → draft)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 // POST — duplicate campaign
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();

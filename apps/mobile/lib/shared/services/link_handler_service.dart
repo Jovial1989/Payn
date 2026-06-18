@@ -89,6 +89,14 @@ class LinkResult {
   }) : success = false,
        usedFallback = false;
 
+  /// MOB.14 — Public error factory for callers that catch a
+  /// platform-channel exception above the service layer and need to
+  /// synthesize a LinkResult to drive their UI. Internally identical
+  /// to `_err`; only exposed publicly so trust-modal-style consumers
+  /// can keep their error-path single-source-of-truth.
+  factory LinkResult.error({required Uri uri, required String message}) =>
+      LinkResult._err(uri: uri, message: message);
+
   final bool success;
   final Uri uri;
   final String? message;

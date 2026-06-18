@@ -41,7 +41,7 @@ import { getUiCopy } from "@/lib/ui-copy";
 
 const PAGE_SIZE = 12;
 
-const SORT_OPTION_VALUES: SortKey[] = ["relevance", "fees", "speed", "recommended"];
+const SORT_OPTION_VALUES: SortKey[] = ["realCost", "relevance", "fees", "speed", "recommended"];
 
 function totalCategoryCount(counts: Record<(typeof marketplaceCategories)[number], number>) {
   return marketplaceCategories.reduce((sum, category) => sum + counts[category], 0);

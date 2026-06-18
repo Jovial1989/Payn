@@ -6,15 +6,18 @@ import { isSupportedLocale, detectPreferencesFromAcceptLanguage } from "@/lib/ma
 const PUBLIC_FILE = /\.(.*)$/;
 const LOCALE_SKIP = ["/_next", "/api", "/auth", "/admin", "/icon.svg", "/kyrylo.jpeg"];
 
+// SEC-FIX AUTH-001 / AUTH-008: only app_metadata.role is trusted (server-set,
+// immutable from client side). user_metadata.role is user-editable via
+// supabase.auth.updateUser() — accepting it grants any registered user admin
+// access. Hardcoded "admin@admin.com" is replaced by ADMIN_USERNAME env var.
 function isAdminUser(
   email: string | undefined,
   appMeta: Record<string, unknown> | undefined,
-  userMeta: Record<string, unknown> | undefined,
 ): boolean {
-  return (
-    email === "admin@admin.com" ||
-    appMeta?.role === "admin" ||
-    userMeta?.role === "admin"
+  const adminEmail = process.env.ADMIN_USERNAME ?? "";
+  return Boolean(
+    (adminEmail && email === adminEmail) ||
+    appMeta?.role === "admin",
   );
 }
 
@@ -61,7 +64,6 @@ async function handleAdminAuth(request: NextRequest, pathname: string): Promise<
   const admin = isAdminUser(
     user?.email,
     user?.app_metadata as Record<string, unknown> | undefined,
-    user?.user_metadata as Record<string, unknown> | undefined,
   );
 
   if (pathname.startsWith("/api/v1/admin/")) {
@@ -96,7 +98,13 @@ function handleLocale(request: NextRequest): NextResponse | null {
     const restPath = "/" + segments.slice(1).join("/");
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-payn-locale", locale);
-    const response = NextResponse.rewrite(new URL(restPath, request.url), {
+    // Preserve the query string — `new URL(restPath, …)` drops it because
+    // restPath is path-only. Without this, /en/start/pack?goals=… (and every
+    // ?context=/?type= deep link) loses its params on the locale rewrite, so
+    // the page renders as if nothing was passed ("Nothing selected" bug).
+    const rewriteUrl = new URL(restPath, request.url);
+    rewriteUrl.search = request.nextUrl.search;
+    const response = NextResponse.rewrite(rewriteUrl, {
       request: { headers: requestHeaders },
     });
     response.headers.set("x-payn-locale", locale);
@@ -117,7 +125,12 @@ function handleLocale(request: NextRequest): NextResponse | null {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/v1/admin")) {
+  // SEC-FIX PAYN-A04: extend admin auth guard to cover /api/admin/* namespace
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/api/v1/admin") ||
+    pathname.startsWith("/api/admin")
+  ) {
     return handleAdminAuth(request, pathname);
   }
 

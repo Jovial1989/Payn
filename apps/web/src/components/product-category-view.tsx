@@ -1,20 +1,23 @@
 "use client";
 
 import type { MarketplaceCategory, MarketplaceOffer } from "@payn/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { DashboardCardsWorkspace } from "@/components/dashboard-cards-workspace";
 import { DashboardCategoryWorkspace } from "@/components/dashboard-category-workspace";
 import { DashboardInvestmentsWorkspace } from "@/components/dashboard-investments-workspace";
+import { RateAlertButton } from "@/components/rate-alert-button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { AnalyticsEvent, buildWebAnalyticsProperties } from "@/lib/analytics";
 import {
   filterCategoryOffersForCountry,
   getCategoryOffersForCountrySelection,
+  getCountrySelectorOptions,
 } from "@/lib/countries";
 import type { DashboardInsights, DashboardOfferInsight } from "@/lib/dashboard";
+import { getDictionary } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
 import type { MarketIntelligenceAssetId } from "@/lib/market-intelligence";
 
@@ -77,6 +80,29 @@ export function ProductCategoryView({
     void loadInsights();
   }, [loadInsights]);
 
+  const countryOptions = useMemo(
+    () => getCountrySelectorOptions({ includeGroups: false, locale: preferences.locale }),
+    [preferences.locale],
+  );
+
+  const countryChip = (
+    <div className="inline-flex items-center border border-line bg-white rounded-xl px-3 py-2 text-[13px] font-medium text-ink">
+      <span className="mr-1.5">Showing results for</span>
+      <select
+        value={preferences.country}
+        onChange={(e) => preferences.setCountry(e.target.value)}
+        className="bg-transparent border-none outline-none cursor-pointer font-semibold text-ink"
+        aria-label="Select country"
+      >
+        {countryOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.flag} {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
   const categoryOffers = allOffers
     ? filterCategoryOffersForCountry(allOffers, preferences.country, category, productMarketScope)
     : getCategoryOffersForCountrySelection(preferences.country, category, productMarketScope);
@@ -103,9 +129,45 @@ export function ProductCategoryView({
     />
   );
 
+  const alertButton = (
+    <RateAlertButton
+      category={category}
+      country={preferences.country}
+      countryLabel={preferences.countryLabel}
+      locale={preferences.locale}
+    />
+  );
+
+  const countryRow = (
+    <div className="flex flex-wrap items-center gap-2">
+      {countryChip}
+      {alertButton}
+    </div>
+  );
+
+  const dictionary = getDictionary(preferences.locale);
+  const categoryTitle = dictionary.categories[category] ?? category;
+  const categoryDescription = dictionary.categoryDescriptions[category] ?? "";
+
+  const categoryHero = (
+    <section className="rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] p-5 sm:rounded-[32px] sm:p-8">
+      <p className="text-caption uppercase tracking-[0.28em] text-white/50">{preferences.countryLabel}</p>
+      <h1 className="mt-4 max-w-3xl text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-white sm:text-h1">
+        {categoryTitle}
+      </h1>
+      {categoryDescription ? (
+        <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-white/70 sm:text-base">
+          {categoryDescription}
+        </p>
+      ) : null}
+    </section>
+  );
+
   if (category === "investments") {
     return (
       <div className="grid gap-5">
+        {categoryHero}
+        {countryRow}
         {pageView}
         <DashboardInvestmentsWorkspace
           key={`investments:${searchParams.get("asset") ?? "btc"}`}
@@ -124,6 +186,8 @@ export function ProductCategoryView({
   if (category === "cards") {
     return (
       <div className="grid gap-5">
+        {categoryHero}
+        {countryRow}
         {pageView}
         <DashboardCardsWorkspace
           key="cards"
@@ -139,6 +203,8 @@ export function ProductCategoryView({
 
   return (
     <div className="grid gap-5">
+      {categoryHero}
+      {countryRow}
       {pageView}
       <DashboardCategoryWorkspace
         key={category}

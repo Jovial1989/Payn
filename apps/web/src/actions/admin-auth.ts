@@ -10,8 +10,7 @@ export async function adminSignIn(
   const adminUsername = process.env.ADMIN_USERNAME;
   const adminPassword = process.env.ADMIN_PASSWORD;
 
-  const validEmail =
-    email === "admin@admin.com" || email === adminUsername;
+  const validEmail = Boolean(adminUsername) && email === adminUsername;
   const validPassword = adminPassword && password === adminPassword;
 
   if (!validEmail || !validPassword) {

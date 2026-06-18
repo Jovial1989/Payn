@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { ScrambleNumber } from "@/features/home/scramble-number";
 import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { buttonStyles } from "@/components/button";
@@ -22,6 +22,7 @@ import { HowItWorks } from "@/features/home/how-it-works";
 import { Manifesto } from "@/features/home/manifesto";
 import { SavingsSpotlight } from "@/features/home/savings-spotlight";
 import { TopPicksStrip } from "@/features/home/top-picks-strip";
+import { WhatDoYouWantToDo } from "@/features/home/what-do-you-want-to-do";
 import type { MarketplaceOffer } from "@payn/types";
 
 // ─── Hero preview data (static, presentational) ───────────────────────────────
@@ -80,6 +81,17 @@ const HERO_CARDS = [
 
 const impactSiteVerificationText = "Impact-Site-Verification: 947cb54d-d0de-4e29-b31f-5560a22cba3c";
 
+// ─── Testimonials — swap in real user quotes when collected ──────────────────
+// Section is hidden when this array is empty. No fakes go live.
+const TESTIMONIALS: { quote: string; author: string; location?: string }[] = [
+  // Example:
+  // {
+  //   quote: "Found a travel card that saves me €30 every time I go abroad. Took about 3 minutes.",
+  //   author: "Marco S.",
+  //   location: "Berlin, Germany",
+  // },
+];
+
 // ─── ScrambleNumber config per card key ──────────────────────────────────────
 const SCRAMBLE_CONFIG: Record<string, { value: number; decimals: number; suffix: string; cacheKey: string }> = {
   wise:    { value: 0.41, decimals: 2, suffix: "%", cacheKey: "hero-wise"    },
@@ -112,7 +124,9 @@ export function HomePage({
   const { user, loading } = useAuth();
   const { locale } = preferences;
   const dictionary = getDictionary(locale);
-  const exploreHref = localePath(locale, "/explore");
+  // PASS A — "browse" CTA points straight at /discover (the category
+  // hub) instead of the retired /explore index, which only 301'd here.
+  const exploreHref = localePath(locale, "/discover");
 
   const heroBadges: Record<string, string> = {
     wise: dictionary.homeAtlas.badges.bestValue,
@@ -129,6 +143,33 @@ export function HomePage({
   const shouldReduce = useReducedMotion();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
+  // ── AI selection cycle: each card gets a green ring + "Best fit" badge
+  // in turn — simulates the system scanning and picking the top result.
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const selectedCard = HERO_CARDS[selectedIdx].key;
+  useEffect(() => {
+    if (shouldReduce) return;
+    const id = setInterval(() => {
+      setSelectedIdx((i) => (i + 1) % HERO_CARDS.length);
+    }, 2600);
+    return () => clearInterval(id);
+  }, [shouldReduce]);
+
+  // ── Hero parallax: each card drifts at a different rate as the hero scrolls
+  // out of view, creating a convincing depth-of-field layering effect.
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  // Different Y-shift per "depth layer" — further cards move slower.
+  const pWise    = useTransform(heroScroll, [0, 1], [0, shouldReduce ? 0 : -22]);
+  const pRevolut = useTransform(heroScroll, [0, 1], [0, shouldReduce ? 0 : -48]);
+  const pTR      = useTransform(heroScroll, [0, 1], [0, shouldReduce ? 0 : -34]);
+  const parallaxY: Record<string, MotionValue<number>> = {
+    wise: pWise, revolut: pRevolut, tr: pTR,
+  };
+
   return (
     <div className="grid min-w-0 gap-8 lg:gap-10">
       <AnalyticsPageView
@@ -142,33 +183,67 @@ export function HomePage({
       {/* ══════════════════════════════════════════════════════════
           HERO
       ══════════════════════════════════════════════════════════ */}
+      {/* RESP.1 — Hero padding crushed at 375px. Dropped px-6 → px-4 on
+          mobile (24px → 16px each side) which gives the headline an
+          extra 16px to breathe; corner radius shrunk from 40px → 28px
+          on mobile so the rounded edges still feel intentional at the
+          smaller frame. */}
+      <div ref={heroRef}>
       <MotionReveal
         as="section"
-        className="relative overflow-hidden rounded-[40px] border border-line bg-white px-6 py-10 shadow-elevated sm:px-8 sm:py-12 lg:px-12 lg:py-16"
+        className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-gradient-to-br from-[#0D1812] to-[#13181A] px-4 py-8 shadow-elevated sm:rounded-[40px] sm:px-8 sm:py-12 lg:px-12 lg:py-16"
       >
         {/* Background layers */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(15,138,75,0.10),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,247,244,0.94))]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(17,24,39,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(17,24,39,0.035)_1px,transparent_1px)] bg-[size:40px_40px] opacity-40" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(15,138,75,0.18),transparent_40%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-60" />
+
+        {/* Stripe-style animated gradient orbs — luminous blobs that drift */}
+        {!shouldReduce && (
+          <>
+            <motion.div
+              className="pointer-events-none absolute -left-40 -top-40 h-[640px] w-[640px] rounded-full bg-accent-emerald/[0.18] blur-[110px]"
+              animate={{
+                x: [0, 80, -40, 0],
+                y: [0, -50, 80, 0],
+                scale: [1, 1.12, 0.92, 1],
+              }}
+              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="pointer-events-none absolute -right-32 bottom-0 h-[500px] w-[500px] rounded-full bg-indigo-400/[0.10] blur-[100px]"
+              animate={{
+                x: [0, -60, 30, 0],
+                y: [0, 60, -40, 0],
+                scale: [1, 0.92, 1.14, 1],
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            />
+          </>
+        )}
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
 
           {/* ── Left: copy ── */}
           <div className="relative z-10 flex min-w-0 flex-col justify-center">
             {/* Eyebrow */}
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-emerald/20 bg-accent-emerald-soft px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-emerald/30 bg-accent-emerald/[0.12] px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-soft">
               <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
               {dictionary.homeAtlas.hero.eyebrow}
             </div>
 
-            {/* Headline — word-by-word blur-in */}
-            <h1 className="mt-6 max-w-[16ch] text-[2.6rem] font-extrabold leading-[0.9] tracking-[-0.06em] text-ink sm:text-[3.6rem] lg:text-[4.4rem]">
+            {/* Headline — word-by-word blur-in.
+                RESP.1 — Three-step scale: 2rem (375px), 2.6rem (sm),
+                3.6rem (md), 4.4rem (lg). The previous jump from 2.6rem
+                → 3.6rem at sm skipped a tier and the headline felt
+                cramped on phones; this gives it a smoother ramp. */}
+            <h1 className="mt-6 max-w-[16ch] text-[2rem] font-extrabold leading-[0.95] tracking-[-0.05em] text-white sm:text-[2.6rem] sm:leading-[0.9] sm:tracking-[-0.06em] md:text-[3.6rem] lg:text-[4.4rem]">
               {dictionary.homeAtlas.hero.headline.split(" ").map((word, i) => (
                 <motion.span
                   key={i}
                   className="inline-block"
-                  initial={shouldReduce ? false : { opacity: 0, filter: "blur(8px)", y: 8 }}
-                  animate={shouldReduce ? false : { opacity: 1, filter: "blur(0px)", y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
+                  initial={shouldReduce ? false : { opacity: 0, y: 16 }}
+                  animate={shouldReduce ? false : { opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 70, damping: 22, delay: i * 0.06 }}
                   style={{ marginRight: "0.25em" }}
                 >
                   {word}
@@ -177,40 +252,99 @@ export function HomePage({
             </h1>
 
             {/* Subheadline */}
-            <p className="mt-5 max-w-[36ch] text-[16px] leading-7 text-ink-secondary sm:text-[18px]">
+            <p className="mt-5 max-w-[36ch] text-[16px] leading-7 text-white/70 sm:text-[18px]">
               {formatCopy(dictionary.homeAtlas.hero.sub, { country: countryName })}
             </p>
 
             {/* CTA cluster. Primary: open the catalogue. Secondary: launch
                 the Year Builder — the differentiating bet. We give it a
                 subtle sparkle dot indicator to nudge curiosity without
-                competing for visual weight against the primary action. */}
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+                competing for visual weight against the primary action.
+                RESP.1 — Stack vertically on mobile so each CTA gets a
+                full-width tap target (~343px); side-by-side from sm
+                upward where the labels don't wrap. */}
+            {/* UX.1 — CTA cluster rewritten in plain language.
+                Primary now takes you to /start (the new checkbox-quiz
+                onboarding) so "What do you want to do?" actually
+                answers itself. Secondary is a low-weight text link
+                for the expert who skips the quiz entirely. The old
+                "Build my year" button collapsed into the situation
+                cards below (Year Builder still exists at /year for
+                anyone who wants the long form). */}
+            <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
               <Link
-                href={exploreHref}
-                className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta gap-2`}
+                href={localePath(locale, "/start")}
+                className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta relative justify-center gap-2 overflow-hidden sm:justify-start`}
               >
+                {/* Revolut-style shimmer sweep across the CTA */}
+                {!shouldReduce && (
+                  <motion.span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/[0.18] to-transparent"
+                    initial={{ x: "-120%" }}
+                    animate={{ x: "220%" }}
+                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5, ease: "linear" }}
+                  />
+                )}
                 {dictionary.homeAtlas.hero.cta}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
               <Link
-                href={localePath(locale, "/year")}
-                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-line bg-white px-5 text-[14px] font-semibold text-ink shadow-subtle transition-all hover:-translate-y-px hover:border-accent-emerald/40 hover:text-accent-emerald-strong hover:shadow-card active:scale-[0.98]"
+                href={exploreHref}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-5 text-[14px] font-semibold text-white/60 transition-colors hover:text-white sm:justify-start"
               >
-                <span className="relative inline-flex h-2 w-2">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-accent-emerald/50" />
-                  <span className="relative inline-block h-2 w-2 rounded-full bg-accent-emerald" />
-                </span>
-                Build my year
+                I just want to browse
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
             </div>
 
             {/* Trustline */}
-            <p className="mt-4 text-[12px] text-ink-tertiary">
+            <p className="mt-4 text-[12px] text-white/40">
               {formatCopy(dictionary.homeAtlas.hero.trustLine, { productCount, providerCount })}
             </p>
+
+            {/* Mobile proof strip — the desktop floating cards are hidden
+                below lg, which left the mobile hero text-only with dead
+                space. This gives phones the same "real offers" proof in a
+                native, swipeable row (snap scroll, no absolute overlap). */}
+            <div className="-mx-4 mt-8 lg:hidden">
+              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {HERO_CARDS.map((card) => (
+                  <div
+                    key={`m-${card.key}`}
+                    className="w-[200px] shrink-0 snap-start rounded-xl border border-line bg-white p-4 shadow-card"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-[11px] font-extrabold text-white"
+                        style={{ backgroundColor: card.bg }}
+                      >
+                        {card.initials}
+                      </span>
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em]"
+                        style={card.badgeStyle}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${card.dotColor}`} />
+                        {heroBadges[card.key] ?? card.badge}
+                      </span>
+                    </div>
+                    <p className="mt-3 truncate text-[10px] text-ink-tertiary">{card.category}</p>
+                    <p className="text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
+                    <div className="mt-3">
+                      <p className="eyebrow-cap">{card.metricLabel}</p>
+                      <p className="mt-0.5 text-[1.6rem] font-extrabold leading-none tracking-tight-3 tabular-nums text-ink">
+                        {card.metricValue}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
           </div>
 
@@ -224,9 +358,16 @@ export function HomePage({
               const isHovered = hoveredCard === card.key;
               const someHovered = hoveredCard !== null;
               return (
+                // Outer: scroll-driven parallax layer (each card at a different depth)
                 <motion.div
                   key={card.key}
-                  className={`motion-card absolute w-[208px] rounded-xl border border-line bg-white p-4 shadow-card ${card.posClass}`}
+                  className={`absolute ${card.posClass}`}
+                  style={{ y: parallaxY[card.key] }}
+                >
+                {/* Inner: float + hover animation */}
+                <motion.div
+                  className="relative w-[208px] rounded-xl border bg-white p-4 shadow-card"
+                  style={{ borderColor: selectedCard === card.key && !shouldReduce ? "rgba(15,138,75,0.5)" : "var(--line-subtle, rgba(17,24,39,0.08))" }}
                   initial={shouldReduce ? false : { rotate: fc.defaultRotate }}
                   animate={
                     shouldReduce ? {} :
@@ -234,7 +375,7 @@ export function HomePage({
                       ? { y: -12, rotate: 0, scale: 1.05 }
                       : someHovered
                         ? { scale: 0.97, opacity: 0.6, y: 0, rotate: fc.defaultRotate }
-                        : { y: [0, -fc.amplitude, 0], rotate: fc.defaultRotate }
+                        : { y: [0, -fc.amplitude, 0], rotate: [fc.defaultRotate, fc.defaultRotate, fc.defaultRotate] }
                   }
                   transition={
                     someHovered || isHovered
@@ -244,6 +385,31 @@ export function HomePage({
                   onMouseEnter={() => setHoveredCard(card.key)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
+                  {/* AI selection ring glow */}
+                  {!shouldReduce && selectedCard === card.key && (
+                    <motion.div
+                      key={`glow-${card.key}`}
+                      className="pointer-events-none absolute inset-0 rounded-xl"
+                      initial={{ boxShadow: "0 0 0px 0px rgba(15,138,75,0)" }}
+                      animate={{ boxShadow: ["0 0 0px 0px rgba(15,138,75,0)", "0 0 20px 4px rgba(15,138,75,0.22)", "0 0 12px 2px rgba(15,138,75,0.14)"] }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                  )}
+                  {/* "Best fit" badge — appears only on the active selected card */}
+                  <AnimatePresence>
+                    {!shouldReduce && selectedCard === card.key && (
+                      <motion.div
+                        key={`bestfit-${card.key}`}
+                        className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent-emerald px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_4px_12px_rgba(15,138,75,0.4)]"
+                        initial={{ opacity: 0, y: 4, scale: 0.88 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.88 }}
+                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        ✓ Best fit
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   {/* Badge moved to top-right corner — was previously a pill
                       below the metric value, which on a floating layout put
                       it next to the neighbouring card's logo (the user
@@ -267,7 +433,7 @@ export function HomePage({
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-[10px] text-ink-tertiary">{card.category}</p>
-                      <p className="truncate text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
+                      <p className="text-[13px] font-bold leading-tight text-ink">{card.provider}</p>
                     </div>
                   </div>
                   <div className="mt-4">
@@ -279,17 +445,19 @@ export function HomePage({
                     </p>
                   </div>
                 </motion.div>
+                </motion.div>
               );
             })}
 
             {/* Live signal pill */}
-            <div className="absolute bottom-0 right-0 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-[11px] font-semibold text-ink-secondary shadow-subtle">
+            <div className="absolute bottom-0 right-0 inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3.5 py-2 text-[11px] font-semibold text-white/70 shadow-subtle backdrop-blur-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
-              Live rates · updated daily
+              Live FX rates
             </div>
           </div>
         </div>
       </MotionReveal>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
           PROVIDER STRIP
@@ -302,7 +470,16 @@ export function HomePage({
       <AppWaitlistPill locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
-          ATLAS GRID
+          WHAT DO YOU WANT TO DO? — UX.1 new primary nav (situation
+          cards in first-person voice). Sits above the AtlasGrid so
+          newcomers land on the situation-led grid first; experts
+          can still scroll past to browse by product type.
+      ══════════════════════════════════════════════════════════ */}
+      <WhatDoYouWantToDo locale={locale} />
+
+      {/* ══════════════════════════════════════════════════════════
+          ATLAS GRID — browse by product type (for visitors who
+          already know what they're looking for).
       ══════════════════════════════════════════════════════════ */}
       <AtlasGrid country={preferences.country} locale={locale} buckets={buckets} />
 
@@ -333,17 +510,41 @@ export function HomePage({
           MANIFESTO — dark brand-statement panel. The page's "this is
           who we are" moment, with proof tiles cluster.
       ══════════════════════════════════════════════════════════ */}
-      <Manifesto locale={locale} />
+      <Manifesto
+        locale={locale}
+        productCount={productCount}
+        providerCount={providerCount}
+      />
+
+      {/* ══════════════════════════════════════════════════════════
+          TESTIMONIALS — raw centered quote, no card chrome.
+          Section only renders when TESTIMONIALS array is non-empty.
+          Swap in real user quotes here before going live.
+      ══════════════════════════════════════════════════════════ */}
+      {TESTIMONIALS.length > 0 && (
+        <section className="py-4">
+          {TESTIMONIALS.map((t, i) => (
+            <MotionReveal
+              key={i}
+              className="mx-auto max-w-2xl py-8 text-center"
+            >
+              <blockquote className="text-[1.4rem] font-bold leading-snug tracking-[-0.025em] text-ink sm:text-[1.65rem]">
+                &ldquo;{t.quote}&rdquo;
+              </blockquote>
+              <p className="mt-5 text-[13px] text-ink-tertiary">
+                {t.author}
+                {t.location ? <span className="ml-2 opacity-60">· {t.location}</span> : null}
+              </p>
+            </MotionReveal>
+          ))}
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════
           WHAT'S NEW — admin-managed highlights feed
       ══════════════════════════════════════════════════════════ */}
       <WhatsNew highlights={highlights} locale={locale} countryName={countryName} />
 
-      {/* ══════════════════════════════════════════════════════════
-          HOW IT WORKS
-      ══════════════════════════════════════════════════════════ */}
-      <HowItWorks locale={locale} />
     </div>
   );
 }

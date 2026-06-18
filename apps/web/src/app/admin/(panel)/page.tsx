@@ -1,17 +1,12 @@
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
-import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
 async function getStats() {
   const admin = createSupabaseAdminClient();
 
-  const totalOffers = marketplaceOffers.length;
-  const monetisedOffers = marketplaceOffers.filter(
-    (o) => o.linkType === "affiliate_redirect" || o.affiliateLink,
-  ).length;
-  const missingAffiliateLinks = marketplaceOffers.filter(
-    (o) => !o.affiliateLink && !o.providerWebsiteUrl,
-  ).length;
-
+  let totalOffers = 0;
+  let monetisedOffers = 0;
+  let nonMonetisedOffers = 0;
+  let missingAffiliateLinks = 0;
   let totalUsers = 0;
   let totalClicks = 0;
   let clicksToday = 0;
@@ -19,7 +14,17 @@ async function getStats() {
   let topClickedProviders: { provider_id: string; click_count: number }[] = [];
 
   if (admin) {
-    const [userCount, clickCount, todayCount, topOffers, topProviders] = await Promise.all([
+    const [
+      userCount,
+      clickCount,
+      todayCount,
+      topOffers,
+      topProviders,
+      offerCount,
+      monetisedCount,
+      nonMonetisedCount,
+      missingLinksCount,
+    ] = await Promise.all([
       admin.from("user_profiles").select("*", { count: "exact", head: true }),
       admin.from("offer_click_events").select("*", { count: "exact", head: true }),
       admin
@@ -28,19 +33,36 @@ async function getStats() {
         .gte("created_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
       admin.rpc("admin_top_clicked_offers", { limit_n: 5 }),
       admin.rpc("admin_top_clicked_providers", { limit_n: 5 }),
+      admin.from("product_offers").select("*", { count: "exact", head: true }),
+      admin
+        .from("product_offers")
+        .select("*", { count: "exact", head: true })
+        .eq("is_monetised", true),
+      admin
+        .from("product_offers")
+        .select("*", { count: "exact", head: true })
+        .eq("is_monetised", false),
+      admin
+        .from("product_offers")
+        .select("*", { count: "exact", head: true })
+        .or("affiliate_link.is.null,affiliate_link.eq."),
     ]);
     totalUsers = userCount.count ?? 0;
     totalClicks = clickCount.count ?? 0;
     clicksToday = todayCount.count ?? 0;
     topClickedOffers = (topOffers.data ?? []) as typeof topClickedOffers;
     topClickedProviders = (topProviders.data ?? []) as typeof topClickedProviders;
+    totalOffers = offerCount.count ?? 0;
+    monetisedOffers = monetisedCount.count ?? 0;
+    nonMonetisedOffers = nonMonetisedCount.count ?? 0;
+    missingAffiliateLinks = missingLinksCount.count ?? 0;
   }
 
   return {
     totalUsers,
     totalOffers,
     monetisedOffers,
-    nonMonetisedOffers: totalOffers - monetisedOffers,
+    nonMonetisedOffers,
     missingAffiliateLinks,
     totalClicks,
     clicksToday,

@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
 // ─── Compare store ───────────────────────────────────────────────────────────
 //
@@ -34,6 +35,16 @@ interface CompareContextValue {
   has: (slug: string) => boolean;
   full: boolean;
   max: number;
+  // WEB.5 — Category the current compare set is locked to (the
+  // category of the first offer added). Cross-category compare is
+  // blocked: the user gets feedback that swapping categories means
+  // clearing the set first. Null when the set is empty.
+  lockedCategory: string | null;
+  // True when the offer can be added (same category as locked set,
+  // not already full). Lets callers gray out the per-row Compare
+  // toggle ahead of time instead of relying on the toggle silently
+  // refusing.
+  canAdd: (slug: string) => boolean;
 }
 
 const CompareContext = createContext<CompareContextValue | null>(null);
@@ -70,10 +81,37 @@ export function CompareProvider({ children }: { children: ReactNode }) {
     }
   }, [slugs]);
 
+  // WEB.5 — Derive the locked category from the first offer in the
+  // set. Empty set → null (anything can be added). Non-empty → only
+  // offers in the same category can be added; trying to add a
+  // different category is silently ignored at the store level (the
+  // callers also short-circuit via `canAdd` so the icon goes
+  // disabled).
+  const lockedCategory = useMemo<string | null>(() => {
+    if (slugs.length === 0) return null;
+    const first = marketplaceOffers.find((o) => o.slug === slugs[0]);
+    return first?.category ?? null;
+  }, [slugs]);
+
   const toggle = useCallback((slug: string) => {
     setSlugs((prev) => {
       if (prev.includes(slug)) return prev.filter((s) => s !== slug);
       if (prev.length >= MAX_COMPARE) return prev;
+      // Cross-category guard. If the set is non-empty and the new
+      // offer belongs to a different category, refuse — comparing a
+      // savings account against a travel insurance policy has no
+      // shared axis to rank on, so the result reads as nonsense.
+      if (prev.length > 0) {
+        const firstCategory = marketplaceOffers.find(
+          (o) => o.slug === prev[0],
+        )?.category;
+        const nextCategory = marketplaceOffers.find(
+          (o) => o.slug === slug,
+        )?.category;
+        if (firstCategory && nextCategory && firstCategory !== nextCategory) {
+          return prev;
+        }
+      }
       return [...prev, slug];
     });
   }, []);
@@ -84,6 +122,17 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setSlugs([]), []);
 
+  const canAdd = useCallback(
+    (slug: string) => {
+      if (slugs.includes(slug)) return true; // remove is always allowed
+      if (slugs.length >= MAX_COMPARE) return false;
+      if (slugs.length === 0) return true;
+      const target = marketplaceOffers.find((o) => o.slug === slug);
+      return target?.category === lockedCategory;
+    },
+    [slugs, lockedCategory],
+  );
+
   const value = useMemo<CompareContextValue>(
     () => ({
       slugs,
@@ -93,8 +142,10 @@ export function CompareProvider({ children }: { children: ReactNode }) {
       has: (slug: string) => slugs.includes(slug),
       full: slugs.length >= MAX_COMPARE,
       max: MAX_COMPARE,
+      lockedCategory,
+      canAdd,
     }),
-    [slugs, toggle, remove, clear],
+    [slugs, toggle, remove, clear, lockedCategory, canAdd],
   );
 
   return <CompareContext.Provider value={value}>{children}</CompareContext.Provider>;
@@ -113,6 +164,8 @@ export function useCompare(): CompareContextValue {
       has: () => false,
       full: false,
       max: MAX_COMPARE,
+      lockedCategory: null,
+      canAdd: () => true,
     };
   }
   return ctx;

@@ -13,6 +13,14 @@ import {
 } from "@/lib/analytics";
 import { buildRedirectTarget } from "@/lib/external-redirect";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+// WEB.9 — Trust transition modal. Mirrors the Flutter MOB.14 pattern:
+// 1.5s "Securely connecting you to {provider}…" beat before firing
+// window.open, with a robust try/catch + retry on failure. Imported
+// dynamically below so SSR builds don't choke on `document.body`.
+import {
+  ProviderTrustModal,
+  type TrustModalLaunchResult,
+} from "@/components/provider-trust-modal";
 
 export function ProviderLinkButton({
   offer,
@@ -32,6 +40,10 @@ export function ProviderLinkButton({
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [toast, setToast] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
+  // WEB.9 — Visibility flag for the trust modal. The actual launch
+  // work runs inside `performLaunch`, which the modal calls after its
+  // 1.5s dwell.
+  const [trustModalOpen, setTrustModalOpen] = useState(false);
   const unavailableMessage =
     language === "de"
       ? "Dieser Anbieterlink ist derzeit nicht verfügbar."
@@ -62,47 +74,86 @@ export function ProviderLinkButton({
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  // WEB.9 — Click handler now just opens the trust modal. The modal
+  // itself fires `performLaunch` after a 1.5s dwell so the user gets
+  // a calm "Securely connecting you to…" beat. The actual window.open
+  // + analytics fire from inside `performLaunch`.
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (opening) return;
-
     if (!resolvedUrl) {
       setToast(unavailableMessage);
       return;
     }
+    setTrustModalOpen(true);
+  };
 
+  // WEB.9 — Encapsulates the actual redirect + tracking. Returns a
+  // discriminated union the trust modal uses to decide between
+  // success (close modal), blocked (show "popup was blocked"), and
+  // generic error states. Defensive try/catch so a tracking endpoint
+  // outage never blocks the redirect; the redirect itself is the
+  // moment of truth.
+  const performLaunch = async (): Promise<TrustModalLaunchResult> => {
+    if (!resolvedUrl) {
+      return { kind: "error", message: unavailableMessage };
+    }
     setOpening(true);
-    const openedWindow = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
     window.setTimeout(() => setOpening(false), 700);
+
+    let openedWindow: Window | null;
+    try {
+      openedWindow = window.open(
+        resolvedUrl,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    } catch (err) {
+      return {
+        kind: "error",
+        message:
+          err instanceof Error ? err.message : unavailableMessage,
+      };
+    }
     if (!openedWindow) {
-      setToast(unavailableMessage);
-      return;
+      // Popup blocked by the browser. Modal flips into a "blocked"
+      // state with guidance + a manual retry path.
+      return { kind: "blocked" };
     }
 
-    trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
-      ...buildWebAnalyticsProperties({
-        category: offer.category,
-        country,
-        language,
-        loggedIn: Boolean(user),
-        offerId: offer.id,
-        provider: offer.providerName,
-      }),
-      source,
-    });
-
-    window.dispatchEvent(
-      new CustomEvent("payn:provider-click", {
-        detail: {
-          offerId: offer.id,
-          slug: offer.slug,
-          providerName: offer.providerName,
+    // Fire analytics + click-tracking AFTER the redirect lands.
+    // Wrapped in try/catch so any single tracker failing doesn't
+    // surface as a user-visible error.
+    try {
+      trackAnalyticsEvent(AnalyticsEvent.ProviderClicked, {
+        ...buildWebAnalyticsProperties({
+          category: offer.category,
           country,
-          source,
-          href: rawUrl,
-        },
-      }),
-    );
+          language,
+          loggedIn: Boolean(user),
+          offerId: offer.id,
+          provider: offer.providerName,
+        }),
+        source,
+      });
+    } catch {
+      // Analytics outage is silent on purpose.
+    }
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("payn:provider-click", {
+          detail: {
+            offerId: offer.id,
+            slug: offer.slug,
+            providerName: offer.providerName,
+            country,
+            source,
+            href: rawUrl,
+          },
+        }),
+      );
+    } catch {}
 
     void fetch("/api/v1/track-click", {
       method: "POST",
@@ -113,7 +164,9 @@ export function ProviderLinkButton({
         category: offer.category,
         country,
         language,
-        is_monetised: Boolean(offer.affiliateLink || offer.linkType === "affiliate_redirect"),
+        is_monetised: Boolean(
+          offer.affiliateLink || offer.linkType === "affiliate_redirect",
+        ),
         outbound_url: rawUrl ?? "",
         source_page: source,
       }),
@@ -141,6 +194,8 @@ export function ProviderLinkButton({
         }
       })();
     }
+
+    return { kind: "ok" };
   };
 
   return (
@@ -176,6 +231,17 @@ export function ProviderLinkButton({
         <div className="fixed bottom-5 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2.5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(17,24,39,0.22)]">
           {toast}
         </div>
+      ) : null}
+
+      {/* WEB.9 — Trust transition modal. Only mounted while
+          `trustModalOpen` is true so the portal isn't sitting in the
+          DOM on every page. */}
+      {trustModalOpen ? (
+        <ProviderTrustModal
+          providerName={offer.providerName}
+          onLaunch={performLaunch}
+          onClose={() => setTrustModalOpen(false)}
+        />
       ) : null}
     </>
   );

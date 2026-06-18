@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 export function AdminPushTestForm() {
   const [token, setToken] = useState("");
@@ -17,7 +17,7 @@ export function AdminPushTestForm() {
     try {
       const res = await fetch("/api/admin/push/test", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ token, title, body }),
       });
       const data = await res.json() as unknown;

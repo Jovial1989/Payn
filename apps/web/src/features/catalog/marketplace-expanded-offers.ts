@@ -632,16 +632,25 @@ const cardSeeds: CardSeed[] = [
     providerMark: "PL",
     providerName: "Plutus",
     title: "Plutus Rewards Card",
-    subtitle: "Crypto-linked spending card with subscription-style rewards and stronger upside for niche users.",
+    subtitle: "Crypto-linked spending card paying rewards in PLU, Plutus's native token. Headline cashback rates scale by subscription tier and PLU staking. The earned value depends on PLU's market price, which is volatile.",
     countryCodes: ["EU", "UK"],
     providerWebsiteUrl: "https://www.plutus.it/perks",
     affiliateLink: "https://www.plutus.it/perks",
     affiliatePriorityScore: 0.69,
     annualFee: "EUR 0 - 14.99/mo",
     fxFee: "0.5%",
-    cashback: "Up to 3%",
+    // CAT.8 — Was "Up to 3%" — that's the entry-tier rate. The
+    // headline number Plutus actually promotes is "up to 9% in PLU"
+    // (requires top tier subscription + significant PLU staking).
+    // Either number is misleading on its own without the token-
+    // volatility disclosure. Show the tier and the token together.
+    cashback: "3% (Standard) – up to 9% (top tier) — paid in PLU token",
     atm: "Free up to EUR 250",
-    bestFor: ["Crypto support", "Rewards", "Enthusiasts"],
+    bestFor: ["Crypto support", "PLU holders", "Enthusiasts"],
+    // CAT.8 — cashbackPercent kept at 3 (the entry-tier rate, what the
+    // ranking comparator uses); the 9% upper bound is documented in
+    // the `cashback` metric string instead of attributes since the
+    // shared MarketplaceOfferAttributes shape doesn't model a range.
     attributes: { annualFeeAmount: 180, fxFeePercent: 0.5, cashbackPercent: 3, atmFreeLimit: 250, cardType: "debit", cryptoSupport: true, feeProfile: "medium" },
   },
   {

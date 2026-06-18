@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import { ProviderLogo } from "@/components/provider-logo";
@@ -34,6 +35,13 @@ interface CompareDrawerProps {
 
 export function CompareDrawer({ open, onClose, locale }: CompareDrawerProps) {
   const { slugs, remove, clear } = useCompare();
+  // WEB.4 — Track when we're mounted on the client so the portal call
+  // doesn't run during SSR (document is undefined there). One-shot
+  // useEffect flip — no state churn after first paint.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock body scroll while open + close on Escape.
   useEffect(() => {
@@ -71,9 +79,16 @@ export function CompareDrawer({ open, onClose, locale }: CompareDrawerProps) {
     return order;
   }, [offers]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  // WEB.4 — Portal to document.body. The dashboard's inner header has
+  // a `backdrop-blur-md` ancestor which (per spec) creates a containing
+  // block for descendant `position: fixed` elements — that was why the
+  // drawer "opened" but rendered offscreen (or zero-height) inside the
+  // dashboard workspace: it was being trapped behind the inner-header
+  // backdrop. Portaling to body lifts it out of any ancestor stacking
+  // context so it always overlays the whole viewport.
+  return createPortal(
     <>
       <div
         onClick={onClose}
@@ -182,8 +197,24 @@ export function CompareDrawer({ open, onClose, locale }: CompareDrawerProps) {
                               : "font-medium text-ink",
                           ].join(" ")}
                         >
-                          {cell ? cell.value : <span className="text-ink-tertiary">—</span>}
-                          {winnerIdx === i && (
+                          {cell ? (
+                            cell.value
+                          ) : (
+                            // TASK-307 (PR-V3-04). Em-dash replaced
+                            // with explicit "Not offered" + native
+                            // `title` tooltip so the user knows
+                            // whether the cell is empty because the
+                            // provider doesn't include this metric
+                            // (the common case) or because the data
+                            // is genuinely missing. Brief V3 §2.2.
+                            <span
+                              className="cursor-help italic text-ink-tertiary"
+                              title="This product doesn't include this metric — either it's not part of the offer or the provider doesn't publish it."
+                            >
+                              Not offered
+                            </span>
+                          )}
+                          {winnerIdx === i && cell && (
                             <span className="ml-1.5 inline-block align-middle text-[9px] font-bold uppercase tracking-[0.12em] text-accent-emerald-strong">
                               ★ Best
                             </span>
@@ -196,12 +227,19 @@ export function CompareDrawer({ open, onClose, locale }: CompareDrawerProps) {
               </tbody>
             </table>
 
+            {/* WEB.5 — Per-offer "See details" buttons used to be the
+                secondary (white) variant, which read as the LESS
+                important action on the screen — the user reported
+                they didn't realise they were the next step. Switched
+                to primary (emerald) so the eye knows exactly where
+                to go after the side-by-side. */}
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {offers.map((offer) => (
                 <Link
                   key={offer.id}
                   href={localePath(locale, getOfferHref(offer))}
-                  className={`${buttonStyles({ variant: "secondary", size: "sm" })} justify-center`}
+                  prefetch
+                  className={`${buttonStyles({ variant: "primary", size: "sm" })} justify-center`}
                 >
                   See {offer.providerName} details
                 </Link>
@@ -210,7 +248,8 @@ export function CompareDrawer({ open, onClose, locale }: CompareDrawerProps) {
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 

@@ -543,6 +543,41 @@ function getValidCountryValue(countryOptions: ReturnType<typeof getCountryOption
   return countryOptions.some((option) => option.value === normalizedValue) ? normalizedValue : "";
 }
 
+// Loading placeholder shaped like an OfferRowAtlas result so the swap from
+// skeleton to live ranked rows doesn't shift the layout. Mirrors the shared
+// CategoryRouteSkeleton row so FX refreshes read as the same surface.
+function OfferRowSkeleton() {
+  return (
+    <div className="rounded-2xl border border-line bg-white p-4 shadow-card sm:p-5">
+      <div className="flex items-center gap-4">
+        <div className="skeleton-block h-12 w-12 shrink-0 rounded-[12px]" />
+        <div className="min-w-0 flex-1 space-y-2 sm:flex-[0_0_260px]">
+          <div className="skeleton-block h-4 w-40 rounded-full" />
+          <div className="skeleton-block h-3 w-28 rounded-full" />
+          <div className="skeleton-block mt-1 h-5 w-32 rounded-full" />
+        </div>
+        <div className="hidden min-w-0 flex-1 md:flex md:flex-col md:gap-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <div className="skeleton-block h-2.5 w-16 rounded-full" />
+              <div className="skeleton-block h-3.5 w-20 rounded-full" />
+            </div>
+            <div className="space-y-1">
+              <div className="skeleton-block h-2.5 w-16 rounded-full" />
+              <div className="skeleton-block h-3.5 w-20 rounded-full" />
+            </div>
+          </div>
+          <ul className="grid gap-1.5">
+            <li className="skeleton-block h-3 w-full rounded-full" />
+            <li className="skeleton-block h-3 w-5/6 rounded-full" />
+          </ul>
+        </div>
+        <div className="skeleton-block h-10 w-28 shrink-0 rounded-xl sm:h-11 sm:w-36" />
+      </div>
+    </div>
+  );
+}
+
 function getDefaultCategoryWorkspaceState(
   category: MarketplaceCategory,
   defaultCountry: CountryValue,
@@ -890,7 +925,15 @@ export function DashboardCategoryWorkspace({
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quote, setQuote] = useState<FxQuotePayload | null>(null);
-  const [quoteLoading, setQuoteLoading] = useState(false);
+  // FX categories must never paint the empty "market data unavailable" state on
+  // first load: seed the loading flag so the skeleton shows until the seeded
+  // EUR→USD / EUR→GBP quote (or a genuine failure) resolves on mount.
+  const isFxCategory = category === "transfers" || category === "exchange";
+  const [quoteLoading, setQuoteLoading] = useState(isFxCategory);
+  // Distinguishes a real fetch failure/outage from the pre-fetch initial state,
+  // since `quote === null` alone covers both. Only `true` keeps the genuine
+  // "market data temporarily unavailable" copy reachable.
+  const [quoteFailed, setQuoteFailed] = useState(false);
   const updateCountry = (nextCountry: CountryValue) => {
     setCountry(nextCountry);
     onCountryChange?.(nextCountry);
@@ -1017,20 +1060,23 @@ export function DashboardCategoryWorkspace({
   }, [availableInsuranceTypes, category, insuranceType]);
 
   useEffect(() => {
-    if (category !== "transfers" && category !== "exchange") {
+    if (!isFxCategory) {
       setQuote(null);
       setQuoteLoading(false);
+      setQuoteFailed(false);
       return;
     }
 
     if (fromCurrency === toCurrency) {
       setQuote(null);
       setQuoteLoading(false);
+      setQuoteFailed(false);
       return;
     }
 
     const controller = new AbortController();
     setQuoteLoading(true);
+    setQuoteFailed(false);
 
     void (async () => {
       try {
@@ -1045,9 +1091,13 @@ export function DashboardCategoryWorkspace({
 
         const payload = (await response.json()) as FxQuotePayload;
         setQuote(payload);
+        // A genuine outage can still surface: getFxQuote returns unavailable:true
+        // when every live source and the cached-rate fallback are exhausted.
+        setQuoteFailed(payload.unavailable);
       } catch {
         if (!controller.signal.aborted) {
           setQuote(null);
+          setQuoteFailed(true);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -1057,7 +1107,7 @@ export function DashboardCategoryWorkspace({
     })();
 
     return () => controller.abort();
-  }, [category, fromCurrency, toCurrency]);
+  }, [isFxCategory, fromCurrency, toCurrency]);
 
   const insightMap = useMemo(() => new Map(insights.map((item) => [item.offer.id, item])), [insights]);
   const amountValue = Number.parseFloat(amount) || 0;
@@ -1520,6 +1570,11 @@ export function DashboardCategoryWorkspace({
       }),
     [amountValue, category, durationValue, locale, selectedCompareRows],
   );
+  // For FX categories show the skeleton — never the empty "unavailable" panel —
+  // while a quote is in flight or hasn't resolved yet. The genuine-outage copy
+  // is reachable only once a fetch actually fails (`quoteFailed`).
+  const fxQuotePending = isFxCategory && fromCurrency !== toCurrency && !quoteFailed && !quote;
+  const showSkeleton = quoteLoading || fxQuotePending;
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
       {(category === "loans" || category === "transfers" || category === "exchange" || category === "insurance") && (
@@ -1829,21 +1884,22 @@ export function DashboardCategoryWorkspace({
           </div>
         ) : null}
 
-        {quoteLoading ? (
-          <div className="mt-6 flex items-center justify-center gap-3 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] px-5 py-10">
-            <svg className="h-4 w-4 animate-spin text-ink-tertiary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeOpacity="0.2"/>
-              <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            <span className="text-sm text-ink-secondary">{copy.updatingLiveComparison}</span>
+        {showSkeleton ? (
+          <div className="mt-6 flex flex-col gap-3 sm:gap-4" aria-busy="true" aria-live="polite">
+            <span className="sr-only">{copy.updatingLiveComparison}</span>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <OfferRowSkeleton key={index} />
+            ))}
           </div>
         ) : rankedResults.length === 0 ? (
           <div className="mt-6 rounded-[24px] border border-dashed border-line bg-bg-surface p-6">
             <p className="text-base font-bold text-ink">
-              {category === "transfers" || category === "exchange" ? copy.marketDataUnavailable : copy.noProvidersTitle}
+              {/* Outage copy only for a genuine quote failure; an FX category
+                  with a valid quote but no matching providers reads as such. */}
+              {isFxCategory && quoteFailed ? copy.marketDataUnavailable : copy.noProvidersTitle}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-              {category === "transfers" || category === "exchange" ? copy.marketDataDescription : copy.noProvidersDescription}
+              {isFxCategory && quoteFailed ? copy.marketDataDescription : copy.noProvidersDescription}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {country !== "all_europe" && (

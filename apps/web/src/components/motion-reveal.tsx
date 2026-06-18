@@ -26,18 +26,22 @@ export function MotionReveal({
   const tagProps = {
     ref,
     className,
-    initial: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24, filter: "blur(12px)" },
+    initial: reduceMotion
+      ? { opacity: 1 }
+      : { opacity: 0, y: 24 },
     animate:
       visible || reduceMotion
         ? {
             opacity: 1,
             y: 0,
-            filter: "blur(0px)",
-            transition: {
-              delay: reduceMotion ? 0 : delay / 1000,
-              duration: reduceMotion ? 0.1 : 0.52,
-              ease: [0.22, 1, 0.36, 1],
-            },
+            transition: reduceMotion
+              ? { duration: 0.1 }
+              : {
+                  delay: delay / 1000,
+                  type: "spring" as const,
+                  stiffness: 55,
+                  damping: 18,
+                },
           }
         : undefined,
   } as const;

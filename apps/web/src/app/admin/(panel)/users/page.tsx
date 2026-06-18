@@ -12,7 +12,12 @@ const LOCALES = ["en","de","es","fr","it","pt"];
 export default async function AdminUsersPage({ searchParams }: Props) {
   const { page: pageParam, search, country, locale, role } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? "1"));
-  const perPage = 50;
+  // Supabase admin auth has no server-side email / metadata filter, and
+  // listUsers is page-based — so search + filters can only be applied to the
+  // rows we actually load. Load a large page (200) so filtering covers a much
+  // wider slice than the previous 50, and surface a note when filters are on.
+  const perPage = 200;
+  const hasFilters = Boolean(search || country || locale || role);
 
   const admin = createSupabaseAdminClient();
 
@@ -128,6 +133,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               </span>
             )}
           </p>
+          {hasFilters && !notConfigured && (
+            <p className="mt-1 text-xs text-ink-tertiary">
+              Search & filters apply to the {perPage.toLocaleString()} accounts loaded on this page only — paginate to search further back.
+            </p>
+          )}
         </div>
       </div>
 

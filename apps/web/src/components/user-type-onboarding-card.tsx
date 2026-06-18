@@ -6,6 +6,7 @@ import { useMarketplacePreferences } from "@/components/marketplace-preferences"
 import { useAuth } from "@/hooks/use-auth";
 import { localePath } from "@/lib/locale";
 import { getUiCopy, getUserTypeOptions } from "@/lib/ui-copy";
+import { trackAnalyticsEvent, AnalyticsEvent } from "@/lib/analytics";
 
 export function UserTypeOnboardingCard({
   title,
@@ -41,6 +42,7 @@ export function UserTypeOnboardingCard({
       // Profile saved optimistically even if backend is slow
     }
 
+    trackAnalyticsEvent(AnalyticsEvent.OnboardingCompleted, { user_type: selectedType });
     setSaving(false);
     router.push(localePath(locale, "/dashboard"));
     router.refresh();
