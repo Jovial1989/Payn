@@ -19,6 +19,10 @@
     {
       "path": "/api/v1/cron/check-alerts",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/financeads-sync",
+      "schedule": "0 5 * * *"
     }
   ]
 }

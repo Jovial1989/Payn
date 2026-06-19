@@ -91,15 +91,19 @@ const getAllOffers = cache(async (): Promise<MarketplaceOffer[]> => {
   const dbOffers = rawRows.map((row) => rowToOffer(row));
   if (dbOffers.length === 0) return marketplaceOffersStatic;
 
-  // Static-first merge keyed by slug — repo-tracked entries (the canonical
-  // source for partner / monetisation metadata) override the DB row when
-  // both define the same slug, then any DB-only rows are appended.
+  // Merge keyed by slug. The static list seeds the map, then DB rows are
+  // layered on top with one exception to the old "static always wins" rule:
+  // a DB row that has been *live-synced from the FinanceAds API*
+  // (attributes.financeads present) overrides its static twin, so the catalog
+  // always serves the affiliate link FinanceAds currently returns. DB-only
+  // rows are appended as before. (Decision: "live API wins".)
   const merged = new Map<string, MarketplaceOffer>();
   for (const offer of marketplaceOffersStatic) {
     merged.set(offer.slug, offer);
   }
   for (const offer of dbOffers) {
-    if (!merged.has(offer.slug)) merged.set(offer.slug, offer);
+    const liveSynced = Boolean(offer.attributes?.financeads);
+    if (!merged.has(offer.slug) || liveSynced) merged.set(offer.slug, offer);
   }
   // CAT.1 — Belt-and-suspenders filter: even if a stale Supabase row
   // slipped past the `status='active'` query, block placeholder rows

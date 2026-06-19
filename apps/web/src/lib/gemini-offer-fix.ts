@@ -1,22 +1,4 @@
-import { env } from "@/lib/env";
-
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
-async function callGemini(prompt: string): Promise<string> {
-  if (!env.geminiApiKey) throw new Error("GEMINI_API_KEY not configured");
-  const res = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": env.geminiApiKey },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.15, maxOutputTokens: 800, responseMimeType: "application/json" },
-    }),
-  });
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text().then(t => t.slice(0, 200))}`);
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-}
+import { callGemini } from "@/lib/gemini-client";
 
 export interface SuggestedLinks {
   suggested_urls: string[];  // 3–5 HTTPS URLs to try, most likely first

@@ -4,10 +4,16 @@ export const env = {
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+  // FinanceAds affiliate network — partnerships + advertising-materials API.
+  // adspace (Werbefläche) is the payn.online ad-space id, not the account id.
+  financeadsApiKey: process.env.FINANCEADS_API_KEY ?? "",
+  financeadsAdspace: process.env.FINANCEADS_ADSPACE ?? "",
   adminUsername: process.env.ADMIN_USERNAME ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   // SEC-FIX PAYN-A24: adminSessionSecret removed — use getSecret() in admin-auth-edge.ts directly
 adminApiToken: process.env.ADMIN_API_TOKEN ?? "",
+  // Vercel sets `Authorization: Bearer ${CRON_SECRET}` on scheduled invocations.
+  cronSecret: process.env.CRON_SECRET ?? "",
   firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFromAddress: process.env.EMAIL_FROM_ADDRESS ?? "Payn <noreply@payn.online>",
