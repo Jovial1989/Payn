@@ -35,7 +35,21 @@ export type DiscoveryDecision =
   | "published"
   | "needs_review"
   | "skipped_duplicate"
-  | "skipped_invalid";
+  | "skipped_invalid"
+  | "skipped_quota";
+
+/** How many offers the discovery engine has added in the last `days` days. */
+export async function countRecentDiscoveries(days = 7): Promise<number> {
+  const admin = createSupabaseAdminClient();
+  if (!admin) return 0;
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  // ISO timestamps compare lexicographically, so a text gte is chronological.
+  const { count } = await admin
+    .from("product_offers")
+    .select("*", { count: "exact", head: true })
+    .gte("attributes->discovery->>discoveredAt", since);
+  return count ?? 0;
+}
 
 export type DiscoveryItem = {
   source: "program" | "market";
@@ -180,10 +194,11 @@ function buildInsertRow(args: {
   };
 }
 
-async function runProgramBackfill({ apply }: { apply: boolean }): Promise<DiscoveryReport> {
+async function runProgramBackfill({ apply, maxNew = Infinity }: { apply: boolean; maxNew?: number }): Promise<DiscoveryReport> {
   const startedAt = new Date().toISOString();
   const started = Date.now();
   const items: DiscoveryItem[] = [];
+  let inserted = 0;
 
   const admin = createSupabaseAdminClient();
   if (!admin) throw new Error("Supabase admin client unavailable");
@@ -246,23 +261,29 @@ async function runProgramBackfill({ apply }: { apply: boolean }): Promise<Discov
     };
 
     if (apply) {
-      const row = buildInsertRow({
-        draft,
-        providerUrl,
-        trackingUrl: programRow.trackingUrl,
-        monetized: true,
-        status,
-        programRow,
-        source: "program",
-      });
-      const { error } = await admin.from("product_offers").insert(row);
-      if (error) {
-        item.decision = "skipped_invalid";
-        item.reason = `DB insert failed: ${error.message}`;
+      if (inserted >= maxNew) {
+        item.decision = "skipped_quota";
+        item.reason = `weekly new-offer quota reached (${maxNew})`;
       } else {
-        item.offerId = row.id;
-        index.slugs.add(slug);
-        index.providerCategories.add(provCat);
+        const row = buildInsertRow({
+          draft,
+          providerUrl,
+          trackingUrl: programRow.trackingUrl,
+          monetized: true,
+          status,
+          programRow,
+          source: "program",
+        });
+        const { error } = await admin.from("product_offers").insert(row);
+        if (error) {
+          item.decision = "skipped_invalid";
+          item.reason = `DB insert failed: ${error.message}`;
+        } else {
+          inserted += 1;
+          item.offerId = row.id;
+          index.slugs.add(slug);
+          index.providerCategories.add(provCat);
+        }
       }
     }
 
@@ -287,14 +308,17 @@ async function runMarketDiscovery({
   apply,
   categories,
   country,
+  maxNew = Infinity,
 }: {
   apply: boolean;
   categories: MarketplaceCategory[];
   country: string;
+  maxNew?: number;
 }): Promise<DiscoveryReport> {
   const startedAt = new Date().toISOString();
   const started = Date.now();
   const items: DiscoveryItem[] = [];
+  let inserted = 0;
 
   const admin = createSupabaseAdminClient();
   if (!admin) throw new Error("Supabase admin client unavailable");
@@ -370,23 +394,29 @@ async function runMarketDiscovery({
       };
 
       if (apply) {
-        const row = buildInsertRow({
-          draft,
-          providerUrl,
-          trackingUrl,
-          monetized,
-          status,
-          programRow,
-          source: "market",
-        });
-        const { error } = await admin.from("product_offers").insert(row);
-        if (error) {
-          item.decision = "skipped_invalid";
-          item.reason = `DB insert failed: ${error.message}`;
+        if (inserted >= maxNew) {
+          item.decision = "skipped_quota";
+          item.reason = `weekly new-offer quota reached (${maxNew})`;
         } else {
-          item.offerId = row.id;
-          index.slugs.add(slug);
-          index.providerCategories.add(provCat);
+          const row = buildInsertRow({
+            draft,
+            providerUrl,
+            trackingUrl,
+            monetized,
+            status,
+            programRow,
+            source: "market",
+          });
+          const { error } = await admin.from("product_offers").insert(row);
+          if (error) {
+            item.decision = "skipped_invalid";
+            item.reason = `DB insert failed: ${error.message}`;
+          } else {
+            inserted += 1;
+            item.offerId = row.id;
+            index.slugs.add(slug);
+            index.providerCategories.add(provCat);
+          }
         }
       }
 
@@ -526,13 +556,16 @@ export async function runOfferDiscovery(opts: {
   mode?: "programs" | "market";
   categories?: MarketplaceCategory[];
   country?: string;
+  /** Cap on net-new offers added this run (used by the weekly cron quota). */
+  maxNew?: number;
 }): Promise<DiscoveryReport> {
   const apply = opts.apply ?? false;
   const mode = opts.mode ?? "programs";
+  const maxNew = opts.maxNew ?? Infinity;
   if (mode === "market") {
     const categories =
       opts.categories && opts.categories.length > 0 ? opts.categories : (["transfers", "cards", "savings"] as MarketplaceCategory[]);
-    return runMarketDiscovery({ apply, categories, country: opts.country ?? "EU" });
+    return runMarketDiscovery({ apply, categories, country: opts.country ?? "EU", maxNew });
   }
-  return runProgramBackfill({ apply });
+  return runProgramBackfill({ apply, maxNew });
 }

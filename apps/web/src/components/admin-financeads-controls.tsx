@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FinanceAdsSyncReport, ProgramSyncRow } from "@/server/offers/financeads-sync";
 import type { DiscoveryItem, DiscoveryReport } from "@/server/offers/offer-discovery-engine";
+import type { CatalogReviewReport } from "@/server/offers/catalog-review";
 
 const MARKET_CATEGORIES = [
   "transfers", "cards", "savings", "loans", "banking",
@@ -55,6 +56,150 @@ function Button({
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${styles}`}>
       {children}
     </button>
+  );
+}
+
+// ─── Section 0: Catalog Review (health score) ────────────────────────────────
+
+function scoreTone(score: number): "ok" | "warn" | "muted" {
+  if (score >= 85) return "ok";
+  if (score >= 65) return "warn";
+  return "muted";
+}
+
+function ReviewSection() {
+  const [loading, setLoading] = useState<"dry" | "apply" | null>(null);
+  const [report, setReport] = useState<CatalogReviewReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(apply: boolean) {
+    setLoading(apply ? "apply" : "dry");
+    setError(null);
+    try {
+      setReport(await postJson<CatalogReviewReport>("/api/admin/catalog-review", { apply }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Review failed");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  const t = report?.totals;
+  const tone = report ? scoreTone(report.healthScore) : "muted";
+  const scoreColor =
+    tone === "ok" ? "text-accent-emerald-strong" : tone === "warn" ? "text-orange-600" : "text-red-500";
+
+  return (
+    <section className="rounded-[20px] border border-line bg-white p-5 shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-[-0.02em] text-ink">Catalog review</h2>
+          <p className="mt-1 max-w-xl text-sm text-ink-secondary">
+            Audits every offer for relevance — link health, monetisation coverage, freshness, and a
+            rotating Gemini deep-check. Runs automatically every 3 days; heals what it safely can.
+          </p>
+        </div>
+        {report && (
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-tertiary">
+              Health score
+            </p>
+            <p className={`text-4xl font-extrabold tabular-nums ${scoreColor}`}>{report.healthScore}</p>
+            <p className="text-[11px] text-ink-tertiary">/ 100</p>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button onClick={() => run(false)} disabled={loading !== null}>
+          {loading === "dry" ? "Auditing…" : "Run review (dry run)"}
+        </Button>
+        <Button variant="primary" onClick={() => run(true)} disabled={loading !== null}>
+          {loading === "apply" ? "Healing…" : "Run + auto-heal"}
+        </Button>
+      </div>
+
+      {error && <p className="mt-3 text-sm font-semibold text-red-500">{error}</p>}
+
+      {report && t && (
+        <div className="mt-5">
+          <div className="flex flex-wrap gap-4 text-sm">
+            <Metric label="Offers" value={t.offers} />
+            <Metric label="Links OK" value={t.linkOk} ok={t.linkOk === t.offers} />
+            <Metric label="Dead links" value={t.deadLinks} warn={t.deadLinks > 0} />
+            <Metric label="Monetisation gaps" value={t.monetizationGaps} warn={t.monetizationGaps > 0} />
+            <Metric label="Coverage %" value={report.monetizationCoveragePct} ok={report.monetizationCoveragePct >= 95} />
+            <Metric label="Stale" value={t.stale} />
+            <Metric label="Deep-checked" value={t.deepChecked} />
+            <Metric label="Relevance fails" value={t.relevanceFails} warn={t.relevanceFails > 0} />
+          </div>
+          {report.applied && (report.autoFixed.relinked > 0 || report.autoFixed.flaggedDead > 0) && (
+            <p className="mt-2 text-xs font-semibold text-accent-emerald-strong">
+              ✓ Auto-healed: {report.autoFixed.relinked} re-monetised, {report.autoFixed.flaggedDead} flagged for review.
+            </p>
+          )}
+
+          {report.monetizationGaps.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">
+                Monetisation gaps (partner, not yet earning)
+              </p>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {report.monetizationGaps.map((g, i) => (
+                  <span key={`${g.provider}-${i}`} className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-orange-600">
+                    {g.provider} · {g.category}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {report.worstOffers.length > 0 && (
+            <div className="mt-4 overflow-x-auto">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-tertiary">
+                Lowest-scoring offers
+              </p>
+              <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-line text-[11px] uppercase tracking-wide text-ink-tertiary">
+                    <th className="py-2 pr-3 font-semibold">Score</th>
+                    <th className="px-3 py-2 font-semibold">Offer</th>
+                    <th className="px-3 py-2 font-semibold">Issues</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.worstOffers.slice(0, 20).map((o, i) => (
+                    <tr key={`${o.slug}-${i}`} className="border-b border-line/60 align-top">
+                      <td className="py-2 pr-3">
+                        <span className={`font-bold tabular-nums ${scoreColor}`}>{o.relevanceScore}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="font-medium text-ink">{o.provider}</span>
+                        <span className="block text-[11px] text-ink-tertiary">{o.title} · {o.category}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="flex flex-wrap gap-1">
+                          {o.issues.map((iss) => (
+                            <span key={iss} className="rounded bg-bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-ink-secondary">
+                              {iss.replace(/_/g, " ")}
+                            </span>
+                          ))}
+                          {o.fixed.length > 0 && (
+                            <span className="rounded bg-accent-emerald-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent-emerald-strong">
+                              ✓ {o.fixed[0]}
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -354,6 +499,7 @@ function Metric({ label, value, ok, warn }: { label: string; value: number; ok?:
 export function AdminFinanceadsControls() {
   return (
     <div className="grid gap-6">
+      <ReviewSection />
       <SyncSection />
       <DiscoverySection />
     </div>

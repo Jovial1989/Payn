@@ -98,6 +98,66 @@ export async function resolveUrl(url: string, timeoutMs = 12_000): Promise<LinkR
   }
 }
 
+/**
+ * Fetch a URL and return stripped page text (for Gemini relevance checks).
+ * HTTPS-only, blocks internal hosts. Bot-protected pages (401/403/429) come
+ * back ok:false but botProtected:true so callers can skip them rather than flag.
+ */
+export async function fetchPageText(
+  url: string,
+  timeoutMs = 12_000,
+): Promise<{ ok: boolean; status: number | "timeout" | "error"; botProtected: boolean; text: string; finalUrl: string }> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return { ok: false, status: "error", botProtected: false, text: "", finalUrl: url };
+  }
+  if (parsed.protocol !== "https:" || isInternalHost(parsed.hostname)) {
+    return { ok: false, status: "error", botProtected: false, text: "", finalUrl: url };
+  }
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      signal: ctl.signal,
+      cache: "no-store",
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/124.0 Safari/537.36 Payn-OfferEngine/1.0",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "en-GB,en;q=0.9",
+      },
+    });
+    try {
+      const fin = new URL(res.url || url);
+      if (fin.protocol !== "https:" || isInternalHost(fin.hostname)) {
+        return { ok: false, status: "error", botProtected: false, text: "", finalUrl: res.url };
+      }
+    } catch {
+      /* keep */
+    }
+    const botProtected = res.status === 401 || res.status === 403 || res.status === 429;
+    const html = await res.text();
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&[a-z#0-9]+;/gi, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    return { ok: res.status < 400, status: res.status, botProtected, text, finalUrl: res.url || url };
+  } catch (e: unknown) {
+    const isAbort = e instanceof Error && e.name === "AbortError";
+    return { ok: false, status: isAbort ? "timeout" : "error", botProtected: false, text: "", finalUrl: url };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Registrable-domain comparison: does `host` belong to `domain` (or vice-versa)? */
 export function hostMatchesDomain(host: string | null, domain: string | null): boolean {
   if (!host || !domain) return false;
