@@ -571,9 +571,9 @@ export const catalogExpansionOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.86,
     providerWebsiteUrl: "https://www.bitpanda.com",
-    affiliateLink: "https://www.bitpanda.com",
-    updatedAt: "2026-05-11T00:00:00Z",
-    attributes: { availability: "eu_wide", searchTags: ["crypto", "Bitpanda", "MiCA regulated", "Austria", "recurring"] },
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C2906106342T",
+    updatedAt: "2026-06-19T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, availability: "eu_wide", searchTags: ["crypto", "Bitpanda", "MiCA regulated", "Austria", "recurring"] },
   },
 
   // ═══════════════════════════════════════════════════

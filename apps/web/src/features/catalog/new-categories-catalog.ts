@@ -480,9 +480,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.89,
     providerWebsiteUrl: "https://www.etoro.com/investing/",
-    affiliateLink: "https://www.etoro.com/investing/",
-    updatedAt: "2026-05-19T00:00:00Z",
-    attributes: { availability: "eu_wide", searchTags: ["trading", "stocks", "ETF", "copy trading", "social investing"] },
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C110660840T",
+    updatedAt: "2026-06-19T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, availability: "eu_wide", searchTags: ["trading", "stocks", "ETF", "copy trading", "social investing"] },
   },
   {
     id: "trading-degiro",
@@ -1574,9 +1574,9 @@ export const newCategoriesOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.86,
     providerWebsiteUrl: "https://www.bitpanda.com",
-    affiliateLink: "https://www.bitpanda.com",
-    updatedAt: "2026-05-01T00:00:00Z",
-    attributes: { availability: "eu_wide", searchTags: ["crypto", "Austrian exchange", "Bitpanda"] },
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C2906106342T",
+    updatedAt: "2026-06-19T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, availability: "eu_wide", searchTags: ["crypto", "Austrian exchange", "Bitpanda"] },
   },
 
   // ═══════════════════════════════════════════════════
