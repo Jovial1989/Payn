@@ -172,7 +172,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.79,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://www.bunq.com/loans",
+    affiliateLink: "https://www.bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
