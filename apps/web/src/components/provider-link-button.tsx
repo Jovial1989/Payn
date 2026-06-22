@@ -2,7 +2,7 @@
 
 import type { MarketplaceOffer } from "@payn/types";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { providerCtaStyles } from "@/components/button";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
@@ -44,6 +44,10 @@ export function ProviderLinkButton({
   // work runs inside `performLaunch`, which the modal calls after its
   // 1.5s dwell.
   const [trustModalOpen, setTrustModalOpen] = useState(false);
+  // The tab we open synchronously on click (inside the user gesture). The
+  // trust modal navigates it to the provider after its dwell. Opening here is
+  // the only way the browser won't treat the later open as a blocked popup.
+  const pendingWindowRef = useRef<Window | null>(null);
   const unavailableMessage =
     language === "de"
       ? "Dieser Anbieterlink ist derzeit nicht verfügbar."
@@ -85,6 +89,23 @@ export function ProviderLinkButton({
       setToast(unavailableMessage);
       return;
     }
+    // Open the destination tab NOW — synchronously, inside the click gesture.
+    // The trust modal fires `performLaunch` ~1.5s later; a window.open there is
+    // outside the gesture and the browser blocks it (the reason clicks did
+    // nothing). We park a blank tab now and navigate it after the dwell.
+    try {
+      const win = window.open("about:blank", "_blank");
+      if (win) {
+        try {
+          win.opener = null;
+        } catch {
+          /* best-effort reverse-tabnabbing guard */
+        }
+        pendingWindowRef.current = win;
+      }
+    } catch {
+      pendingWindowRef.current = null;
+    }
     setTrustModalOpen(true);
   };
 
@@ -101,24 +122,24 @@ export function ProviderLinkButton({
     setOpening(true);
     window.setTimeout(() => setOpening(false), 700);
 
-    let openedWindow: Window | null;
+    // Navigate the tab opened during the click gesture. If it's missing (a
+    // strict blocker stopped even the in-gesture open, or this is a retry),
+    // fall back to same-tab navigation — top-level navigation is never
+    // popup-blocked, so the handoff always completes instead of dead-ending.
+    const pre = pendingWindowRef.current;
+    pendingWindowRef.current = null;
     try {
-      openedWindow = window.open(
-        resolvedUrl,
-        "_blank",
-        "noopener,noreferrer",
-      );
-    } catch (err) {
-      return {
-        kind: "error",
-        message:
-          err instanceof Error ? err.message : unavailableMessage,
-      };
-    }
-    if (!openedWindow) {
-      // Popup blocked by the browser. Modal flips into a "blocked"
-      // state with guidance + a manual retry path.
-      return { kind: "blocked" };
+      if (pre && !pre.closed) {
+        pre.location.replace(resolvedUrl);
+      } else {
+        window.location.href = resolvedUrl;
+      }
+    } catch {
+      try {
+        window.location.href = resolvedUrl;
+      } catch {
+        return { kind: "error", message: unavailableMessage };
+      }
     }
 
     // Fire analytics + click-tracking AFTER the redirect lands.
@@ -240,7 +261,20 @@ export function ProviderLinkButton({
         <ProviderTrustModal
           providerName={offer.providerName}
           onLaunch={performLaunch}
-          onClose={() => setTrustModalOpen(false)}
+          onClose={() => {
+            setTrustModalOpen(false);
+            // If the user cancelled before launch, close the blank tab we
+            // parked on click so it doesn't linger.
+            const w = pendingWindowRef.current;
+            pendingWindowRef.current = null;
+            if (w && !w.closed) {
+              try {
+                w.close();
+              } catch {
+                /* ignore */
+              }
+            }
+          }}
         />
       ) : null}
     </>
