@@ -6,6 +6,7 @@ import {
   pickPrimaryTrackingLink,
   type FinanceAdsProgram,
 } from "@/lib/financeads/client";
+import { isBlockedProvider } from "@/lib/blocked-providers";
 import { resolveUrl } from "@/lib/link-validation";
 import { normalizeName } from "@/server/offers/discovery/name-utils";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
@@ -222,7 +223,7 @@ export async function runFinanceAdsSync({
     // 3) Match this program to provider offers.
     const matched: MatchedOffer[] = offers
       .map((offer) => ({ offer, score: scoreProgramAgainstOffer(program, offer) }))
-      .filter(({ score }) => score >= MATCH_THRESHOLD)
+      .filter(({ offer, score }) => score >= MATCH_THRESHOLD && !isBlockedProvider(offer.provider_name))
       .map(({ offer, score }) => {
         const alreadyMonetised =
           Boolean(offer.is_monetised) || Boolean(offer.attributes?.monetized);

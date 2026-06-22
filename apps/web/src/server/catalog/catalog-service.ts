@@ -2,6 +2,7 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import type { MarketplaceOffer, MarketplaceOfferAttributes } from "@payn/types";
 import { marketplaceOffers as marketplaceOffersStatic } from "@/features/catalog/marketplace-offers";
+import { isBlockedProvider } from "@/lib/blocked-providers";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
 type ProductOfferRow = {
@@ -130,6 +131,9 @@ const getAllOffers = cache(async (): Promise<MarketplaceOffer[]> => {
   // by provider name + best-for text. These should never reach the
   // catalog UI.
   const cleaned = [...merged.values()].filter((offer) => {
+    // Manually blocked providers (e.g. eToro — affiliate link dead-ends for
+    // users even though it resolves server-side) never reach the catalog.
+    if (isBlockedProvider(offer.providerName)) return false;
     if (offer.providerName === "Unknown Provider") return false;
     if (offer.providerName?.toLowerCase().includes("unknown provider")) {
       return false;
