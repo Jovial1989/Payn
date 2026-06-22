@@ -301,6 +301,46 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
   if (apply) {
     const now = new Date().toISOString();
     let fixes = 0;
+
+    // Remove an offer from the catalog: archive its DB row, or — for a
+    // static-only offer — insert an archived tombstone stub that catalog-service
+    // suppresses by slug. Returns true if a removal was written.
+    async function tombstone(slug: string, reason: string): Promise<boolean> {
+      if (!admin) return false;
+      const existing = dbBySlug.get(slug);
+      if (existing) {
+        if (existing.status === "archived") return false;
+        const { error } = await admin
+          .from("product_offers")
+          .update({ status: "archived", notes: `${reason} — removed` })
+          .eq("id", existing.id);
+        return !error;
+      }
+      const offer = offerBySlug.get(slug);
+      if (!offer) return false;
+      const { error } = await admin.from("product_offers").insert({
+        id: randomUUID(),
+        slug: offer.slug,
+        provider_name: offer.providerName,
+        provider_mark: offer.providerMark || offer.providerName.slice(0, 2).toUpperCase(),
+        provider_website_url: offer.providerWebsiteUrl || "",
+        title: offer.title,
+        subtitle: offer.subtitle || "",
+        category: offer.category,
+        country_codes: offer.countryCodes?.length ? offer.countryCodes : ["EU"],
+        affiliate_link: offer.affiliateLink || "",
+        link_type: offer.linkType || "affiliate_redirect",
+        affiliate_priority_score: 0,
+        best_for: offer.bestFor ?? [],
+        metrics: offer.metrics ?? [],
+        attributes: { ...(offer.attributes ?? {}), archived: { reason, at: now } },
+        is_monetised: false,
+        status: "archived",
+        updated_at: now,
+      });
+      return !error;
+    }
+
     // 3a) heal monetisation gaps + wrong partner links (static or DB) by upserting a DB row
     for (const r of reviews) {
       if (fixes >= MAX_AUTO_FIX) break;
@@ -313,7 +353,19 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
       if (!trackingUrl) continue;
       // only heal when the live tracking link actually resolves
       const tr = await resolveUrl(trackingUrl);
-      if (!tr.alive) continue;
+      if (!tr.alive) {
+        // Partner whose affiliate creative dead-ends (e.g. eToro → unauthorised-ad):
+        // can't monetise it, and we don't keep broken partner offers → remove.
+        if (
+          (tr.status === 404 || tr.status === 410) &&
+          (await tombstone(r.slug, `Catalog review ${now.slice(0, 10)}: partner link dead (${tr.status})`))
+        ) {
+          removed += 1;
+          fixes += 1;
+          r.fixed.push("removed (partner link dead-ends)");
+        }
+        continue;
+      }
       const existing = dbBySlug.get(r.slug);
       const row = dbRowFromOffer(offer, trackingUrl, program, existing?.id);
       const { error } = existing
@@ -335,45 +387,9 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
       const hardDead = r.linkStatus === 404 || r.linkStatus === 410;
       const note = `Catalog review ${now.slice(0, 10)}: link dead (${r.linkStatus})`;
       if (hardDead) {
-        if (existing) {
-          if (existing.status === "archived") continue;
-          const { error } = await admin
-            .from("product_offers")
-            .update({ status: "archived", notes: `${note} — removed` })
-            .eq("id", existing.id);
-          if (!error) {
-            removed += 1;
-            r.fixed.push("removed (dead link)");
-          }
-        } else {
-          // static-only offer → insert an archived tombstone so the catalog
-          // suppresses this slug even though it lives in the static lists.
-          const offer = offerBySlug.get(r.slug);
-          if (!offer) continue;
-          const { error } = await admin.from("product_offers").insert({
-            id: randomUUID(),
-            slug: offer.slug,
-            provider_name: offer.providerName,
-            provider_mark: offer.providerMark || offer.providerName.slice(0, 2).toUpperCase(),
-            provider_website_url: offer.providerWebsiteUrl || "",
-            title: offer.title,
-            subtitle: offer.subtitle || "",
-            category: offer.category,
-            country_codes: offer.countryCodes?.length ? offer.countryCodes : ["EU"],
-            affiliate_link: offer.affiliateLink || "",
-            link_type: offer.linkType || "affiliate_redirect",
-            affiliate_priority_score: 0,
-            best_for: offer.bestFor ?? [],
-            metrics: offer.metrics ?? [],
-            attributes: { ...(offer.attributes ?? {}), archived: { reason: note, at: now } },
-            is_monetised: false,
-            status: "archived",
-            updated_at: now,
-          });
-          if (!error) {
-            removed += 1;
-            r.fixed.push("removed (dead link, tombstoned)");
-          }
+        if (await tombstone(r.slug, note)) {
+          removed += 1;
+          r.fixed.push("removed (dead link)");
         }
       } else if (existing && existing.status !== "needs_review") {
         const { error } = await admin
