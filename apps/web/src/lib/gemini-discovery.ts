@@ -1,5 +1,5 @@
 import type { MarketplaceCategory } from "@payn/types";
-import { callGemini } from "@/lib/gemini-client";
+import { callGemini, extractJson } from "@/lib/gemini-client";
 
 // ─── Gemini research for offer discovery ─────────────────────────────────────
 //
@@ -47,7 +47,14 @@ RULES FOR FINANCIAL DATA (important — this is a regulated comparison site):
   no tracking/affiliate domain), e.g. "revolut.com".
 - confidence (0–1): how sure you are this provider + product + domain are correct
   and current. Be honest; 0.5 if unsure.
-- Return ONLY valid JSON, no markdown.`;
+
+SEARCH FIRST (grounding is enabled): Use Google Search to confirm every provider
+actually exists, is still operating, and serves the stated market. Take the
+providerDomain from the real search results — never guess it. Do NOT invent
+providers or domains; if search doesn't confirm one, leave it out. A wrong or
+dead domain is worse than fewer results.
+
+- Return the JSON object/array. Prose around it is tolerated, but the JSON must be valid.`;
 
 function sanitizeDraft(raw: unknown): GeminiOfferDraft | null {
   if (!raw || typeof raw !== "object") return null;
@@ -129,7 +136,7 @@ Return JSON:
 ${CONDITIONS_RULES}`;
 
   try {
-    const parsed = JSON.parse(await callGemini(prompt, { maxOutputTokens: 1200 }));
+    const parsed = extractJson(await callGemini(prompt, { maxOutputTokens: 1500, grounding: true }));
     return sanitizeDraft(parsed);
   } catch {
     return null;
@@ -175,12 +182,46 @@ Return JSON:
 ${CONDITIONS_RULES}`;
 
   try {
-    const parsed = JSON.parse(await callGemini(prompt, { maxOutputTokens: 2400 }));
+    const parsed = extractJson(await callGemini(prompt, { maxOutputTokens: 3000, grounding: true }));
     const offers = Array.isArray((parsed as { offers?: unknown[] })?.offers)
       ? (parsed as { offers: unknown[] }).offers
-      : [];
+      : Array.isArray(parsed)
+        ? (parsed as unknown[])
+        : [];
     return offers.map(sanitizeDraft).filter((d): d is GeminiOfferDraft => d !== null);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Self-correction: a proposed URL for `providerName` failed verification
+ * (`reason`). Ask grounded Gemini for the correct, currently-working official
+ * URL — searched, not guessed. The caller MUST still verify the returned URL.
+ */
+export async function correctProviderUrl(input: {
+  providerName: string;
+  providerDomain: string;
+  category: string;
+  badUrl: string;
+  reason: string;
+}): Promise<string | null> {
+  const prompt = `Use Google Search. We link users to "${input.providerName}" (${input.category}) but this URL is broken (${input.reason}):
+  ${input.badUrl}
+Provider's official domain: ${input.providerDomain || "find it"}
+
+Find the SINGLE best currently-working public URL on ${input.providerName}'s OWN official website for this product — or their homepage if no stable product page exists. Confirm it via search; do not guess.
+
+Return JSON only: {"url":"https://...","confidence":0.0}
+- https only, on the provider's own official domain (no tracking/affiliate/redirect domains).
+- If search can't confirm a working URL, return {"url":"","confidence":0}.`;
+  try {
+    const parsed = extractJson(await callGemini(prompt, { maxOutputTokens: 600, grounding: true })) as
+      | { url?: string }
+      | null;
+    const url = String(parsed?.url ?? "").trim();
+    return url.startsWith("https://") ? url : null;
+  } catch {
+    return null;
   }
 }

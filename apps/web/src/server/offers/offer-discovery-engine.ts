@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { MarketplaceCategory } from "@payn/types";
 import { financeadsConfigured } from "@/lib/financeads/client";
 import {
+  correctProviderUrl,
   discoverMarketOffers,
   researchProgramOffer,
   type GeminiOfferDraft,
@@ -113,8 +114,35 @@ function providerMark(name: string): string {
 
 /** Verify a draft's domain is reachable, and (if monetised) that the tracking link lands there. */
 async function validateDraft(draft: GeminiOfferDraft, trackingUrl: string | null) {
-  const providerUrl = `https://${draft.providerDomain}`;
-  const domainRes = await resolveUrl(providerUrl);
+  let providerUrl = `https://${draft.providerDomain}`;
+  let domainRes = await resolveUrl(providerUrl);
+  let corrected: string | null = null;
+
+  // Self-correction: if the proposed provider page doesn't render, ask grounded
+  // Gemini for the correct current official URL and re-verify (up to 2 tries).
+  // A link is only ever accepted after it passes resolveUrl — so a hallucinated
+  // or dead URL can never reach the catalog.
+  let tries = 0;
+  while (!domainRes.alive && tries < 2) {
+    tries += 1;
+    const fix = await correctProviderUrl({
+      providerName: draft.providerName,
+      providerDomain: draft.providerDomain,
+      category: draft.category,
+      badUrl: providerUrl,
+      reason: `status ${domainRes.status}`,
+    });
+    if (!fix || fix === providerUrl) break;
+    const recheck = await resolveUrl(fix);
+    if (recheck.alive) {
+      providerUrl = fix;
+      domainRes = recheck;
+      corrected = fix;
+      break;
+    }
+    providerUrl = fix; // feed the next correction attempt the latest failed URL
+    domainRes = recheck;
+  }
   const domainAlive = domainRes.alive;
 
   let trackingMatches: boolean | null = null;
@@ -124,7 +152,7 @@ async function validateDraft(draft: GeminiOfferDraft, trackingUrl: string | null
     trackingMatches =
       trackRes.alive && hostMatchesDomain(trackRes.finalHost, draft.providerDomain);
   }
-  return { providerUrl, domainAlive, trackingMatches };
+  return { providerUrl, domainAlive, trackingMatches, corrected };
 }
 
 function buildInsertRow(args: {
