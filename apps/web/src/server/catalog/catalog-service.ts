@@ -78,6 +78,25 @@ const getCachedDbOffers = unstable_cache(
   { revalidate: 3600, tags: ["catalog"] },
 );
 
+// Tombstones: slugs the catalog-review engine archived because their link is
+// permanently dead (404 / "unauthorised-ad"). These are EXCLUDED from the
+// catalog even when a static entry exists for the same slug — this is how the
+// engine removes a broken offer (e.g. eToro) that lives in the static lists.
+const getSuppressedSlugs = unstable_cache(
+  async (): Promise<string[]> => {
+    const admin = createSupabaseAdminClient();
+    if (!admin) return [];
+    const { data, error } = await admin
+      .from("product_offers")
+      .select("slug")
+      .eq("status", "archived");
+    if (error) return [];
+    return (data ?? []).map((r) => (r as { slug: string }).slug);
+  },
+  ["catalog-suppressed-slugs"],
+  { revalidate: 3600, tags: ["catalog"] },
+);
+
 // Request-level memo: one DB query per server request, no matter how many
 // catalog functions get called downstream. ALWAYS merges the static catalog
 // over the Supabase rows — static entries (e.g. financeads-monetized.ts)
@@ -86,10 +105,11 @@ const getCachedDbOffers = unstable_cache(
 // repo's affiliate-link / monetisation flags override stale DB values.
 const getAllOffers = cache(async (): Promise<MarketplaceOffer[]> => {
   // Use the cross-request unstable_cache layer — warm path is <10ms.
-  const rawRows = await getCachedDbOffers();
-  if (rawRows.length === 0) return marketplaceOffersStatic;
+  const [rawRows, suppressedSlugs] = await Promise.all([getCachedDbOffers(), getSuppressedSlugs()]);
+  const suppressed = new Set(suppressedSlugs);
+  if (rawRows.length === 0) return marketplaceOffersStatic.filter((o) => !suppressed.has(o.slug));
   const dbOffers = rawRows.map((row) => rowToOffer(row));
-  if (dbOffers.length === 0) return marketplaceOffersStatic;
+  if (dbOffers.length === 0) return marketplaceOffersStatic.filter((o) => !suppressed.has(o.slug));
 
   // Merge keyed by slug. The static list seeds the map, then DB rows are
   // layered on top with one exception to the old "static always wins" rule:
@@ -154,7 +174,8 @@ const getAllOffers = cache(async (): Promise<MarketplaceOffer[]> => {
     const existingScore = existing.affiliatePriorityScore ?? 0;
     if (offerScore > existingScore) byProviderCategory.set(key, offer);
   }
-  return [...byProviderCategory.values()];
+  // Drop tombstoned slugs last — the engine's "remove a dead offer" signal.
+  return [...byProviderCategory.values()].filter((offer) => !suppressed.has(offer.slug));
 });
 
 export async function listCategoryOffers(category: MarketplaceOffer["category"]) {

@@ -1727,38 +1727,6 @@ const expandedOffers: MarketplaceOffer[] = [
 
 const expandedInvestmentOffers: MarketplaceOffer[] = [
   {
-    id: "investment-etoro-multi-asset",
-    slug: "etoro-multi-asset",
-    category: "investments",
-    countryCodes: ["EU", "UK"],
-    providerMark: "ET",
-    providerName: "eToro",
-    title: "eToro Multi-Asset Investing",
-    subtitle: "Multi-asset investing access for users comparing stocks, ETFs, and crypto exposure in one account.",
-    metrics: [
-      { label: "Access", value: "Stocks, ETFs, crypto and copy portfolios" },
-      { label: "Fee model", value: "Spread and product fees vary" },
-      { label: "Minimum", value: "Low starting deposits" },
-    ],
-    bestFor: ["Multi-asset", "Beginner tools", "Crypto access"],
-    providerWebsiteUrl: "https://www.etoro.com",
-    affiliateLink: "https://www.etoro.com",
-    linkType: "affiliate_redirect",
-    affiliatePriorityScore: 0.8,
-    updatedAt: "2026-06-22T00:00:00Z",
-    attributes: {
-      subtype: "brokerage",
-      riskProfile: "balanced",
-      feeProfile: "medium",
-      availability: "international",
-      searchTags: ["stocks", "etfs", "crypto", "copy trading", "multi-asset"],
-      accessType: "multi_asset_brokerage",
-      recurringSupported: true,
-      minDeposit: "Low minimums",
-      platformUxLevel: "beginner",
-    },
-  },
-  {
     id: "investment-scalable-capital-broker",
     slug: "scalable-capital-broker",
     category: "investments",

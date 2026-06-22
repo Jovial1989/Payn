@@ -16,7 +16,10 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const report = await runCatalogReview({ apply });
-    if (apply && (report.autoFixed.relinked > 0 || report.autoFixed.flaggedDead > 0)) {
+    if (
+      apply &&
+      (report.autoFixed.relinked > 0 || report.autoFixed.flaggedDead > 0 || report.autoFixed.removed > 0)
+    ) {
       revalidateTag("catalog", {});
     }
     return NextResponse.json(report);

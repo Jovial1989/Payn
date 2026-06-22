@@ -83,7 +83,7 @@ export type CatalogReviewReport = {
   };
   partnersAccepted: number;
   monetizationCoveragePct: number;
-  autoFixed: { relinked: number; flaggedDead: number };
+  autoFixed: { relinked: number; flaggedDead: number; removed: number };
   worstOffers: OfferReview[];
   monetizationGaps: { provider: string; category: string; programId: number; inDb: boolean }[];
 };
@@ -283,6 +283,7 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
   // 3) auto-fix (DB-safe) + monetisation gap healing
   let relinked = 0;
   let flaggedDead = 0;
+  let removed = 0;
   const trackingCache = new Map<number, string | null>();
   async function trackingFor(programId: number): Promise<string | null> {
     if (trackingCache.has(programId)) return trackingCache.get(programId)!;
@@ -324,18 +325,65 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
         r.fixed.push("monetised with live partner link");
       }
     }
-    // 3b) flag dead links on DB-resident offers for human review
+    // 3b) handle dead links. Hard-dead (404 / "unauthorised-ad"→410) means the
+    // offer is no longer relevant → TOMBSTONE it so it leaves the catalog. This
+    // works for static offers too: an archived stub row makes catalog-service
+    // suppress the slug. Transient failures (timeout/5xx) → needs_review only.
     for (const r of reviews) {
       if (!r.issues.includes("dead_link")) continue;
       const existing = dbBySlug.get(r.slug);
-      if (!existing || existing.status === "needs_review") continue;
-      const { error } = await admin
-        .from("product_offers")
-        .update({ status: "needs_review", notes: `Catalog review ${now.slice(0, 10)}: link ${r.linkStatus}` })
-        .eq("id", existing.id);
-      if (!error) {
-        flaggedDead += 1;
-        r.fixed.push("flagged needs_review (dead link)");
+      const hardDead = r.linkStatus === 404 || r.linkStatus === 410;
+      const note = `Catalog review ${now.slice(0, 10)}: link dead (${r.linkStatus})`;
+      if (hardDead) {
+        if (existing) {
+          if (existing.status === "archived") continue;
+          const { error } = await admin
+            .from("product_offers")
+            .update({ status: "archived", notes: `${note} — removed` })
+            .eq("id", existing.id);
+          if (!error) {
+            removed += 1;
+            r.fixed.push("removed (dead link)");
+          }
+        } else {
+          // static-only offer → insert an archived tombstone so the catalog
+          // suppresses this slug even though it lives in the static lists.
+          const offer = offerBySlug.get(r.slug);
+          if (!offer) continue;
+          const { error } = await admin.from("product_offers").insert({
+            id: randomUUID(),
+            slug: offer.slug,
+            provider_name: offer.providerName,
+            provider_mark: offer.providerMark || offer.providerName.slice(0, 2).toUpperCase(),
+            provider_website_url: offer.providerWebsiteUrl || "",
+            title: offer.title,
+            subtitle: offer.subtitle || "",
+            category: offer.category,
+            country_codes: offer.countryCodes?.length ? offer.countryCodes : ["EU"],
+            affiliate_link: offer.affiliateLink || "",
+            link_type: offer.linkType || "affiliate_redirect",
+            affiliate_priority_score: 0,
+            best_for: offer.bestFor ?? [],
+            metrics: offer.metrics ?? [],
+            attributes: { ...(offer.attributes ?? {}), archived: { reason: note, at: now } },
+            is_monetised: false,
+            status: "archived",
+            updated_at: now,
+          });
+          if (!error) {
+            removed += 1;
+            r.fixed.push("removed (dead link, tombstoned)");
+          }
+        }
+      } else if (existing && existing.status !== "needs_review") {
+        const { error } = await admin
+          .from("product_offers")
+          .update({ status: "needs_review", notes: `Catalog review ${now.slice(0, 10)}: link unreachable (${r.linkStatus})` })
+          .eq("id", existing.id);
+        if (!error) {
+          flaggedDead += 1;
+          r.fixed.push("flagged needs_review (link unreachable)");
+        }
       }
     }
     // 3c) stamp lastReviewedAt on deep-reviewed DB offers (for rotation)
@@ -381,7 +429,7 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
     monetizationCoveragePct: partnerEligible.length
       ? Math.round((monetizedPartners.length / partnerEligible.length) * 100)
       : 100,
-    autoFixed: { relinked, flaggedDead },
+    autoFixed: { relinked, flaggedDead, removed },
     worstOffers: reviews
       .filter((r) => r.issues.length > 0)
       .sort((a, b) => a.relevanceScore - b.relevanceScore)
@@ -399,6 +447,7 @@ export async function runCatalogReview({ apply = false }: { apply?: boolean } = 
         gaps: report.totals.monetizationGaps,
         relinked,
         flaggedDead,
+        removed,
       },
     });
   }

@@ -40,6 +40,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     if (
       review.autoFixed.relinked > 0 ||
       review.autoFixed.flaggedDead > 0 ||
+      review.autoFixed.removed > 0 ||
       (discovery && discovery.published > 0)
     ) {
       revalidateTag("catalog", {});
@@ -53,6 +54,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       monetizationGaps: review.totals.monetizationGaps,
       relinked: review.autoFixed.relinked,
       flaggedDead: review.autoFixed.flaggedDead,
+      removed: review.autoFixed.removed,
       newOffersAddedThisWeek: recent + (discovery?.published ?? 0),
       newOffersThisRun: discovery?.published ?? 0,
       weeklyCap: WEEKLY_NEW_OFFER_CAP,

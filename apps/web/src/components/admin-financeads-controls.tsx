@@ -133,11 +133,13 @@ function ReviewSection() {
             <Metric label="Deep-checked" value={t.deepChecked} />
             <Metric label="Relevance fails" value={t.relevanceFails} warn={t.relevanceFails > 0} />
           </div>
-          {report.applied && (report.autoFixed.relinked > 0 || report.autoFixed.flaggedDead > 0) && (
-            <p className="mt-2 text-xs font-semibold text-accent-emerald-strong">
-              ✓ Auto-healed: {report.autoFixed.relinked} re-monetised, {report.autoFixed.flaggedDead} flagged for review.
-            </p>
-          )}
+          {report.applied &&
+            (report.autoFixed.relinked > 0 || report.autoFixed.flaggedDead > 0 || report.autoFixed.removed > 0) && (
+              <p className="mt-2 text-xs font-semibold text-accent-emerald-strong">
+                ✓ Auto-healed: {report.autoFixed.relinked} re-monetised, {report.autoFixed.removed} removed (dead),{" "}
+                {report.autoFixed.flaggedDead} flagged for review.
+              </p>
+            )}
 
           {report.monetizationGaps.length > 0 && (
             <div className="mt-4">
