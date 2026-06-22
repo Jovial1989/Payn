@@ -2,12 +2,17 @@ import { env } from "@/lib/env";
 import { financeadsConfigured } from "@/lib/financeads/client";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { AdminFinanceadsControls } from "@/components/admin-financeads-controls";
+import { AdminEnrichmentControls } from "@/components/admin-enrichment-controls";
+import { AdminOfferMaintenance } from "@/components/admin-offer-maintenance";
 
-// Affiliate Engine — the two offer engines:
-//   1. FinanceAds sync: pull partner programs + tracking links, mark catalog
-//      offers monetised with the live affiliate link.
-//   2. Gemini discovery: research new offers from partnered programs + the
-//      open market, validate, and publish (verified) or queue (for review).
+// Affiliate Engine — the single hub for offer quality + monetisation + growth
+// (absorbs the old "Offer Health" page):
+//   • Catalog review — audits every offer for relevance/links/freshness and
+//     heals what it safely can (this replaces the old standalone Reconcile).
+//   • FinanceAds sync — pull partner programs + tracking links, mark monetised.
+//   • Gemini discovery — research + verify new offers (publish or queue).
+//   • Enrichment — fill missing fields with AI.
+//   • Maintenance — bulk flag resets.
 export default async function AdminFinanceadsPage() {
   const admin = createSupabaseAdminClient();
   const configured = financeadsConfigured();
@@ -15,19 +20,25 @@ export default async function AdminFinanceadsPage() {
   let monetised = 0;
   let needsReview = 0;
   let synced = 0;
+  let missingLinks = 0;
 
   if (admin) {
-    const [monRes, reviewRes, syncRes] = await Promise.all([
+    const [monRes, reviewRes, syncRes, missingRes] = await Promise.all([
       admin.from("product_offers").select("*", { count: "exact", head: true }).eq("is_monetised", true),
       admin.from("product_offers").select("*", { count: "exact", head: true }).eq("status", "needs_review"),
       admin
         .from("product_offers")
         .select("*", { count: "exact", head: true })
         .not("attributes->financeads", "is", null),
+      admin
+        .from("product_offers")
+        .select("*", { count: "exact", head: true })
+        .or("affiliate_link.is.null,affiliate_link.eq."),
     ]);
     monetised = monRes.count ?? 0;
     needsReview = reviewRes.count ?? 0;
     synced = syncRes.count ?? 0;
+    missingLinks = missingRes.count ?? 0;
   }
 
   return (
@@ -35,8 +46,8 @@ export default async function AdminFinanceadsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-[-0.03em] text-ink">Affiliate Engine</h1>
         <p className="mt-1 max-w-2xl text-sm text-ink-secondary">
-          Pull live FinanceAds partnerships into the catalog and discover new offers with AI.
-          Always preview before applying.
+          Keep the catalog relevant + monetised: audit & heal offer health, sync FinanceAds
+          partnerships, and discover new offers with AI. Always preview before applying.
           {!configured && (
             <span className="ml-2 font-semibold text-red-500">
               — FINANCEADS_API_KEY / FINANCEADS_ADSPACE not set
@@ -50,9 +61,15 @@ export default async function AdminFinanceadsPage() {
         <Stat label="Monetised offers" value={String(monetised)} />
         <Stat label="Live-synced" value={String(synced)} />
         <Stat label="Needs review" value={String(needsReview)} warn={needsReview > 0} />
+        <Stat label="Missing links" value={String(missingLinks)} warn={missingLinks > 0} />
       </div>
 
+      {/* Engines: Catalog review (audit/heal — replaces Reconcile) + FinanceAds sync + Gemini discovery */}
       <AdminFinanceadsControls />
+
+      {/* Offer Health utilities (merged in): fill gaps with AI + bulk maintenance */}
+      <AdminEnrichmentControls />
+      <AdminOfferMaintenance />
     </div>
   );
 }

@@ -18,9 +18,7 @@ const NAV_GROUPS: NavGroup[] = [
     heading: "Catalog",
     items: [
       { href: "/admin/offers", label: "Offers" },
-      { href: "/admin/offer-health", label: "Offer Health" },
       { href: "/admin/financeads", label: "Affiliate Engine" },
-      { href: "/admin/parser", label: "Import" },
     ],
   },
   {
