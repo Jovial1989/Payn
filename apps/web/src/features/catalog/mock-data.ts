@@ -456,8 +456,8 @@ export const featuredOffers: MarketplaceOffer[] = [
     bestFor: ["Card consolidation", "Go Back in Time", "Cashback"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
-    providerWebsiteUrl: "https://www.curve.com/en-gb/pricing/",
-    affiliateLink: "https://www.curve.com/en-gb/pricing/",
+    providerWebsiteUrl: "https://www.curve.com/",
+    affiliateLink: "https://www.curve.com/",
     updatedAt: "2026-05-19T00:00:00Z",
   },
   {
