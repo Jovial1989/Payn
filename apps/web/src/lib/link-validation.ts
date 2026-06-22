@@ -76,12 +76,17 @@ export async function resolveUrl(url: string, timeoutMs = 12_000): Promise<LinkR
       finalHost = null;
     }
 
+    const finalUrlStr = res.url || url;
+    // Affiliate dead-ends: a link can return 200 yet land on an "unauthorised
+    // ad" / rejected-creative page (e.g. etoro.com/trading/unauthorised-ad).
+    // Treat those as not alive so the review flags them instead of trusting 200.
+    const deadEnd = /unauthoris(e|ed|ation)|unauthoriz(e|ed|ation)/i.test(finalUrlStr);
     const botProtected = res.status === 401 || res.status === 403 || res.status === 429;
     return {
-      alive: res.status < 400 || botProtected,
-      status: res.status,
+      alive: (res.status < 400 || botProtected) && !deadEnd,
+      status: deadEnd ? 410 : res.status,
       botProtected,
-      finalUrl: res.url || url,
+      finalUrl: finalUrlStr,
       finalHost,
     };
   } catch (e: unknown) {

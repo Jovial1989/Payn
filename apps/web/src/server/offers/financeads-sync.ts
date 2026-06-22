@@ -6,6 +6,7 @@ import {
   pickPrimaryTrackingLink,
   type FinanceAdsProgram,
 } from "@/lib/financeads/client";
+import { resolveUrl } from "@/lib/link-validation";
 import { normalizeName } from "@/server/offers/discovery/name-utils";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
@@ -195,8 +196,20 @@ export async function runFinanceAdsSync({
       const materials = await fetchProgramMaterials(program.id);
       const primary = pickPrimaryTrackingLink(materials);
       if (primary) {
-        trackingUrl = primary.trackingUrl;
-        materialId = primary.materialId;
+        // Validate the link actually lands somewhere real before we trust it.
+        // Catches dead-ends like an "unauthorised-ad" page (200 but useless)
+        // or a 404 landing, so the sync never writes a broken affiliate link.
+        const check = await resolveUrl(primary.trackingUrl);
+        if (check.alive) {
+          trackingUrl = primary.trackingUrl;
+          materialId = primary.materialId;
+        } else {
+          return {
+            ...rowBase,
+            outcome: "no_material",
+            error: `tracking link dead-ends (status ${check.status}) → not applied`,
+          };
+        }
       }
     } catch (e) {
       return { ...rowBase, outcome: "error", error: e instanceof Error ? e.message : "materials fetch failed" };
