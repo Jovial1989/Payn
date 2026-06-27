@@ -81,41 +81,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     end: 1.06,
   ).animate(_bgCtrl);
 
+  // Redesign: 3 punchy pages, one cohesive emerald brand colour (dropped
+  // the off-brand blue/orange), copy aligned with the web hero.
   static const List<_OnboardingPage> _pages = [
     _OnboardingPage(
-      icon: Icons.rocket_launch_rounded,
-      iconColor: Color(0xFF1F6FEB),
-      title: 'Welcome to Payn',
-      subtitle:
-          'Compare 350+ financial products across Europe — ranked for you, not for banks.',
-    ),
-    _OnboardingPage(
-      icon: Icons.leaderboard_rounded,
+      icon: Icons.insights_rounded,
       iconColor: PaynColors.accent,
-      title: 'Smart rankings',
+      title: 'Compare every bank, card & app',
       subtitle:
-          'Every offer is scored by cost, fit, and provider quality. You see the reasoning, not just the result.',
+          'Ranked by what it really costs you — not by who pays us.',
     ),
     _OnboardingPage(
-      icon: Icons.tune_rounded,
-      iconColor: Color(0xFFC46B1A),
-      title: 'Built for your market',
-      subtitle:
-          'Set your country and language. Rankings adapt to your real options — not generic European averages.',
-    ),
-    _OnboardingPage(
-      icon: Icons.verified_rounded,
+      icon: Icons.verified_user_rounded,
       iconColor: PaynColors.accent,
-      title: 'Free. Honest. Always.',
+      title: 'No bias. Free. Account optional.',
       subtitle:
-          'We earn commission when providers benefit. That\'s disclosed upfront and never changes the ranking order.',
+          'We earn a commission on some links — it never changes the ranking. Compare everything for free.',
     ),
     _OnboardingPage(
-      icon: Icons.explore_rounded,
-      iconColor: Color(0xFF1F6FEB),
-      title: 'Start exploring',
+      icon: Icons.bolt_rounded,
+      iconColor: PaynColors.accent,
+      title: 'Your best option, in seconds',
       subtitle:
-          'Browse loans, cards, transfers, and more. No account required — sign in anytime to save your favourites.',
+          'Cards, accounts, transfers, savings and more — all in one place.',
     ),
   ];
 
@@ -193,29 +181,52 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Background circle pulse
+                                  // Soft emerald glow ring (pulsing)
                                   ScaleTransition(
                                     scale: _bgScale,
                                     child: Container(
-                                      width: 160,
-                                      height: 160,
+                                      width: 172,
+                                      height: 172,
                                       decoration: BoxDecoration(
-                                        color: page.iconColor.withValues(
-                                          alpha: 0.10,
+                                        color: PaynColors.accent.withValues(
+                                          alpha: 0.12,
                                         ),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
                                   ),
-                                  // Floating icon with entry scale
+                                  // Premium emerald medallion + white icon
                                   Transform.translate(
                                     offset: Offset(0, _iconFloat.value),
                                     child: ScaleTransition(
                                       scale: _iconScale,
-                                      child: Icon(
-                                        page.icon,
-                                        size: 54,
-                                        color: page.iconColor,
+                                      child: Container(
+                                        width: 112,
+                                        height: 112,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              PaynColors.accent,
+                                              PaynColors.accentStrong,
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: PaynColors.accent
+                                                  .withValues(alpha: 0.32),
+                                              blurRadius: 28,
+                                              offset: const Offset(0, 12),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          page.icon,
+                                          size: 50,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),

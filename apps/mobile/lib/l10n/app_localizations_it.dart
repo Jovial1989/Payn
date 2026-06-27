@@ -358,7 +358,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'L\'accesso è facoltativo. La modalità ospite funziona senza account.';
+      'L\'accesso è facoltativo: esplora come ospite o crea un account quando vuoi.';
 
   @override
   String get authSignUp => 'Registrati';

@@ -8,6 +8,7 @@ import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/core/utils/formatters.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
+import 'package:payn_mobile/shared/models/payn_job.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
@@ -21,6 +22,15 @@ import 'package:payn_mobile/shared/widgets/payn_shell.dart';
 import 'package:payn_mobile/shared/widgets/skeleton_card.dart';
 
 enum _ExploreSort { bestMatch, lowestFee, fastest, recommended }
+
+// SIMP — Show only 3 sorts in the row. "Top picks" (recommended)
+// duplicated "Best match" and muddied which one is the default (P1.3).
+// It stays in the enum for back-compat but is no longer surfaced.
+const List<_ExploreSort> _kVisibleSorts = <_ExploreSort>[
+  _ExploreSort.bestMatch,
+  _ExploreSort.lowestFee,
+  _ExploreSort.fastest,
+];
 
 // Order of Explore category pills — mirrors web's 9 OUTCOME_BUCKETS
 // (Cards / Saving / Sending money / Bank accounts / Investing /
@@ -207,7 +217,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   _searchVisible ? 14 : 16,
                 ),
                 decoration: const BoxDecoration(
-                  color: PaynColors.surfaceDark,
+                  color: PaynColors.surface,
                 ),
                 child: _searchVisible
                     ? Column(
@@ -220,7 +230,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               Icon(
                                 Icons.search_rounded,
                                 size: 18,
-                                color: Colors.white.withValues(alpha: 0.55),
+                                color: PaynColors.textSecondary,
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -228,7 +238,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   controller: _searchController,
                                   focusNode: _searchFocusNode,
                                   style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: Colors.white,
+                                    color: PaynColors.text,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: -0.2,
                                     fontSize: 17,
@@ -268,7 +278,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   decoration: InputDecoration(
                                     hintText: l10n.exploreSearchPlaceholder,
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.35),
+                                      color: PaynColors.textTertiary,
                                     ),
                                     filled: true,
                                     fillColor: Colors.transparent,
@@ -292,7 +302,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                             child: const Icon(
                                               Icons.close_rounded,
                                               size: 15,
-                                              color: Colors.white60,
+                                              color: PaynColors.textSecondary,
                                             ),
                                           ),
                                   ),
@@ -333,7 +343,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.labelMedium?.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                      color: PaynColors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -369,6 +379,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       )
                     : _ExploreHeader(
                         visibleCount: results.length,
+                        scopeLabel: controller.selectedExploreCategory != null
+                            ? _bucketLabel(
+                                controller.selectedExploreCategory!,
+                                l10n,
+                              )
+                            : null,
                         totalInCategory: controller.exploreCategoryTotal,
                         marketLabel:
                             controller.preferences.market.localizedLabel(l10n),
@@ -408,7 +424,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
               maxExtent: 132,
               child: Container(
                 decoration: const BoxDecoration(
-                  color: PaynColors.surfaceDark,
+                  color: PaynColors.surface,
+                  border: Border(
+                    bottom: BorderSide(color: PaynColors.outlineSubtle),
+                  ),
                 ),
                 padding: const EdgeInsets.only(top: 8, bottom: 14),
                 child: Column(
@@ -449,6 +468,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 label: l10n.exploreAll,
                                 detail: '${controller.exploreResults.length}',
                                 selected: selected,
+                                icon: Icons.grid_view_rounded,
                                 onTap: () {
                                   _pulseLoading();
                                   controller.setExploreCategory(null);
@@ -467,6 +487,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             return _ControlChip(
                               label: _bucketLabel(category, l10n),
                               detail: '$count',
+                              icon: category.tabIcon,
                               selected:
                                   controller.selectedExploreCategory ==
                                   category,
@@ -520,10 +541,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _ExploreSort.values.length,
+                          itemCount: _kVisibleSorts.length,
                           separatorBuilder: (_, __) => const SizedBox(width: 8),
                           itemBuilder: (context, index) {
-                            final option = _ExploreSort.values[index];
+                            final option = _kVisibleSorts[index];
                             return _SortChip(
                               label: _sortLabel(option, l10n),
                               selected: _sort == option,
@@ -1402,15 +1423,22 @@ class _CatalogErrorBanner extends StatelessWidget {
 // fixed slice; total is 0 when no deep filters apply (e.g. no category
 // selected) so the sliver collapses entirely.
 double _stickyFilterExtent(AppController controller) {
+  final cat = controller.selectedExploreCategory;
   double extent = 0;
-  if (controller.selectedExploreCategory == PaynCategory.insurance ||
-      controller.selectedExploreCategory == PaynCategory.cards) {
+  if (cat == PaynCategory.insurance || cat == PaynCategory.cards) {
     // 38pt chips + 12pt top padding + 8pt below
     extent += 58;
   }
-  if (_quickFilterCategory(controller.selectedExploreCategory) != null) {
+  if (_quickFilterCategory(cat) != null) {
+    // Insurance dimension facets are per-subtype — _DimensionPillRow returns
+    // an empty box until a subtype chip is active. Reserving its 58pt slot
+    // before then is what produced the hollow white band above the results,
+    // so only count it once it will actually paint.
+    final dimsWillRender = cat == PaynCategory.insurance
+        ? controller.exploreFilters.subtype.isNotEmpty
+        : true;
     // 42pt dimension pills + 10pt top padding + 6pt below
-    extent += 58;
+    if (dimsWillRender) extent += 58;
   }
   return extent;
 }
@@ -1529,12 +1557,14 @@ class _ControlChip extends StatelessWidget {
     required this.detail,
     required this.selected,
     required this.onTap,
+    this.icon,
   });
 
   final String label;
   final String detail;
   final bool selected;
   final VoidCallback onTap;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -1550,37 +1580,46 @@ class _ControlChip extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 84),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: selected
-                ? PaynColors.accent
-                : Colors.white.withValues(alpha: 0.12),
+            color: selected ? PaynColors.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected
-                  ? Colors.transparent
-                  : Colors.white.withValues(alpha: 0.18),
+                  ? PaynColors.outlineSubtle
+                  : Colors.transparent,
             ),
-            boxShadow:
-                selected
-                    ? <BoxShadow>[
-                      BoxShadow(
-                        color: PaynColors.accent.withValues(alpha: 0.22),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ]
-                    : null,
+            boxShadow: selected
+                ? <BoxShadow>[
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              if (icon != null) ...<Widget>[
+                Icon(
+                  icon,
+                  size: 15,
+                  color: selected
+                      ? PaynColors.accentStrong
+                      : PaynColors.textTertiary,
+                ),
+                const SizedBox(width: 7),
+              ],
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                    color: selected
+                        ? PaynColors.accentStrong
+                        : PaynColors.textSecondary,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
@@ -1590,16 +1629,16 @@ class _ControlChip extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: selected
-                      ? Colors.white.withValues(alpha: 0.22)
-                      : Colors.white.withValues(alpha: 0.14),
+                      ? PaynColors.accentSurface
+                      : PaynColors.surfaceDim,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   detail,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: selected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.65),
+                        ? PaynColors.accentStrong
+                        : PaynColors.textTertiary,
                     fontWeight: FontWeight.w700,
                     fontSize: 10,
                   ),
@@ -1640,30 +1679,22 @@ class _SortChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: selected
-                ? PaynColors.accent
-                : Colors.white.withValues(alpha: 0.12),
+                ? PaynColors.accentSurface
+                : PaynColors.surfaceDim,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected
                   ? Colors.transparent
-                  : Colors.white.withValues(alpha: 0.18),
+                  : PaynColors.outlineSubtle,
             ),
-            boxShadow:
-                selected
-                    ? <BoxShadow>[
-                      BoxShadow(
-                        color: PaynColors.accent.withValues(alpha: 0.18),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ]
-                    : null,
           ),
           child: Text(
             label,
             style: theme.textTheme.labelLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+              color: selected
+                  ? PaynColors.accentStrong
+                  : PaynColors.textSecondary,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -1688,9 +1719,11 @@ class _ExploreHeader extends StatelessWidget {
     required this.searchActive,
     required this.onSearchTap,
     required this.filterButton,
+    this.scopeLabel,
   });
 
   final int visibleCount;
+  final String? scopeLabel;
   final int totalInCategory;
   final String marketLabel;
   final bool hasFilters;
@@ -1715,16 +1748,16 @@ class _ExploreHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                '$visibleCount ranked offers',
+                scopeLabel ?? 'All offers',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
-                  color: PaynColors.textInverse,
+                  color: PaynColors.text,
                 ),
               ),
-              if (showDelta) ...<Widget>[
-                const SizedBox(height: 4),
+              const SizedBox(height: 3),
+              if (showDelta)
                 Row(
                   children: <Widget>[
                     Flexible(
@@ -1733,7 +1766,7 @@ class _ExploreHeader extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: PaynColors.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1760,8 +1793,15 @@ class _ExploreHeader extends StatelessWidget {
                       ),
                     ),
                   ],
+                )
+              else
+                Text(
+                  '$visibleCount options in $marketLabel',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: PaynColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ],
             ],
           ),
         ),
@@ -2303,7 +2343,7 @@ class _InsuranceSubtypeChips extends StatelessWidget {
           final s = _subtypes[index];
           final count = counts[s.value] ?? 0;
           if (count == 0) return const SizedBox.shrink();
-          return _SortChip(
+          return _PillChip(
             label: s.label,
             selected: selected == s.value,
             onTap: () {
@@ -2362,7 +2402,7 @@ class _CardsSubtypeChips extends StatelessWidget {
           final s = _subtypes[index];
           final count = counts[s.value] ?? 0;
           if (count == 0) return const SizedBox.shrink();
-          return _SortChip(
+          return _PillChip(
             label: s.label,
             selected: selected == s.value,
             onTap: () {

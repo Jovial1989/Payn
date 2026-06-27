@@ -358,7 +358,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'O login é opcional. O modo convidado funciona sem conta.';
+      'O login é opcional: navegue como convidado ou crie uma conta quando quiser.';
 
   @override
   String get authSignUp => 'Registar';

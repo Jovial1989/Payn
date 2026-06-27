@@ -156,7 +156,7 @@
   "profileGuestSummary": "Frei stöbern, lokal speichern und deinen Markt jederzeit personalisieren.",
   "authSignIn": "Anmelden",
   "authCreateAccount": "Konto erstellen",
-  "authOptionalDescription": "Anmeldung ist optional. Der Gastmodus funktioniert ohne Konto.",
+  "authOptionalDescription": "Anmeldung ist optional — als Gast stöbern oder jederzeit ein Konto erstellen.",
   "authSignUp": "Registrieren",
   "authEmail": "E-Mail",
   "authEmailPlaceholder": "du@beispiel.de",

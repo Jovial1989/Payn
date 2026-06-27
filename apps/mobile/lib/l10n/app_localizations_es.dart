@@ -357,7 +357,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'El inicio de sesión es opcional. El modo invitado funciona sin cuenta.';
+      'Iniciar sesión es opcional: explora como invitado o crea una cuenta cuando quieras.';
 
   @override
   String get authSignUp => 'Registrarse';

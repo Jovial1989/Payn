@@ -745,7 +745,7 @@ abstract class AppLocalizations {
   /// No description provided for @authOptionalDescription.
   ///
   /// In en, this message translates to:
-  /// **'Login is optional. Guest mode works without an account.'**
+  /// **'Signing in is optional — browse as a guest, or create an account anytime.'**
   String get authOptionalDescription;
 
   /// No description provided for @authSignUp.

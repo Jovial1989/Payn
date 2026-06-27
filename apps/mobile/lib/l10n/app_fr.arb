@@ -156,7 +156,7 @@
   "profileGuestSummary": "Parcourez librement, enregistrez localement et personnalisez votre marché à tout moment.",
   "authSignIn": "Se connecter",
   "authCreateAccount": "Créer un compte",
-  "authOptionalDescription": "La connexion est facultative. Le mode invité fonctionne sans compte.",
+  "authOptionalDescription": "La connexion est facultative — parcourez en invité ou créez un compte à tout moment.",
   "authSignUp": "S'inscrire",
   "authEmail": "Email",
   "authEmailPlaceholder": "you@example.com",

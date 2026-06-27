@@ -72,10 +72,8 @@ class PaynShell extends StatelessWidget {
 // Reduce-motion: the OS accessibility flag collapses everything to an
 // instant snap, same as the other tabs.
 
-const int _exploreBranchIndex = 1;
-// MOB.7 — Saved branch index. Used by the Compare-bar gating + by the
-// cinematic intro stage (intro only fires when entering Explore, not
-// Saved).
+// MOB.7 — Saved branch index (Home 0 / Explore 1 / Saved 2 / Profile 3),
+// used by the Compare-bar badge gating.
 const int _savedBranchIndex = 2;
 
 class _TabTransitionStage extends StatefulWidget {
@@ -114,14 +112,10 @@ class _TabTransitionStageState extends State<_TabTransitionStage>
     final newIndex = widget.navigationShell.currentIndex;
     if (newIndex == _currentIndex) return;
     _currentIndex = newIndex;
-    if (newIndex == _exploreBranchIndex) {
-      // Going TO Explore — play the icon-cascade intro.
-      _controller.forward(from: 0);
-    } else {
-      // Going to any other tab — snap, no animation. Park the
-      // controller at the end value so build() returns the bare shell.
-      _controller.value = 1.0;
-    }
+    // SIMP — Explore is no longer a tab branch (it's a pushed results
+    // route from Home jobs), so the cinematic tab-intro is retired.
+    // Snap with no animation on every branch switch.
+    _controller.value = 1.0;
   }
 
   @override

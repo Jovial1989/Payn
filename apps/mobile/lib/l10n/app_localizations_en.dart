@@ -357,7 +357,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'Login is optional. Guest mode works without an account.';
+      'Signing in is optional — browse as a guest, or create an account anytime.';
 
   @override
   String get authSignUp => 'Sign up';

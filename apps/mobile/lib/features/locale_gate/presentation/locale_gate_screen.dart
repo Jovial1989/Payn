@@ -64,7 +64,11 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
     final selectedLanguage = _selectedLanguage;
     if (selectedLanguage != null) {
       selectedLanguageValue =
-          '${selectedLanguage.native} — ${selectedLanguage.localizedLabel(l10n)}';
+          selectedLanguage.native.toLowerCase() ==
+                  selectedLanguage.localizedLabel(l10n).toLowerCase()
+              // Collapse "English — English" → "English" (P2.12 parity).
+              ? selectedLanguage.native
+              : '${selectedLanguage.native} — ${selectedLanguage.localizedLabel(l10n)}';
       selectedLanguageFlag =
           selectedLanguage.flag.isNotEmpty ? selectedLanguage.flag : null;
     }
@@ -209,7 +213,7 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
           (e) => e.market == market,
           orElse: () => _MarketEntry(
             market: market,
-            flag: market == PaynMarket.international ? '🌍' : '🇪🇺',
+            flag: '🇪🇺',
           ),
         )
         .flag;
@@ -263,7 +267,11 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               value: language,
               leading: language.flag,
               label:
-                  '${language.native} — ${language.localizedLabel(context.l10n)}',
+                  language.native.toLowerCase() ==
+                          language.localizedLabel(context.l10n).toLowerCase()
+                      // Collapse "English — English" → "English" (P2.12 parity).
+                      ? language.native
+                      : '${language.native} — ${language.localizedLabel(context.l10n)}',
               selected: _selectedLanguage?.code == language.code,
             );
           }).toList(),
@@ -307,7 +315,6 @@ const _supportedMarkets = <_MarketEntry>[
   _MarketEntry(market: PaynMarket.nl, flag: '🇳🇱'),
   _MarketEntry(market: PaynMarket.pt, flag: '🇵🇹'),
   _MarketEntry(market: PaynMarket.eu, flag: '🇪🇺'),
-  _MarketEntry(market: PaynMarket.international, flag: '🌍'),
 ];
 
 class _AppLanguage {

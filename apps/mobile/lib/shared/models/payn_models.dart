@@ -75,7 +75,7 @@ extension PaynCategoryLabel on PaynCategory {
   }
 }
 
-enum PaynMarket { eu, international, de, es, uk, fr, it, pt, nl }
+enum PaynMarket { eu, de, es, uk, fr, it, pt, nl }
 
 enum ProfileType { personal, freelancer, business }
 

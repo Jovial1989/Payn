@@ -43,8 +43,6 @@ extension PaynMarketL10n on PaynMarket {
     switch (this) {
       case PaynMarket.eu:
         return l10n.marketEu;
-      case PaynMarket.international:
-        return l10n.marketInternational;
       case PaynMarket.de:
         return l10n.marketGermany;
       case PaynMarket.es:

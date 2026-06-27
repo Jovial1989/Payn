@@ -358,7 +358,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'Anmeldung ist optional. Der Gastmodus funktioniert ohne Konto.';
+      'Anmeldung ist optional — als Gast stöbern oder jederzeit ein Konto erstellen.';
 
   @override
   String get authSignUp => 'Registrieren';

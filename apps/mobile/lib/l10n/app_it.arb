@@ -156,7 +156,7 @@
   "profileGuestSummary": "Naviga liberamente, salva in locale e personalizza il tuo mercato in qualsiasi momento.",
   "authSignIn": "Accedi",
   "authCreateAccount": "Crea account",
-  "authOptionalDescription": "L'accesso è facoltativo. La modalità ospite funziona senza account.",
+  "authOptionalDescription": "L'accesso è facoltativo: esplora come ospite o crea un account quando vuoi.",
   "authSignUp": "Registrati",
   "authEmail": "Email",
   "authEmailPlaceholder": "tu@example.com",

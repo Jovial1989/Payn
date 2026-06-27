@@ -348,7 +348,7 @@ class _AuthScreenState extends State<AuthScreen> {
     });
     try {
       await AppScope.of(context).signInWithGoogle();
-      if (!mounted) return;
+      if (!context.mounted) return;
       // Explicit navigation — GoRouter redirect fires on notifyListeners but
       // can miss the frame; this guarantees immediate transition.
       context.go('/home');

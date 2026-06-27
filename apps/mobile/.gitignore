@@ -1,3 +1,12 @@
+# Store/distribution secrets — never commit
+*.p8                          # App Store Connect API key
+*.jks                         # Android upload/release keystore
+*.keystore
+key.properties
+android/key.properties
+**/play-service-account*.json # Google Play API service account
+ios/ExportOptions*.plist
+
 # Miscellaneous
 *.class
 *.log

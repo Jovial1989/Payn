@@ -156,7 +156,7 @@
   "profileGuestSummary": "Navega libremente, guarda localmente y personaliza tu mercado en cualquier momento.",
   "authSignIn": "Iniciar sesión",
   "authCreateAccount": "Crear cuenta",
-  "authOptionalDescription": "El inicio de sesión es opcional. El modo invitado funciona sin cuenta.",
+  "authOptionalDescription": "Iniciar sesión es opcional: explora como invitado o crea una cuenta cuando quieras.",
   "authSignUp": "Registrarse",
   "authEmail": "Correo electrónico",
   "authEmailPlaceholder": "tu@ejemplo.com",

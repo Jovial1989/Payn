@@ -559,12 +559,6 @@ class LocalMarketplaceRepository {
           'es' => 'Toda Europa',
           _ => 'All Europe',
         };
-      case PaynMarket.international:
-        return switch (languageCode) {
-          'de' => 'International',
-          'es' => 'Internacional',
-          _ => 'International',
-        };
       case PaynMarket.de:
         return switch (languageCode) {
           'de' => 'Deutschland',
@@ -775,13 +769,6 @@ class LocalMarketplaceRepository {
 
     if (market == PaynMarket.eu) {
       return euWideMatch || internationalMatch || codes.length >= 4;
-    }
-
-    if (market == PaynMarket.international) {
-      return euWideMatch ||
-          codes.length >= 4 ||
-          internationalMatch ||
-          globallyRecognizedProviders.contains(offer.providerName);
     }
 
     return codes.contains(marketCode) || euWideMatch || internationalMatch;

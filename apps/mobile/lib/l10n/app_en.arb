@@ -156,7 +156,7 @@
   "profileGuestSummary": "Browse freely, save locally, and personalize your market at any time.",
   "authSignIn": "Sign in",
   "authCreateAccount": "Create account",
-  "authOptionalDescription": "Login is optional. Guest mode works without an account.",
+  "authOptionalDescription": "Signing in is optional — browse as a guest, or create an account anytime.",
   "authSignUp": "Sign up",
   "authEmail": "Email",
   "authEmailPlaceholder": "you@example.com",

@@ -359,7 +359,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'La connexion est facultative. Le mode invité fonctionne sans compte.';
+      'La connexion est facultative — parcourez en invité ou créez un compte à tout moment.';
 
   @override
   String get authSignUp => 'S\'inscrire';
