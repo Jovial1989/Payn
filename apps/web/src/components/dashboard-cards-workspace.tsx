@@ -582,7 +582,51 @@ export function DashboardCardsWorkspace({
     );
   }, [rankedResults]);
 
-  const topResults = rankedResults.slice(0, 3);
+  // Three angle-distinct picks instead of top-3-by-score (which all surfaced
+  // an identical "€0/yr"). Overall = top rank, travel = lowest FX, cashback =
+  // highest cashback — each shows the number that earns it that slot, so the
+  // three cards visibly differ instead of repeating the same figure.
+  type SummaryPick = {
+    row: (typeof rankedResults)[number];
+    label: string;
+    detail: string;
+  };
+  const summaryPicks: SummaryPick[] = (() => {
+    const overall = rankedResults[0];
+    if (!overall) return [];
+    const travel = [...rankedResults]
+      .filter((r) => r.offer.id !== overall.offer.id)
+      .sort((a, b) => a.fxFee - b.fxFee)[0];
+    const cashback = [...rankedResults]
+      .filter(
+        (r) => r.offer.id !== overall.offer.id && r.offer.id !== travel?.offer.id,
+      )
+      .sort((a, b) => b.cashback - a.cashback)[0];
+    const yearly = (r: (typeof rankedResults)[number]) =>
+      `${r.primaryValue} ${copy.estimatedYearlyCost.toLowerCase()}`;
+    const pct = (v: number) => v.toFixed(v >= 1 ? 0 : 2);
+    const picks: SummaryPick[] = [
+      { row: overall, label: copy.summaryBest, detail: yearly(overall) },
+    ];
+    if (travel) {
+      picks.push({
+        row: travel,
+        label: copy.summaryTravel,
+        detail: `${travel.fxFee <= 0 ? "0" : pct(travel.fxFee)}% FX fee`,
+      });
+    }
+    if (cashback) {
+      picks.push({
+        row: cashback,
+        label: copy.summaryCashback,
+        detail:
+          cashback.cashback > 0
+            ? `${pct(cashback.cashback)}% cashback`
+            : yearly(cashback),
+      });
+    }
+    return picks;
+  })();
   const selectedCompareRows = rankedResults
     .filter((row) => compareSelection.includes(row.offer.id))
     .slice(0, 3);
@@ -719,15 +763,15 @@ export function DashboardCardsWorkspace({
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {topResults.map((row, index) => (
-            <div key={row.offer.id} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
+          {summaryPicks.map((pick) => (
+            <div key={pick.label} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                {index === 0 ? copy.summaryBest : index === 1 ? copy.summaryTravel : copy.summaryCashback}
+                {pick.label}
               </p>
               <p className="mt-2 text-sm font-bold text-ink">
-                {row.offer.providerName} · {row.offer.title}
+                {pick.row.offer.providerName} · {pick.row.offer.title}
               </p>
-              <p className="mt-2 text-sm text-ink-secondary">{row.primaryValue} {copy.estimatedYearlyCost.toLowerCase()}</p>
+              <p className="mt-2 text-sm text-ink-secondary">{pick.detail}</p>
             </div>
           ))}
         </div>
