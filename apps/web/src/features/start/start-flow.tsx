@@ -128,7 +128,7 @@ export function StartFlow() {
           Hi. Let&apos;s see what your money options actually are.
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-ink-secondary">
-          Pick what&apos;s true for you — you can pick more than one. No account
+          Pick what&apos;s true for you — you can pick more than one. No sign-up
           needed, no email, no spam. We&apos;ll show you the best option for each thing.
         </p>
 

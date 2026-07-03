@@ -545,10 +545,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Join mobile waitlist",
       howWeRankOffers: "How we rank offers",
-      noAccountRequired: "No account required to compare.",
+      noAccountRequired: "No sign-up needed to compare — your account is optional.",
       heroPillProviders: "50+ providers compared",
       heroPillCategories: "40+ countries covered",
-      heroPillNoSignup: "Free · no account needed",
+      heroPillNoSignup: "Free · no sign-up needed",
       heroEyebrowShort: "Europe's #1 Financial Marketplace",
       heroHeadline: "Most people overpay. You won't.",
       heroSubtitleShort: "Compare 50+ providers across loans, cards, transfers & more — see the real cost before you apply.",
@@ -671,7 +671,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       // with global banking experience" (sounds like a Big Four ad)
       // for a one-liner that says what the site does.
       copy:
-        "We track 150+ banks, lenders and insurers across Europe — cards, loans, transfers, savings, insurance — so you don't have to. Free, no account needed.",
+        "We track 150+ banks, lenders and insurers across Europe — cards, loans, transfers, savings, insurance — so you don't have to. Free, no sign-up needed.",
       credibility: "Built by Kyrylo Petrov, ex-fintech operator.",
       disclaimer:
         "Some links pay us a referral fee. That fee doesn't change the rank — we tell you which links pay us.",
@@ -731,11 +731,11 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       // discover what else exists, then decide for yourself". Same
       // 1-read clarity, none of the antagonism.
       hero: {
-        eyebrow: "Every money option in Europe, in one place.",
-        headline: "Know what's actually on the market.",
-        sub: "Ranked by what it really costs you — not who pays us. Free, no account needed to compare.",
+        eyebrow: "Compare Europe's banks, cards & money apps",
+        headline: "Find the cheapest way to spend, send and save.",
+        sub: "We rank every card, account and transfer by what it really costs you — not who pays us. Free, no sign-up needed.",
         cta: "What do you want to do?",
-        trustLine: "Free · No account needed · No affiliate bias",
+        trustLine: "Free · No sign-up needed · No affiliate bias",
       },
       badges: {
         newRate: "NEW RATE",
@@ -768,7 +768,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "No 'best for you' guesses. No quizzes. Just full inventory — you pick what fits.",
       },
       providerStrip: {
-        label: "LIVE FX RATES",
+        label: "PROVIDERS WE COMPARE",
       },
       countryNames: {
         UK: "the UK", GB: "the UK", DE: "Germany", ES: "Spain", FR: "France",
@@ -1010,7 +1010,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       ],
       waitlistCta: "Zur Mobile-Warteliste",
       howWeRankOffers: "Wie wir Angebote bewerten",
-      noAccountRequired: "Kein Konto erforderlich für den Vergleich.",
+      noAccountRequired: "Keine Anmeldung nötig zum Vergleichen — dein Konto ist optional.",
       heroPillProviders: "40+ Anbieter",
       heroPillCategories: "Kredite · Karten · Überweisungen · Wechsel",
       heroPillNoSignup: "Ohne Registrierung",
@@ -1214,7 +1214,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "Keine 'für dich beste' Schätzungen. Keine Quizze. Nur das volle Inventar — du wählst, was passt.",
       },
       providerStrip: {
-        label: "LIVE-INVENTAR · TÄGLICH AKTUALISIERT",
+        label: "ANBIETER, DIE WIR VERGLEICHEN",
       },
       countryNames: {
         UK: "Großbritannien", GB: "Großbritannien", DE: "Deutschland", ES: "Spanien", FR: "Frankreich",
@@ -1695,7 +1695,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "Sin adivinanzas de 'lo mejor para ti'. Sin tests. Solo el inventario completo — tú eliges lo que encaja.",
       },
       providerStrip: {
-        label: "INVENTARIO EN VIVO · ACTUALIZADO DIARIAMENTE",
+        label: "PROVEEDORES QUE COMPARAMOS",
       },
       countryNames: {
         UK: "el Reino Unido", GB: "el Reino Unido", DE: "Alemania", ES: "España", FR: "Francia",
@@ -2152,7 +2152,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "Pas de 'le meilleur pour vous'. Pas de quiz. Juste l'inventaire complet — vous choisissez ce qui convient.",
       },
       providerStrip: {
-        label: "INVENTAIRE EN DIRECT · MIS À JOUR QUOTIDIENNEMENT",
+        label: "FOURNISSEURS QUE NOUS COMPARONS",
       },
       countryNames: {
         UK: "Royaume-Uni", GB: "Royaume-Uni", DE: "Allemagne", ES: "Espagne", FR: "France",
@@ -2607,7 +2607,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "Niente 'meglio per te'. Niente quiz. Solo l'inventario completo — scegli tu cosa va bene.",
       },
       providerStrip: {
-        label: "INVENTARIO LIVE · AGGIORNATO OGNI GIORNO",
+        label: "FORNITORI CHE CONFRONTIAMO",
       },
       countryNames: {
         UK: "Regno Unito", GB: "Regno Unito", DE: "Germania", ES: "Spagna", FR: "Francia",
@@ -3062,7 +3062,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         col3Body: "Sem palpites de 'o melhor para ti'. Sem quizzes. Apenas o inventário completo — escolhes o que serve.",
       },
       providerStrip: {
-        label: "INVENTÁRIO EM TEMPO REAL · ATUALIZADO DIARIAMENTE",
+        label: "FORNECEDORES QUE COMPARAMOS",
       },
       countryNames: {
         UK: "Reino Unido", GB: "Reino Unido", DE: "Alemanha", ES: "Espanha", FR: "França",

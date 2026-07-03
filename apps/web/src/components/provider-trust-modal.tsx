@@ -11,9 +11,10 @@ import { createPortal } from "react-dom";
 //
 //   🔒 Securely connecting you to {provider}…
 //
-// while a 1.5s timer ticks down. The redirect fires automatically at
-// the end of the dwell — we never ask the user to confirm a second
-// time. If the launch itself throws (popup blocked, no provider URL,
+// STRAT.1 — the redirect now fires instantly (no forced countdown).
+// The modal then holds a "left" state carrying the honest affiliate
+// disclosure, so it's read at the handoff moment without an ad-style
+// wait. If the launch itself throws (popup blocked, no provider URL,
 // fetch failure), the modal flips to an error state with a retry
 // button + a "Copy link" fallback.
 //
@@ -35,11 +36,15 @@ interface Props {
    *  again on retry. */
   onLaunch: () => Promise<TrustModalLaunchResult> | TrustModalLaunchResult;
   onClose: () => void;
-  /** Override the dwell. 1500ms is the spec; exposed for tests. */
+  /** Override the dwell before the redirect fires. Default 0 — the
+   *  handoff is instant. Exposed for tests / a brief beat if wanted. */
   dwellMs?: number;
 }
 
-const DEFAULT_DWELL = 1500;
+// STRAT.1 — instant handoff: the redirect fires on mount with no forced
+// countdown. The affiliate disclosure persists in the modal's "left"
+// state instead of being gated behind a timer.
+const DEFAULT_DWELL = 0;
 
 export function ProviderTrustModal({
   providerName,
@@ -48,7 +53,7 @@ export function ProviderTrustModal({
   dwellMs = DEFAULT_DWELL,
 }: Props) {
   const [mounted, setMounted] = useState(false);
-  const [phase, setPhase] = useState<"connecting" | "blocked" | "error">(
+  const [phase, setPhase] = useState<"connecting" | "left" | "blocked" | "error">(
     "connecting",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,10 +87,10 @@ export function ProviderTrustModal({
         const result = await onLaunch();
         if (cancelled) return;
         if (result.kind === "ok") {
-          // window.open succeeded — close the modal so the user lands
-          // on the underlying page when they tab back from the new
-          // window.
-          onClose();
+          // The new tab is navigating to the provider now. Hold the modal
+          // in the "left" state so the affiliate disclosure stays on the
+          // Payn tab for when the user comes back.
+          setPhase("left");
         } else if (result.kind === "blocked") {
           setPhase("blocked");
         } else {
@@ -117,7 +122,7 @@ export function ProviderTrustModal({
     setErrorMessage(null);
     try {
       const result = await onLaunch();
-      if (result.kind === "ok") onClose();
+      if (result.kind === "ok") setPhase("left");
       else if (result.kind === "blocked") setPhase("blocked");
       else {
         setErrorMessage(result.message ?? null);
@@ -171,8 +176,28 @@ export function ProviderTrustModal({
                 strokeLinejoin="round"
                 className="relative text-accent-emerald-strong"
               >
-                <rect x="4.5" y="9" width="11" height="7.5" rx="2" />
-                <path d="M7.5 9V7a2.5 2.5 0 0 1 5 0v2" />
+                <path d="M11 4h5v5" />
+                <path d="M16 4l-7 7" />
+                <path d="M14 11v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4" />
+              </svg>
+            </div>
+          ) : phase === "left" ? (
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-emerald-soft"
+              aria-hidden="true"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-accent-emerald-strong"
+              >
+                <path d="M4.5 10.5l3.5 3.5 7.5-8" />
               </svg>
             </div>
           ) : (
@@ -200,21 +225,38 @@ export function ProviderTrustModal({
 
           <h3 className="mt-4 text-[18px] font-bold tracking-[-0.01em] text-ink">
             {phase === "connecting"
-              ? `Securely connecting you to ${providerName}…`
-              : phase === "blocked"
-                ? "Your browser blocked the redirect"
-                : "We couldn't open the provider page"}
+              ? `Opening ${providerName}…`
+              : phase === "left"
+                ? `You're on your way to ${providerName}`
+                : phase === "blocked"
+                  ? "Your browser blocked the redirect"
+                  : "We couldn't open the provider page"}
           </h3>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-ink-secondary">
-            {phase === "connecting"
-              ? "You're leaving Payn. Your data isn't shared with the provider until you act on their site."
-              : phase === "blocked"
+
+          {phase === "connecting" || phase === "left" ? (
+            <div className="mt-2 flex flex-col gap-2.5">
+              <p className="text-[13.5px] leading-relaxed text-ink-secondary">
+                You finish signing up on {providerName}&rsquo;s own site — your
+                details aren&rsquo;t shared with them until you do.
+              </p>
+              {/* STRAT.1 — the honest part, said out loud at the exact moment
+                  it matters. Stays visible in the "left" state so the user
+                  reads it when they tab back to Payn. */}
+              <p className="rounded-2xl bg-bg-surface px-4 py-3 text-left text-[12.5px] leading-relaxed text-ink-secondary">
+                Payn may earn a commission if you sign up. It never changes how
+                we rank — we sort by what each option really costs, full stop.
+              </p>
+            </div>
+          ) : (
+            <p className="mt-2 text-[13.5px] leading-relaxed text-ink-secondary">
+              {phase === "blocked"
                 ? "Your browser stopped a new tab from opening. Allow popups for payn.online, or open the link manually below."
                 : (errorMessage ??
                   "The provider link isn't responding right now. Try again or copy the link to your browser manually.")}
-          </p>
+            </p>
+          )}
 
-          {phase !== "connecting" ? (
+          {phase === "blocked" || phase === "error" ? (
             <div className="mt-5 flex w-full flex-col gap-2">
               <button
                 type="button"
@@ -244,6 +286,14 @@ export function ProviderTrustModal({
                 Cancel
               </button>
             </div>
+          ) : phase === "left" ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-[13px] font-semibold text-ink transition-colors hover:bg-bg-surface"
+            >
+              Back to results
+            </button>
           ) : (
             <button
               type="button"

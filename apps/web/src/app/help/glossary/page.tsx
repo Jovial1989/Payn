@@ -85,6 +85,13 @@ const ENTRIES: GlossaryEntry[] = [
       "Headline cashback rates are usually capped (e.g. up to 1%, only at certain shops, only above €100/month spend). Watch for cashback paid in volatile crypto tokens (Plutus, Wirex) — that's a different product entirely.",
   },
   {
+    id: "maker-taker",
+    term: "Maker / Taker fee",
+    oneLine: "Two ways a crypto exchange charges you to trade.",
+    longStory:
+      "Set your own price and wait for someone to match it = 'maker' (cheaper — you add liquidity). Buy instantly at the going price = 'taker' (a touch more). Most casual buys are taker trades, so that's the fee that usually applies to you. We keep both numbers rather than hiding them behind a single 'trading fee'.",
+  },
+  {
     id: "atm-fee",
     term: "ATM withdrawal fee",
     oneLine: "Fee for taking cash out of a machine.",
@@ -140,6 +147,20 @@ const ENTRIES: GlossaryEntry[] = [
     oneLine: "European money transfers — usually free between EU banks.",
     longStory:
       "Single Euro Payments Area. Standard SEPA transfer: 1-2 days, free or near-free. SEPA Instant: under 10 seconds, supported by most modern banks. Anything outside EUR-to-EUR isn't SEPA.",
+  },
+  {
+    id: "p2p",
+    term: "P2P",
+    oneLine: "Sending money straight to another person — no shop or middleman.",
+    longStory:
+      "Peer-to-peer: splitting rent, paying back a friend, sending cash to family. On most apps it's instant and free between users — watch for fees when it crosses currencies or leaves the app's own network.",
+  },
+  {
+    id: "corridor",
+    term: "Corridor",
+    oneLine: "The country-to-country route your money takes when you send it abroad.",
+    longStory:
+      "E.g. Germany → Philippines or France → Morocco. Cost and speed vary a lot by corridor — the same provider can be cheap on one route and pricey on another, which is why we compare per corridor, not in general.",
   },
   {
     id: "bnpl",

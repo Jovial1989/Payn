@@ -14,13 +14,12 @@ import { getDictionary, formatCopy } from "@/lib/i18n";
 import { countTotalOffers, countOffersByOutcome } from "@/features/catalog/count-by-outcome";
 import { AtlasGrid } from "@/features/home/atlas-grid";
 import { localePath } from "@/lib/locale";
+import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { WhatsNew } from "@/features/home/whats-new";
 import type { Highlight } from "@/features/highlights/get-active-highlights";
 import { ProviderStrip } from "@/features/home/provider-strip";
 import { AppWaitlistPill } from "@/features/home/app-waitlist-pill";
 import { HowItWorks } from "@/features/home/how-it-works";
-import { Manifesto } from "@/features/home/manifesto";
-import { SavingsSpotlight } from "@/features/home/savings-spotlight";
 import { TopPicksStrip } from "@/features/home/top-picks-strip";
 import { WhatDoYouWantToDo } from "@/features/home/what-do-you-want-to-do";
 import type { MarketplaceOffer } from "@payn/types";
@@ -38,7 +37,7 @@ const HERO_CARDS = [
     initials: "W",
     bg: "#164B3E",
     category: "International Transfer",
-    metricLabel: "FX Spread",
+    metricLabel: "Rate markup",
     metricValue: "0.41%",
     badge: "Best Value",
     badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
@@ -51,13 +50,13 @@ const HERO_CARDS = [
     key: "revolut",
     provider: "Revolut",
     initials: "R",
-    bg: "#2D1B69",
+    bg: "#1F2937",
     category: "Premium Card",
     metricLabel: "Cashback",
     metricValue: "1%",
     badge: "Travel Pick",
-    badgeStyle: { background: "#EEF2FF", color: "#3730A3" } as React.CSSProperties,
-    dotColor: "bg-indigo-400",
+    badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
+    dotColor: "bg-emerald-400",
     floatClass: "floating-layer-delayed",
     posClass: "right-0 top-[164px]",
     motionDelay: "180ms",
@@ -68,7 +67,7 @@ const HERO_CARDS = [
     initials: "TR",
     bg: "#0B2B1C",
     category: "Investment",
-    metricLabel: "Annual rate",
+    metricLabel: "Interest a year",
     metricValue: "4.00%",
     badge: "Top Return",
     badgeStyle: { background: "#DDF4E7", color: "#0B6D3B" } as React.CSSProperties,
@@ -127,6 +126,11 @@ export function HomePage({
   // PASS A — "browse" CTA points straight at /discover (the category
   // hub) instead of the retired /explore index, which only 301'd here.
   const exploreHref = localePath(locale, "/discover");
+  // FLOW — the hero's primary action now goes straight to Explore (the
+  // offers hub) instead of the /start quiz. productEntryActionLabel is the
+  // localized "Explore all / Jetzt vergleichen" verb already used in the
+  // footer + product entry points, so the CTA reads as "go see offers".
+  const productEntryActionLabel = getProductEntryActionLabel(locale);
 
   const heroBadges: Record<string, string> = {
     wise: dictionary.homeAtlas.badges.bestValue,
@@ -188,39 +192,39 @@ export function HomePage({
           extra 16px to breathe; corner radius shrunk from 40px → 28px
           on mobile so the rounded edges still feel intentional at the
           smaller frame. */}
-      <div ref={heroRef}>
+      {/* HERO — full-bleed band. The root SiteShell has overflow-x-clip so
+          the left-1/2 / -translate-x / w-screen breakout is safe (no
+          horizontal scroll). Negative top margin cancels <main>'s top
+          padding so the band sits flush under the header. The old rounded
+          border + card shadow ("the frame") and the two animated gradient
+          orbs are gone — the hero now reads as one calm dark section. */}
+      <div
+        ref={heroRef}
+        className="relative left-1/2 w-screen -translate-x-1/2"
+      >
       <MotionReveal
         as="section"
-        className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-gradient-to-br from-[#0D1812] to-[#13181A] px-4 py-8 shadow-elevated sm:rounded-[40px] sm:px-8 sm:py-12 lg:px-12 lg:py-16"
+        className="relative overflow-hidden border-b border-white/[0.06] bg-gradient-to-br from-[#0D1812] to-[#13181A]"
       >
-        {/* Background layers */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(15,138,75,0.18),transparent_40%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-60" />
+        {/* Background layers — a moody, out-of-focus emerald-lit European
+            boulevard at dusk, anchored to the bottom, behind a legibility
+            scrim, a subtle emerald glow + faint grid (orbs removed).
+            Distinct from the /discover hero (night skyline) so the two
+            pages don't share the same backdrop. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[url('/hero-photo-2.webp')] bg-cover bg-bottom bg-no-repeat opacity-[0.5]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a130e]/85 via-[#0a130e]/55 to-[#0a130e]/25"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(15,138,75,0.18),transparent_45%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50" />
 
-        {/* Stripe-style animated gradient orbs — luminous blobs that drift */}
-        {!shouldReduce && (
-          <>
-            <motion.div
-              className="pointer-events-none absolute -left-40 -top-40 h-[640px] w-[640px] rounded-full bg-accent-emerald/[0.18] blur-[110px]"
-              animate={{
-                x: [0, 80, -40, 0],
-                y: [0, -50, 80, 0],
-                scale: [1, 1.12, 0.92, 1],
-              }}
-              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              className="pointer-events-none absolute -right-32 bottom-0 h-[500px] w-[500px] rounded-full bg-indigo-400/[0.10] blur-[100px]"
-              animate={{
-                x: [0, -60, 30, 0],
-                y: [0, 60, -40, 0],
-                scale: [1, 0.92, 1.14, 1],
-              }}
-              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-            />
-          </>
-        )}
-
+        {/* Inner container — keeps hero copy aligned with the 1240px page
+            grid while the dark band itself runs edge-to-edge. */}
+        <div className="relative z-10 mx-auto w-full max-w-[1240px] px-4 py-10 sm:px-5 sm:py-14 lg:px-8 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
 
           {/* ── Left: copy ── */}
@@ -272,8 +276,12 @@ export function HomePage({
                 cards below (Year Builder still exists at /year for
                 anyone who wants the long form). */}
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              {/* FLOW — primary now goes straight to Explore (the offers
+                  hub) so visitors reach real offers in one tap. The /start
+                  quiz is demoted to a quiet secondary link for people who
+                  want to be guided instead of browsing. */}
               <Link
-                href={localePath(locale, "/start")}
+                href={exploreHref}
                 className={`${buttonStyles({ variant: "primary", size: "lg" })} hero-primary-cta relative justify-center gap-2 overflow-hidden sm:justify-start`}
               >
                 {/* Revolut-style shimmer sweep across the CTA */}
@@ -286,16 +294,16 @@ export function HomePage({
                     transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 5, ease: "linear" }}
                   />
                 )}
-                {dictionary.homeAtlas.hero.cta}
+                {productEntryActionLabel}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
               <Link
-                href={exploreHref}
+                href={localePath(locale, "/start")}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-5 text-[14px] font-semibold text-white/60 transition-colors hover:text-white sm:justify-start"
               >
-                I just want to browse
+                {dictionary.homeAtlas.hero.cta}
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -449,12 +457,8 @@ export function HomePage({
               );
             })}
 
-            {/* Live signal pill */}
-            <div className="absolute bottom-0 right-0 inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3.5 py-2 text-[11px] font-semibold text-white/70 shadow-subtle backdrop-blur-sm">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-accent-emerald" />
-              Live FX rates
-            </div>
           </div>
+        </div>
         </div>
       </MotionReveal>
       </div>
@@ -463,11 +467,6 @@ export function HomePage({
           PROVIDER STRIP
       ══════════════════════════════════════════════════════════ */}
       <ProviderStrip locale={locale} />
-
-      {/* ══════════════════════════════════════════════════════════
-          APP WAITLIST PILL
-      ══════════════════════════════════════════════════════════ */}
-      <AppWaitlistPill locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
           WHAT DO YOU WANT TO DO? — UX.1 new primary nav (situation
@@ -484,12 +483,13 @@ export function HomePage({
       <AtlasGrid country={preferences.country} locale={locale} buckets={buckets} />
 
       {/* ══════════════════════════════════════════════════════════
-          SAVINGS SPOTLIGHT — concrete "what does this actually cost
-          me" proof. Sits between Atlas and Manifesto so the visitor
-          goes: "here are the buckets → here's what a bucket saves
-          you in real money → here's why we built this."
+          APP WAITLIST PILL — moved down out of the top "find what you
+          need" path. Savings Spotlight removed here: Top Picks + the
+          Atlas grid already cover "here are good options", so three
+          stacked offer-proof blocks was redundant and lengthened the
+          page. Simplification pass for everyday users.
       ══════════════════════════════════════════════════════════ */}
-      <SavingsSpotlight locale={locale} />
+      <AppWaitlistPill locale={locale} />
 
       {/* ══════════════════════════════════════════════════════════
           TOP PICKS — Card v2 visuals brought to the homepage. Three
@@ -505,16 +505,6 @@ export function HomePage({
           countryLabel={countryName}
         />
       )}
-
-      {/* ══════════════════════════════════════════════════════════
-          MANIFESTO — dark brand-statement panel. The page's "this is
-          who we are" moment, with proof tiles cluster.
-      ══════════════════════════════════════════════════════════ */}
-      <Manifesto
-        locale={locale}
-        productCount={productCount}
-        providerCount={providerCount}
-      />
 
       {/* ══════════════════════════════════════════════════════════
           TESTIMONIALS — raw centered quote, no card chrome.

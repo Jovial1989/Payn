@@ -129,7 +129,7 @@ export function OfferCard({
                     {normalizeDisplayText(getMetricLabel(locale, m.label))}
                   </dt>
                   <dd
-                    className="mt-0.5 truncate text-[14px] font-bold text-ink"
+                    className="mt-0.5 truncate text-[14px] font-bold tabular-nums text-ink"
                     title={normalizeDisplayText(m.value)}
                   >
                     {normalizeDisplayText(m.value)}

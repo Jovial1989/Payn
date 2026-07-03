@@ -343,7 +343,9 @@ export function DashboardCardsWorkspace({
   const [minAtmLimit, setMinAtmLimit] = useState(defaultWorkspaceState.minAtmLimit);
   const [monthlySpend, setMonthlySpend] = useState(defaultWorkspaceState.monthlySpend);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Open by default — the refine inputs ARE the product; let users see what
+  // they can enter to get matched cards instead of hiding it behind a toggle.
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   useEffect(() => {
     const persistedState = readPersistedProductWorkspaceState(

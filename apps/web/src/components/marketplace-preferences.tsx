@@ -20,11 +20,13 @@ type MarketplacePreferencesContextValue = {
   currency: string;
   language: MarketplaceLocale;
   countryLabel: string;
+  audience: "personal" | "business";
   availableCountries: CountryOption[];
   setCountry: (country: string) => void;
   setLanguage: (language: MarketplaceLocale) => void;
   setLocale: (locale: MarketplaceLocale) => void;
   setMarket: (market: MarketplaceMarket) => void;
+  setAudience: (audience: "personal" | "business") => void;
 };
 
 const MarketplacePreferencesContext = createContext<MarketplacePreferencesContextValue | null>(null);
@@ -49,14 +51,22 @@ function readStoredGuestPreferences() {
       return null;
     }
 
-    const parsed = JSON.parse(raw) as { locale?: MarketplaceLocale; country?: string };
+    const parsed = JSON.parse(raw) as {
+      locale?: MarketplaceLocale;
+      country?: string;
+      audience?: "personal" | "business";
+    };
     return typeof parsed === "object" && parsed ? parsed : null;
   } catch {
     return null;
   }
 }
 
-function writeStoredGuestPreferences(preferences: { locale: MarketplaceLocale; country: string }) {
+function writeStoredGuestPreferences(preferences: {
+  locale: MarketplaceLocale;
+  country: string;
+  audience: "personal" | "business";
+}) {
   if (!canUseStorage()) {
     return;
   }
@@ -82,6 +92,7 @@ export function MarketplacePreferencesProvider({
   );
   const [locale, setLocaleState] = useState(initialLocale);
   const [country, setCountryState] = useState(normalizedInitialCountry);
+  const [audience, setAudienceState] = useState<"personal" | "business">("personal");
   const hydratedRef = useRef(false);
   const market = resolveCountryLegacyMarket(country);
   const currency = getCountryCurrency(country);
@@ -96,12 +107,15 @@ export function MarketplacePreferencesProvider({
     hydratedRef.current = true;
     const stored = readStoredGuestPreferences();
     if (!stored) {
-      writeStoredGuestPreferences({ locale: initialLocale, country: normalizedInitialCountry });
+      writeStoredGuestPreferences({ locale: initialLocale, country: normalizedInitialCountry, audience: "personal" });
       return;
     }
 
     if (!initialCountry && stored.country) {
       setCountryState(normalizeCountrySelection(stored.country, initialLocale));
+    }
+    if (stored.audience === "personal" || stored.audience === "business") {
+      setAudienceState(stored.audience);
     }
   }, [initialCountry, initialLocale, normalizedInitialCountry]);
 
@@ -109,9 +123,10 @@ export function MarketplacePreferencesProvider({
     persistPreference("payn-locale", locale);
     persistPreference("payn-country", country);
     persistPreference("payn-market", market);
-    writeStoredGuestPreferences({ locale, country });
+    persistPreference("payn-audience", audience);
+    writeStoredGuestPreferences({ locale, country, audience });
     document.documentElement.lang = locale;
-  }, [country, locale, market]);
+  }, [country, locale, market, audience]);
 
   useEffect(() => {
     if (!user || !profile) {
@@ -153,6 +168,7 @@ export function MarketplacePreferencesProvider({
     currency,
     language: locale,
     countryLabel,
+    audience,
     availableCountries,
     setCountry: (nextCountry: string) => {
       const normalizedCountry = normalizeCountrySelection(nextCountry, locale);
@@ -174,6 +190,9 @@ export function MarketplacePreferencesProvider({
       );
       setCountryState(normalizedCountry);
       void syncProfile({ home_country: normalizedCountry });
+    },
+    setAudience: (nextAudience: "personal" | "business") => {
+      setAudienceState(nextAudience);
     },
   };
 

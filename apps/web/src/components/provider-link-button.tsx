@@ -78,10 +78,10 @@ export function ProviderLinkButton({
     return () => window.clearTimeout(t);
   }, [toast]);
 
-  // WEB.9 — Click handler now just opens the trust modal. The modal
-  // itself fires `performLaunch` after a 1.5s dwell so the user gets
-  // a calm "Securely connecting you to…" beat. The actual window.open
-  // + analytics fire from inside `performLaunch`.
+  // WEB.9 + STRAT.1 — Click opens the destination tab in-gesture and
+  // shows the trust modal, which fires `performLaunch` instantly (no
+  // forced dwell). The honest affiliate disclosure lives in the modal's
+  // persistent "left" state. window.open + analytics fire in `performLaunch`.
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (opening) return;

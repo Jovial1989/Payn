@@ -1300,7 +1300,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     metrics: [
       { label: "Banks connected", value: "100+" },
       { label: "App", value: "Free" },
-      { label: "Savings found", value: "Avg. GBP 1,500/yr" },
+      // STRAT.5 — attribute the savings figure as Snoop's own estimate, not
+      // a Payn guarantee. "~" + "avg" + the source keep it an honest claim.
+      { label: "Savings (Snoop's est.)", value: "~£1,500/yr avg" },
     ],
     bestFor: ["Spending insights", "Bill tracking", "Subscription tracking"],
     linkType: "affiliate_redirect",

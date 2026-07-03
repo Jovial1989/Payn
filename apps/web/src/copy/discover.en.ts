@@ -1,26 +1,24 @@
 export const discoverCopy = {
   hero: {
-    // Honest currency claim only — FX rates are genuinely live. The earlier
-    // "30 European markets" was false (the country picker offers 7 named
-    // markets + an all-Europe scope), so we drop the fabricated count.
-    eyebrow: "Live European pricing",
-    // Two-line headline with the value verb up front. Promise + outcome.
-    headline: "Money tools, compared on the only thing that matters: cost.",
+    // Free to use — true, and clearer than the old "Live European pricing"
+    // (which over-claimed "live": only FX is truly live, the catalogue is
+    // reviewed monthly — see stats.refresh).
+    eyebrow: "Free to compare",
+    // Same line as the mobile app — one brand voice across both.
+    headline: "Stop overpaying. Start comparing.",
     subhead:
-      "Cards, loans, transfers, savings, insurance — every European provider, every fee, every rate. We do the maths so you don't.",
+      "See what banks, cards and apps really cost across Europe — and keep the cheapest. Free, no sign-up.",
     searchPlaceholder: [
       "Send €500 to Spain",
       "Best savings account in Germany",
       "0% credit card UK",
-      "Personal loan €10,000 over 36 months",
-      "Cheapest EUR to GBP transfer",
+      "Personal loan €10,000",
+      "Cheapest euro to pound transfer",
     ],
-    quickStartLabel: "Browse by category:",
+    quickStartLabel: "Or pick a category:",
     quickStart: [
-      // Labels match the sidebar canonical names so a category reads the same
-      // wherever the user finds it (UX audit FIX-03). The full set is listed
-      // (not just 4) so phones can scroll the whole category range, and the
-      // "Browse by category" label makes clear these are categories.
+      // Labels match the sidebar names so a category reads the same
+      // wherever the user finds it.
       { label: "Transfers", goal: "transfers" as const },
       { label: "Cards", goal: "cards" as const },
       { label: "Savings", goal: "savings" as const },
@@ -32,91 +30,88 @@ export const discoverCopy = {
       { label: "Business", goal: "business" as const },
     ],
     continueCard: {
-      prefix: "You were comparing",
+      prefix: "You were looking at",
       cta: "Continue →",
     },
-    // Live stat tiles render to the right of the headline on lg+. Each pulls
-    // its number from real catalogue data so the proof feels true on first
-    // load, not at the end of a marketing scroll.
     stats: {
       products: "products compared",
-      providers: "trusted providers",
-      markets: "European markets",
-      // CAT.11 — Was "Daily price refresh / Rates verified within 24h"
-      // which the May 2026 audit disproved (Lightyear, Revolut Savings,
-      // Plum, Curve, GoHenry, SafetyWing were all 12–24 months stale).
-      // Renamed to honest framing: rates are reviewed manually each
-      // month, individual offers carry their own `updatedAt`, and the
-      // catalog never tells the user it's faster than that.
-      refresh: "Monthly catalogue review",
-      refreshSub: "Each offer carries its own last-updated date",
+      providers: "providers",
+      // "countries", not a marketing "30" — the picker offers 7 named
+      // markets (DE/ES/IT/FR/UK/NL/PT) + an all-Europe scope.
+      markets: "countries",
+      // CAT.11 — honest framing: the catalogue is reviewed monthly and
+      // each offer carries its own last-updated date. Never claim "daily".
+      refresh: "Updated monthly",
+      refreshSub: "Every offer shows its last-checked date",
     },
   },
 
   atlas: {
-    eyebrow: "Browse the catalogue",
-    heading: "Nine ways money moves. Pick one.",
+    eyebrow: "Browse",
+    heading: "What do you need?",
     subhead:
-      "Each tile groups the products that solve one job — so you stop guessing whether a travel card belongs under Transfers or Cards.",
+      "Pick a category and see your best options — no jargon, no guessing.",
   },
 
   trustBand: {
     eyebrow: "Why Payn",
-    heading: "Built for the question \"which one's actually best for me?\"",
+    heading: "Made to find your best option",
     pillars: [
       {
-        kicker: "Live data",
-        title: "Rates pulled daily",
-        body: "We refresh APRs, FX spreads and fees from every provider every day — not once a quarter when a press release goes out.",
+        kicker: "Up to date",
+        title: "Rates we keep current",
+        // CAT.11 — was "Rates pulled daily / refreshed every day", which
+        // contradicts the monthly review. Softened to the truth.
+        body: "We check provider fees and rates regularly, and every offer shows when it was last updated.",
       },
       {
         kicker: "No pay-to-win",
-        title: "Ranking can't be bought",
-        body: "Position is decided by real outcome: fees, FX, APR, speed. We flag every affiliate link so you know which ones pay us.",
+        title: "Order can't be bought",
+        body: "We rank by real cost, not by who pays us — and we label every paid link.",
       },
       {
-        kicker: "Eligibility-first",
-        title: "Shown if you can actually get it",
-        body: "We filter by your country and basic eligibility before you click — no \"sorry, not available in your region\" dead-ends.",
+        kicker: "Made for you",
+        title: "Only what you can get",
+        body: "We show options you can actually open in your country — no dead-ends.",
       },
       {
-        kicker: "Human help",
-        title: "A person, not a chatbot",
-        body: "Stuck choosing? Email a real human at Payn. No upsell, no commission incentive — just a second opinion.",
+        kicker: "Real help",
+        title: "A person, not a bot",
+        body: "Stuck? Email a real person at Payn. No sales pitch.",
       },
     ],
   },
 
   todayStrip: {
-    heading: "What people are checking today",
-    subhead: "Live comparisons from the last 24 hours.",
+    heading: "What people check today",
+    subhead: "Popular in the last 24 hours.",
     fallback: {
-      heading: "Recently popular",
-      subhead: "Refreshed every hour.",
+      heading: "Popular right now",
+      subhead: "Updated every hour.",
     },
   },
 
   goalGrid: {
     heading: "Browse by goal",
-    subhead: "Pick what you're trying to do.",
+    subhead: "Pick what you want to do.",
   },
 
   quickCheck: {
     heading: "A couple of details",
-    subhead: "We'll show three good fits as you type.",
+    subhead: "We'll show three good options as you type.",
     preview: {
-      heading: "Three good fits",
-      cachedNotice: "Showing rates from earlier today. Refresh in a moment for the latest.",
+      heading: "Three good options",
+      cachedNotice: "Showing earlier rates. Refresh in a moment for the latest.",
       seeMoreTemplate: "See all {count} {category} offers →",
     },
   },
 
   helpDecide: {
-    eyebrow: "How this works",
+    eyebrow: "How it works",
     columns: [
       {
-        title: "How Payn compares",
-        body: "We pull live terms from every provider, score them on real cost — fees, FX, APR — and rank by what you'll actually pay.",
+        title: "How we compare",
+        body: "We check every provider's real cost — fees and rates — and rank by what you'll actually pay.",
       },
       {
         title: "What we don't do",
@@ -124,12 +119,12 @@ export const discoverCopy = {
       },
       {
         title: "Talk to a human",
-        body: "Stuck on a comparison? Email a person.",
+        body: "Stuck? Email a real person.",
         cta: "Contact us →",
       },
     ],
   },
 
   rankingFootnote:
-    "Sorted by relevance, real outcome, speed, simplicity, and popularity. Payn compares published provider terms and estimated costs. Final eligibility and pricing stay with the provider.",
+    "Ranked by real cost and value. Payn compares published prices and estimates — final pricing and approval are up to the provider.",
 } as const;

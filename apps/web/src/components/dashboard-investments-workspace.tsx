@@ -82,6 +82,34 @@ export function DashboardInvestmentsWorkspace({
     );
   }, [selectedAssetId, userId, workspaceStateLoaded]);
 
+  // Refine results — filters the provider ranking under the chart (the chart
+  // itself is asset-driven and stays put). Open by default like every other
+  // category, so the page reads "chart + refine + matched platforms".
+  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [commission, setCommission] = useState("any");
+  const [assetFocus, setAssetFocus] = useState("any");
+  const [savingsPlan, setSavingsPlan] = useState("any");
+
+  const refineCopy =
+    locale === "de"
+      ? { refine: "Ergebnisse verfeinern", search: "Suche", searchPh: "Plattform suchen", commission: "Provision", any: "Beliebig", free: "Provisionsfrei", asset: "Anlage", stocks: "Aktien", etfs: "ETFs", crypto: "Krypto", plan: "Sparplan", planYes: "Sparplan verfügbar" }
+      : { refine: "Refine results", search: "Search", searchPh: "Search a platform", commission: "Commission", any: "Any", free: "Commission-free", asset: "Asset", stocks: "Stocks", etfs: "ETFs", crypto: "Crypto", plan: "Savings plan", planYes: "Has savings plan" };
+
+  const filteredOffers = offers.filter((offer) => {
+    const text = `${offer.providerName} ${offer.title} ${offer.subtitle} ${offer.bestFor.join(" ")} ${offer.metrics
+      .map((m) => `${m.label} ${m.value}`)
+      .join(" ")}`.toLowerCase();
+    if (searchQuery.trim() && !text.includes(searchQuery.trim().toLowerCase())) return false;
+    if (commission === "free" && !/commission[- ]?free|free trades|zero commission|no commission|€0|0\s?%/.test(text)) return false;
+    if (assetFocus !== "any" && !text.includes(assetFocus === "etfs" ? "etf" : assetFocus)) return false;
+    if (savingsPlan === "yes" && !/savings plan|sparplan|recurring/.test(text)) return false;
+    return true;
+  });
+
+  const refineFieldClass =
+    "h-[52px] w-full appearance-none rounded-[16px] border border-line bg-white px-4 text-sm font-medium text-ink outline-none transition-colors focus:border-accent-emerald/40";
+
   return (
     <div className="grid gap-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -109,13 +137,70 @@ export function DashboardInvestmentsWorkspace({
         </div>
       </div>
 
+      <section>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-accent-emerald-strong"
+        >
+          <span>{refineCopy.refine}</span>
+          <svg
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${filtersOpen ? "rotate-180" : ""}`}
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M3 4.5l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {filtersOpen ? (
+          <div className="mt-4 rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <label className="grid gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{refineCopy.search}</span>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder={refineCopy.searchPh}
+                  className={refineFieldClass}
+                />
+              </label>
+              <label className="grid gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{refineCopy.commission}</span>
+                <select value={commission} onChange={(event) => setCommission(event.target.value)} className={refineFieldClass}>
+                  <option value="any">{refineCopy.any}</option>
+                  <option value="free">{refineCopy.free}</option>
+                </select>
+              </label>
+              <label className="grid gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{refineCopy.asset}</span>
+                <select value={assetFocus} onChange={(event) => setAssetFocus(event.target.value)} className={refineFieldClass}>
+                  <option value="any">{refineCopy.any}</option>
+                  <option value="stocks">{refineCopy.stocks}</option>
+                  <option value="etfs">{refineCopy.etfs}</option>
+                  <option value="crypto">{refineCopy.crypto}</option>
+                </select>
+              </label>
+              <label className="grid gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{refineCopy.plan}</span>
+                <select value={savingsPlan} onChange={(event) => setSavingsPlan(event.target.value)} className={refineFieldClass}>
+                  <option value="any">{refineCopy.any}</option>
+                  <option value="yes">{refineCopy.planYes}</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
       <InvestmentIntelligenceBlock
         locale={locale}
         assetId={selectedAssetId}
         onAssetChange={setSelectedAssetId}
         providerMatches={undefined}
         marketLabel={marketLabel}
-        offers={offers}
+        offers={filteredOffers}
       />
     </div>
   );

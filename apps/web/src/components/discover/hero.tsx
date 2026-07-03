@@ -85,6 +85,19 @@ export function DiscoverHero({
   // so the headline + description + chip row have proper room.
   return (
     <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] px-4 py-6 sm:rounded-[32px] sm:px-10 sm:py-12 lg:px-14 lg:py-16">
+      {/* Photographic backdrop — a moody, out-of-focus emerald-lit European
+          skyline anchored to the bottom edge, giving the hero real depth.
+          object-bottom keeps the city lights pinned low; the scrim below keeps
+          the headline + search comfortably legible over it. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[url('/hero-photo.webp')] bg-cover bg-bottom bg-no-repeat opacity-[0.5]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a130e]/85 via-[#0a130e]/55 to-[#0a130e]/25"
+      />
+
       {/* Soft emerald glow + grid background — gives the hero weight without
           paying the cost of a real illustration. Dark-mode recipe: glow is
           brighter against the dark ground and the grid uses white lines. */}

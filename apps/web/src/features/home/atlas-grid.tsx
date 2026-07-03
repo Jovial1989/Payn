@@ -8,6 +8,7 @@ import { SectionNum } from "@/features/home/section-num";
 import type { MarketplaceLocale } from "@payn/types";
 import { getDictionary, formatCopy } from "@/lib/i18n";
 import { localePath } from "@/lib/locale";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import type { OutcomeBucketCount, ProviderInfo } from "@/features/catalog/count-by-outcome";
 import { flatCategoryForBucket } from "@/features/catalog/outcomes";
 
@@ -41,6 +42,17 @@ const FALLBACK_COLORS: Record<string, string> = {
 function providerBg(slug: string): string {
   return FALLBACK_COLORS[slug] ?? FALLBACK_COLORS.default;
 }
+
+// STRAT.6 — which "browse by type" buckets show in Business mode. The
+// grid is consumer-centric by default; Business focuses on the buckets a
+// company actually uses (and drops Saving / Investing / Family / Insurance).
+const BUSINESS_BUCKET_SLUGS = new Set([
+  "for-business",
+  "sending-money",
+  "bank-accounts",
+  "cards",
+  "borrowing",
+]);
 
 // ─── Card motion variants ──────────────────────────────────────────────────────
 const cardVariants = {
@@ -170,6 +182,13 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
   const dictionary = getDictionary(locale as MarketplaceLocale);
   const atlas = dictionary.homeAtlas;
   const shouldReduce = useReducedMotion();
+  const { audience } = useMarketplacePreferences();
+  // STRAT.6 — filter the bucket grid by audience. Personal hides the
+  // business-only bucket; Business shows the company-relevant subset.
+  const visibleBuckets =
+    audience === "business"
+      ? buckets.filter((b) => BUSINESS_BUCKET_SLUGS.has(b.bucket.slug))
+      : buckets.filter((b) => b.bucket.slug !== "for-business");
 
   const countryName =
     atlas.countryNames[country.toUpperCase()] ?? country;
@@ -196,7 +215,7 @@ export function AtlasGrid({ country, locale, buckets }: AtlasGridProps) {
       </motion.div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {buckets.map(({ bucket, count, topProviders }, i) => {
+        {visibleBuckets.map(({ bucket, count, topProviders }, i) => {
           const isAvailable = count > 0;
           const counterText = isAvailable
             ? formatCopy(

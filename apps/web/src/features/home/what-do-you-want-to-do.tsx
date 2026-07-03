@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, useReducedMotion, useMotionValue, useTransform } from "motion/react";
 import type { MarketplaceLocale } from "@payn/types";
 import { localePath } from "@/lib/locale";
+import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { SectionNum } from "@/features/home/section-num";
 import {
   IconTravelAbroad,
@@ -54,6 +55,7 @@ interface SituationCard {
   // page; falls back to the relevant category if the page isn't live.
   href: string;
   cta: string;
+  audience: "personal" | "business";
 }
 
 // hrefs point at the canonical flat `/<category>?type=&context=` routes
@@ -68,12 +70,14 @@ interface SituationCard {
 // §I. Replaced here with a neutral framing per "Safe patterns" list
 // — TASK-341 will sweep the same audit on every other surface.
 const SITUATIONS: SituationCard[] = [
+  // ── Personal ──
   {
     Icon: IconTravelAbroad,
     title: "I'm going abroad",
     benefit: "Pay anywhere with no extra fees on top of your bill.",
     href: "/cards?type=travel&context=travel",
     cta: "See best travel cards",
+    audience: "personal",
   },
   {
     Icon: IconEarnOnCash,
@@ -81,6 +85,7 @@ const SITUATIONS: SituationCard[] = [
     benefit: "Find the route that loses the least to fees.",
     href: "/transfers?context=send-abroad",
     cta: "Compare transfer options",
+    audience: "personal",
   },
   {
     Icon: IconInvestGrow,
@@ -88,6 +93,7 @@ const SITUATIONS: SituationCard[] = [
     benefit: "Move them somewhere that actually pays you (3-4% a year).",
     href: "/savings?context=grow-savings",
     cta: "See savings accounts",
+    audience: "personal",
   },
   {
     Icon: IconSpendSmarter,
@@ -95,13 +101,7 @@ const SITUATIONS: SituationCard[] = [
     benefit: "Compare loans — see the total cost upfront.",
     href: "/loans?type=personal&context=big-purchase",
     cta: "Compare loans",
-  },
-  {
-    Icon: IconForBusiness,
-    title: "I'm self-employed or running a small business",
-    benefit: "Lower fees on payments, payroll, and currency conversion.",
-    href: "/business?context=self-employed",
-    cta: "See business tools",
+    audience: "personal",
   },
   {
     Icon: IconProtect,
@@ -109,6 +109,7 @@ const SITUATIONS: SituationCard[] = [
     benefit: "Travel, health, car, home — side by side.",
     href: "/insurance?context=worth-the-money",
     cta: "Compare insurance",
+    audience: "personal",
   },
   {
     Icon: IconDailyBanking,
@@ -116,6 +117,7 @@ const SITUATIONS: SituationCard[] = [
     benefit: "App-based accounts with no monthly fee — same deposit protection.",
     href: "/banking?type=app-only&context=switch",
     cta: "See banking alternatives",
+    audience: "personal",
   },
   {
     Icon: IconFamilyKids,
@@ -123,6 +125,48 @@ const SITUATIONS: SituationCard[] = [
     benefit: "Pocket-money apps for kids, joint accounts, family plans.",
     href: "/kids?context=family",
     cta: "See family options",
+    audience: "personal",
+  },
+  // ── Business ──
+  {
+    Icon: IconForBusiness,
+    title: "I'm self-employed or running a small business",
+    benefit: "Lower fees on payments, payroll, and currency conversion.",
+    href: "/business?context=self-employed",
+    cta: "See business tools",
+    audience: "business",
+  },
+  {
+    Icon: IconEarnOnCash,
+    title: "I pay suppliers or invoices abroad",
+    benefit: "Move money across borders without losing it to FX margins.",
+    href: "/transfers?context=business",
+    cta: "Compare business transfers",
+    audience: "business",
+  },
+  {
+    Icon: IconDailyBanking,
+    title: "I need to pay my team or contractors",
+    benefit: "Run payroll and contractor payments in multiple currencies.",
+    href: "/payroll?context=team",
+    cta: "See payroll tools",
+    audience: "business",
+  },
+  {
+    Icon: IconForBusiness,
+    title: "I want a business account with low fees",
+    benefit: "Multi-currency accounts built for companies, not consumers.",
+    href: "/business?type=account&context=switch",
+    cta: "See business accounts",
+    audience: "business",
+  },
+  {
+    Icon: IconSpendSmarter,
+    title: "I need to keep on top of company spending",
+    benefit: "Company cards, receipt capture, and accounting sync.",
+    href: "/expense?context=spending",
+    cta: "See expense tools",
+    audience: "business",
   },
 ];
 
@@ -181,6 +225,8 @@ interface WhatDoYouWantToDoProps {
 
 export function WhatDoYouWantToDo({ locale }: WhatDoYouWantToDoProps) {
   const shouldReduce = useReducedMotion();
+  const { audience, setAudience } = useMarketplacePreferences();
+  const visible = SITUATIONS.filter((s) => s.audience === audience);
   return (
     <section
       id="what-do-you-want-to-do"
@@ -204,10 +250,34 @@ export function WhatDoYouWantToDo({ locale }: WhatDoYouWantToDoProps) {
           We&apos;ll show you the cheapest, fastest option — for that
           specific thing — in plain numbers. No jargon, no upsell.
         </p>
+        {/* STRAT.6 — Personal / Business toggle. Persists via
+            marketplace-preferences (cookie + localStorage) so the choice
+            survives navigation; filters the situation cards below. */}
+        <div
+          className="mt-5 inline-flex rounded-full border border-line bg-white p-0.5"
+          role="group"
+          aria-label="Personal or business"
+        >
+          {(["personal", "business"] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAudience(a)}
+              aria-pressed={audience === a}
+              className={`rounded-full px-4 py-1.5 text-[13px] font-semibold capitalize transition-colors ${
+                audience === a
+                  ? "bg-accent-emerald text-white"
+                  : "text-ink-secondary hover:text-ink"
+              }`}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {SITUATIONS.map((situation, i) => (
+        {visible.map((situation, i) => (
           <TiltCard key={situation.href} delay={i * 0.06} shouldReduce={!!shouldReduce}>
             <Link
               href={localePath(locale, situation.href)}

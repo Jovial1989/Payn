@@ -5,7 +5,7 @@ import { StartFlow } from "@/features/start/start-flow";
 export const metadata: Metadata = {
   title: "What do you want to do? — Payn",
   description:
-    "Tick a few boxes and Payn shows you the cheapest option for each thing — free, no signup, no spam.",
+    "Tick a few boxes and Payn shows you the cheapest option for each thing — free, no sign-up needed, no spam.",
 };
 
 // UX.2 — /start onboarding. The simplest possible entry: a checkbox

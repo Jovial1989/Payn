@@ -160,6 +160,201 @@ function getOfferText(offer: MarketplaceOffer) {
     .join(" ")} ${(offer.attributes?.searchTags ?? []).join(" ")}`.toLowerCase();
 }
 
+// Config-driven extra refine filters for categories that don't have a bespoke
+// panel. Each filter renders as a <select> on top of the universal
+// Search + Country fallback, and `match` decides whether an offer passes for
+// the chosen value (only called when value !== "any"). Keyword matching runs
+// against getOfferText so it tracks the real offer copy/metrics.
+type ExtraFilter = {
+  key: string;
+  labelEn: string;
+  labelDe: string;
+  options: { value: string; label: string }[];
+  match: (offer: MarketplaceOffer, value: string) => boolean;
+};
+
+// "Monthly fee → Free only", keyed strictly on the Monthly fee metric so it's a
+// no-op (keeps the offer) for categories/offers that have no monthly fee.
+const monthlyFeeFilter: ExtraFilter = {
+  key: "fee",
+  labelEn: "Monthly fee",
+  labelDe: "Monatsgebühr",
+  options: [
+    { value: "any", label: "Any" },
+    { value: "free", label: "Free only" },
+  ],
+  match: (offer) => {
+    const metric = offer.metrics.find((m) => /monthly fee/i.test(m.label));
+    if (!metric) return true;
+    const v = metric.value.toLowerCase();
+    return /\bfree\b/.test(v) || /€\s?0(\b|\.)/.test(v);
+  },
+};
+
+const CATEGORY_EXTRA_FILTERS: Partial<Record<MarketplaceCategory, ExtraFilter[]>> = {
+  crypto: [
+    {
+      key: "reg",
+      labelEn: "Regulation",
+      labelDe: "Regulierung",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "regulated", label: "Regulated / licensed" },
+      ],
+      match: (offer) => /regulat|licen|\bmica\b|\bfca\b|bafin|authoris|cysec/.test(getOfferText(offer)),
+    },
+    {
+      key: "earn",
+      labelEn: "Earn / staking",
+      labelDe: "Earn / Staking",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "yes", label: "Has earn / staking" },
+      ],
+      match: (offer) => /earn|staking|\bstake\b|yield|rewards/.test(getOfferText(offer)),
+    },
+  ],
+  bnpl: [
+    {
+      key: "interest",
+      labelEn: "Interest",
+      labelDe: "Zinsen",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "free", label: "0% interest only" },
+      ],
+      match: (offer) => /0\s?%|interest[- ]?free|no interest|zero interest/.test(getOfferText(offer)),
+    },
+    {
+      key: "split",
+      labelEn: "Split",
+      labelDe: "Aufteilung",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "3", label: "Pay in 3" },
+        { value: "4", label: "Pay in 4" },
+      ],
+      match: (offer, value) => {
+        const t = getOfferText(offer);
+        return t.includes(`pay in ${value}`) || t.includes(`${value} instal`) || t.includes(`${value} payment`);
+      },
+    },
+  ],
+  trading: [
+    {
+      key: "commission",
+      labelEn: "Commission",
+      labelDe: "Provision",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "free", label: "Commission-free" },
+      ],
+      match: (offer) => /commission[- ]?free|free trades|zero commission|no commission|€0|0\s?%/.test(getOfferText(offer)),
+    },
+    {
+      key: "asset",
+      labelEn: "Asset",
+      labelDe: "Anlage",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "stocks", label: "Stocks" },
+        { value: "etfs", label: "ETFs" },
+        { value: "crypto", label: "Crypto" },
+      ],
+      match: (offer, value) => getOfferText(offer).includes(value === "etfs" ? "etf" : value),
+    },
+  ],
+  wallets: [
+    monthlyFeeFilter,
+    {
+      key: "crypto",
+      labelEn: "Crypto support",
+      labelDe: "Krypto",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "yes", label: "Holds crypto" },
+      ],
+      match: (offer) => /crypto|bitcoin|\bbtc\b|ethereum/.test(getOfferText(offer)),
+    },
+  ],
+  debit: [
+    monthlyFeeFilter,
+    {
+      key: "fx",
+      labelEn: "FX fee",
+      labelDe: "FX-Gebühr",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "low", label: "Low / no FX fee" },
+      ],
+      match: (offer) => {
+        const metric = offer.metrics.find((m) => /fx/i.test(m.label));
+        const v = (metric?.value ?? "").toLowerCase();
+        return /\bfree\b|no fee|0\s?%|€\s?0|0\.0/.test(v);
+      },
+    },
+  ],
+  travel: [
+    monthlyFeeFilter,
+    {
+      key: "ins",
+      labelEn: "Travel insurance",
+      labelDe: "Reiseversicherung",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "yes", label: "Insurance included" },
+      ],
+      match: (offer) => /travel insurance|insurance included|medical cover/.test(getOfferText(offer)),
+    },
+  ],
+  remittance: [
+    {
+      key: "speed",
+      labelEn: "Payout speed",
+      labelDe: "Geschwindigkeit",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "instant", label: "Instant / minutes" },
+      ],
+      match: (offer) => /instant|minutes|seconds|real[- ]?time|within an hour|same day/.test(getOfferText(offer)),
+    },
+  ],
+  budgeting: [
+    monthlyFeeFilter,
+    {
+      key: "feat",
+      labelEn: "Feature",
+      labelDe: "Funktion",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "autosave", label: "Auto-save" },
+        { value: "subs", label: "Subscription tracking" },
+      ],
+      match: (offer, value) =>
+        value === "autosave"
+          ? /auto[- ]?save|round[- ]?up/.test(getOfferText(offer))
+          : /subscription|recurring/.test(getOfferText(offer)),
+    },
+  ],
+  cashback: [monthlyFeeFilter],
+  payroll: [
+    {
+      key: "type",
+      labelEn: "Type",
+      labelDe: "Typ",
+      options: [
+        { value: "any", label: "Any" },
+        { value: "contractor", label: "Contractor payments" },
+        { value: "eor", label: "EOR / employees" },
+      ],
+      match: (offer, value) =>
+        value === "contractor"
+          ? /contractor|freelanc/.test(getOfferText(offer))
+          : /\beor\b|employer of record|employee/.test(getOfferText(offer)),
+    },
+  ],
+};
+
 function inferSpeedValue(offer: MarketplaceOffer) {
   const text = getOfferText(offer);
 
@@ -923,7 +1118,37 @@ export function DashboardCategoryWorkspace({
   const [activityFilter, setActivityFilter] = useState<InsuranceActivityFilter>(defaultWorkspaceState.activityFilter);
   const [visaCompliantOnly, setVisaCompliantOnly] = useState(defaultWorkspaceState.visaCompliantOnly);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
+  // Refine panel: OPEN on desktop (wide screens have room, and the value prop
+  // is "enter your numbers → see matched offers"), COLLAPSED on mobile — there
+  // the tall input block pushed the offer list far down the page, so the
+  // ranked results surface first and the inputs sit behind the "Refine
+  // results" toggle. Starts collapsed for SSR/mobile; opens on lg+ after mount.
   const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      setFiltersOpen(true);
+    }
+  }, []);
+  // Universal refine inputs every category list can use: Search narrows by
+  // name/provider/metric text; childAge powers the Kids age-range matcher.
+  // Local (not persisted) — these are quick narrowing tools, not saved prefs.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [childAge, setChildAge] = useState("12");
+  // Business + banking refine inputs (local, not persisted). feeFilter is
+  // shared — only one category renders at a time.
+  const [feeFilter, setFeeFilter] = useState<"any" | "free">("any");
+  const [businessFocus, setBusinessFocus] = useState("any");
+  const [bankingType, setBankingType] = useState("any");
+  const [savingsAccess, setSavingsAccess] = useState("any");
+  const [minSavingsRate, setMinSavingsRate] = useState("0");
+  const [neobankFeature, setNeobankFeature] = useState("any");
+  const [kidsControls, setKidsControls] = useState("any");
+  // Config-driven extra filters (crypto/bnpl/trading/wallets/debit/travel/…),
+  // keyed by filter.key. Default (absent) === "any".
+  const [extraFilters, setExtraFilters] = useState<Record<string, string>>({});
   const [quote, setQuote] = useState<FxQuotePayload | null>(null);
   // FX categories must never paint the empty "market data unavailable" state on
   // first load: seed the loading flag so the skeleton shows until the seeded
@@ -1120,6 +1345,120 @@ export function DashboardCategoryWorkspace({
 
   const scopedOffers = useMemo(() => {
     return offers.filter((offer) => {
+      // Universal text search — runs for every category; empty query is a no-op.
+      if (searchQuery.trim() && !getOfferText(offer).includes(searchQuery.trim().toLowerCase())) {
+        return false;
+      }
+      if (category === "kids") {
+        if (!matchesCountry(offer, country)) return false;
+        // Match the child's age against the offer's "Age range" metric
+        // (e.g. "6-18") so a parent sees only accounts their kid qualifies for.
+        const age = Number.parseInt(childAge, 10);
+        if (Number.isFinite(age) && age > 0) {
+          const ageMetric = offer.metrics.find((metric) => /age/i.test(metric.label));
+          const range = ageMetric?.value.match(/(\d+)\s*[-–—]\s*(\d+)/);
+          if (range) {
+            const low = Number.parseInt(range[1], 10);
+            const high = Number.parseInt(range[2], 10);
+            if (age < low || age > high) return false;
+          }
+        }
+        if (feeFilter === "free") {
+          const feeMetric = offer.metrics.find((metric) => /monthly fee|fee/i.test(metric.label));
+          const value = (feeMetric?.value ?? "").toLowerCase();
+          if (feeMetric && !(/\bfree\b/.test(value) || /€\s?0(\b|\.)/.test(value))) return false;
+        }
+        if (kidsControls === "full" && !/full|comprehensive|complete/.test(getOfferText(offer))) {
+          return false;
+        }
+        return true;
+      }
+      if (category === "savings") {
+        if (!matchesCountry(offer, country)) return false;
+        // Min rate floor: parse the headline interest rate, require >= choice.
+        const floor = Number.parseFloat(minSavingsRate) || 0;
+        if (floor > 0) {
+          const rateMetric = offer.metrics.find((metric) => /interest|rate|apy|aer/i.test(metric.label));
+          const rm = rateMetric?.value.match(/([\d]+(?:[.,][\d]+)?)\s*%/);
+          const rate = rm ? Number.parseFloat(rm[1].replace(",", ".")) : 0;
+          if (rate < floor) return false;
+        }
+        // Access: instant / easy-access vs fixed-term / notice.
+        if (savingsAccess === "instant" && !/instant|easy[- ]?access|daily|flexible|on demand|anytime/.test(getOfferText(offer))) {
+          return false;
+        }
+        if (savingsAccess === "fixed" && !/fixed|term|notice|lock/.test(getOfferText(offer))) {
+          return false;
+        }
+        return true;
+      }
+      if (category === "neobanks") {
+        if (!matchesCountry(offer, country)) return false;
+        if (feeFilter === "free") {
+          const feeMetric = offer.metrics.find((metric) => /monthly fee/i.test(metric.label));
+          const value = (feeMetric?.value ?? "").toLowerCase();
+          // Only exclude when a monthly fee exists and isn't free.
+          if (feeMetric && !(/\bfree\b/.test(value) || /€\s?0(\b|\.)/.test(value))) return false;
+        }
+        if (neobankFeature !== "any") {
+          const text = getOfferText(offer);
+          const keywords: Record<string, string[]> = {
+            cashback: ["cashback", "rewards"],
+            multicurrency: ["multi-currency", "multicurrency", "currencies", "sub-account", "sub-iban"],
+            interest: ["interest on balance", "interest", "savings", "earn"],
+          };
+          const kws = keywords[neobankFeature] ?? [];
+          if (kws.length > 0 && !kws.some((k) => text.includes(k))) return false;
+        }
+        return true;
+      }
+      if (category === "banking") {
+        if (!matchesCountry(offer, country)) return false;
+        if (feeFilter === "free") {
+          const feeMetric = offer.metrics.find((metric) => /fee|month/i.test(metric.label));
+          const value = (feeMetric?.value ?? "").toLowerCase();
+          const isFree = /\bfree\b/.test(value) || /€\s?0(\b|\.)/.test(value);
+          if (!isFree) return false;
+        }
+        // Account type: "modern apps vs traditional banks". Match distinctive
+        // phrases (not the generic "online banking" metric every account has).
+        if (bankingType !== "any") {
+          const text = getOfferText(offer);
+          const keywords: Record<string, string[]> = {
+            digital: ["digital banking", "neobank", "mobile-first", "app-based", "fully digital", "digital-first"],
+            branch: ["branch access", "branch network", "traditional bank", "high street", "in-branch", "in person"],
+          };
+          const kws = keywords[bankingType] ?? [];
+          if (kws.length > 0 && !kws.some((k) => text.includes(k))) return false;
+        }
+        return true;
+      }
+      if (category === "business") {
+        if (!matchesCountry(offer, country)) return false;
+        // Free-only filter: keep accounts whose monthly fee reads as free
+        // (excludes "From €9/month" etc.).
+        if (feeFilter === "free") {
+          const feeMetric = offer.metrics.find((metric) => /fee|month/i.test(metric.label));
+          const value = (feeMetric?.value ?? "").toLowerCase();
+          const isFree = /\bfree\b/.test(value) || /€\s?0(\b|\.)/.test(value);
+          if (!isFree) return false;
+        }
+        // Focus filter: match the offer's text against what the business is for
+        // (freelancer / SME / card payments / corporate cards / global money).
+        if (businessFocus !== "any") {
+          const text = getOfferText(offer);
+          const keywords: Record<string, string[]> = {
+            freelancer: ["freelanc", "sole trader", "solo", "self-employed"],
+            sme: ["sme", "small business", "small team", "scale-up", "startup"],
+            payments: ["card payment", "card reader", "pos", "accept payment", "in-person", "point of sale"],
+            corporate: ["corporate card", "expense", "team card", "spend management"],
+            global: ["fx", "global", "international", "multi-currency", "multicurrency", "cross-border"],
+          };
+          const kws = keywords[businessFocus] ?? [];
+          if (kws.length > 0 && !kws.some((k) => text.includes(k))) return false;
+        }
+        return true;
+      }
       if (category === "insurance") {
         const type = getInsuranceType(offer);
         if (type !== insuranceType) {
@@ -1173,6 +1512,11 @@ export function DashboardCategoryWorkspace({
         return matchesCountry(offer, country) && Boolean(getOfferCalculatorProfile(offer));
       }
 
+      // Config-driven extra filters for categories without a bespoke panel.
+      for (const def of CATEGORY_EXTRA_FILTERS[category] ?? []) {
+        const value = extraFilters[def.key] ?? "any";
+        if (value !== "any" && !def.match(offer, value)) return false;
+      }
       return matchesCountry(offer, country);
     });
   }, [
@@ -1189,6 +1533,16 @@ export function DashboardCategoryWorkspace({
     offers,
     regionFilter,
     visaCompliantOnly,
+    searchQuery,
+    childAge,
+    feeFilter,
+    businessFocus,
+    bankingType,
+    savingsAccess,
+    minSavingsRate,
+    neobankFeature,
+    kidsControls,
+    extraFilters,
   ]);
 
   const rankedResults = useMemo(() => {
@@ -1339,6 +1693,65 @@ export function DashboardCategoryWorkspace({
           feeValue: Number.isFinite(priceValue) ? priceValue : undefined,
           speedValue: inferSpeedValue(offer),
           flexibilityValue: flexibility,
+        });
+      }
+    } else if (category === "savings") {
+      for (const offer of scopedOffers) {
+        const popularity = getPopularityScore(offer, insightMap.get(offer.id));
+        // Parse the published headline rate ("4.0% per year", "Up to 4.5% per
+        // year") and project it onto the deposit the user entered, so each row
+        // answers the only question a saver actually has: "what does my money
+        // earn here?" Falls back to the provider summary if no rate parses, so
+        // a malformed metric never blanks the row.
+        const rateMetric = offer.metrics.find((m) => /interest|rate|apy|aer/i.test(m.label));
+        const rateMatch = rateMetric?.value.match(/([\d]+(?:[.,][\d]+)?)\s*%/);
+        const ratePercent = rateMatch ? Number.parseFloat(rateMatch[1].replace(",", ".")) : 0;
+        const protectionMetric = offer.metrics.find((m) => /protection|fscs|guarantee|sicher/i.test(m.label));
+        const projectedInterest = ratePercent > 0 ? (amountValue * ratePercent) / 100 : 0;
+        const hasProjection = ratePercent > 0 && amountValue > 0;
+        baseRows.push({
+          offer,
+          primaryLabel: hasProjection
+            ? locale === "de"
+              ? "Zinsertrag / Jahr"
+              : "Interest / year"
+            : locale === "de"
+              ? "Anbieter"
+              : "Provider",
+          primaryValue: hasProjection
+            ? `≈ ${formatCurrency(locale, projectedInterest, "EUR")}`
+            : normalizeDisplayText(offer.title),
+          summary: hasProjection
+            ? locale === "de"
+              ? `Geschätzt aus ${ratePercent}% auf ${formatCurrency(locale, amountValue, "EUR")} Einlage.`
+              : `Estimated from ${ratePercent}% on a ${formatCurrency(locale, amountValue, "EUR")} deposit.`
+            : normalizeDisplayText(offer.subtitle),
+          metrics: [
+            {
+              label: locale === "de" ? "Zinssatz" : "Interest rate",
+              value: normalizeDisplayText(rateMetric?.value ?? "—"),
+            },
+            ...(protectionMetric
+              ? [
+                  {
+                    label: locale === "de" ? "Einlagensicherung" : "Deposit protection",
+                    value: normalizeDisplayText(protectionMetric.value),
+                  },
+                ]
+              : []),
+          ],
+          why: hasProjection
+            ? locale === "de"
+              ? `${offer.providerName} verzinst ${formatCurrency(locale, amountValue, "EUR")} mit ${ratePercent}% — rund ${formatCurrency(locale, projectedInterest, "EUR")} pro Jahr.`
+              : `${offer.providerName} pays ${ratePercent}% on ${formatCurrency(locale, amountValue, "EUR")} — about ${formatCurrency(locale, projectedInterest, "EUR")} a year.`
+            : locale === "de"
+              ? `${offer.providerName} gehört zu den gefragtesten Sparangeboten in deinem Markt.`
+              : `${offer.providerName} is one of the most-matched savings options for your market.`,
+          rawOutcomeValue: hasProjection ? projectedInterest : offer.affiliatePriorityScore ?? 0.5,
+          outcomeDirection: "higher",
+          popularityValue: popularity,
+          speedValue: inferSpeedValue(offer),
+          flexibilityValue: getSimplicityScore(offer),
         });
       }
     } else {
@@ -1510,6 +1923,21 @@ export function DashboardCategoryWorkspace({
           : `${copy.estimatedFrom} ${topResult.offer.providerName}`,
     };
   })();
+  // Savings projection: turns the deposit the user typed into a concrete
+  // "this is what your money earns" number against the top-ranked rate, so
+  // the input visibly pays off instead of sitting inert above the list.
+  const savingsSummary = (() => {
+    if (category !== "savings" || !topResult || amountValue <= 0) return null;
+    const rateMetric = topResult.offer.metrics.find((m) => /interest|rate|apy|aer/i.test(m.label));
+    const rateMatch = rateMetric?.value.match(/([\d]+(?:[.,][\d]+)?)\s*%/);
+    const ratePercent = rateMatch ? Number.parseFloat(rateMatch[1].replace(",", ".")) : 0;
+    if (ratePercent <= 0) return null;
+    return {
+      interest: (amountValue * ratePercent) / 100,
+      ratePercent,
+      provider: topResult.offer.providerName,
+    };
+  })();
   const comparePrimaryMetricLabel = category === "insurance" ? undefined : selectedCompareRows[0]?.primaryLabel;
   const compareEntries = useMemo<ProductCompareEntry[]>(
     () =>
@@ -1577,7 +2005,11 @@ export function DashboardCategoryWorkspace({
   const showSkeleton = quoteLoading || fxQuotePending;
   return (
     <div className="mx-auto grid max-w-[980px] gap-6">
-      {(category === "loans" || category === "transfers" || category === "exchange" || category === "insurance") && (
+      {/* Every category list gets a refine panel now — specific field blocks
+          below handle loans/transfers/exchange/insurance/savings/kids, and a
+          Search + Country fallback covers banking, business, neobanks, and the
+          rest so no list is left without a way to narrow by your parameters. */}
+      {category !== "investments" && (
       <section>
         <button
           type="button"
@@ -1670,6 +2102,281 @@ export function DashboardCategoryWorkspace({
                   ))}
                 </select>
               </InputField>
+            </>
+          ) : null}
+
+          {category === "savings" ? (
+            <>
+              <InputField label={locale === "de" ? "Sparbetrag" : "Deposit amount"}>
+                <input
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  className={amountFieldClassName()}
+                  inputMode="decimal"
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Zugang" : "Access"}>
+                <select
+                  value={savingsAccess}
+                  onChange={(event) => setSavingsAccess(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="instant">{locale === "de" ? "Sofort verfügbar" : "Instant access"}</option>
+                  <option value="fixed">{locale === "de" ? "Festgeld / Frist" : "Fixed term / notice"}</option>
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Mindestzins" : "Min. interest rate"}>
+                <select
+                  value={minSavingsRate}
+                  onChange={(event) => setMinSavingsRate(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="0">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="2">2%+</option>
+                  <option value="3">3%+</option>
+                  <option value="4">4%+</option>
+                </select>
+              </InputField>
+            </>
+          ) : null}
+
+          {category === "neobanks" ? (
+            <>
+              <InputField label={locale === "de" ? "Suche" : "Search"}>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className={fieldClassName()}
+                  placeholder={locale === "de" ? "Produkt oder Anbieter" : "Search products or providers"}
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Monatsgebühr" : "Monthly fee"}>
+                <select
+                  value={feeFilter}
+                  onChange={(event) => setFeeFilter(event.target.value as "any" | "free")}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="free">{locale === "de" ? "Nur kostenlos" : "Free only"}</option>
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Funktion" : "Feature"}>
+                <select
+                  value={neobankFeature}
+                  onChange={(event) => setNeobankFeature(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="cashback">Cashback</option>
+                  <option value="multicurrency">{locale === "de" ? "Multi-Währung" : "Multi-currency"}</option>
+                  <option value="interest">{locale === "de" ? "Zinsen auf Guthaben" : "Interest on balance"}</option>
+                </select>
+              </InputField>
+            </>
+          ) : null}
+
+          {category === "banking" ? (
+            <>
+              <InputField label={locale === "de" ? "Suche" : "Search"}>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className={fieldClassName()}
+                  placeholder={locale === "de" ? "Produkt oder Anbieter" : "Search products or providers"}
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Monatsgebühr" : "Monthly fee"}>
+                <select
+                  value={feeFilter}
+                  onChange={(event) => setFeeFilter(event.target.value as "any" | "free")}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="free">{locale === "de" ? "Nur kostenlos" : "Free only"}</option>
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Kontotyp" : "Account type"}>
+                <select
+                  value={bankingType}
+                  onChange={(event) => setBankingType(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="digital">{locale === "de" ? "Digital (App)" : "Digital (app-based)"}</option>
+                  <option value="branch">{locale === "de" ? "Filialzugang" : "Branch access"}</option>
+                </select>
+              </InputField>
+            </>
+          ) : null}
+
+          {category === "business" ? (
+            <>
+              <InputField label={locale === "de" ? "Suche" : "Search"}>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className={fieldClassName()}
+                  placeholder={locale === "de" ? "Produkt oder Anbieter" : "Search products or providers"}
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Monatsgebühr" : "Monthly fee"}>
+                <select
+                  value={feeFilter}
+                  onChange={(event) => setFeeFilter(event.target.value as "any" | "free")}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="free">{locale === "de" ? "Nur kostenlos" : "Free only"}</option>
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Schwerpunkt" : "Best for"}>
+                <select
+                  value={businessFocus}
+                  onChange={(event) => setBusinessFocus(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Alle" : "Any"}</option>
+                  <option value="freelancer">{locale === "de" ? "Freelancer" : "Freelancers"}</option>
+                  <option value="sme">{locale === "de" ? "Kleine Unternehmen" : "Small business / SMEs"}</option>
+                  <option value="payments">{locale === "de" ? "Kartenzahlungen" : "Card payments"}</option>
+                  <option value="corporate">{locale === "de" ? "Firmenkarten" : "Corporate cards"}</option>
+                  <option value="global">Global / FX</option>
+                </select>
+              </InputField>
+            </>
+          ) : null}
+
+          {category === "kids" ? (
+            <>
+              <InputField label={locale === "de" ? "Alter des Kindes" : "Child's age"}>
+                <input
+                  value={childAge}
+                  onChange={(event) => setChildAge(event.target.value)}
+                  className={fieldClassName()}
+                  inputMode="numeric"
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Monatsgebühr" : "Monthly fee"}>
+                <select
+                  value={feeFilter}
+                  onChange={(event) => setFeeFilter(event.target.value as "any" | "free")}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="free">{locale === "de" ? "Nur kostenlos" : "Free only"}</option>
+                </select>
+              </InputField>
+              <InputField label={locale === "de" ? "Elternkontrolle" : "Parental controls"}>
+                <select
+                  value={kidsControls}
+                  onChange={(event) => setKidsControls(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  <option value="any">{locale === "de" ? "Beliebig" : "Any"}</option>
+                  <option value="full">{locale === "de" ? "Vollständig" : "Full controls"}</option>
+                </select>
+              </InputField>
+            </>
+          ) : null}
+
+          {!["loans", "transfers", "exchange", "insurance", "savings", "kids", "business", "banking", "neobanks"].includes(category) ? (
+            <>
+              <InputField label={locale === "de" ? "Suche" : "Search"}>
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className={fieldClassName()}
+                  placeholder={locale === "de" ? "Produkt oder Anbieter" : "Search products or providers"}
+                />
+              </InputField>
+              <InputField label={copy.country}>
+                <select
+                  value={country}
+                  onChange={(event) => updateCountry(event.target.value as CountryValue)}
+                  className={fieldClassName()}
+                >
+                  <option value="">{copy.chooseCountry}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </InputField>
+              {(CATEGORY_EXTRA_FILTERS[category] ?? []).map((def) => (
+                <InputField key={def.key} label={locale === "de" ? def.labelDe : def.labelEn}>
+                  <select
+                    value={extraFilters[def.key] ?? "any"}
+                    onChange={(event) =>
+                      setExtraFilters((prev) => ({ ...prev, [def.key]: event.target.value }))
+                    }
+                    className={fieldClassName()}
+                  >
+                    {def.options.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </InputField>
+              ))}
             </>
           ) : null}
 
@@ -1881,6 +2588,38 @@ export function DashboardCategoryWorkspace({
               </div>
             </div>
             <p className="mt-3 text-sm text-ink-secondary">{loanSummary.source}</p>
+          </div>
+        ) : null}
+
+        {savingsSummary ? (
+          <div className="mt-5 rounded-[20px] border border-accent-emerald-soft bg-accent-emerald-soft/40 p-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+                  {locale === "de" ? "Deine Einlage" : "Your deposit"}
+                </p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{formatCurrency(locale, amountValue)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+                  {locale === "de" ? "Bester Zinssatz" : "Top rate"}
+                </p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-ink">{savingsSummary.ratePercent}%</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+                  {locale === "de" ? "Zinsertrag / Jahr" : "Interest / year"}
+                </p>
+                <p className="mt-1 text-xl font-bold tracking-tight text-accent-emerald-strong">
+                  ≈ {formatCurrency(locale, savingsSummary.interest)}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-ink-secondary">
+              {locale === "de"
+                ? `Geschätzt mit ${savingsSummary.provider} bei ${savingsSummary.ratePercent}%. Tatsächliche Zinsen hängen von den Bedingungen des Anbieters ab.`
+                : `Estimated from ${savingsSummary.provider} at ${savingsSummary.ratePercent}%. Actual interest depends on the provider's terms.`}
+            </p>
           </div>
         ) : null}
 

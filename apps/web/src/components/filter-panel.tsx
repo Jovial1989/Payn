@@ -56,6 +56,82 @@ function formatAmount(locale: string, val: number) {
   return formatCurrency(locale as never, val, "EUR");
 }
 
+// STRAT.4 — behavioural quick-pick pills get a small SVG glyph (never an
+// emoji — emojis are font-dependent and off-brand) chosen from the pill's
+// own wording, so "Travel" gets a compass, "Free ATM" a banknote, etc.
+// Falls back to a check glyph for anything unmatched.
+function PillIcon({ label }: { label: string }) {
+  const l = label.toLowerCase();
+  const s = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  let inner: React.ReactNode;
+  if (/travel|abroad|lounge|global|accept/.test(l)) {
+    inner = (
+      <>
+        <circle cx="7" cy="7" r="5" />
+        <path d="M9.3 4.7L7.8 7.8 4.7 9.3 6.2 6.2z" />
+      </>
+    );
+  } else if (/cashback|points|reward/.test(l)) {
+    inner = (
+      <>
+        <path d="M3.5 10.5l7-7" />
+        <circle cx="4.6" cy="4.6" r="1" />
+        <circle cx="9.4" cy="9.4" r="1" />
+      </>
+    );
+  } else if (/atm|cash|withdraw/.test(l)) {
+    inner = (
+      <>
+        <rect x="1.8" y="3.5" width="10.4" height="7" rx="1.5" />
+        <circle cx="7" cy="7" r="1.6" />
+      </>
+    );
+  } else if (/fx|fee|free|hidden|no monthly/.test(l)) {
+    inner = (
+      <>
+        <path d="M2.5 7.5V2.8h4.7L12 7.5 7.5 12z" />
+        <circle cx="5" cy="5" r="0.7" />
+      </>
+    );
+  } else if (/fast|instant|quick|setup|fund|delivery/.test(l)) {
+    inner = <path d="M7.6 1.5L3.2 8h3.1l-1 4.5L11 5.5H7.1z" />;
+  } else if (/interest|yield|saving|grow|invest|stock|etf|return|long-term/.test(l)) {
+    inner = (
+      <>
+        <path d="M2 10l3-3 2.5 2.5L12 4" />
+        <path d="M9.2 4H12v2.8" />
+      </>
+    );
+  } else if (/multi-currency|exchange|rate|hold|transfer|remit|p2p|send|payment/.test(l)) {
+    inner = (
+      <>
+        <path d="M2.5 5h7.5L8 3" />
+        <path d="M11.5 9H4l2 2" />
+      </>
+    );
+  } else if (/business|team|invoic|payroll|company|expense|contractor/.test(l)) {
+    inner = (
+      <>
+        <rect x="2" y="4" width="10" height="7.5" rx="1.2" />
+        <path d="M5 4V2.8h4V4" />
+      </>
+    );
+  } else {
+    inner = <path d="M3 7.3l2.6 2.6L11 4.2" />;
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" {...s}>
+      {inner}
+    </svg>
+  );
+}
+
 export function FilterPanel({
   category,
   offers,
@@ -169,27 +245,31 @@ export function FilterPanel({
           <p className="mb-3 text-sm font-medium text-ink">
             {isLoan ? messages.filters.purpose : messages.filters.bestFor}
           </p>
-          <div className="grid gap-1.5">
-            {purposeOptions[category].map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => update({ purpose: filters.purpose === option ? null : option })}
-                className={clsx(
-                  "flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-all duration-200",
-                  filters.purpose === option
-                    ? "border-accent-emerald/30 bg-accent-emerald-soft font-medium text-accent-emerald-strong"
-                    : "border-line bg-white text-ink-secondary hover:border-line-strong hover:text-ink",
-                )}
-              >
-                <span>{option}</span>
-                {filters.purpose === option && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink">
-                    <path d="M3 7l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-            ))}
+          {/* STRAT.4 — behavioural quick-pick pills: horizontal, icon-led,
+              single-select. They drive the same proven bestFor filter as
+              before (applyFilters), just presented as warmer pills instead
+              of a stacked checklist. */}
+          <div className="flex flex-wrap gap-2">
+            {purposeOptions[category].map((option) => {
+              const active = filters.purpose === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => update({ purpose: active ? null : option })}
+                  aria-pressed={active}
+                  className={clsx(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-all duration-200",
+                    active
+                      ? "border-accent-emerald/30 bg-accent-emerald-soft font-semibold text-accent-emerald-strong"
+                      : "border-line bg-white font-medium text-ink-secondary hover:border-line-strong hover:text-ink",
+                  )}
+                >
+                  <PillIcon label={option} />
+                  {option}
+                </button>
+              );
+            })}
           </div>
         </section>
 
