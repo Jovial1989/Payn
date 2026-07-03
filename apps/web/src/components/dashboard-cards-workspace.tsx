@@ -343,9 +343,18 @@ export function DashboardCardsWorkspace({
   const [minAtmLimit, setMinAtmLimit] = useState(defaultWorkspaceState.minAtmLimit);
   const [monthlySpend, setMonthlySpend] = useState(defaultWorkspaceState.monthlySpend);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
-  // Open by default — the refine inputs ARE the product; let users see what
-  // they can enter to get matched cards instead of hiding it behind a toggle.
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  // Refine is OPEN on desktop (the inputs are part of the product) but
+  // COLLAPSED on mobile, where the tall panel buried the ranked cards below
+  // it. Starts collapsed for SSR/mobile; opens on lg+ after mount.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      setFiltersOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     const persistedState = readPersistedProductWorkspaceState(

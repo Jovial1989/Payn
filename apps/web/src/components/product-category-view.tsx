@@ -150,13 +150,16 @@ export function ProductCategoryView({
   const categoryDescription = dictionary.categoryDescriptions[category] ?? "";
 
   const categoryHero = (
-    <section className="rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] p-5 sm:rounded-[32px] sm:p-8">
+    // Compact on mobile — smaller title, less padding, and the description is
+    // hidden (the title + country say enough) so the offers surface sooner.
+    // Full editorial hero returns at sm+.
+    <section className="rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] px-5 py-4 sm:rounded-[32px] sm:p-8">
       <p className="text-caption uppercase tracking-[0.28em] text-white/50">{preferences.countryLabel}</p>
-      <h1 className="mt-4 max-w-3xl text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-white sm:text-h1">
+      <h1 className="mt-2 max-w-3xl text-[1.6rem] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:mt-4 sm:text-h1">
         {categoryTitle}
       </h1>
       {categoryDescription ? (
-        <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-white/70 sm:text-base">
+        <p className="mt-3 hidden max-w-3xl text-[15px] leading-relaxed text-white/70 sm:mt-4 sm:block sm:text-base">
           {categoryDescription}
         </p>
       ) : null}

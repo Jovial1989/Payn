@@ -83,9 +83,18 @@ export function DashboardInvestmentsWorkspace({
   }, [selectedAssetId, userId, workspaceStateLoaded]);
 
   // Refine results — filters the provider ranking under the chart (the chart
-  // itself is asset-driven and stays put). Open by default like every other
-  // category, so the page reads "chart + refine + matched platforms".
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  // itself is asset-driven and stays put). Open on desktop, collapsed on
+  // mobile (opens on lg+ after mount) so the chart + platforms aren't pushed
+  // down by the filter block on small screens.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      setFiltersOpen(true);
+    }
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [commission, setCommission] = useState("any");
   const [assetFocus, setAssetFocus] = useState("any");
