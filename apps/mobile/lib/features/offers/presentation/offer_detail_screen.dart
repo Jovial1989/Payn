@@ -81,17 +81,14 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF0D1812), Color(0xFF13181A)],
-              ),
+              color: PaynColors.surface,
               borderRadius: BorderRadius.circular(PaynRadius.panel),
+              border: Border.all(color: PaynColors.outline),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 26,
-                  offset: const Offset(0, 12),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -113,7 +110,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                           Text(
                             offer.providerName,
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.6),
+                              color: PaynColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -122,7 +119,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                             style: theme.textTheme.headlineMedium?.copyWith(
                               fontSize: 24,
                               letterSpacing: -0.7,
-                              color: Colors.white,
+                              color: PaynColors.text,
                             ),
                           ),
                         ],
@@ -138,25 +135,25 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                     fontSize: 10,
                     letterSpacing: 1.7,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white.withValues(alpha: 0.4),
+                    color: PaynColors.accentStrong,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   primaryMetric?.value ?? l10n.offerOnRequest,
                   style: theme.textTheme.headlineMedium?.copyWith(
-                    fontSize: 40,
+                    fontSize: 44,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1.8,
                     height: 0.95,
-                    color: Colors.white,
+                    color: PaynColors.text,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   offer.subtitle,
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: PaynColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -179,19 +176,19 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                     if (ranked.score >= 110)
                       _Badge(
                         label: l10n.compareBestOption,
-                        bg: PaynColors.positive.withValues(alpha: 0.20),
-                        fg: PaynColors.positive,
+                        bg: PaynColors.accentSurface,
+                        fg: PaynColors.accentStrong,
                       )
                     else if (reasons.isNotEmpty)
                       _Badge(
                         label: reasons.first,
-                        bg: PaynColors.accent.withValues(alpha: 0.20),
-                        fg: PaynColors.accent,
+                        bg: PaynColors.accentSurface,
+                        fg: PaynColors.accentStrong,
                       ),
                     _Badge(
                       label: offer.category.localizedLabel(l10n),
-                      bg: Colors.white.withValues(alpha: 0.12),
-                      fg: Colors.white.withValues(alpha: 0.6),
+                      bg: PaynColors.surfaceDim,
+                      fg: PaynColors.textSecondary,
                     ),
                   ],
                 ),
