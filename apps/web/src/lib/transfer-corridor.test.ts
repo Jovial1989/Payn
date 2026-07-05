@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { supportedFxCurrencies } from "./fx-quote";
+import { normalizeFxCurrency, supportedFxCurrencies } from "./fx-quote";
 import {
   TRANSFER_CORRIDOR_PRESETS,
   getDefaultTransferCorridor,
@@ -39,10 +39,14 @@ describe("getDefaultTransferCorridor", () => {
     expect(c.toCountry).not.toBe("uk");
   });
 
-  it("falls back to EUR for a non-quotable market currency (PLN)", () => {
+  it("keeps a non-identity, quotable corridor for a PLN market (P1.2)", () => {
+    // PLN is now a supported FX currency, so a Polish user quotes in PLN.
+    expect(supportedFxCurrencies).toContain("PLN");
+    expect(normalizeFxCurrency("PLN", "EUR")).toBe("PLN");
     const c = getDefaultTransferCorridor("pl");
-    expect(c.fromCurrency).toBe("EUR");
-    expect(c.toCurrency).toBe("GBP");
+    expect(c.fromCountry).not.toBe(c.toCountry);
+    expect(c.fromCurrency).not.toBe(c.toCurrency);
+    expect(supportedFxCurrencies).toContain(c.fromCurrency);
   });
 });
 

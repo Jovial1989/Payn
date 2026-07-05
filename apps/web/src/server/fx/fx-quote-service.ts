@@ -121,22 +121,25 @@ async function fetchFrankfurterQuote(fromCurrency: FxCurrencyCode, toCurrency: F
   };
 }
 
-// Hardcoded indicative rates as of 2026-04 — used only when all live sources fail.
-// These keep Transfers/Exchange functional even during API outages.
-const FALLBACK_RATES: Record<string, number> = {
-  "EUR:USD": 1.09,
-  "EUR:GBP": 0.86,
-  "EUR:CHF": 0.96,
-  "USD:EUR": 0.92,
-  "USD:GBP": 0.79,
-  "USD:CHF": 0.88,
-  "GBP:EUR": 1.17,
-  "GBP:USD": 1.27,
-  "GBP:CHF": 1.13,
-  "CHF:EUR": 1.04,
-  "CHF:USD": 1.14,
-  "CHF:GBP": 0.89,
+// Indicative EUR cross-rates (units of currency per 1 EUR) as of 2026-04 —
+// used only when every live source fails, so Transfers/Exchange still renders.
+// A single EUR-anchored table cross-computes any supported pair, so adding a
+// currency here (P1.2 expanded to PLN/SEK/DKK/CZK/NOK/HUF/RON) needs one entry,
+// not N² pairs.
+const EUR_RATES: Record<string, number> = {
+  EUR: 1, USD: 1.09, GBP: 0.86, CHF: 0.96,
+  PLN: 4.3, SEK: 11.3, DKK: 7.46, CZK: 25.2, NOK: 11.6, HUF: 395, RON: 4.98,
 };
+
+function fallbackPairRate(fromCurrency: string, toCurrency: string): number | null {
+  const from = EUR_RATES[fromCurrency];
+  const to = EUR_RATES[toCurrency];
+  if (!from || !to) {
+    return null;
+  }
+  // units of `to` per 1 `from`
+  return to / from;
+}
 
 export async function getFxQuote(args: {
   fromCurrency: FxCurrencyCode;
@@ -179,8 +182,8 @@ export async function getFxQuote(args: {
     };
   }
 
-  // All live sources failed — use hardcoded indicative rate so the page still renders.
-  const fallbackRate = FALLBACK_RATES[`${fromCurrency}:${toCurrency}`] ?? null;
+  // All live sources failed — use the cached cross-rate so the page still renders.
+  const fallbackRate = fallbackPairRate(fromCurrency, toCurrency);
 
   if (fallbackRate) {
     return {
