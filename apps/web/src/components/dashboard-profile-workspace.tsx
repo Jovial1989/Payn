@@ -70,9 +70,9 @@ export function DashboardProfileWorkspace({
     locale === "de"
       ? {
           headerEyebrow: "Profil & Einstellungen",
-          headerTitle: "Konto, Land und Empfehlungs-Einstellungen",
+          headerTitle: "Dein Konto und deine Einstellungen",
           headerDescription:
-            "Dashboard zeigt jetzt nur noch Kontext. Bearbeite hier die Felder, die Discover, Ranking und gespeicherte Sitzungen steuern.",
+            "Diese Einstellungen bestimmen, welche Angebote du siehst und wie wir sie für dich sortieren.",
           saving: "Speichert…",
           saveFailed: "Speichern fehlgeschlagen",
           saved: "Gespeichert",
@@ -114,9 +114,9 @@ export function DashboardProfileWorkspace({
         }
       : {
           headerEyebrow: "Profile & settings",
-          headerTitle: "Account, country, and recommendation preferences",
+          headerTitle: "Your account and preferences",
           headerDescription:
-            "Dashboard is now read-only context. Edit the fields that shape Discover, ranking, and saved-session continuity here.",
+            "These settings shape which offers you see and how we rank them for you.",
           saving: "Saving…",
           saveFailed: "Save failed",
           saved: "Saved",

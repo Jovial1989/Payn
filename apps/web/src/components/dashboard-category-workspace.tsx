@@ -25,6 +25,7 @@ import {
   getDefaultTransferCorridor,
 } from "@/lib/transfer-corridor";
 import { compareByRealCost } from "@/lib/ranking";
+import { formatMarketName } from "@/lib/market-name";
 import { getDictionary, getMetricLabel, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
@@ -873,13 +874,13 @@ export function DashboardCategoryWorkspace({
           exchangeTitle: "Wechsel eingeben und den effektiven Kurs vergleichen",
           insuranceTitle: "Zuerst die Schutzart wählen",
           loansDescription:
-            `Digitale Kreditgeber, Banken und Fintechs mit Konsumenten- und Privatkrediten für ${marketLabel.toLowerCase()} — nach realer Monatsrate sortiert. Betrag, Laufzeit, Zinsannahme, Einkommen, Beschäftigung oder Zweck ändern sich sofort im Ranking.`,
+            `Digitale Kreditgeber, Banken und Fintechs mit Konsumenten- und Privatkrediten für ${formatMarketName(marketLabel)} — nach realer Monatsrate sortiert. Betrag, Laufzeit, Zinsannahme, Einkommen, Beschäftigung oder Zweck ändern sich sofort im Ranking.`,
           transfersDescription:
-            `Ändere Korridor, Betrag oder Währungspaar und das Ranking für ${marketLabel.toLowerCase()} aktualisiert sich mit Live-Kurs und jedem Gebührenmodell.`,
+            `Ändere Korridor, Betrag oder Währungspaar und das Ranking für ${formatMarketName(marketLabel)} aktualisiert sich mit Live-Kurs und jedem Gebührenmodell.`,
           exchangeDescription:
-            `Payn nutzt den Live-Marktkurs plus Aufschläge und Gebühren der Anbieter, damit eine sortierte Wechsel-Liste für ${marketLabel.toLowerCase()} sichtbar bleibt.`,
+            `Payn nutzt den Live-Marktkurs plus Aufschläge und Gebühren der Anbieter, damit eine sortierte Wechsel-Liste für ${formatMarketName(marketLabel)} sichtbar bleibt.`,
           insuranceDescription:
-            `Wähle zuerst die echte Schutzart und filtere dann nach Deckung, Region, Selbstbehalt, Laufzeit und Visa-Fit, bevor du Anbieter in ${marketLabel.toLowerCase()} vergleichst.`,
+            `Wähle zuerst die echte Schutzart und filtere dann nach Deckung, Region, Selbstbehalt, Laufzeit und Visa-Fit, bevor du Anbieter in ${formatMarketName(marketLabel)} vergleichst.`,
           backToDiscover: "Zurück zu Discover",
           amount: "Betrag",
           durationMonths: "Laufzeit (Monate)",
@@ -964,13 +965,13 @@ export function DashboardCategoryWorkspace({
           exchangeTitle: "Enter the exchange and compare the delivered rate",
           insuranceTitle: "Choose the protection type first",
           loansDescription:
-            `Digital lenders, banks, and fintechs offering consumer loans, personal loans, and small-ticket financing for ${marketLabel.toLowerCase()} — ranked by real monthly cost. Change amount, duration, rate assumption, income, employment, or purpose and results update instantly.`,
+            `Digital lenders, banks, and fintechs offering consumer loans, personal loans, and small-ticket financing for ${formatMarketName(marketLabel)} — ranked by real monthly cost. Change amount, duration, rate assumption, income, employment, or purpose and results update instantly.`,
           transfersDescription:
-            `Change the corridor, amount, or currency pair and the provider ranking updates for ${marketLabel.toLowerCase()} from the live quote and each fee model.`,
+            `Change the corridor, amount, or currency pair and the provider ranking updates for ${formatMarketName(marketLabel)} from the live quote and each fee model.`,
           exchangeDescription:
-            `Payn uses the live market quote plus provider markups and fees to keep one ranked exchange list for ${marketLabel.toLowerCase()}.`,
+            `Payn uses the live market quote plus provider markups and fees to keep one ranked exchange list for ${formatMarketName(marketLabel)}.`,
           insuranceDescription:
-            `Choose the protection type you actually need, then filter by coverage, region, deductible, trip duration, and visa fit before comparing providers in ${marketLabel.toLowerCase()}.`,
+            `Choose the protection type you actually need, then filter by coverage, region, deductible, trip duration, and visa fit before comparing providers in ${formatMarketName(marketLabel)}.`,
           backToDiscover: "Back to Discover",
           amount: "Amount",
           durationMonths: "Duration (months)",

@@ -13,6 +13,7 @@ import {
 import { ProviderLogo } from "@/components/provider-logo";
 import { Tag } from "@/components/tag";
 import { getDictionary } from "@/lib/i18n";
+import { formatMarketName } from "@/lib/market-name";
 import { localePath } from "@/lib/locale";
 import { getOfferHref, getMetricValue, normalizeDisplayText } from "@/lib/marketplace";
 import { getCountryLabel, getLocalizedMarketScopeOptions } from "@/lib/countries";
@@ -293,7 +294,7 @@ export function DashboardOverviewWorkspace({
             "Einstellungen verwalten jetzt Identität und Marktpräferenzen. Das Dashboard liest sie aus und macht daraus bessere Abkürzungen und Hinweise.",
           editSettings: "Einstellungen bearbeiten",
           recommendationHints: "Empfehlungshinweise",
-          usefulNextMoves: `Sinnvolle nächste Schritte für ${marketLabel.toLowerCase()}`,
+          usefulNextMoves: `Sinnvolle nächste Schritte für ${formatMarketName(marketLabel)}`,
           usefulNextMovesBody:
             "Diese Hinweise bleiben klein und direkt, damit das Dashboard dir schneller beim Neustart hilft, statt selbst zu einer weiteren Browse-Fläche zu werden.",
           cheapestTransfer: "Günstigste EUR → GBP Überweisung",
@@ -351,7 +352,7 @@ export function DashboardOverviewWorkspace({
             "Settings now own your identity and market preferences. Dashboard reads them and turns them into better shortcuts and hints.",
           editSettings: "Edit settings",
           recommendationHints: "Recommendation hints",
-          usefulNextMoves: `Useful next moves for ${marketLabel.toLowerCase()}`,
+          usefulNextMoves: `Useful next moves for ${formatMarketName(marketLabel)}`,
           usefulNextMovesBody:
             "These hints stay small and actionable so dashboard helps you restart faster instead of becoming another browse surface.",
           cheapestTransfer: "Cheapest EUR → GBP transfer",

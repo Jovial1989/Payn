@@ -22,6 +22,7 @@ import {
   detectFeePeriod,
   estimateCardYearlyCost,
 } from "@/lib/card-cost";
+import { formatMarketName } from "@/lib/market-name";
 import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
@@ -248,9 +249,9 @@ export function DashboardCardsWorkspace({
     locale === "de"
       ? {
           categoryEyebrow: "Karten",
-          title: `Karten für ${marketLabel.toLowerCase()} vergleichen`,
+          title: `Die richtige Karte in ${formatMarketName(marketLabel)} finden`,
           description:
-            "Filtere nach Gebühren, Reiseeinsatz, Cashback, Bargeldzugang und Krypto-Support und prüfe dann eine einzige sortierte Liste.",
+            `Vergleiche Gebühren, FX-Kosten, Cashback und Bargeldzugang — sortiert nach dem, was du in ${formatMarketName(marketLabel)} wirklich zahlst.`,
           backToDiscover: "Zurück zur Suche",
           search: "Suche",
           searchPlaceholder: "Produkte oder Anbieter suchen",
@@ -280,7 +281,7 @@ export function DashboardCardsWorkspace({
           rankedResults: "Sortierte Ergebnisse",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "Karte" : "Karten"} sortiert`,
           rankedDescription:
-            "Sortiert nach Relevanz, realem Gebühreneffekt, Einfachheit, Reiseeinsatz und Popularität.",
+            "Nach realen Kosten sortiert — günstigste zuerst. Bei exakt gleichen Kosten entscheidet nur unser offengelegter Tie-Breaker.",
           noCardsTitle: "Noch keine Karten für diese Filter",
           noCardsDescription: "Erweitere Gebühren- oder Cashback-Filter und Payn baut das Ranking sofort neu auf.",
           compareCardsTitle: "Kartenanbieter vergleichen",
@@ -296,9 +297,9 @@ export function DashboardCardsWorkspace({
         }
       : {
           categoryEyebrow: "Cards",
-          title: `Browse card routes for ${marketLabel.toLowerCase()}`,
+          title: `Find the right card in ${formatMarketName(marketLabel)}`,
           description:
-            "Cards work better as a browse-and-analytics flow. Filter by fees, travel fit, cashback, ATM access, and crypto support, then review one ranked list instead of duplicated card blocks.",
+            `Compare fees, FX costs, cashback and ATM access — ranked by what you'd actually pay in ${formatMarketName(marketLabel)}.`,
           backToDiscover: "Back to Discover",
           search: "Search",
           searchPlaceholder: "Search products or providers",
@@ -328,7 +329,7 @@ export function DashboardCardsWorkspace({
           rankedResults: "Ranked results",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "card" : "cards"} ranked`,
           rankedDescription:
-            "Sorted by relevance, real fee outcome, simplicity, travel fit, and popularity. Cards stay in one ranked list, with no duplicated sections and no card grid.",
+            "Ranked by real cost — cheapest first. When two cards cost exactly the same, we fall back to our disclosed tie-breaker, nothing else.",
           noCardsTitle: "No cards match these filters yet",
           noCardsDescription: "Widen the fee or cashback filters and Payn will rebuild the ranking immediately.",
           compareCardsTitle: "Compare card providers",

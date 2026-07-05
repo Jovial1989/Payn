@@ -13,6 +13,7 @@ import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
 } from "@/lib/product-workspace-state";
+import { formatMarketName } from "@/lib/market-name";
 
 export function DashboardInvestmentsWorkspace({
   locale,
@@ -37,7 +38,7 @@ export function DashboardInvestmentsWorkspace({
           eyebrow: "Investment-Workspace",
           title: "Erst den Markt-Kontext vergleichen, dann die passende Plattform wählen",
           description:
-            `Wechsle Asset oder Zeitraum und Payn aktualisiert Chart, Puls, Trendsignale und Anbieter-Ranking für ${marketLabel.toLowerCase()} in einem Workspace.`,
+            `Wechsle Asset oder Zeitraum und Payn aktualisiert Chart, Puls, Trendsignale und Anbieter-Ranking für ${formatMarketName(marketLabel)} in einem Workspace.`,
           backToDashboard: "Zurück zum Dashboard",
           backToDiscover: "Zurück zu Discover",
         }
@@ -45,7 +46,7 @@ export function DashboardInvestmentsWorkspace({
           eyebrow: "Investments workspace",
           title: "Compare market context first, then choose the right platform",
           description:
-            `Change asset or timeframe and Payn updates the chart, pulse, trend signals, and provider ranking for ${marketLabel.toLowerCase()} in one workspace.`,
+            `Change asset or timeframe and Payn updates the chart, pulse, trend signals, and provider ranking for ${formatMarketName(marketLabel)} in one workspace.`,
           backToDashboard: "Back to dashboard",
           backToDiscover: "Back to Discover",
         };
