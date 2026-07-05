@@ -24,6 +24,7 @@ import {
   TRANSFER_CORRIDOR_PRESETS,
   getDefaultTransferCorridor,
 } from "@/lib/transfer-corridor";
+import { compareByRealCost } from "@/lib/ranking";
 import { getDictionary, getMetricLabel, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
@@ -922,7 +923,7 @@ export function DashboardCategoryWorkspace({
           providersRanked: (count: number) =>
             `${count} ${count === 1 ? "Anbieter" : "Anbieter"} sortiert`,
           rankingDescription:
-            "Sortiert nach Relevanz, realem Ergebnis, Tempo, Einfachheit und Beliebtheit.",
+            "Nach realen Kosten sortiert — bestes Ergebnis zuerst. Bei exakt gleichen Kosten entscheidet nur unser offengelegter Tie-Breaker.",
           topLead: "#1",
           monthly: "Monatlich",
           totalRepayable: "Gesamt zurückzuzahlen",
@@ -1013,7 +1014,7 @@ export function DashboardCategoryWorkspace({
           providersRanked: (count: number) =>
             `${count} ${count === 1 ? "provider" : "providers"} ranked`,
           rankingDescription:
-            "Sorted by relevance, real outcome, speed, simplicity, and popularity.",
+            "Ranked by real cost — best value first. When two offers cost exactly the same, we fall back to our disclosed tie-breaker, nothing else.",
           topLead: "#1",
           monthly: "Monthly",
           totalRepayable: "Total repayable",
@@ -1852,7 +1853,26 @@ export function DashboardCategoryWorkspace({
           tags: [],
         } satisfies RankedResult;
       })
-      .sort((left, right) => right.score - left.score);
+      // Promise A: default order is decided by the real-cost metric alone.
+      // `rawOutcomeValue` is the displayed cost/outcome; `outcomeDirection`
+      // says which way "better" runs. The composite `score` above is retained
+      // only for internal signals (tags) — it can no longer reorder the list.
+      .sort((left, right) =>
+        compareByRealCost(
+          {
+            costValue: left.rawOutcomeValue,
+            costDirection: left.outcomeDirection === "lower" ? "asc" : "desc",
+            affiliatePriorityScore: left.offer.affiliatePriorityScore ?? 0,
+            tieLabel: left.offer.providerName,
+          },
+          {
+            costValue: right.rawOutcomeValue,
+            costDirection: right.outcomeDirection === "lower" ? "asc" : "desc",
+            affiliatePriorityScore: right.offer.affiliatePriorityScore ?? 0,
+            tieLabel: right.offer.providerName,
+          },
+        ),
+      );
 
     const uniqueScoredRows: RankedResult[] = [];
     const seenProviders = new Set<string>();

@@ -16,6 +16,7 @@ import {
   normalizeDisplayText,
   parseMetricRange,
 } from "@/lib/marketplace";
+import { compareByRealCost } from "@/lib/ranking";
 import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
@@ -553,7 +554,26 @@ export function DashboardCardsWorkspace({
       [...rows].sort((left, right) => right.cashback - left.cashback)[0]?.offer.id ?? null;
 
     const uniqueRows = rows
-      .sort((left, right) => right.score - left.score)
+      // Promise A: cards rank by estimated yearly cost, cheapest first. The
+      // composite `score` is kept only for internal signals — it can no longer
+      // reorder the list. Exact ties fall back to disclosed affiliate priority,
+      // then provider name.
+      .sort((left, right) =>
+        compareByRealCost(
+          {
+            costValue: left.estimatedYearlyCost,
+            costDirection: "asc",
+            affiliatePriorityScore: left.offer.affiliatePriorityScore ?? 0,
+            tieLabel: left.offer.providerName,
+          },
+          {
+            costValue: right.estimatedYearlyCost,
+            costDirection: "asc",
+            affiliatePriorityScore: right.offer.affiliatePriorityScore ?? 0,
+            tieLabel: right.offer.providerName,
+          },
+        ),
+      )
       .filter((row, index, source) => source.findIndex((item) => item.offer.providerName === row.offer.providerName) === index);
 
     return uniqueRows.map((row) => ({
