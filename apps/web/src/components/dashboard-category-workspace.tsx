@@ -450,6 +450,21 @@ function getTermRange(offer: MarketplaceOffer) {
   };
 }
 
+// P1.5 — the loan card's Term shows the PRODUCT's real range (published "Term"
+// metric, e.g. "6 – 72 months"), never the duration the user typed. Their
+// scenario lives only in the summary bar above the list.
+function getLoanTermDisplay(offer: MarketplaceOffer, locale: MarketplaceLocale) {
+  const published = getMetricValue(offer, ["Term", "Loan term", "Repayment term", "Laufzeit"]);
+  if (published) {
+    return normalizeDisplayText(published);
+  }
+  const { min, max } = getTermRange(offer);
+  if (min > 0 && Number.isFinite(max)) {
+    return `${min}–${max} ${locale === "de" ? "Monate" : "months"}`;
+  }
+  return "—";
+}
+
 function getLoanApr(offer: MarketplaceOffer) {
   return parseMetricRange(getMetricValue(offer, ["APR"])).min ?? 9.5;
 }
@@ -1653,7 +1668,7 @@ export function DashboardCategoryWorkspace({
             { label: "APR", value: normalizeDisplayText(getMetricValue(offer, ["APR"]) ?? "—") },
             { label: "Amount", value: normalizeDisplayText(getMetricValue(offer, ["Amount"]) ?? "—") },
             { label: "Approval", value: getLoanApprovalLabel(offer, locale) },
-            { label: "Term", value: `${durationValue} ${locale === "de" ? "Monate" : "months"}` },
+            { label: "Term", value: getLoanTermDisplay(offer, locale) },
           ],
           why:
             locale === "de"
@@ -2633,6 +2648,11 @@ export function DashboardCategoryWorkspace({
 
         {loanSummary ? (
           <div className="mt-5 rounded-[20px] border border-[#EAEAEA] bg-[#F7F7F8] p-4">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              {locale === "de"
+                ? `Dein Szenario: ${formatCurrency(locale, amountValue)} über ${durationValue} Monate`
+                : `Your scenario: ${formatCurrency(locale, amountValue)} over ${durationValue} months`}
+            </p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">{copy.monthly}</p>
