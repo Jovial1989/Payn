@@ -20,6 +20,10 @@ import { Tag } from "@/components/tag";
 import type { DashboardOfferInsight } from "@/lib/dashboard";
 import type { FxQuotePayload } from "@/lib/fx-quote";
 import { supportedFxCurrencies } from "@/lib/fx-quote";
+import {
+  TRANSFER_CORRIDOR_PRESETS,
+  getDefaultTransferCorridor,
+} from "@/lib/transfer-corridor";
 import { getDictionary, getMetricLabel, translateUiToken } from "@/lib/i18n";
 import {
   getMetricValue,
@@ -777,6 +781,7 @@ function getDefaultCategoryWorkspaceState(
   category: MarketplaceCategory,
   defaultCountry: CountryValue,
 ): CategoryWorkspaceDraft {
+  const corridor = getDefaultTransferCorridor(defaultCountry);
   return {
     amount: category === "loans" ? "5000" : "1000",
     duration: category === "insurance" ? "30" : "24",
@@ -785,10 +790,10 @@ function getDefaultCategoryWorkspaceState(
     interestRate: "",
     incomeRange: "not_shared",
     employmentStatus: "not_shared",
-    fromCountry: defaultCountry,
-    toCountry: defaultCountry,
-    fromCurrency: "EUR",
-    toCurrency: category === "exchange" ? "USD" : "GBP",
+    fromCountry: corridor.fromCountry,
+    toCountry: corridor.toCountry,
+    fromCurrency: corridor.fromCurrency,
+    toCurrency: category === "exchange" ? "USD" : corridor.toCurrency,
     insuranceType: "travel",
     coverageAmount: "500000",
     maxPrice: "250",
@@ -1304,31 +1309,41 @@ export function DashboardCategoryWorkspace({
     setQuoteFailed(false);
 
     void (async () => {
-      try {
-        const response = await fetch(`/api/v1/fx-quote?from=${fromCurrency}&to=${toCurrency}`, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error("Quote request failed");
+      const attempt = async (): Promise<FxQuotePayload | null> => {
+        try {
+          const response = await fetch(`/api/v1/fx-quote?from=${fromCurrency}&to=${toCurrency}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            throw new Error("Quote request failed");
+          }
+          return (await response.json()) as FxQuotePayload;
+        } catch {
+          return null;
         }
+      };
 
-        const payload = (await response.json()) as FxQuotePayload;
-        setQuote(payload);
-        // A genuine outage can still surface: getFxQuote returns unavailable:true
-        // when every live source and the cached-rate fallback are exhausted.
-        setQuoteFailed(payload.unavailable);
-      } catch {
+      let payload = await attempt();
+      // Auto-retry once before surfacing an outage. A single transient 5xx or
+      // network blip must never greet cold /transfers traffic with the error
+      // state — the skeleton stays up through the retry window. getFxQuote
+      // already falls back to a cached rate, so an `unavailable` payload here
+      // is a genuine double failure worth one more attempt.
+      if ((!payload || payload.unavailable) && !controller.signal.aborted) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
         if (!controller.signal.aborted) {
-          setQuote(null);
-          setQuoteFailed(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setQuoteLoading(false);
+          payload = (await attempt()) ?? payload;
         }
       }
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setQuote(payload ?? null);
+      setQuoteFailed(!payload || payload.unavailable);
+      setQuoteLoading(false);
     })();
 
     return () => controller.abort();
@@ -2554,6 +2569,34 @@ export function DashboardCategoryWorkspace({
       )}
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+        {isFxCategory ? (
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              {locale === "de" ? "Beliebt" : "Popular"}
+            </span>
+            {TRANSFER_CORRIDOR_PRESETS.map((preset) => {
+              const active =
+                fromCurrency === preset.fromCurrency && toCurrency === preset.toCurrency;
+              return (
+                <button
+                  key={`${preset.fromCurrency}-${preset.toCurrency}`}
+                  type="button"
+                  onClick={() => {
+                    setFromCurrency(preset.fromCurrency);
+                    setToCurrency(preset.toCurrency);
+                  }}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold tabular-nums transition-colors ${
+                    active
+                      ? "border-accent-emerald bg-accent-emerald-soft text-accent-emerald-strong"
+                      : "border-line bg-white text-ink-secondary hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
+                  }`}
+                >
+                  {preset.fromCurrency}→{preset.toCurrency}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
         <div className="mb-5 flex items-center justify-between gap-3">
           <p className="text-sm text-ink-secondary">
             {rankedResults.length === 1
