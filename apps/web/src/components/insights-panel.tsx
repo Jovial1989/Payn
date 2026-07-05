@@ -14,15 +14,15 @@ export function InsightsPanel({
   tips: string[];
 }) {
   return (
-    <aside className="grid gap-4 rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-      <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
+    <aside className="grid gap-4 rounded-[24px] border border-line bg-white p-5 shadow-card">
+      <div className="rounded-[18px] bg-bg-surface px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
           Why this offer
         </p>
         <p className="mt-2 text-sm leading-relaxed text-ink">{reason}</p>
       </div>
 
-      <div className="rounded-[18px] border border-[#ECECEC] bg-white px-4 py-4">
+      <div className="rounded-[18px] border border-line bg-white px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
           Market benchmark
         </p>
@@ -38,7 +38,7 @@ export function InsightsPanel({
         </div>
       </div>
 
-      <div className="rounded-[18px] bg-[#F7F7F8] px-4 py-4">
+      <div className="rounded-[18px] bg-bg-surface px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
           Tips to improve approval
         </p>

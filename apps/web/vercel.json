@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [{ "type": "host", "value": "payn.online" }],
+      "destination": "https://www.payn.online/:path",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/v1/offers/import",
@@ -7,6 +15,18 @@
     {
       "path": "/api/admin/push/dispatch-scheduled",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/v1/cron/check-alerts",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/financeads-sync",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/catalog-review",
+      "schedule": "0 6 */3 * *"
     }
   ]
 }

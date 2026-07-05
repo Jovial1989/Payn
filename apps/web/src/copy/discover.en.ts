@@ -1,9 +1,9 @@
 export const discoverCopy = {
   hero: {
-    // Eyebrow promises specificity ("30 markets") + currency ("live"). The
-    // previous wording — "Compare across Europe" — left the user wondering
-    // what exactly they were about to do.
-    eyebrow: "Live across 30 European markets",
+    // Honest currency claim only — FX rates are genuinely live. The earlier
+    // "30 European markets" was false (the country picker offers 7 named
+    // markets + an all-Europe scope), so we drop the fabricated count.
+    eyebrow: "Live European pricing",
     // Two-line headline with the value verb up front. Promise + outcome.
     headline: "Money tools, compared on the only thing that matters: cost.",
     subhead:
@@ -15,15 +15,21 @@ export const discoverCopy = {
       "Personal loan €10,000 over 36 months",
       "Cheapest EUR to GBP transfer",
     ],
-    quickStartLabel: "Or jump in:",
+    quickStartLabel: "Browse by category:",
     quickStart: [
-      // Labels intentionally match the sidebar canonical names so the same
-      // category reads the same way wherever the user finds it (UX audit
-      // FIX-03). "Transfers" not "Send money", "Loans" not "Borrow", etc.
+      // Labels match the sidebar canonical names so a category reads the same
+      // wherever the user finds it (UX audit FIX-03). The full set is listed
+      // (not just 4) so phones can scroll the whole category range, and the
+      // "Browse by category" label makes clear these are categories.
       { label: "Transfers", goal: "transfers" as const },
-      { label: "Loans", goal: "loans" as const },
+      { label: "Cards", goal: "cards" as const },
       { label: "Savings", goal: "savings" as const },
+      { label: "Loans", goal: "loans" as const },
+      { label: "Banking", goal: "banking" as const },
+      { label: "Investments", goal: "investments" as const },
+      { label: "Insurance", goal: "insurance" as const },
       { label: "Travel cards", goal: "travel" as const },
+      { label: "Business", goal: "business" as const },
     ],
     continueCard: {
       prefix: "You were comparing",
@@ -36,8 +42,14 @@ export const discoverCopy = {
       products: "products compared",
       providers: "trusted providers",
       markets: "European markets",
-      refresh: "Daily price refresh",
-      refreshSub: "Rates verified within 24h",
+      // CAT.11 — Was "Daily price refresh / Rates verified within 24h"
+      // which the May 2026 audit disproved (Lightyear, Revolut Savings,
+      // Plum, Curve, GoHenry, SafetyWing were all 12–24 months stale).
+      // Renamed to honest framing: rates are reviewed manually each
+      // month, individual offers carry their own `updatedAt`, and the
+      // catalog never tells the user it's faster than that.
+      refresh: "Monthly catalogue review",
+      refreshSub: "Each offer carries its own last-updated date",
     },
   },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import type { User } from "@supabase/supabase-js";
+import type { Provider, User } from "@supabase/supabase-js";
 import type { UserProfile } from "@/lib/types";
 import {
   createContext,
@@ -30,6 +30,7 @@ interface AuthState {
     email: string,
     password: string,
   ) => Promise<{ error: string | null; hasSession: boolean; requiresEmailConfirmation: boolean }>;
+  signInWithOAuth: (provider: Provider) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
   refreshProfile: () => Promise<void>;
@@ -106,16 +107,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       try {
+        // Use getUser() (server-validated) not getSession() (reads from cache).
+        // getSession() can return a stale session even after sign-out if the
+        // cookie was not fully cleared. getUser() sends the token to Supabase
+        // and returns null if invalid / revoked.
         const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          const cachedDraft = readPersistedProfileDraft(session.user.id);
+          data: { user: initialUser },
+        } = await supabase.auth.getUser();
+        setUser(initialUser ?? null);
+        if (initialUser) {
+          const cachedDraft = readPersistedProfileDraft(initialUser.id);
           if (cachedDraft) {
             setProfile(
-              mergeProfileWithPersistedDraft(session.user.id, {
-                user_id: session.user.id,
+              mergeProfileWithPersistedDraft(initialUser.id, {
+                user_id: initialUser.id,
                 first_name: null,
                 last_name: null,
                 preferred_locale: cachedDraft.preferred_locale ?? null,
@@ -134,11 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               } satisfies UserProfile),
             );
             setLoading(false);
-            void fetchProfile(session.user.id);
+            void fetchProfile(initialUser.id);
             return;
           }
 
-          await fetchProfile(session.user.id);
+          await fetchProfile(initialUser.id);
         }
       } catch {
         // Supabase not available
@@ -198,9 +203,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: null, hasSession: true };
       }
 
-      // For the admin email, any Supabase failure falls back to HMAC-based admin auth.
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_USERNAME ?? "admin@admin.com";
-      if (email === adminEmail || error?.message?.toLowerCase().includes("confirm")) {
+      // SEC-FIX PAYN-A12: never read admin identity from NEXT_PUBLIC vars or hardcoded strings
+      // Fall back to HMAC-based admin auth on any Supabase sign-in failure.
+      const isAdmin = user?.app_metadata?.role === "admin";
+      if (isAdmin || error?.message?.toLowerCase().includes("confirm")) {
         const { adminSignIn } = await import("@/actions/admin-auth");
         const result = await adminSignIn(email, password);
         if (result.ok) {
@@ -235,21 +241,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [createDefaultProfile, supabase],
   );
 
+  const signInWithOAuth = useCallback(
+    async (provider: Provider) => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { error: error?.message ?? null };
+    },
+    [supabase],
+  );
+
   const signOut = useCallback(async () => {
     const currentUserId = user?.id ?? null;
-    await Promise.allSettled([
-      supabase.auth.signOut({ scope: "local" }),
-      fetch("/api/v1/auth/signout", {
-        method: "POST",
-        cache: "no-store",
-        credentials: "same-origin",
-      }),
-    ]);
-
+    // Clear local state immediately so the UI reacts before the redirect.
     clearPersistedProfileDraft(currentUserId);
     setUser(null);
     setProfile(null);
-  }, [supabase, user?.id]);
+    // Navigate to the server-side signout endpoint (GET). The server calls
+    // supabase.auth.signOut(), writes Set-Cookie clear headers onto a 302
+    // redirect response, and the browser applies them before loading the next
+    // page. This is more reliable than the AJAX-fetch approach where the
+    // browser might start the next navigation before applying Set-Cookie from
+    // the fetch response body.
+    window.location.replace("/api/v1/auth/signout");
+  }, [user?.id]);
 
   const requestPasswordReset = useCallback(
     async (email: string) => {
@@ -327,6 +345,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       signInWithEmail,
       signUpWithEmail,
+      signInWithOAuth,
       signOut,
       requestPasswordReset,
       refreshProfile,
@@ -338,6 +357,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       signInWithEmail,
       signUpWithEmail,
+      signInWithOAuth,
       signOut,
       requestPasswordReset,
       refreshProfile,

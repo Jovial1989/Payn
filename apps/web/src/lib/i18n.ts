@@ -52,7 +52,7 @@ type Dictionary = {
     searchChipPrefix: string;
     showingResults: string;
     showMoreResults: string;
-    sortOptions: Record<"relevance" | "fees" | "speed" | "recommended", string>;
+    sortOptions: Record<"realCost" | "relevance" | "fees" | "speed" | "recommended", string>;
     emptyActions: {
       clearFilters: string;
       openCards: string;
@@ -375,30 +375,38 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       expense: "Expense Tracking",
       neobanks: "Neobanks",
     },
+    // TASK-305 / V3 §1.3 — Was "Borrowing offers with visible
+    // pricing, amount ranges, and term context", "Transfer routes
+    // ranked by delivered value, speed, and payout method" etc. —
+    // marketplace-deck jargon that read as if written for analysts,
+    // not customers. Rewritten plain-English, addressing the user
+    // directly. Canonical 9-bucket strings live in `lib/categories.ts`;
+    // these per-sub-category lines mirror that voice where the
+    // sub-category needs its own line (e.g. "wallets" vs "banking").
     categoryDescriptions: {
-      loans: "Borrowing offers with visible pricing, amount ranges, and term context.",
-      cards: "Credit and debit cards compared by fees, rewards, and travel fit.",
-      banking: "Current accounts from neobanks and traditional banks.",
-      transfers: "Transfer routes ranked by delivered value, speed, and payout method.",
-      exchange: "Exchange tools compared by spread, fee structure, and execution context.",
-      insurance: "Cover options for life, health, travel, and car policies.",
-      investments: "Investment platforms across stocks, ETFs, and multi-asset accounts.",
-      crypto: "Crypto platforms compared by fees, supported assets, and security.",
-      business: "Business accounts, multi-currency wallets, and team expense tools.",
-      budgeting: "Spending insights, savings goals, and open-banking finance tools.",
-      kids: "Pocket money apps and family finance tools with parental controls.",
-      savings: "Savings accounts compared by interest rate, deposit protection, and access.",
-      trading: "Stock and ETF trading platforms compared by fees, markets, and tools.",
-      bnpl: "Buy now pay later services compared by eligibility, fees, and limits.",
-      debit: "Debit cards with low fees, multi-currency support, and travel perks.",
-      remittance: "International money transfer services ranked by delivered amount and speed.",
-      travel: "Cards designed for travel with low FX fees and global acceptance.",
-      cashback: "Cards and apps that pay you back on everyday spending.",
-      wallets: "Digital wallets for fast payments, currency holding, and transfers.",
-      payroll: "Payroll and invoicing tools for teams, freelancers, and remote workers.",
-      tax: "Tax filing and accounting tools for individuals and small businesses.",
-      expense: "Expense management platforms for teams and corporate spending.",
-      neobanks: "Digital-first banks with apps, multi-currency accounts, and instant setup.",
+      loans: "Buy now, pay over time — see the real cost before you sign.",
+      cards: "Find the right card for travel, daily spending, or earning rewards.",
+      banking: "Day-to-day accounts — modern apps or traditional banks.",
+      transfers: "Send money abroad without losing it to fees.",
+      exchange: "Convert money without losing it to spreads.",
+      insurance: "Protect what matters — without overpaying.",
+      investments: "Make your money work for you over time.",
+      crypto: "Buy and sell crypto — see the real cost per platform.",
+      business: "Money tools for freelancers and small teams.",
+      budgeting: "Track spending, set goals, see where the money goes.",
+      kids: "Pocket money for kids — with limits you set.",
+      savings: "Grow what you don't need right now.",
+      trading: "Trade stocks and ETFs — see the per-trade cost.",
+      bnpl: "Pay in instalments — see the real cost of each plan.",
+      debit: "Debit cards for everyday spending and travel.",
+      remittance: "Send money abroad — see what actually arrives.",
+      travel: "Cards built for travel — low FX fees, work everywhere.",
+      cashback: "Get paid back on what you already buy.",
+      wallets: "Digital wallets for fast payments and holding currency.",
+      payroll: "Get paid and pay people — for freelancers and small teams.",
+      tax: "File taxes without the spreadsheet headache.",
+      expense: "Track team spending without chasing receipts.",
+      neobanks: "App-based banks — sign up in minutes.",
     },
     markets: {
       eu: "All Europe",
@@ -439,7 +447,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       title: "Find products by country, category, and real filters.",
       description:
         "Select a country, narrow the category, and adjust filters to see ranked offers immediately.",
-      liveRankingLabel: "Live ranking",
+      liveRankingLabel: "Live FX rates",
       optionsInCountry: "{count} options in {country}",
       resultsLabel: "matching results",
       providersLabel: "providers",
@@ -455,10 +463,11 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "Showing {shown} of {total} results",
       showMoreResults: "Show more results",
       sortOptions: {
+        realCost: "Real cost",
         relevance: "Best match",
         fees: "Lowest fee",
         speed: "Fastest",
-        recommended: "Recommended",
+        recommended: "Top picks",
       },
       emptyActions: {
         clearFilters: "Clear filters",
@@ -469,7 +478,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       },
     },
     home: {
-      heroEyebrow: "Decision-first financial comparison",
+      heroEyebrow: "Find your best money option, fast",
       heroTitle: "Find your best financial option in Europe in under 60 seconds",
       heroSubtitle:
         "Compare 40+ banks and fintechs with full transparency — no hidden fees, no impact on your credit score",
@@ -492,7 +501,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       valuePoints: [
         "Transparent comparisons with rates, fees, and tradeoffs in plain view.",
         "No hidden fees buried inside provider flows.",
-        "Decision-first UX built to compare before you click out.",
+        "Compare quickly — move only when a result is worth your time.",
         "Checking options does not impact your credit score.",
       ],
       browseByCategory: "Explore financial products",
@@ -525,10 +534,10 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       appWaitlistNote: "Join the waitlist for early access. iOS and Android.",
       providerTitle: "50+ trusted providers, one place",
       providerDescription:
-        "Payn compares Europe's leading financial providers — all in one ranked, transparent view.",
+        "Payn checks what each bank really charges. One page, no jargon, no upsell.",
       appTitle: "Payn app",
       appDescription:
-        "The mobile app is still on the waitlist, but the route is real and tied to the current product roadmap.",
+        "The mobile app launches soon. Your shortlist and search history will sync from the web — get an email the moment it ships.",
       appPoints: [
         "Track saved offers across countries and categories",
         "Get notified when provider terms change",
@@ -553,7 +562,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
           description: "Cost signals stay upfront instead of getting buried inside provider flows.",
         },
         {
-          title: "Decision-first UX",
+          title: "Built for decisions",
           description: "Compare quickly and move only when a result is worth your time.",
         },
         {
@@ -575,7 +584,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Early access open",
         heading: "Payn on mobile — coming soon",
-        subtitle: "Your shortlist, comparisons, and saved offers — all in your pocket. iOS and Android.",
+        subtitle: "Your shortlist, comparisons, and saved offers, ready on iPhone and Android when the app ships.",
         joinWishlist: "Join wishlist",
         learnMore: "Learn more",
       },
@@ -655,16 +664,23 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
     footer: {
       compare: "Compare",
       company: "Company",
+      // UX.7 — Was "Compare financial products with market-aware
+      // availability, visible pricing, and transparent ranking logic"
+      // (3 jargon clusters in one sentence). Rewritten in plain
+      // language. The credibility line dropped "fintech professionals
+      // with global banking experience" (sounds like a Big Four ad)
+      // for a one-liner that says what the site does.
       copy:
-        "Compare financial products with market-aware availability, visible pricing, and transparent ranking logic.",
-      credibility: "Built by fintech professionals with global banking experience",
+        "We track 150+ banks, lenders and insurers across Europe — cards, loans, transfers, savings, insurance — so you don't have to. Free, no account needed.",
+      credibility: "Built by Kyrylo Petrov, ex-fintech operator.",
       disclaimer:
-        "Payn may earn commission from some partners, but compensation alone does not determine order.",
+        "Some links pay us a referral fee. That fee doesn't change the rank — we tell you which links pay us.",
     },
     about: {
       eyebrow: "About",
       title: "About Payn",
-      description: "Payn is a decision-first financial marketplace focused on clarity, transparency, and better financial choices.",
+      description:
+        "Payn is the simplest way to find out who's overcharging you for your bank account, your card abroad, your loan, or your savings.",
       missionTitle: "Our mission",
       missionBody:
         "Payn is being built to make cross-market financial discovery more useful. Start with a country, narrow by category, and review the tradeoffs before you click out.",
@@ -707,12 +723,19 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       partnershipCta: "Discuss partnerships",
     },
     homeAtlas: {
+      // WEB.5 — Hero copy rewritten to drop the anti-bank angle.
+      // Was "Stop overpaying your bank" (UX.1) — punchy but it framed
+      // every existing customer's bank as the villain, which is bad
+      // tone for a comparison engine that also lists those exact
+      // banks. Now positions Payn as a market-awareness tool: "you
+      // discover what else exists, then decide for yourself". Same
+      // 1-read clarity, none of the antagonism.
       hero: {
-        eyebrow: "Europe's full financial inventory",
-        headline: "You have more options than you think.",
-        sub: "From cashback cards to leasing a Tesla, from 4% savings to lending you didn't know existed — see what's available to you in {country}.",
-        cta: "Browse everything",
-        trustLine: "{productCount} products · {providerCount} providers · No filters needed",
+        eyebrow: "Every money option in Europe, in one place.",
+        headline: "Know what's actually on the market.",
+        sub: "Ranked by what it really costs you — not who pays us. Free, no account needed to compare.",
+        cta: "What do you want to do?",
+        trustLine: "Free · No account needed · No affiliate bias",
       },
       badges: {
         newRate: "NEW RATE",
@@ -738,30 +761,36 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       howItWorks: {
         sectionHeadline: "How we built this",
         col1Title: "Every option, real data",
-        col1Body: "We track 50+ providers across 8 countries and 23 product categories.",
+        col1Body: "We track 150+ providers across Europe — banks, lenders, insurers, brokers and apps — spanning 23 product categories.",
         col2Title: "Real costs, not marketing",
-        col2Body: "Every fee, every rate, every catch. Recalculated daily.",
+        col2Body: "Every fee, every rate, every catch — FX rates live, product terms reviewed regularly.",
         col3Title: "You decide. We show you what's available.",
         col3Body: "No 'best for you' guesses. No quizzes. Just full inventory — you pick what fits.",
       },
       providerStrip: {
-        label: "LIVE INVENTORY · UPDATED DAILY",
+        label: "LIVE FX RATES",
       },
       countryNames: {
         UK: "the UK", GB: "the UK", DE: "Germany", ES: "Spain", FR: "France",
         IT: "Italy", PT: "Portugal", NL: "the Netherlands", AT: "Austria", BE: "Belgium", EU: "Europe",
       },
-      bucketSpendSmarter: { title: "Cards", description: "Debit, credit, travel, cashback cards & rewards" },
-      bucketEarnOnCash: { title: "Savings & Deposits", description: "High-interest savings & term deposits" },
-      bucketTravel: { title: "Transfers & Exchange", description: "International transfers, FX, remittance" },
-      bucketBanking: { title: "Banking", description: "Current accounts, neobanks, wallets" },
-      bucketInvest: { title: "Investments", description: "Brokers, ETFs, crypto, robo-advisors" },
-      bucketBigPurchases: { title: "Loans & BNPL", description: "Personal loans, buy now pay later" },
-      bucketBusiness: { title: "Business", description: "Business banking, payroll, tax, expense" },
-      bucketFamily: { title: "Family & Kids", description: "Kids' accounts, family budgeting" },
-      bucketProtect: { title: "Insurance", description: "Health, life, travel, property cover" },
+      // TASK-302 + TASK-305 (PR-V3-02). Labels + descriptions canonical
+      // source: `apps/web/src/lib/categories.ts`. Kept literal here only
+      // because the existing render layer reads off `homeAtlas.bucketX.*`
+      // — when that layer is refactored to consume `categoryLabel(id, locale)`
+      // directly these objects can be deleted. Until then keep both
+      // surfaces in lockstep.
+      bucketSpendSmarter: { title: "Cards", description: "Find the right card for travel, daily spending, or earning rewards" },
+      bucketEarnOnCash: { title: "Saving", description: "Grow what you don't need right now" },
+      bucketTravel: { title: "Sending money", description: "Send money abroad without losing it to fees" },
+      bucketBanking: { title: "Bank accounts", description: "Day-to-day accounts — modern apps or traditional banks" },
+      bucketInvest: { title: "Investing", description: "Make your money work for you over time" },
+      bucketBigPurchases: { title: "Borrowing", description: "Buy now, pay over time — see the real cost" },
+      bucketBusiness: { title: "For business", description: "Money tools for freelancers and small teams" },
+      bucketFamily: { title: "Family", description: "Money for kids, partner, parents" },
+      bucketProtect: { title: "Insurance", description: "Protect what matters — without overpaying" },
       exploreBucket: { goToProvider: "Go to provider", bestFor: "Best for {audience}" },
-      appWaitlist: { headline: "iOS + Android apps in development. Get early access" },
+      appWaitlist: { headline: "Coming to iPhone & Android — join the waitlist" },
     },
     sidebarNav: {
       // 5+1 canonical pillars — same hierarchy across sidebar, footer,
@@ -899,6 +928,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "{shown} von {total} Ergebnissen",
       showMoreResults: "Mehr Ergebnisse",
       sortOptions: {
+        realCost: "Echte Kosten",
         relevance: "Beste Wahl",
         fees: "Niedrigste Gebühr",
         speed: "Schnellste",
@@ -1019,7 +1049,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Frühzugang geöffnet",
         heading: "Payn auf dem Handy — bald verfügbar",
-        subtitle: "Ihre Merkliste, Vergleiche und gespeicherte Angebote — in Ihrer Tasche. iOS und Android.",
+        subtitle: "Ihre Merkliste, Vergleiche und gespeicherte Angebote — bereit auf iPhone und Android, sobald die App startet.",
         joinWishlist: "Auf die Warteliste",
         learnMore: "Mehr erfahren",
       },
@@ -1151,7 +1181,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         headline: "Du hast mehr Möglichkeiten, als du denkst.",
         sub: "Von Cashback-Karten bis zum Tesla-Leasing, von 4% Sparzinsen bis zu Krediten, von denen du nicht wusstest — sieh, was in {country} verfügbar ist.",
         cta: "Alles ansehen",
-        trustLine: "{productCount} Produkte · {providerCount} Anbieter · Keine Filter nötig",
+        trustLine: "In Sekunden vergleichen · Keine Filter · Ohne Anmeldung",
       },
       badges: {
         newRate: "NEUER ZINS",
@@ -1190,17 +1220,17 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         UK: "Großbritannien", GB: "Großbritannien", DE: "Deutschland", ES: "Spanien", FR: "Frankreich",
         IT: "Italien", PT: "Portugal", NL: "den Niederlanden", AT: "Österreich", BE: "Belgien", EU: "Europa",
       },
-      bucketSpendSmarter: { title: "Karten", description: "Debit-, Kredit-, Reise-, Cashback-Karten & Prämien" },
-      bucketEarnOnCash: { title: "Sparen & Festgeld", description: "Hochzins-Sparkonten & Festgeld" },
-      bucketTravel: { title: "Überweisung & FX", description: "Auslandsüberweisungen, FX, Remittance" },
-      bucketBanking: { title: "Banking", description: "Girokonten, Neobanken, Wallets" },
-      bucketInvest: { title: "Investitionen", description: "Broker, ETFs, Krypto, Robo-Advisors" },
-      bucketBigPurchases: { title: "Kredite & BNPL", description: "Privatkredite, Buy Now Pay Later" },
-      bucketBusiness: { title: "Geschäftskunden", description: "Geschäftskonten, Lohn, Steuer, Spesen" },
-      bucketFamily: { title: "Familie & Kinder", description: "Kinderkonten, Familienbudget" },
-      bucketProtect: { title: "Versicherung", description: "Gesundheit, Leben, Reise, Eigentum" },
+      bucketSpendSmarter: { title: "Karten", description: "Finde die richtige Karte für Reisen, Alltag oder Cashback" },
+      bucketEarnOnCash: { title: "Sparen", description: "Lass dein Geld arbeiten, wenn du es gerade nicht brauchst" },
+      bucketTravel: { title: "Geld senden", description: "Geld ins Ausland senden, ohne Gebühren zu verschenken" },
+      bucketBanking: { title: "Bankkonten", description: "Konten für den Alltag — moderne Apps oder klassische Banken" },
+      bucketInvest: { title: "Anlegen", description: "Lass dein Geld langfristig für dich arbeiten" },
+      bucketBigPurchases: { title: "Kredite", description: "Jetzt kaufen, später zahlen — sieh die wahren Kosten" },
+      bucketBusiness: { title: "Für Unternehmen", description: "Finanztools für Freelancer und kleine Teams" },
+      bucketFamily: { title: "Familie", description: "Geldlösungen für Kinder, Partner und Eltern" },
+      bucketProtect: { title: "Versicherung", description: "Schütze, was dir wichtig ist — ohne zu viel zu zahlen" },
       exploreBucket: { goToProvider: "Zum Anbieter", bestFor: "Am besten für {audience}" },
-      appWaitlist: { headline: "iOS- und Android-Apps in Entwicklung. Frühzugang sichern" },
+      appWaitlist: { headline: "Bald für iPhone & Android — jetzt auf die Warteliste" },
     },
     sidebarNav: {
       groupBankingCards: "Ausgeben",
@@ -1378,6 +1408,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "Mostrando {shown} de {total} resultados",
       showMoreResults: "Ver más resultados",
       sortOptions: {
+        realCost: "Coste real",
         relevance: "Mejor encaje",
         fees: "Menor coste",
         speed: "Más rápido",
@@ -1499,7 +1530,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Acceso anticipado abierto",
         heading: "Payn en el móvil — próximamente",
-        subtitle: "Tu selección, comparaciones y ofertas guardadas — en tu bolsillo. iOS y Android.",
+        subtitle: "Tu selección, comparativas y ofertas guardadas, listas en iPhone y Android cuando llegue la app.",
         joinWishlist: "Unirse a la lista de espera",
         learnMore: "Saber más",
       },
@@ -1631,7 +1662,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         headline: "Tienes más opciones de las que crees.",
         sub: "Desde tarjetas con cashback hasta leasing de un Tesla, desde ahorros al 4% hasta préstamos que no sabías que existían — descubre qué hay disponible para ti en {country}.",
         cta: "Explorar todo",
-        trustLine: "{productCount} productos · {providerCount} proveedores · Sin filtros",
+        trustLine: "Compara en segundos · Sin filtros · Sin registro",
       },
       badges: {
         newRate: "NUEVA TASA",
@@ -1670,17 +1701,17 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         UK: "el Reino Unido", GB: "el Reino Unido", DE: "Alemania", ES: "España", FR: "Francia",
         IT: "Italia", PT: "Portugal", NL: "los Países Bajos", AT: "Austria", BE: "Bélgica", EU: "Europa",
       },
-      bucketSpendSmarter: { title: "Tarjetas", description: "Débito, crédito, viaje, cashback y recompensas" },
-      bucketEarnOnCash: { title: "Ahorros y depósitos", description: "Cuentas de alto interés y depósitos a plazo" },
-      bucketTravel: { title: "Transferencias y FX", description: "Transferencias internacionales, FX, remesas" },
-      bucketBanking: { title: "Banca", description: "Cuentas corrientes, neobancos, monederos" },
-      bucketInvest: { title: "Inversiones", description: "Brókeres, ETFs, cripto, robo-advisors" },
-      bucketBigPurchases: { title: "Préstamos y BNPL", description: "Préstamos personales, comprar ahora pagar después" },
-      bucketBusiness: { title: "Empresas", description: "Banca empresarial, nóminas, impuestos, gastos" },
-      bucketFamily: { title: "Familia y niños", description: "Cuentas para niños, presupuesto familiar" },
-      bucketProtect: { title: "Seguros", description: "Salud, vida, viajes, propiedad" },
+      bucketSpendSmarter: { title: "Tarjetas", description: "Encuentra la tarjeta para viajar, gastar a diario o ganar recompensas" },
+      bucketEarnOnCash: { title: "Ahorrar", description: "Haz crecer lo que no necesitas ahora" },
+      bucketTravel: { title: "Enviar dinero", description: "Envía dinero al extranjero sin perderlo en comisiones" },
+      bucketBanking: { title: "Cuentas bancarias", description: "Cuentas del día a día — apps modernas o bancos tradicionales" },
+      bucketInvest: { title: "Invertir", description: "Pon tu dinero a trabajar a largo plazo" },
+      bucketBigPurchases: { title: "Pedir prestado", description: "Compra ahora, paga después — mira el coste real" },
+      bucketBusiness: { title: "Para negocios", description: "Herramientas financieras para autónomos y equipos pequeños" },
+      bucketFamily: { title: "Familia", description: "Dinero para hijos, pareja, padres" },
+      bucketProtect: { title: "Seguros", description: "Protege lo que importa — sin pagar de más" },
       exploreBucket: { goToProvider: "Ir al proveedor", bestFor: "Mejor para {audience}" },
-      appWaitlist: { headline: "Apps iOS + Android en desarrollo. Consigue acceso anticipado" },
+      appWaitlist: { headline: "Próximamente en iPhone y Android — únete a la lista" },
     },
     sidebarNav: {
       groupBankingCards: "Gastar",
@@ -1834,6 +1865,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "{shown} sur {total} résultats",
       showMoreResults: "Voir plus de résultats",
       sortOptions: {
+        realCost: "Coût réel",
         relevance: "Meilleure adéquation",
         fees: "Moins cher",
         speed: "Le plus rapide",
@@ -1955,7 +1987,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Accès anticipé ouvert",
         heading: "Payn sur mobile — bientôt disponible",
-        subtitle: "Votre sélection, comparaisons et offres sauvegardées — dans votre poche. iOS et Android.",
+        subtitle: "Votre sélection, comparaisons et offres sauvegardées, prêtes sur iPhone et Android dès que l'app sera disponible.",
         joinWishlist: "Rejoindre la liste d'attente",
         learnMore: "En savoir plus",
       },
@@ -2087,7 +2119,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         headline: "Vous avez plus d'options que vous ne le pensez.",
         sub: "Des cartes cashback à la location d'une Tesla, des épargnes à 4% aux prêts dont vous ignoriez l'existence — découvrez ce qui est disponible en {country}.",
         cta: "Tout parcourir",
-        trustLine: "{productCount} produits · {providerCount} fournisseurs · Pas de filtres",
+        trustLine: "Comparez en quelques secondes · Sans filtres · Sans inscription",
       },
       badges: {
         newRate: "NOUVEAU TAUX",
@@ -2126,17 +2158,17 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         UK: "Royaume-Uni", GB: "Royaume-Uni", DE: "Allemagne", ES: "Espagne", FR: "France",
         IT: "Italie", PT: "Portugal", NL: "Pays-Bas", AT: "Autriche", BE: "Belgique", EU: "Europe",
       },
-      bucketSpendSmarter: { title: "Cartes", description: "Cartes débit, crédit, voyage, cashback et récompenses" },
-      bucketEarnOnCash: { title: "Épargne & dépôts", description: "Épargne à haut rendement et dépôts à terme" },
-      bucketTravel: { title: "Virements & FX", description: "Virements internationaux, change, remittance" },
-      bucketBanking: { title: "Banque", description: "Comptes courants, néobanques, portefeuilles" },
-      bucketInvest: { title: "Investissements", description: "Courtiers, ETFs, crypto, robo-advisors" },
-      bucketBigPurchases: { title: "Prêts & BNPL", description: "Prêts personnels, payer en plusieurs fois" },
-      bucketBusiness: { title: "Entreprises", description: "Banque pro, paie, fiscalité, dépenses" },
-      bucketFamily: { title: "Famille & enfants", description: "Comptes enfants, budget familial" },
-      bucketProtect: { title: "Assurance", description: "Santé, vie, voyage, propriété" },
+      bucketSpendSmarter: { title: "Cartes", description: "Trouve la bonne carte pour voyager, dépenser au quotidien ou gagner des récompenses" },
+      bucketEarnOnCash: { title: "Épargner", description: "Fais fructifier ce dont tu n'as pas besoin tout de suite" },
+      bucketTravel: { title: "Envoyer de l'argent", description: "Envoie de l'argent à l'étranger sans le perdre en frais" },
+      bucketBanking: { title: "Comptes bancaires", description: "Comptes du quotidien — apps modernes ou banques classiques" },
+      bucketInvest: { title: "Investir", description: "Fais travailler ton argent sur le long terme" },
+      bucketBigPurchases: { title: "Emprunter", description: "Achète maintenant, paye plus tard — vois le vrai coût" },
+      bucketBusiness: { title: "Pour entreprises", description: "Outils financiers pour freelances et petites équipes" },
+      bucketFamily: { title: "Famille", description: "L'argent pour les enfants, le partenaire, les parents" },
+      bucketProtect: { title: "Assurance", description: "Protège ce qui compte — sans payer trop cher" },
       exploreBucket: { goToProvider: "Voir l'offre", bestFor: "Idéal pour {audience}" },
-      appWaitlist: { headline: "Apps iOS + Android en développement. Obtenez l'accès anticipé" },
+      appWaitlist: { headline: "Bientôt sur iPhone & Android — rejoignez la liste d'attente" },
     },
     sidebarNav: {
       groupBankingCards: "Dépenser",
@@ -2288,6 +2320,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "{shown} di {total} risultati",
       showMoreResults: "Mostra altri risultati",
       sortOptions: {
+        realCost: "Costo reale",
         relevance: "Migliore corrispondenza",
         fees: "Costo più basso",
         speed: "Più veloce",
@@ -2409,7 +2442,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Accesso anticipato aperto",
         heading: "Payn su mobile — in arrivo",
-        subtitle: "La tua selezione, confronti e offerte salvate — in tasca. iOS e Android.",
+        subtitle: "La tua selezione, confronti e offerte salvate, pronti su iPhone e Android quando arriva l'app.",
         joinWishlist: "Iscriviti alla lista d'attesa",
         learnMore: "Scopri di più",
       },
@@ -2541,7 +2574,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         headline: "Hai più opzioni di quante pensi.",
         sub: "Dalle carte cashback al leasing di una Tesla, da risparmi al 4% a prestiti che non sapevi esistessero — scopri cosa è disponibile in {country}.",
         cta: "Esplora tutto",
-        trustLine: "{productCount} prodotti · {providerCount} fornitori · Nessun filtro",
+        trustLine: "Confronta in pochi secondi · Senza filtri · Senza registrazione",
       },
       badges: {
         newRate: "NUOVO TASSO",
@@ -2580,17 +2613,17 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         UK: "Regno Unito", GB: "Regno Unito", DE: "Germania", ES: "Spagna", FR: "Francia",
         IT: "Italia", PT: "Portogallo", NL: "Paesi Bassi", AT: "Austria", BE: "Belgio", EU: "Europa",
       },
-      bucketSpendSmarter: { title: "Carte", description: "Carte di debito, credito, viaggio, cashback e premi" },
-      bucketEarnOnCash: { title: "Risparmi & depositi", description: "Risparmi ad alto interesse e depositi a termine" },
-      bucketTravel: { title: "Trasferimenti & FX", description: "Trasferimenti internazionali, cambio, remittance" },
-      bucketBanking: { title: "Banca", description: "Conti correnti, neobank, wallet" },
-      bucketInvest: { title: "Investimenti", description: "Broker, ETF, crypto, robo-advisor" },
-      bucketBigPurchases: { title: "Prestiti & BNPL", description: "Prestiti personali, paga dopo" },
-      bucketBusiness: { title: "Aziende", description: "Banca aziendale, payroll, fisco, spese" },
-      bucketFamily: { title: "Famiglia & bambini", description: "Conti per bambini, budget familiare" },
-      bucketProtect: { title: "Assicurazione", description: "Salute, vita, viaggio, proprietà" },
+      bucketSpendSmarter: { title: "Carte", description: "Trova la carta giusta per viaggi, spese quotidiane o ricompense" },
+      bucketEarnOnCash: { title: "Risparmiare", description: "Fai crescere ciò che non ti serve adesso" },
+      bucketTravel: { title: "Inviare denaro", description: "Manda denaro all'estero senza perderlo in commissioni" },
+      bucketBanking: { title: "Conti bancari", description: "Conti per ogni giorno — app moderne o banche tradizionali" },
+      bucketInvest: { title: "Investire", description: "Fai lavorare i tuoi soldi nel tempo" },
+      bucketBigPurchases: { title: "Prendere in prestito", description: "Compra ora, paga più tardi — vedi il costo reale" },
+      bucketBusiness: { title: "Per aziende", description: "Strumenti finanziari per freelance e piccoli team" },
+      bucketFamily: { title: "Famiglia", description: "Denaro per figli, partner, genitori" },
+      bucketProtect: { title: "Assicurazione", description: "Proteggi ciò che conta — senza pagare troppo" },
       exploreBucket: { goToProvider: "Vai al fornitore", bestFor: "Ideale per {audience}" },
-      appWaitlist: { headline: "App iOS + Android in sviluppo. Ottieni l'accesso anticipato" },
+      appWaitlist: { headline: "Presto su iPhone & Android — entra in lista d'attesa" },
     },
     sidebarNav: {
       groupBankingCards: "Spendere",
@@ -2742,6 +2775,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       showingResults: "A mostrar {shown} de {total} resultados",
       showMoreResults: "Ver mais resultados",
       sortOptions: {
+        realCost: "Custo real",
         relevance: "Melhor correspondência",
         fees: "Menor custo",
         speed: "Mais rápido",
@@ -2863,7 +2897,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
       mobile: {
         badge: "Acesso antecipado aberto",
         heading: "Payn no telemóvel — em breve",
-        subtitle: "A sua seleção, comparações e ofertas guardadas — no seu bolso. iOS e Android.",
+        subtitle: "A sua seleção, comparações e ofertas guardadas, prontas no iPhone e Android quando a app chegar.",
         joinWishlist: "Entrar na lista de espera",
         learnMore: "Saber mais",
       },
@@ -2995,7 +3029,7 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         headline: "Tens mais opções do que pensas.",
         sub: "De cartões com cashback a leasing de um Tesla, de poupanças a 4% a empréstimos que não sabias que existiam — vê o que está disponível em {country}.",
         cta: "Explorar tudo",
-        trustLine: "{productCount} produtos · {providerCount} fornecedores · Sem filtros",
+        trustLine: "Compare em segundos · Sem filtros · Sem registo",
       },
       badges: {
         newRate: "NOVA TAXA",
@@ -3034,17 +3068,17 @@ const dictionaries: Record<MarketplaceLocale, Dictionary> = {
         UK: "Reino Unido", GB: "Reino Unido", DE: "Alemanha", ES: "Espanha", FR: "França",
         IT: "Itália", PT: "Portugal", NL: "Países Baixos", AT: "Áustria", BE: "Bélgica", EU: "Europa",
       },
-      bucketSpendSmarter: { title: "Cartões", description: "Débito, crédito, viagem, cashback e recompensas" },
-      bucketEarnOnCash: { title: "Poupança & depósitos", description: "Poupanças de juro alto e depósitos a prazo" },
-      bucketTravel: { title: "Transferências & FX", description: "Transferências internacionais, câmbio, remessas" },
-      bucketBanking: { title: "Banca", description: "Contas correntes, neobancos, wallets" },
-      bucketInvest: { title: "Investimentos", description: "Corretoras, ETFs, cripto, robo-advisors" },
-      bucketBigPurchases: { title: "Empréstimos & BNPL", description: "Empréstimos pessoais, pagar depois" },
-      bucketBusiness: { title: "Empresas", description: "Banca empresarial, salários, fiscal, despesas" },
-      bucketFamily: { title: "Família & filhos", description: "Contas para crianças, orçamento familiar" },
-      bucketProtect: { title: "Seguros", description: "Saúde, vida, viagem, propriedade" },
+      bucketSpendSmarter: { title: "Cartões", description: "Encontra o cartão certo para viagens, gastos do dia a dia ou recompensas" },
+      bucketEarnOnCash: { title: "Poupar", description: "Faz crescer o que não precisas agora" },
+      bucketTravel: { title: "Enviar dinheiro", description: "Envia dinheiro para o estrangeiro sem perder em taxas" },
+      bucketBanking: { title: "Contas bancárias", description: "Contas do dia a dia — apps modernos ou bancos tradicionais" },
+      bucketInvest: { title: "Investir", description: "Põe o teu dinheiro a trabalhar a longo prazo" },
+      bucketBigPurchases: { title: "Pedir emprestado", description: "Compra agora, paga depois — vê o custo real" },
+      bucketBusiness: { title: "Para empresas", description: "Ferramentas financeiras para freelancers e equipas pequenas" },
+      bucketFamily: { title: "Família", description: "Dinheiro para filhos, parceiro, pais" },
+      bucketProtect: { title: "Seguros", description: "Protege o que importa — sem pagar demais" },
       exploreBucket: { goToProvider: "Ir ao fornecedor", bestFor: "Ideal para {audience}" },
-      appWaitlist: { headline: "Apps iOS + Android em desenvolvimento. Acesso antecipado" },
+      appWaitlist: { headline: "Em breve no iPhone & Android — entre na lista de espera" },
     },
     sidebarNav: {
       groupBankingCards: "Gastar",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { formatUiCopy, getUiCopy } from "@/lib/ui-copy";
+import { trackAnalyticsEvent, AnalyticsEvent } from "@/lib/analytics";
 
 export function WaitlistForm({
   initialPlatform = "both",
@@ -74,6 +75,7 @@ export function WaitlistForm({
 
       setStatus("success");
       setMessage(mapApiMessage(payload?.message, "success"));
+      trackAnalyticsEvent(AnalyticsEvent.WaitlistJoined, { platform, source });
       setEmail("");
     } catch {
       setStatus("error");
@@ -145,7 +147,7 @@ export function WaitlistForm({
         <button
           type="submit"
           disabled={status === "loading"}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-accent-emerald px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-emerald-strong disabled:opacity-50"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-[#14D474] to-[#0A7A40] px-6 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(15,138,75,0.28)] transition-all hover:brightness-110 hover:shadow-[0_6px_22px_rgba(15,138,75,0.38)] disabled:opacity-50"
         >
           {status === "loading" ? copy.waitlist.joining : submitLabel}
         </button>

@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import type { MarketplaceLocale, MarketplaceOffer } from "@payn/types";
 import { getDictionary, formatCopy } from "@/lib/i18n";
 import { getProviderLogoPath } from "@/features/catalog/provider-logo";
 import { localePath } from "@/lib/locale";
-import { getOfferHref } from "@/lib/marketplace";
+import { getOfferHref, normalizeDisplayText } from "@/lib/marketplace";
 import { SaveOfferButton } from "@/components/save-offer-button";
 import {
   rankOffer,
@@ -164,6 +164,12 @@ interface OfferRowAtlasProps {
   /** Toggles this offer in/out of the compare drawer. Pair with
    *  `compareSelected`. */
   onToggleCompare?: () => void;
+  /** WEB.5 — When true, the Compare toggle is rendered disabled with
+   *  a tooltip explaining why (set is full, or already locked to a
+   *  different category). Lets the user understand why the icon
+   *  isn't responding instead of treating it as broken. */
+  compareDisabled?: boolean;
+  compareDisabledReason?: string;
 }
 
 export function OfferRowAtlas({
@@ -173,6 +179,8 @@ export function OfferRowAtlas({
   baseCurrency,
   compareSelected,
   onToggleCompare,
+  compareDisabled,
+  compareDisabledReason,
 }: OfferRowAtlasProps) {
   const router = useRouter();
   const shouldReduce = useReducedMotion();
@@ -206,6 +214,16 @@ export function OfferRowAtlas({
     () => (marketContext && marketContext.length > 1 ? rankOffer(offer, marketContext) : null),
     [offer, marketContext],
   );
+
+  // WEB.6 — Prefetch the offer detail page as soon as the row mounts
+  // (i.e. is in/near the viewport, since lists virtualise). The row's
+  // body-click handler uses `router.push`, which on its own waits for
+  // the destination chunk + RSC payload at click time — that's the
+  // ~1–2s "See details" delay the user flagged. router.prefetch warms
+  // both ahead so the click feels instant.
+  useEffect(() => {
+    router.prefetch(detailHref);
+  }, [router, detailHref]);
   // segments calc removed — score bar no longer rendered.
 
   // Currency badge — flags offers priced outside the user's market. We
@@ -324,7 +342,7 @@ export function OfferRowAtlas({
                   className="mt-0.5 truncate text-[17px] font-extrabold tabular-nums leading-tight tracking-tight-1 text-ink"
                   title={m.value}
                 >
-                  {m.value}
+                  {normalizeDisplayText(m.value)}
                 </p>
                 <MetricRankSlot rank={ranking?.metricRanks[m.label]} />
               </div>
@@ -351,31 +369,41 @@ export function OfferRowAtlas({
           </div>
         )}
 
-        {/* CTA — right, fixed. Save + Compare icons fade in on row hover
-            so the resting state stays clean. stopPropagation on both
-            onClick handlers keeps the row's body-click handler from firing
-            when the user actually wants the inner action.
-
-            Compare icon is rendered only when the parent provides
-            `onToggleCompare` — workspaces with a compare table (dashboards)
-            wire it; surfaces without one (e.g. /explore/<bucket>) don't. */}
+        {/* CTA — right, fixed. WEB.3 — Save + Compare icons used to
+            fade in only on row hover, which meant a first-time visitor
+            could browse the entire catalogue without ever seeing that
+            compare or save existed. They're now always visible on sm+
+            so the affordance reads on first paint, not after the user
+            happens to hover. Compare icon is still rendered only when
+            the parent provides `onToggleCompare` — surfaces that don't
+            host a compare flow opt out via the prop. */}
         <div className="flex shrink-0 items-center gap-2">
-          <div className="hidden gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 data-[compare-active=true]:opacity-100 sm:flex"
+          <div className="hidden gap-2 sm:flex"
                data-compare-active={compareSelected ? "true" : "false"}>
             {onToggleCompare && (
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (compareDisabled) return;
                   onToggleCompare();
                 }}
+                disabled={Boolean(compareDisabled && !compareSelected)}
                 aria-pressed={Boolean(compareSelected)}
-                title={compareSelected ? "Remove from compare" : "Add to compare"}
+                title={
+                  compareSelected
+                    ? "Remove from compare"
+                    : compareDisabled
+                      ? (compareDisabledReason ?? "Cannot add to compare")
+                      : "Add to compare"
+                }
                 className={[
                   "inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all",
                   compareSelected
                     ? "border-accent-emerald/40 bg-accent-emerald-soft text-accent-emerald-strong"
-                    : "border-line bg-white text-ink-tertiary hover:border-accent-emerald/40 hover:text-accent-emerald-strong",
+                    : compareDisabled
+                      ? "border-line bg-bg-surface text-ink-tertiary/40 cursor-not-allowed"
+                      : "border-line bg-white text-ink-tertiary hover:border-accent-emerald/40 hover:text-accent-emerald-strong",
                 ].join(" ")}
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -399,7 +427,7 @@ export function OfferRowAtlas({
             // fixes the "arrow slides off baseline" the user spotted.
             // strokeWidth standardised to 2 (was 1.8) — matches all other
             // action arrows on the page.
-            className="inline-flex h-9 items-center gap-2 rounded-xl bg-accent-emerald px-4 text-[13px] font-semibold leading-none text-white shadow-[0_4px_10px_rgba(15,138,75,0.20)] transition-all hover:bg-accent-emerald-strong hover:shadow-[0_6px_14px_rgba(15,138,75,0.28)] active:scale-[0.98] sm:h-10 sm:px-5 sm:text-[14px]"
+            className="inline-flex h-9 w-[108px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#14D474] to-[#0A7A40] text-[13px] font-semibold leading-none text-white shadow-[0_4px_14px_rgba(15,138,75,0.32)] transition-all hover:brightness-110 hover:shadow-[0_6px_20px_rgba(15,138,75,0.44)] active:scale-[0.97] sm:h-10 sm:w-[148px] sm:text-[14px]"
           >
             <span className="hidden sm:inline">{ctaLabel}</span>
             <span className="sm:hidden">Go</span>
@@ -422,7 +450,7 @@ export function OfferRowAtlas({
                   <p className="text-[11px] font-medium text-ink-tertiary">
                     {m.label}
                   </p>
-                  <p className="mt-0.5 text-[15px] font-bold tabular-nums text-ink">{m.value}</p>
+                  <p className="mt-0.5 text-[15px] font-bold tabular-nums text-ink">{normalizeDisplayText(m.value)}</p>
                   <MetricRankSlot rank={ranking?.metricRanks[m.label]} />
                 </div>
               ))}

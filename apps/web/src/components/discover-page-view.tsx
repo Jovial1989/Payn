@@ -124,7 +124,7 @@ export function DiscoverPageView({
         <section className="grid gap-2">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-tertiary">
                 {t.atlas.eyebrow}
               </p>
               <h2 className="mt-2 text-[1.5rem] font-bold tracking-[-0.025em] text-ink sm:text-[1.75rem]">

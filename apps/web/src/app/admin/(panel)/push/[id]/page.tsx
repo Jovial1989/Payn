@@ -19,6 +19,8 @@ type Campaign = {
   invalid_tokens_marked: number;
   created_at: string;
   updated_at: string;
+  // PR-INT-01 — Optional in-app route the tap opens.
+  deep_link: string | null;
 };
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -89,6 +91,16 @@ export default async function PushCampaignDetailPage({
             <Row
               label="Last active"
               value={campaign.audience_last_active_days ? `${campaign.audience_last_active_days}d` : "Anyone"}
+            />
+            <Row
+              label="Target screen"
+              value={
+                campaign.deep_link ? (
+                  <span className="font-mono text-xs text-accent-emerald-strong">{campaign.deep_link}</span>
+                ) : (
+                  <span className="text-ink-tertiary">Default landing</span>
+                )
+              }
             />
             <Row label="Scheduled" value={fmt(campaign.scheduled_at)} />
             <Row label="Sent at" value={fmt(campaign.sent_at)} />

@@ -115,31 +115,31 @@ abstract class AppLocalizations {
   /// No description provided for @categoryLoans.
   ///
   /// In en, this message translates to:
-  /// **'Loans'**
+  /// **'Borrowing'**
   String get categoryLoans;
 
   /// No description provided for @categoryCards.
   ///
   /// In en, this message translates to:
-  /// **'Credit Cards'**
+  /// **'Cards'**
   String get categoryCards;
 
   /// No description provided for @categoryBanking.
   ///
   /// In en, this message translates to:
-  /// **'Banking'**
+  /// **'Bank accounts'**
   String get categoryBanking;
 
   /// No description provided for @categoryTransfers.
   ///
   /// In en, this message translates to:
-  /// **'Money Transfers'**
+  /// **'Sending money'**
   String get categoryTransfers;
 
   /// No description provided for @categoryExchange.
   ///
   /// In en, this message translates to:
-  /// **'Exchange'**
+  /// **'Currency exchange'**
   String get categoryExchange;
 
   /// No description provided for @categoryInsurance.
@@ -151,7 +151,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryInvestments.
   ///
   /// In en, this message translates to:
-  /// **'Investments'**
+  /// **'Investing'**
   String get categoryInvestments;
 
   /// No description provided for @categoryCrypto.
@@ -163,20 +163,26 @@ abstract class AppLocalizations {
   /// No description provided for @categoryBusiness.
   ///
   /// In en, this message translates to:
-  /// **'Business Banking'**
+  /// **'For business'**
   String get categoryBusiness;
 
   /// No description provided for @categoryBudgeting.
   ///
   /// In en, this message translates to:
-  /// **'Budgeting & Finance'**
+  /// **'Family budgeting'**
   String get categoryBudgeting;
 
   /// No description provided for @categoryKids.
   ///
   /// In en, this message translates to:
-  /// **'Kids & Family'**
+  /// **'Family'**
   String get categoryKids;
+
+  /// No description provided for @categorySavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving'**
+  String get categorySavings;
 
   /// No description provided for @profileTypePersonal.
   ///
@@ -289,7 +295,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeLiveRanking.
   ///
   /// In en, this message translates to:
-  /// **'Live ranking'**
+  /// **'Live FX rates'**
   String get homeLiveRanking;
 
   /// No description provided for @homeHeroTitle.
@@ -379,7 +385,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeBestOffersInCountryTitle.
   ///
   /// In en, this message translates to:
-  /// **'Best offers in your country'**
+  /// **'Best offers right now'**
   String get homeBestOffersInCountryTitle;
 
   /// No description provided for @homeBestOffersInCountryBody.
@@ -487,7 +493,7 @@ abstract class AppLocalizations {
   /// No description provided for @savedRecent.
   ///
   /// In en, this message translates to:
-  /// **'Recent'**
+  /// **'Recently viewed'**
   String get savedRecent;
 
   /// No description provided for @savedCompareLimit.
@@ -625,7 +631,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileInterestsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Tune future recommendations toward the categories you care about.'**
+  /// **'Tap topics you care about. We\'ll show those first.'**
   String get profileInterestsSubtitle;
 
   /// No description provided for @profileSecurityTitle.
@@ -847,7 +853,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreLiveRanking.
   ///
   /// In en, this message translates to:
-  /// **'Live ranking'**
+  /// **'Live FX rates'**
   String get exploreLiveRanking;
 
   /// No description provided for @exploreBestOptions.
@@ -961,13 +967,13 @@ abstract class AppLocalizations {
   /// No description provided for @exploreMarketIntelligenceTitle.
   ///
   /// In en, this message translates to:
-  /// **'Market intelligence'**
+  /// **'Market today'**
   String get exploreMarketIntelligenceTitle;
 
   /// No description provided for @exploreMarketIntelligenceSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Track live market context before moving into investment products.'**
+  /// **'See how the market\'s moving before you invest.'**
   String get exploreMarketIntelligenceSubtitle;
 
   /// No description provided for @offerDecisionReviewed.
@@ -1333,7 +1339,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreSortRecommended.
   ///
   /// In en, this message translates to:
-  /// **'Recommended'**
+  /// **'Top picks'**
   String get exploreSortRecommended;
 
   /// No description provided for @exploreMarketDataUnavailable.
@@ -1399,7 +1405,7 @@ abstract class AppLocalizations {
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
-  /// **'Move money with more clarity'**
+  /// **'Every money option, in one place'**
   String get splashTagline;
 
   /// No description provided for @routerError.
@@ -1411,7 +1417,7 @@ abstract class AppLocalizations {
   /// No description provided for @catalogSyncError.
   ///
   /// In en, this message translates to:
-  /// **'Latest marketplace data could not be synced. Cached offers are shown.'**
+  /// **'Latest offers could not be synced. Cached offers are shown.'**
   String get catalogSyncError;
 }
 

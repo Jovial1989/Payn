@@ -10,6 +10,10 @@ import { DashboardLoadingState, DashboardSectionCard } from "@/components/dashbo
 import { DashboardProfileWorkspace } from "@/components/dashboard-profile-workspace";
 import { OfferCard } from "@/components/offer-card";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
+// WEB.2 — Inline Compare-ready card. Lives at the top of the Dashboard
+// view whenever the user has 1+ offers in their Compare set. Replaces
+// the bottom-docked CompareBar (now deleted in WEB.2).
+import { CompareReadyCard } from "@/features/compare/compare-ready-card";
 import { getProductEntryActionLabel } from "@/components/product-entry-action";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -90,9 +94,10 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   );
   const handleSignOut = useCallback(async () => {
     await signOut();
-    router.replace(discoverHref);
-    router.refresh();
-  }, [discoverHref, router, signOut]);
+    // Hard reload to flush every auth-derived widget (sidebar,
+    // dashboard chrome, server data) — see app-shell.handleSignOut.
+    window.location.assign(discoverHref);
+  }, [discoverHref, signOut]);
   const loadInsights = useCallback(async () => {
     if (!user) {
       setInsights(null);
@@ -308,6 +313,28 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
   } else {
     body = (
       <div className="grid gap-6">
+        {/* WEB.7 — Glance hero mirroring Flutter MOB.12. ONE display-
+            size headline metric (the leading recommended offer's
+            primary metric) + ONE primary CTA "Find best rate" →
+            /discover. Everything else on the page is secondary. */}
+        {bestOffers.length > 0 ? (
+          <GlanceHero
+            offerProvider={bestOffers[0].offer.providerName}
+            offerTitle={bestOffers[0].offer.title}
+            metricLabel={
+              bestOffers[0].offer.metrics?.[0]?.label ?? "Live rate"
+            }
+            metricValue={bestOffers[0].offer.metrics?.[0]?.value ?? "—"}
+            ctaHref={discoverHref}
+          />
+        ) : null}
+
+        {/* WEB.2 — Sits at the top of the dashboard whenever the user
+            has 1+ offers picked for Compare. Self-hides at count 0.
+            Owns its own drawer state so no floating chrome lives at
+            the bottom of the viewport anymore. */}
+        <CompareReadyCard locale={preferences.locale} />
+
         <DashboardSectionCard
           eyebrow="Personalized"
           title="Best offers for you"
@@ -452,5 +479,66 @@ export function DashboardAppView({ view = "dashboard" }: DashboardAppViewProps) 
       {pageView}
       {body}
     </div>
+  );
+}
+
+// ─── GlanceHero ────────────────────────────────────────────────────────
+//
+// WEB.7 — Dashboard hero matching Flutter MOB.12. ONE display-size
+// metric ("TODAY'S BEST RATE") + provider line + ONE primary emerald
+// CTA. Secondary content (saved/compared/recent metrics, category
+// pills, smart suggestions) lives elsewhere on the page — this card
+// is glanceability above everything else.
+function GlanceHero({
+  offerProvider,
+  offerTitle,
+  metricLabel,
+  metricValue,
+  ctaHref,
+}: {
+  offerProvider: string;
+  offerTitle: string;
+  metricLabel: string;
+  metricValue: string;
+  ctaHref: string;
+}) {
+  return (
+    <section
+      className="relative overflow-hidden rounded-[28px] border border-accent-emerald/15 bg-gradient-to-br from-accent-emerald-soft/60 to-white px-5 py-7 shadow-[0_18px_36px_rgba(15,138,75,0.10)] sm:rounded-[32px] sm:px-8 sm:py-9"
+    >
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-accent-emerald-strong">
+        Today&apos;s best rate
+      </p>
+      {/* Display-size headline metric — clamp() so it auto-scales
+          between 2.8rem (375px) and 4.2rem (md+). Tabular figures so
+          "0.41%" doesn't jitter against the next live update. */}
+      <p
+        className="mt-3 font-extrabold tabular-nums leading-none tracking-[-0.06em] text-ink"
+        style={{ fontSize: "clamp(2.8rem, 9vw, 4.2rem)" }}
+      >
+        {metricValue}
+      </p>
+      <p className="mt-2 text-[13px] text-ink-secondary sm:text-[14px]">
+        {metricLabel} · {offerProvider} — {offerTitle}
+      </p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link
+          href={ctaHref}
+          prefetch
+          className="inline-flex h-12 items-center gap-2 rounded-full bg-accent-emerald px-6 text-[14px] font-bold text-white shadow-[0_8px_18px_rgba(15,138,75,0.28)] transition-all hover:bg-accent-emerald-strong"
+        >
+          Find best rate
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path
+              d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+      </div>
+    </section>
   );
 }

@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "next typegen && mkdir -p .next/types && touch .next/types/cache-life.d.ts && tsc --project tsconfig.json --noEmit"
+    "typecheck": "next typegen && mkdir -p .next/types && touch .next/types/cache-life.d.ts && tsc --project tsconfig.json --noEmit",
+    "link-audit": "node scripts/link-audit.mjs"
   },
   "dependencies": {
     "@amplitude/unified": "^1.0.16",

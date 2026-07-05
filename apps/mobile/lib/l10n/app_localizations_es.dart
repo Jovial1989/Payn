@@ -12,16 +12,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appTitle => 'Payn';
 
   @override
-  String get categoryLoans => 'Préstamos';
+  String get categoryLoans => 'Pedir prestado';
 
   @override
-  String get categoryCards => 'Tarjetas de crédito';
+  String get categoryCards => 'Tarjetas';
 
   @override
-  String get categoryBanking => 'Banca';
+  String get categoryBanking => 'Cuentas bancarias';
 
   @override
-  String get categoryTransfers => 'Transferencias';
+  String get categoryTransfers => 'Enviar dinero';
 
   @override
   String get categoryExchange => 'Cambio de divisas';
@@ -30,19 +30,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryInsurance => 'Seguros';
 
   @override
-  String get categoryInvestments => 'Inversiones';
+  String get categoryInvestments => 'Invertir';
 
   @override
   String get categoryCrypto => 'Cripto';
 
   @override
-  String get categoryBusiness => 'Banca empresarial';
+  String get categoryBusiness => 'Para negocios';
 
   @override
-  String get categoryBudgeting => 'Presupuesto y finanzas';
+  String get categoryBudgeting => 'Presupuesto familiar';
 
   @override
-  String get categoryKids => 'Niños y familia';
+  String get categoryKids => 'Familia';
+
+  @override
+  String get categorySavings => 'Ahorrar';
 
   @override
   String get profileTypePersonal => 'Personal';
@@ -215,7 +218,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get savedCompare => 'Comparar';
 
   @override
-  String get savedRecent => 'Reciente';
+  String get savedRecent => 'Vistos recientemente';
 
   @override
   String get savedCompareLimit => 'La comparación admite hasta 3 ofertas.';
@@ -290,7 +293,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileInterestsSubtitle =>
-      'Ajusta las recomendaciones futuras a las categorías que te importan.';
+      'Toca los temas que te interesan. Los mostramos primero.';
 
   @override
   String get profileSecurityTitle => 'Seguridad';
@@ -476,11 +479,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exploreApply => 'Aplicar';
 
   @override
-  String get exploreMarketIntelligenceTitle => 'Inteligencia de mercado';
+  String get exploreMarketIntelligenceTitle => 'Mercado hoy';
 
   @override
   String get exploreMarketIntelligenceSubtitle =>
-      'Sigue el contexto del mercado en vivo antes de pasar a productos de inversión.';
+      'Mira cómo se mueve el mercado antes de invertir.';
 
   @override
   String get offerDecisionReviewed => 'Revisado';
@@ -709,12 +712,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get marketAssetPriceFutures => 'Precio de futuros';
 
   @override
-  String get splashTagline => 'Claridad para tu dinero';
+  String get splashTagline => 'Cada opción de dinero, en un solo lugar';
 
   @override
   String get routerError => 'No pudimos abrir esa ruta.';
 
   @override
   String get catalogSyncError =>
-      'No se pudieron sincronizar los datos más recientes del marketplace. Se muestran ofertas en caché.';
+      'No se pudieron sincronizar las últimas ofertas. Se muestran ofertas en caché.';
 }

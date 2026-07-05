@@ -30,9 +30,10 @@ export async function enrichOffer(offer: {
 
   const prompt = buildPrompt(offer);
 
-  const res = await fetch(`${GEMINI_URL}?key=${env.geminiApiKey}`, {
+  // SEC-FIX PAYN-009: API key moved from URL query param to header (avoids log exposure)
+  const res = await fetch(GEMINI_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-goog-api-key": env.geminiApiKey },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {

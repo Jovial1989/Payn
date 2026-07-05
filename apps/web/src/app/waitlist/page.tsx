@@ -43,16 +43,16 @@ export default async function WaitlistPage({
           </p>
           <div className="mt-5 grid gap-4">
             {uiCopy.waitlist.nextSteps.map((item) => (
-              <div key={item.title} className="rounded-3xl border border-line bg-[#FCFCFB] p-5">
+              <div key={item.title} className="rounded-2xl border border-line bg-bg-surface p-5">
                 <h2 className="text-base font-bold text-ink">{item.title}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{item.text}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 rounded-3xl border border-amber-100 bg-amber-50 px-5 py-4">
-            <p className="text-sm font-semibold text-amber-900">{uiCopy.waitlist.warningTitle}</p>
-            <p className="mt-2 text-sm leading-relaxed text-amber-800/90">
+          <div className="mt-6 rounded-2xl border border-line bg-bg-surface px-5 py-4">
+            <p className="text-sm font-semibold text-ink">{uiCopy.waitlist.warningTitle}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
               {uiCopy.waitlist.warningDescription}
             </p>
           </div>

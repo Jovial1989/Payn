@@ -4,10 +4,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TEMPLATE_REGISTRY, type TemplateId } from "@/lib/email/templates";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 type UserResult = { id: string; email: string };
 type SendResult = { id: string; to: string; status: string; error?: string };
+type CustomTemplateMeta = {
+  id: string;
+  name: string;
+  description: string;
+  subject: string;
+  category: string;
+  updated_at: string;
+};
+type CustomTemplateRow = { id: string; name: string; subject: string; html: string; category: string };
 
 function UserPickerModal({
   onSelect,
@@ -20,15 +29,14 @@ function UserPickerModal({
   const [results, setResults] = useState<UserResult[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [addingAll, setAddingAll] = useState(false);
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/mail/users?q=${encodeURIComponent(query)}`, {
-          headers: { "x-admin-token": ADMIN_TOKEN },
-        });
+        const res = await fetch(`/api/admin/mail/users?q=${encodeURIComponent(query)}`);
         if (res.ok) setResults(await res.json() as UserResult[]);
       } finally { setLoading(false); }
     }, 300);
@@ -41,6 +49,20 @@ function UserPickerModal({
       next.has(email) ? next.delete(email) : next.add(email);
       return next;
     });
+  };
+
+  const addAll = async () => {
+    setAddingAll(true);
+    try {
+      const res = await fetch("/api/admin/mail/users?all=true");
+      if (res.ok) {
+        const users = await res.json() as UserResult[];
+        onSelect(users.map((u) => u.email).filter(Boolean));
+        onClose();
+      }
+    } finally {
+      setAddingAll(false);
+    }
   };
 
   return (
@@ -69,15 +91,24 @@ function UserPickerModal({
             </label>
           ))}
         </div>
-        <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-bg-surface">Cancel</button>
+        <div className="mt-4 flex items-center justify-between gap-2">
           <button
-            onClick={() => { onSelect(Array.from(selected)); onClose(); }}
-            disabled={selected.size === 0}
-            className="rounded-full bg-accent-emerald px-4 py-2 text-sm font-semibold text-white hover:bg-accent-emerald-strong disabled:opacity-50"
+            onClick={addAll}
+            disabled={addingAll}
+            className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-bg-surface disabled:opacity-50"
           >
-            Add {selected.size > 0 ? `(${selected.size})` : ""}
+            {addingAll ? "Adding…" : "Add all users"}
           </button>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-secondary hover:bg-bg-surface">Cancel</button>
+            <button
+              onClick={() => { onSelect(Array.from(selected)); onClose(); }}
+              disabled={selected.size === 0}
+              className="rounded-full bg-accent-emerald px-4 py-2 text-sm font-semibold text-white hover:bg-accent-emerald-strong disabled:opacity-50"
+            >
+              Add {selected.size > 0 ? `(${selected.size})` : ""}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -92,6 +123,8 @@ export default function AdminMailComposePage() {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [templateId, setTemplateId] = useState<TemplateId | "">(initialTemplate);
+  const [selectedValue, setSelectedValue] = useState<string>(initialTemplate);
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplateMeta[]>([]);
   const [templateProps, setTemplateProps] = useState<Record<string, string>>({});
   const [customHtml, setCustomHtml] = useState("");
   const [customText, setCustomText] = useState("");
@@ -105,6 +138,51 @@ export default function AdminMailComposePage() {
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const templateIds = Object.keys(TEMPLATE_REGISTRY) as TemplateId[];
+
+  // Fetch DB-backed custom templates once on mount.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/mail/templates");
+        if (!res.ok) return;
+        const data = await res.json() as { templates?: CustomTemplateMeta[]; tableMissing?: boolean };
+        if (cancelled || data.tableMissing) return;
+        setCustomTemplates(data.templates ?? []);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch a custom template's full row and route it through the Custom-HTML path.
+  const loadCustomTemplate = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/mail/templates/${encodeURIComponent(id)}`);
+      if (!res.ok) return;
+      const row = await res.json() as CustomTemplateRow;
+      setTemplateId("");
+      setCustomHtml(row.html);
+      setSubject((prev) => (prev.trim() ? prev : row.subject));
+    } catch { /* ignore */ }
+  }, []);
+
+  // Deep link: ?customTemplate=<id> selects + loads a custom template on mount.
+  useEffect(() => {
+    const deepLinkId = searchParams.get("customTemplate");
+    if (!deepLinkId) return;
+    setSelectedValue(`custom:${deepLinkId}`);
+    void loadCustomTemplate(deepLinkId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onTemplateSelect = useCallback((value: string) => {
+    setSelectedValue(value);
+    if (value.startsWith("custom:")) {
+      void loadCustomTemplate(value.slice("custom:".length));
+      return;
+    }
+    setTemplateId(value as TemplateId | "");
+  }, [loadCustomTemplate]);
 
   // Auto-fill subject from registry default
   useEffect(() => {
@@ -133,7 +211,7 @@ export default function AdminMailComposePage() {
           : { templateId: null, props: {}, html: customHtml };
         const res = await fetch("/api/admin/mail/preview", {
           method: "POST",
-          headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+          headers: { "content-type": "application/json" },
           body: JSON.stringify(body),
         });
         if (res.ok) {
@@ -179,7 +257,7 @@ export default function AdminMailComposePage() {
     try {
       const res = await fetch("/api/admin/mail/send", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify(buildPayload(testOnly ? [recipients[0]] : recipients)),
       });
       const data = await res.json() as { messages?: SendResult[]; error?: string };
@@ -252,14 +330,23 @@ export default function AdminMailComposePage() {
               <label className="grid gap-1.5">
                 <span className="text-sm font-medium text-ink-secondary">Template</span>
                 <select
-                  value={templateId}
-                  onChange={(e) => setTemplateId(e.target.value as TemplateId | "")}
+                  value={selectedValue}
+                  onChange={(e) => onTemplateSelect(e.target.value)}
                   className="h-10 rounded-xl border border-line bg-bg-surface px-3 text-sm text-ink outline-none focus:border-accent-emerald"
                 >
                   <option value="">Custom HTML</option>
-                  {templateIds.map((id) => (
-                    <option key={id} value={id}>{TEMPLATE_REGISTRY[id].name}</option>
-                  ))}
+                  <optgroup label="Built-in">
+                    {templateIds.map((id) => (
+                      <option key={id} value={id}>{TEMPLATE_REGISTRY[id].name}</option>
+                    ))}
+                  </optgroup>
+                  {customTemplates.length > 0 && (
+                    <optgroup label="Custom">
+                      {customTemplates.map((t) => (
+                        <option key={t.id} value={`custom:${t.id}`}>{t.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </label>
 

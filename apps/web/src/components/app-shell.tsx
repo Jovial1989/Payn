@@ -18,11 +18,16 @@ import { localePath, switchLocalePath } from "@/lib/locale";
 import { getUiCopy } from "@/lib/ui-copy";
 import { marketplaceCategories } from "@/lib/marketplace";
 import { getActiveCategoriesForCountry } from "@/lib/countries";
-import { OUTCOME_BUCKETS } from "@/features/catalog/outcomes";
+import { OUTCOME_BUCKETS, flatCategoryForBucket } from "@/features/catalog/outcomes";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { AffiliateDisclosureBanner } from "@/components/affiliate-disclosure-banner";
 import { CompareProvider } from "@/features/compare/compare-store";
-import { CompareBar } from "@/features/compare/compare-bar";
+// WEB.2 — `CompareBar` (bottom-docked floating ribbon) was deleted.
+// Compare CTA lives inline on the Dashboard via `<CompareReadyCard />`
+// now — no global floating chrome.
+// WEB.4 — Compare chip is wired into the dashboard inner-header below
+// (workspace pages don't render the marketing site Header).
+import { CompareHeaderChip } from "@/features/compare/compare-header-chip";
 import { categoryGroups } from "@/lib/marketplace";
 
 // Resolve the pillar label for a given category by walking the 5+1
@@ -36,6 +41,11 @@ function findPillarForCategory(
   if (!group) return null;
   return dictionary.sidebarNav[group.labelKey];
 }
+
+// PASS A (routing) — bucket→flat-category mapping lives in
+// `features/catalog/outcomes.ts` (single source of truth, next to
+// OUTCOME_BUCKETS). The sidebar links and active-state check use
+// `flatCategoryForBucket` imported from there.
 
 type AppNavItem = {
   id: "dashboard" | "discover" | MarketplaceCategory | "settings";
@@ -65,11 +75,10 @@ function resolveCurrentSection(pathname: string | null): AppSection {
   if (pathname.includes("/login")) return "login";
   if (pathname.includes("/signup")) return "signup";
   if (pathname.includes("/discover")) return "discover";
-  // /explore/<bucket-slug> must short-circuit before the category loop —
-  // otherwise `pathname.includes("/travel")` accidentally matches
-  // /explore/travel-and-abroad and the header pretends the user is on the
-  // legacy /travel category page.
-  if (pathname.includes("/explore")) return "other";
+  // PASS A (routing) — the `/explore/<bucket>` vocabulary is retired; the
+  // canonical category surface is the flat `/en/<category>` route, which
+  // the loop below matches directly. (The old short-circuit existed only
+  // to stop `/explore/travel-and-abroad` from masquerading as `/travel`.)
   for (const cat of marketplaceCategories) {
     if (pathname.includes(`/${cat}`)) return cat;
   }
@@ -171,104 +180,16 @@ function ArrowLeftIcon({ className }: { className?: string }) {
   );
 }
 
-// Unified Atlas-bucket node: the bucket name is a link to /explore/<slug>,
-// the chevron toggles a child list of the bucket's sub-categories (e.g.
-// "Daily banking" → Banking / Neobanks / Wallets). Single-category buckets
-// hide the chevron — there's nothing to expand and the bucket page is the
-// same as the category page conceptually.
-function CollapsibleBucketGroup({
-  bucket,
-  bucketTitle,
-  isExpanded,
-  onToggle,
-  currentSection,
-  isOnBucketPage,
-  visibleCategories,
-  locale,
-  country,
-  categoryLabels,
-  onLinkClick,
-}: {
-  bucket: (typeof OUTCOME_BUCKETS)[number];
-  bucketTitle: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  currentSection: string;
-  isOnBucketPage: boolean;
-  visibleCategories: MarketplaceCategory[];
-  locale: MarketplaceLocale;
-  country: string;
-  categoryLabels: Record<MarketplaceCategory | "all", string>;
-  onLinkClick: () => void;
-}) {
-  const Icon = bucket.Icon;
-  const hasActiveChild = (visibleCategories as string[]).includes(currentSection);
-  const showChevron = visibleCategories.length > 1;
-
-  return (
-    <div>
-      <div
-        className={clsx(
-          "flex items-center gap-1 rounded-[18px] transition-colors",
-          isOnBucketPage && "bg-accent-emerald-soft shadow-[0_0_0_1px_rgba(15,138,75,0.15)]",
-        )}
-      >
-        <Link
-          href={`/explore/${bucket.slug}?country=${country}`}
-          onClick={onLinkClick}
-          className={clsx(
-            "flex flex-1 items-center gap-2.5 rounded-[18px] py-2.5 pl-4 pr-2 text-sm font-semibold transition-colors",
-            isOnBucketPage
-              ? "text-accent-emerald-strong"
-              : hasActiveChild
-                ? "text-accent-emerald-strong hover:bg-bg-surface"
-                : "text-ink-secondary hover:bg-bg-surface hover:text-ink",
-          )}
-        >
-          <Icon className="h-4 w-4 shrink-0 text-accent-emerald" />
-          <span className="truncate">{bucketTitle}</span>
-        </Link>
-        {showChevron && (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={isExpanded ? "Collapse" : "Expand"}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
-          >
-            <ChevronIcon
-              className={clsx("h-3.5 w-3.5 transition-transform duration-200", isExpanded && "rotate-90")}
-            />
-          </button>
-        )}
-      </div>
-      {isExpanded && showChevron && (
-        <div className="mb-1 ml-4 grid gap-0.5 border-l border-line pl-3">
-          {visibleCategories.map((cat) => (
-            <Link
-              key={cat}
-              href={localePath(locale, `/${cat}`)}
-              onClick={onLinkClick}
-              className={clsx(
-                "block rounded-[14px] px-3 py-2 text-[13px] font-medium transition-colors",
-                currentSection === cat
-                  ? "bg-accent-emerald-soft font-semibold text-accent-emerald-strong shadow-[0_0_0_1px_rgba(15,138,75,0.15)]"
-                  : "text-ink-tertiary hover:bg-bg-surface hover:text-ink",
-              )}
-            >
-              {categoryLabels[cat]}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+// TASK-303 (PR-V3-02) — `CollapsibleBucketGroup` deleted. Each bucket
+// is a single flat `SidebarLink` now. The sub-category taxonomy that
+// used to fold under the chevron lives exclusively as chip filters on
+// the bucket page (TASK-304 + `SUB_CATEGORIES`).
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
-  const isAdmin = user?.email === "admin@admin.com" || user?.app_metadata?.role === "admin" || user?.user_metadata?.role === "admin";
+  const isAdmin = user?.app_metadata?.role === "admin"; // SEC-FIX PAYN-A13: only app_metadata is server-set
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const uiCopy = getUiCopy(preferences.locale);
@@ -352,36 +273,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Expanded set is keyed by bucket slug now. Auto-open the bucket whose
   // sub-category the user is currently viewing (e.g. on /banking,
-  // "daily-banking" opens automatically so the user sees the active "Banking"
-  // child highlighted).
-  const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(() => {
-    const seg = pathname?.split("/").find((s) => (marketplaceCategories as string[]).includes(s));
-    const bucket = seg ? OUTCOME_BUCKETS.find((b) => (b.categories as string[]).includes(seg)) : null;
-    return bucket ? new Set([bucket.slug]) : new Set<string>();
-  });
-
-  useEffect(() => {
-    const seg = pathname?.split("/").find((s) => (marketplaceCategories as string[]).includes(s));
-    if (!seg) return;
-    const bucket = OUTCOME_BUCKETS.find((b) => (b.categories as string[]).includes(seg));
-    if (bucket) {
-      setExpandedBuckets((prev) => new Set([...prev, bucket.slug]));
-    }
-  }, [pathname]);
-
+  // TASK-303 — `expandedBuckets` + `toggleBucket` removed with the
+  // collapsible sidebar. Sidebar is flat; bucket pages own their own
+  // sub-category state via chips. `currentSection` is still needed
+  // elsewhere (highlighting the active top-level system item).
   const currentSection = resolveCurrentSection(pathname);
 
-  function toggleBucket(bucketSlug: string) {
-    setExpandedBuckets((prev) => {
-      const next = new Set(prev);
-      if (next.has(bucketSlug)) next.delete(bucketSlug);
-      else next.add(bucketSlug);
-      return next;
-    });
-  }
-
   function isOnBucketPage(bucketSlug: string): boolean {
-    return pathname?.includes(`/explore/${bucketSlug}`) ?? false;
+    // PASS A — buckets now link to the flat category route; the sidebar
+    // entry is active when the user is on that category's flat path.
+    const flat = flatCategoryForBucket(bucketSlug);
+    if (!flat) return false;
+    return pathname?.includes(`/${flat}`) ?? false;
   }
 
   const sectionLabels = useMemo(
@@ -425,21 +328,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   const handleSignOut = async () => {
+    // signOut() clears local state then navigates to /api/v1/auth/signout
+    // (GET redirect). The server clears cookies and redirects to home.
     await signOut();
-    router.replace(localePath(preferences.locale, "/discover"));
-    router.refresh();
   };
 
   return (
     <CompareProvider>
-    <div className="min-h-screen overflow-x-clip bg-bg text-ink pb-20 md:pb-0">
-      <div className="mx-auto flex max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
+    {/* RESP.13 — Outer container gutters trimmed to px-2 on 375px
+        (was px-3). The inner white card carries its own border + rounded
+        corners, so the page now has 8px between the card edge and the
+        viewport instead of 12px, freeing more space for the headline
+        + offer cards inside. */}
+    <div className="min-h-screen overflow-x-hidden bg-bg text-ink pb-20 md:pb-0">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1600px] gap-4 px-2 py-3 sm:px-4 sm:py-4 lg:flex-row lg:px-5 lg:py-5">
         <aside className="hidden overflow-hidden rounded-[24px] border border-line bg-white shadow-card lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)] lg:w-[248px] lg:flex-col">
           {/* Compact back-link — the full-size Payn lockup used to live here,
               which doubled the brand mark already visible in the outer page
               header. Per UX audit: one Payn at the top, a quiet arrow inside
               the dashboard shell. */}
+          {/* WEB.6 — Explicit `prefetch` so Next.js warms the
+              marketing homepage chunk + RSC payload as soon as this
+              link is in the viewport. User reported a ~5s delay on
+              back-to-site; default Next.js 16 viewport prefetch is
+              less aggressive than 15, so opting in here makes the
+              click feel instant after the first second of dwell. */}
           <Link
+            prefetch
             href={localePath(preferences.locale, "/")}
             className="flex items-center gap-2 border-b border-line px-5 py-3 text-[13px] font-medium text-ink-tertiary transition-colors hover:bg-bg-surface hover:text-ink"
           >
@@ -455,37 +370,38 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ))}
             </div>
 
-            {/* Unified browse tree — Atlas buckets with nested sub-categories */}
+            {/* TASK-303 (PR-V3-02) — Flat sidebar per V1 brief §B. The
+                previous `CollapsibleBucketGroup` rendered each bucket
+                as an expandable parent with one nav row per inner
+                category (`Banking → Banking / Neobanks / Wallets`).
+                That tree is gone — the sub-category taxonomy now lives
+                exclusively as chip filters inside the category page
+                (TASK-304 + `SUB_CATEGORIES`). Each top-level bucket is
+                a single `SidebarLink` straight to the flat
+                `/<category>` route (PASS A). */}
             <div className="mt-4">
               <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                 Browse
               </p>
               <div className="grid gap-0.5">
-                {visibleBuckets.map(({ bucket, visibleCategories }) => (
-                  <CollapsibleBucketGroup
+                {visibleBuckets.map(({ bucket }) => (
+                  <SidebarLink
                     key={bucket.slug}
-                    bucket={bucket}
-                    bucketTitle={dictionary.homeAtlas[bucket.bucketKey].title}
-                    isExpanded={expandedBuckets.has(bucket.slug)}
-                    onToggle={() => toggleBucket(bucket.slug)}
-                    currentSection={currentSection}
-                    isOnBucketPage={isOnBucketPage(bucket.slug)}
-                    visibleCategories={visibleCategories}
-                    locale={preferences.locale}
-                    country={preferences.country}
-                    categoryLabels={dictionary.categories}
-                    onLinkClick={() => undefined}
+                    label={dictionary.homeAtlas[bucket.bucketKey].title}
+                    href={localePath(preferences.locale, `/${flatCategoryForBucket(bucket.slug) ?? bucket.slug}`)}
+                    active={isOnBucketPage(bucket.slug)}
+                    onClick={() => undefined}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="mt-3 grid gap-1 border-t border-line pt-3">
-              <SidebarLink label={settingsItem.label} href={settingsItem.href}
-                active={currentSection === "settings"}
-                disabled={Boolean(settingsItem.disabledWhenLoggedOut && !user)}
-                onClick={() => undefined} />
-            </div>
+            {/* WEB.5 — Settings entry was duplicated in the sidebar
+                AND in the avatar dropdown (top-right). The dropdown
+                wins because it's already where the user expects
+                account-scoped actions; keeping it twice clutters
+                the sidebar's product-discovery focus. Sidebar entry
+                removed. */}
           </div>
         </aside>
 
@@ -500,6 +416,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(88vw,340px)] flex-col overflow-y-auto border-r border-line bg-white px-4 py-4 shadow-elevated lg:hidden">
               <div className="flex items-center justify-between gap-3">
                 <Link
+                  prefetch
                   href={localePath(preferences.locale, "/")}
                   onClick={() => setMobileNavOpen(false)}
                   className="flex min-w-0 items-center gap-2 text-[13px] font-medium text-ink-tertiary transition-colors hover:text-ink"
@@ -527,37 +444,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
 
-              {/* Unified browse tree — same component as desktop */}
+              {/* TASK-303 — Same flat sidebar pattern as desktop. */}
               <div className="mt-4">
                 <p className="mb-1.5 px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                   Browse
                 </p>
                 <div className="grid gap-0.5">
-                  {visibleBuckets.map(({ bucket, visibleCategories }) => (
-                    <CollapsibleBucketGroup
+                  {visibleBuckets.map(({ bucket }) => (
+                    <SidebarLink
                       key={bucket.slug}
-                      bucket={bucket}
-                      bucketTitle={dictionary.homeAtlas[bucket.bucketKey].title}
-                      isExpanded={expandedBuckets.has(bucket.slug)}
-                      onToggle={() => toggleBucket(bucket.slug)}
-                      currentSection={currentSection}
-                      isOnBucketPage={isOnBucketPage(bucket.slug)}
-                      visibleCategories={visibleCategories}
-                      locale={preferences.locale}
-                      country={preferences.country}
-                      categoryLabels={dictionary.categories}
-                      onLinkClick={() => setMobileNavOpen(false)}
+                      label={dictionary.homeAtlas[bucket.bucketKey].title}
+                      href={localePath(preferences.locale, `/${flatCategoryForBucket(bucket.slug) ?? bucket.slug}`)}
+                      active={isOnBucketPage(bucket.slug)}
+                      onClick={() => setMobileNavOpen(false)}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-1 border-t border-line pt-3">
-                <SidebarLink label={settingsItem.label} href={settingsItem.href}
-                  active={currentSection === "settings"}
-                  disabled={Boolean(settingsItem.disabledWhenLoggedOut && !user)}
-                  onClick={() => setMobileNavOpen(false)} />
-              </div>
+              {/* WEB.5 — Same Settings removal applied to the mobile
+                  sidebar drawer for consistency with desktop. */}
 
               <div className="mt-6 grid gap-3 rounded-[22px] border border-line bg-bg-surface px-4 py-4">
                 <label className="grid gap-2">
@@ -649,7 +555,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           <li>
                             <Link
                               href={localePath(preferences.locale, "/")}
-                              className="font-medium transition-colors hover:text-ink"
+                              className="font-medium underline-offset-2 transition-colors hover:text-ink hover:underline"
                             >
                               Payn
                             </Link>
@@ -673,6 +579,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     );
                   })()}
                 </div>
+
+                {/* WEB.4 — Compare chip inside the dashboard's inner
+                    header. The marketing-site Header is hidden under
+                    `/dashboard`, so without this the desktop user has
+                    no global Compare indicator while inside the
+                    workspace. Renders nothing when the set is empty. */}
+                <CompareHeaderChip locale={preferences.locale} />
 
                 {/* Account control — logged-in users get a compact avatar
                     button that opens a menu with their identity + Settings +
@@ -743,15 +656,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </>
                   ) : (
                     <>
+                      {/* RESP.13 — At 375px the previous "Sign in" +
+                          "Create account" pair (~220px combined) plus
+                          the hamburger + breadcrumb pushed the whole
+                          header off-screen. On mobile we drop the
+                          "Create account" CTA (still reachable via
+                          /signup link from the hamburger menu and the
+                          marketing site hero), and shrink "Sign in"
+                          to a compact pill. Full pair returns at sm. */}
                       <Link
                         href={`${localePath(preferences.locale, "/login")}?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/")}`}
-                        className="inline-flex h-9 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong"
+                        className="inline-flex h-9 items-center rounded-full border border-line bg-white px-3 text-[13px] font-semibold text-ink transition-colors hover:border-accent-emerald/40 hover:text-accent-emerald-strong sm:px-4"
                       >
                         Sign in
                       </Link>
                       <Link
                         href={localePath(preferences.locale, "/signup")}
-                        className={buttonStyles({ variant: "primary", size: "sm" })}
+                        className={`${buttonStyles({ variant: "primary", size: "sm" })} hidden sm:inline-flex`}
                       >
                         Create account
                       </Link>
@@ -761,13 +682,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </header>
 
-            <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+            {/* RESP.13 — Inner content padded p-3 on 375px (was p-4)
+                to give nested cards an extra 8px each side; sm: returns
+                to the original p-6/p-8 ladder. Also `min-w-0` makes
+                sure children can shrink past their intrinsic width
+                when constrained by the flex parent above. */}
+            <div className="min-w-0 p-3 sm:p-6 lg:p-8">{children}</div>
           </div>
         </div>
       </div>
       <MobileBottomNav />
       <AffiliateDisclosureBanner />
-      <CompareBar locale={preferences.locale} />
+      {/* WEB.2 — `<CompareBar />` removed; see import comment above. */}
     </div>
     </CompareProvider>
   );

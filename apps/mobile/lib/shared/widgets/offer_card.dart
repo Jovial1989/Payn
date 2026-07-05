@@ -3,6 +3,7 @@ import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/widgets/gradient_button.dart';
 import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 
@@ -423,12 +424,10 @@ class _OfferCardState extends State<OfferCard> {
                                     child: Text(_secondaryCtaLabel(l10n)),
                                   ),
                                   const SizedBox(height: 10),
-                                  FilledButton(
+                                  GradientButton(
                                     onPressed: widget.onProviderTap,
-                                    style: FilledButton.styleFrom(
-                                      minimumSize: const Size.fromHeight(50),
-                                    ),
-                                    child: Text(_primaryCtaLabel(l10n)),
+                                    minimumSize: const Size(double.infinity, 50),
+                                    label: Text(_primaryCtaLabel(l10n)),
                                   ),
                                 ] else
                                   Row(
@@ -444,12 +443,10 @@ class _OfferCardState extends State<OfferCard> {
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
-                                        child: FilledButton(
+                                        child: GradientButton(
                                           onPressed: widget.onProviderTap,
-                                          style: FilledButton.styleFrom(
-                                            minimumSize: const Size(0, 50),
-                                          ),
-                                          child: Text(_primaryCtaLabel(l10n)),
+                                          minimumSize: const Size(0, 50),
+                                          label: Text(_primaryCtaLabel(l10n)),
                                         ),
                                       ),
                                     ],
@@ -511,6 +508,7 @@ class _OfferCardState extends State<OfferCard> {
       case PaynCategory.investments:
         return l10n.offerCtaOpenDetails;
       case PaynCategory.banking:
+      case PaynCategory.savings:
       case PaynCategory.crypto:
       case PaynCategory.business:
       case PaynCategory.budgeting:
@@ -533,6 +531,7 @@ class _OfferCardState extends State<OfferCard> {
       case PaynCategory.investments:
         return l10n.offerDetailsPlatform;
       case PaynCategory.banking:
+      case PaynCategory.savings:
       case PaynCategory.crypto:
       case PaynCategory.business:
       case PaynCategory.budgeting:

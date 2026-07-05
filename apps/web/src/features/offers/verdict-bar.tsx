@@ -71,7 +71,7 @@ export function VerdictBar({ offer, categoryMarket }: VerdictBarProps) {
           <p className="eyebrow-cap" data-tone="emerald">
             Award
           </p>
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-accent-emerald to-[#10B981] px-3 py-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-white shadow-[0_4px_12px_rgba(15,138,75,0.22)]">
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-emerald px-3 py-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-white shadow-[0_4px_12px_rgba(15,138,75,0.22)]">
             <svg width="11" height="11" viewBox="0 0 10 10" fill="none" aria-hidden="true">
               <path d="M5 0.5l1.2 2.5 2.8.4-2 2 .5 2.8L5 6.9 2.5 8.2l.5-2.8-2-2 2.8-.4L5 .5z" fill="currentColor" />
             </svg>

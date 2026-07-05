@@ -12,16 +12,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appTitle => 'Payn';
 
   @override
-  String get categoryLoans => 'Prêts';
+  String get categoryLoans => 'Emprunter';
 
   @override
-  String get categoryCards => 'Cartes de crédit';
+  String get categoryCards => 'Cartes';
 
   @override
-  String get categoryBanking => 'Banque';
+  String get categoryBanking => 'Comptes bancaires';
 
   @override
-  String get categoryTransfers => 'Virements';
+  String get categoryTransfers => 'Envoyer de l\'argent';
 
   @override
   String get categoryExchange => 'Change';
@@ -30,19 +30,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get categoryInsurance => 'Assurance';
 
   @override
-  String get categoryInvestments => 'Investissements';
+  String get categoryInvestments => 'Investir';
 
   @override
   String get categoryCrypto => 'Crypto';
 
   @override
-  String get categoryBusiness => 'Banque professionnelle';
+  String get categoryBusiness => 'Pour entreprises';
 
   @override
-  String get categoryBudgeting => 'Budget et finances';
+  String get categoryBudgeting => 'Budget familial';
 
   @override
-  String get categoryKids => 'Enfants et famille';
+  String get categoryKids => 'Famille';
+
+  @override
+  String get categorySavings => 'Épargner';
 
   @override
   String get profileTypePersonal => 'Particulier';
@@ -216,7 +219,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get savedCompare => 'Comparer';
 
   @override
-  String get savedRecent => 'Récents';
+  String get savedRecent => 'Vus récemment';
 
   @override
   String get savedCompareLimit =>
@@ -292,7 +295,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileInterestsSubtitle =>
-      'Orientez les futures recommandations vers les catégories qui vous importent.';
+      'Touche les sujets qui comptent pour toi. On les montre en premier.';
 
   @override
   String get profileSecurityTitle => 'Sécurité';
@@ -479,11 +482,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exploreApply => 'Appliquer';
 
   @override
-  String get exploreMarketIntelligenceTitle => 'Analyse de marché';
+  String get exploreMarketIntelligenceTitle => 'Marché aujourd\'hui';
 
   @override
   String get exploreMarketIntelligenceSubtitle =>
-      'Suivez le contexte de marché en direct avant de choisir des produits d\'investissement.';
+      'Voyez comment le marché évolue avant d\'investir.';
 
   @override
   String get offerDecisionReviewed => 'Vérifié';
@@ -713,7 +716,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get marketAssetPriceFutures => 'Prix à terme';
 
   @override
-  String get splashTagline => 'Gérez votre argent avec plus de clarté';
+  String get splashTagline =>
+      'Toutes vos options d\'argent, en un seul endroit';
 
   @override
   String get routerError => 'Impossible d\'ouvrir cette page.';

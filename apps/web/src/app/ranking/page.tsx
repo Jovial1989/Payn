@@ -147,7 +147,7 @@ export default async function RankingPage() {
           ))}
         </section>
 
-        <section className="rounded-[28px] border border-line bg-[#F7F8F9] p-6 sm:p-8">
+        <section className="rounded-[24px] border border-line bg-bg-surface p-5 sm:rounded-[28px] sm:p-8">
           <h2 className="text-h3 text-ink">{copy.meaningTitle}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-secondary">
             {copy.meaningBody}

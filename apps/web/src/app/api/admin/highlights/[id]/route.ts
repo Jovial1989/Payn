@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { checkAdminToken } from "@/lib/admin-api-auth";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -16,7 +17,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -34,11 +35,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { error } = await admin.from("home_highlights").update(patch).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag("highlights", {});
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -47,5 +49,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const { id } = await params;
   const { error } = await admin.from("home_highlights").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag("highlights", {});
   return NextResponse.json({ ok: true });
 }

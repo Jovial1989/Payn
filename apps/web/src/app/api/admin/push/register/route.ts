@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
+import { createSupabaseServerClient } from "@/server/supabase/client";
 
 type RegisterBody = {
   token: string;
@@ -16,11 +17,16 @@ export async function POST(request: Request) {
   if (!admin) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   const body = (await request.json().catch(() => ({}))) as Partial<RegisterBody>;
-  const { token, platform, locale, country, user_id } = body;
+  const { token, platform, locale, country } = body;
 
   if (!token || !platform) {
     return NextResponse.json({ error: "token and platform are required" }, { status: 400 });
   }
+
+  // SEC-FIX PAYN-A03: derive user_id from verified Supabase session, never trust client body
+  const supabase = await createSupabaseServerClient();
+  const { data: { user: sessionUser } } = await supabase.auth.getUser();
+  const resolvedUserId = sessionUser?.id ?? null;
 
   const { error } = await admin.from("device_tokens").upsert(
     {
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
       platform,
       locale: locale ?? null,
       country: country ?? null,
-      user_id: user_id ?? null,
+      user_id: resolvedUserId,
       is_active: true,
       last_seen_at: new Date().toISOString(),
     },
@@ -48,10 +54,24 @@ export async function DELETE(request: Request) {
   const { token } = (await request.json().catch(() => ({}))) as { token?: string };
   if (!token) return NextResponse.json({ error: "token is required" }, { status: 400 });
 
-  const { error } = await admin
+  // SEC-FIX PAYN-A03: scope deactivation to the authenticated user's token only;
+  // anonymous callers (no session) may only deactivate tokens with a null user_id.
+  const supabase = await createSupabaseServerClient();
+  const { data: { user: sessionUser } } = await supabase.auth.getUser();
+  const resolvedUserId = sessionUser?.id ?? null;
+
+  let deleteQuery = admin
     .from("device_tokens")
     .update({ is_active: false })
     .eq("token", token);
+
+  if (resolvedUserId) {
+    deleteQuery = deleteQuery.eq("user_id", resolvedUserId);
+  } else {
+    deleteQuery = deleteQuery.is("user_id", null);
+  }
+
+  const { error } = await deleteQuery;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

@@ -153,7 +153,8 @@ export async function loadPublishedDiscoveredOffers(filters?: {
 
   const { data, error } = await query;
   if (error) {
-    throw new Error(`Could not load discovered offers: ${error.message}`);
+    console.warn("[discovered-offers] Supabase read failed, skipping:", error.message);
+    return [] as NormalizedOfferRecord[];
   }
 
   return (data ?? []).map((row) => row.payload as NormalizedOfferRecord);

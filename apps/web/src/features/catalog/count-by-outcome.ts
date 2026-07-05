@@ -1,4 +1,5 @@
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
+import { getProviderBrand } from "@/lib/provider-brands";
 import { OUTCOME_BUCKETS, type OutcomeBucket } from "./outcomes";
 import { providerToSlug, getProviderLogoPath } from "./provider-logo";
 
@@ -7,6 +8,11 @@ export interface ProviderInfo {
   mark: string;
   slug: string;
   logoPath?: string;
+  // P1.1b — When the provider lacks a curated logo we fall back to the
+  // Google favicon proxy keyed on the provider's homepage. Threaded
+  // through here so the AtlasGrid bucket-card avatars get real brand
+  // marks too (not just the OfferRow ProviderLogo).
+  websiteUrl?: string;
 }
 
 export interface OutcomeBucketCount {
@@ -38,11 +44,13 @@ export function countOffersByOutcome(country: string): OutcomeBucketCount[] {
       if (seen.has(slug)) continue;
       seen.add(slug);
       const logoPath = getProviderLogoPath(offer.providerName);
+      const brand = getProviderBrand(offer.providerName);
       topProviders.push({
         name: offer.providerName,
         mark: offer.providerMark ?? offer.providerName.slice(0, 2).toUpperCase(),
         slug,
         logoPath: logoPath ?? undefined,
+        websiteUrl: brand.websiteUrl,
       });
       if (topProviders.length >= 3) break;
     }

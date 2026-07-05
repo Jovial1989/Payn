@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 import { AdminOffersSeedButton } from "@/components/admin-offers-seed-button";
 import { AdminOffersDeleteButton } from "@/components/admin-offers-delete-button";
+import { AdminParserControls } from "@/components/admin-parser-controls";
 
 const CATEGORIES = [
   "loans","cards","banking","transfers","exchange",
@@ -267,6 +268,19 @@ export default async function AdminOffersPage({ searchParams }: Props) {
           )}
         </div>
       )}
+
+      {/* Manual import — add offers from a feed/CSV by hand. (Automated
+          discovery + monetisation lives in Affiliate Engine.) */}
+      <section className="mt-2 rounded-[20px] border border-line bg-white p-5 shadow-card">
+        <h2 className="text-lg font-bold tracking-[-0.02em] text-ink">Manual import</h2>
+        <p className="mt-1 text-sm text-ink-secondary">
+          Pull offers from a source feed into the catalog by hand. For automated
+          FinanceAds sync + AI discovery, use <Link href="/admin/financeads" className="font-semibold text-accent-emerald-strong underline-offset-2 hover:underline">Affiliate Engine</Link>.
+        </p>
+        <div className="mt-4">
+          <AdminParserControls />
+        </div>
+      </section>
     </div>
   );
 }

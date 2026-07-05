@@ -27,3 +27,13 @@ backend/.env
 # it during dev; the existing `.env*.local` glob did not match.
 .env*.tmp
 _tmp_*
+
+# Production env files — NEVER commit these; secrets live in Vercel dashboard only.
+# Had a near-miss with .env.production.tmp (now .env*.tmp above); adding the
+# canonical names explicitly so `git add .` can never stage them.
+apps/web/.env.production
+apps/web/.env.production.*
+
+# Mobile — Firebase config files contain API keys; inject at CI build time
+apps/mobile/android/app/google-services.json
+apps/mobile/ios/Runner/GoogleService-Info.plist

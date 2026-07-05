@@ -3,33 +3,29 @@ import { getRequestPreferences } from "@/lib/request-preferences";
 
 export const metadata = {
   title: "How we rank providers — Payn",
-  description: "Learn how Payn scores and ranks financial providers. Our methodology is built on real data, not advertising spend.",
+  description: "Learn how Payn ranks financial providers: by real cost first, not advertising spend. Country is a filter you choose, not a ranking weight.",
 };
 
-const rankingFactors = [
+const rankingSteps = [
   {
-    label: "Country fit",
-    weight: "52%",
+    label: "You pick a country",
     description:
-      "We match providers to the country you selected. A provider that directly supports your market scores higher than one with only EU-wide or international coverage. This is the single biggest factor in our scoring.",
+      "Country is a filter, not a ranking weight. We hide any provider that doesn't serve the market you selected, so everything you see is something you can actually use. Filtering by country never moves a provider up or down the order — it only decides who appears at all.",
   },
   {
-    label: "Speed",
-    weight: "22%",
+    label: "We rank by real cost",
     description:
-      "How fast money moves or how quickly you can open and use an account. We pull speed data from provider metrics and normalise it across categories — shorter is always better.",
+      "The default order leads with the lowest real cost first. For each offer we read the cost metrics it exposes — fees, annual or monthly fees, exchange-rate spread, FX markup, conversion fees — and sort cheapest to most expensive. This is the order you see before you change anything.",
   },
   {
-    label: "Simplicity",
-    weight: "14%",
+    label: "Missing-cost offers go last",
     description:
-      "A proxy for friction: how many steps, conditions, or restrictions stand between you and the product. Fewer barriers means a higher simplicity score.",
+      "An offer with no parseable cost figure can never win on cost, so it sorts to the bottom of the default view rather than the top. \"No data\" doesn't get a free pass to the front of the list.",
   },
   {
-    label: "Popularity & outcome",
-    weight: "12%",
+    label: "Ties break on a disclosed tie-breaker",
     description:
-      "A composite of engagement signals (saves, clicks) and the primary outcome value for the category — recipient amount for transfers, monthly payment for loans, estimated premium for insurance.",
+      "When two offers come out at the same real cost — or when neither exposes a parseable cost — we break the tie with a disclosed affiliate-priority score. It only ever decides order between otherwise-equal results; it cannot move a more expensive offer above a cheaper one.",
   },
 ];
 
@@ -40,29 +36,29 @@ export default async function HowWeRankPage() {
     <SiteShell
       eyebrow="Transparency"
       title="How we rank providers"
-      description="Our rankings are built on a scoring model, not advertising spend. Here is exactly how it works."
+      description="Ranked by real cost, not commission. Here is exactly how the default order is built."
     >
       <div className="grid gap-5">
-        <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
-          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">The model</p>
-          <h2 className="mt-3 text-h2 text-ink">Four factors, one score</h2>
+        <section className="rounded-[24px] border border-line bg-white p-5 sm:rounded-[28px] sm:p-8">
+          <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">The order</p>
+          <h2 className="mt-3 text-h2 text-ink">Real cost first</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-            Every provider on Payn receives a composite score between 0 and 100. The score is
-            calculated fresh on each page load using your current country selection and the inputs
-            you have entered (transfer amount, loan term, etc.). Partners and non-partners are
-            scored by the same formula.
+            By default, Payn ranks providers by real cost — lowest total cost first. The order is
+            built fresh on each page load from the cost metrics each offer exposes. You can re-sort
+            by speed or other options at any time, but the order you land on leads with cost.
+            Country is a filter you choose, not a factor that pushes any provider up the list.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {rankingFactors.map((factor) => (
-              <div key={factor.label} className="rounded-[20px] border border-line bg-bg-surface p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-ink">{factor.label}</p>
+            {rankingSteps.map((step, index) => (
+              <div key={step.label} className="rounded-[20px] border border-line bg-bg-surface p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-ink">{step.label}</p>
                   <span className="rounded-full bg-accent-emerald-soft px-3 py-0.5 text-xs font-semibold text-accent-emerald-strong">
-                    {factor.weight}
+                    {index + 1}
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{factor.description}</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{step.description}</p>
               </div>
             ))}
           </div>
@@ -70,21 +66,23 @@ export default async function HowWeRankPage() {
 
         <section className="grid gap-5 md:grid-cols-2">
           <div className="rounded-[24px] border border-line bg-white p-6">
-            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Diversity boost</p>
+            <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">You stay in control</p>
             <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
-              When a single provider would appear multiple times (different products from the same
-              brand), we apply a diversity boost to surface alternatives. This prevents one brand
-              from dominating the top of the list even if all its products score highly.
+              The real-cost order is the starting point, not a cage. Change the country filter,
+              search, narrow by provider or feature, or switch the sort to speed — the list
+              re-ranks live. The default just makes sure the first thing you see is the cheapest,
+              not the best-paying.
             </p>
           </div>
 
           <div className="rounded-[24px] border border-line bg-white p-6">
             <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">No pay-to-rank</p>
             <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
-              Providers cannot pay to appear higher in rankings. Partners receive an{" "}
+              Providers cannot pay to appear higher in rankings. Ranking is decoupled from
+              commission, with one disclosed exception: partners carry an{" "}
               <code className="rounded bg-bg-surface px-1 py-0.5 font-mono text-xs">affiliatePriorityScore</code>{" "}
-              that acts as a mild tie-breaker between otherwise equal scores, but it cannot
-              override the four primary factors.
+              that breaks ties only between otherwise-equal results. It cannot lift a more expensive
+              offer above a cheaper one.
             </p>
           </div>
 
@@ -93,7 +91,7 @@ export default async function HowWeRankPage() {
             <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
               For transfers and currency exchange, we fetch a live mid-market rate and calculate
               exactly how much the recipient would receive after each provider&apos;s fees and
-              spread. The ranked order updates whenever the market moves.
+              spread, so the cost you compare reflects current market conditions.
             </p>
           </div>
 
@@ -107,7 +105,7 @@ export default async function HowWeRankPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-line bg-bg-surface p-6 sm:p-8">
+        <section className="rounded-[24px] border border-line bg-bg-surface p-5 sm:rounded-[28px] sm:p-8">
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Data sources</p>
           <h2 className="mt-3 text-h2 text-ink">Where the data comes from</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">

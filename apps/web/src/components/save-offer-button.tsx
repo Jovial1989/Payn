@@ -99,6 +99,17 @@ export function SaveOfferButton({
     try {
       if (saved) {
         await supabase.from("saved_offers").delete().eq("offer_id", offer.id);
+        trackAnalyticsEvent(
+          AnalyticsEvent.OfferSavedRemoved,
+          buildWebAnalyticsProperties({
+            category: offer.category,
+            country,
+            language: locale,
+            loggedIn: Boolean(user),
+            offerId: offer.id,
+            provider: offer.providerName,
+          }),
+        );
         setSaved(false);
         emitSavedOfferChange(false);
       } else {

@@ -177,7 +177,9 @@ const globalProviderNames = new Set([
 ]);
 
 export function normalizeDisplayText(value: string) {
-  return value.replace(/[–—]/g, "-");
+  return value
+    .replace(/[–—]/g, "-")
+    .replace(/\bEUR\s+/g, "€");
 }
 
 export function isMarketplaceCategory(value: string): value is MarketplaceCategory {
@@ -214,10 +216,6 @@ export function getCategoryLabel(category: MarketplaceCategory) {
   return categoryMeta[category].label;
 }
 
-export function getMarketCategoryHref(market: MarketplaceMarket, category: MarketplaceCategory) {
-  return `/${market}/${category}`;
-}
-
 export function getOfferHref(offer: Pick<MarketplaceOffer, "slug">) {
   return `/offers/${offer.slug}`;
 }
@@ -249,37 +247,62 @@ export function parseMetricRange(value?: string) {
 }
 
 export function getOfferTradeoff(offer: MarketplaceOffer) {
-  const apr = parseMetricRange(getMetricValue(offer, ["APR"])).min;
-  const annualFee = parseMetricRange(getMetricValue(offer, ["Annual fee", "Monthly fee"])).max;
+  // P2.8 — Replaced the template-string version that returned the same
+  // generic sentence for every offer in a category. Where the offer
+  // exposes numeric metrics (APR, annual fee, transfer speed, spread)
+  // we now compose a sentence that quotes those exact values back to
+  // the user. Falls back to the category-default text only when the
+  // metrics aren't present, so older offers without rich metric data
+  // still produce a readable line.
+  const aprRaw = getMetricValue(offer, ["APR"]);
+  const aprRange = parseMetricRange(aprRaw);
+  const apr = aprRange.min;
+  const aprMax = aprRange.max;
+  const annualFeeRaw = getMetricValue(offer, ["Annual fee", "Monthly fee"]);
+  const annualFee = parseMetricRange(annualFeeRaw).max;
   const speed = getMetricValue(offer, ["Speed"]);
   const spread = getMetricValue(offer, ["Spread", "FX markup", "Conversion fee"]);
+  const rate = getMetricValue(offer, ["Rate", "AER", "Yield"]);
 
   if (offer.category === "loans") {
-    if ((apr ?? 0) >= 8) {
-      return "Pricing can move up quickly for smaller amounts or thinner credit profiles.";
+    if (apr != null && aprMax != null && aprMax > apr) {
+      return `APR ${apr}%–${aprMax}% — your final rate depends on credit profile, term, and amount, so the upper band can apply to thinner files.`;
+    }
+    if (apr != null) {
+      return `Headline APR ${apr}% — eligibility, income, and credit checks can move that figure up before signing.`;
     }
     return "Final approval and pricing still depend on local eligibility, income, and credit checks.";
   }
 
   if (offer.category === "cards") {
-    if ((annualFee ?? 0) > 0) {
-      return "The strongest perks usually come with a recurring plan fee.";
+    if ((annualFee ?? 0) > 0 && annualFeeRaw) {
+      return `${annualFeeRaw} recurring fee — perks only pay off if your spending matches the bonus categories on the card.`;
     }
-    return "Travel or reward value only pays off when it matches how you actually spend.";
+    return "Travel or reward value only pays off when it matches how you actually spend — no fee, no floor.";
   }
 
   if (offer.category === "transfers") {
-    if (speed?.toLowerCase().includes("day")) {
-      return "The lowest-cost route can still be slower than faster payout options.";
+    if (speed && speed.toLowerCase().includes("day")) {
+      return `${speed} delivery — same-day routes cost more, this lane trades speed for the lower fee.`;
+    }
+    if (speed) {
+      return `${speed} delivery — final amount still moves with corridor, payout method, and currency timing.`;
     }
     return "Delivered amount still changes with corridor, payout method, and timing.";
   }
 
   if (offer.category === "exchange") {
     if (spread && !spread.includes("0")) {
-      return "A clean headline rate can still sit next to markups or conversion fees.";
+      return `${spread} spread — a clean headline rate can still hide markups inside the conversion.`;
     }
     return "The final rate still depends on spread, fee structure, and execution timing.";
+  }
+
+  if (offer.category === "savings") {
+    if (rate) {
+      return `${rate} headline rate — typically variable and tracked to base rate, so the figure can drop without notice.`;
+    }
+    return "Interest rates are subject to change. Deposit protection limits and eligibility vary by country.";
   }
 
   if (offer.category === "insurance") {
@@ -304,10 +327,6 @@ export function getOfferTradeoff(offer: MarketplaceOffer) {
 
   if (offer.category === "kids") {
     return "Parental controls and age restrictions apply. Features vary by country.";
-  }
-
-  if (offer.category === "savings") {
-    return "Interest rates are subject to change. Deposit protection limits and eligibility vary by country.";
   }
 
   if (offer.category === "trading") {

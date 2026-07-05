@@ -1,8 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Push notifications: Android 13+ requires runtime POST_NOTIFICATIONS
+         permission. firebase_messaging requests it via the Flutter API
+         (FirebaseMessaging.requestPermission), but the manifest declaration
+         is still required. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="payn_mobile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Default channel for FCM-routed notifications. flutter_local_notifications
+             also creates this at runtime; declaring it in the manifest gives us
+             a reliable fallback for data-only messages when the app is in a
+             cold-start state. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="payn_default"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 type Campaign = { id: string; status: string };
 
@@ -18,7 +18,6 @@ export function AdminMailCampaignActions({ campaign }: { campaign: Campaign }) {
     setBusy(true);
     await fetch(`/api/admin/mail/campaigns/${campaign.id}/send`, {
       method: "POST",
-      headers: { "x-admin-token": ADMIN_TOKEN },
     });
     router.refresh();
     setBusy(false);
@@ -28,7 +27,7 @@ export function AdminMailCampaignActions({ campaign }: { campaign: Campaign }) {
     setBusy(true);
     await fetch(`/api/admin/mail/campaigns/${campaign.id}`, {
       method: "PATCH",
-      headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({ status: "draft" }),
     });
     router.refresh();
@@ -39,7 +38,6 @@ export function AdminMailCampaignActions({ campaign }: { campaign: Campaign }) {
     setBusy(true);
     const res = await fetch(`/api/admin/mail/campaigns/${campaign.id}`, {
       method: "POST",
-      headers: { "x-admin-token": ADMIN_TOKEN },
     });
     if (res.ok) {
       const data = await res.json() as { id?: string };

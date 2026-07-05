@@ -4,10 +4,14 @@ import type { MarketplaceCategory, MarketplaceLocale } from "@payn/types";
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMarketplacePreferences } from "@/components/marketplace-preferences";
 import { useAuth } from "@/hooks/use-auth";
 import { trackSignInClicked } from "@/lib/analytics";
+// WEB.3 — Global Compare indicator in the top header. Mirrors the
+// Saved-tab badge in MobileBottomNav so desktop users get the same
+// "you have a shortlist" cue right where they're already looking.
+import { CompareHeaderChip } from "@/features/compare/compare-header-chip";
 import { getDictionary } from "@/lib/i18n";
 import { localePath, switchLocalePath } from "@/lib/locale";
 import { supportedLocales } from "@/lib/marketplace";
@@ -37,19 +41,50 @@ export function Header({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const preferences = useMarketplacePreferences();
   const dictionary = getDictionary(preferences.locale);
   const uiCopy = getUiCopy(preferences.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement>(null);
   const isSignedIn = Boolean(user);
-  const isAdmin = user?.email === "admin@admin.com" || user?.app_metadata?.role === "admin" || user?.user_metadata?.role === "admin";
+  const isAdmin = user?.app_metadata?.role === "admin"; // SEC-FIX PAYN-A13: only app_metadata is server-set
   const { locale } = preferences;
   const resolvedActivePage = activePage ?? inferActivePage(pathname);
   const authStateLabel = useMemo(
     () => (isSignedIn ? uiCopy.header.loggedInState : uiCopy.common.guest),
     [isSignedIn, uiCopy.common.guest, uiCopy.header.loggedInState],
   );
+
+  // Derive display name + initials from profile or email fallback
+  const displayName = useMemo(() => {
+    if (profile?.first_name || profile?.last_name) {
+      return [profile.first_name, profile.last_name].filter(Boolean).join(" ");
+    }
+    return user?.email?.split("@")[0] ?? "";
+  }, [profile, user]);
+
+  const avatarInitials = useMemo(() => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    }
+    if (profile?.first_name) return profile.first_name[0].toUpperCase();
+    return (user?.email?.[0] ?? "P").toUpperCase();
+  }, [profile, user]);
+
+  // Close avatar dropdown on outside click
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    if (avatarMenuOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [avatarMenuOpen]);
   const handleSignInClick = () => {
     if (isSignedIn) {
       return;
@@ -88,10 +123,41 @@ export function Header({
     <header className="sticky top-0 z-50 border-b border-line bg-white/92 backdrop-blur-xl">
       <div className="mx-auto flex min-h-[64px] max-w-[1240px] items-center justify-between gap-3 px-4 py-3 sm:px-5 lg:min-h-[72px] lg:gap-4 lg:px-8">
         <div className="flex min-w-0 items-center gap-4 lg:gap-8">
-          <Link href={localePath(locale, "/")} className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            href={localePath(locale, "/")}
+            className="flex items-center gap-2.5"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Payn — home"
+          >
             <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-accent-emerald/15 bg-accent-emerald-soft shadow-[0_10px_24px_rgba(15,138,75,0.10)]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 12L8 4L12 12" stroke="#0F8A4B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              {/* P2.11 — The previous mark was a bare chevron path
+                  (M4 12L8 4L12 12) which read as a back-arrow because
+                  it has no anchor or context. We now draw a small
+                  upward "growth" symbol: a horizontal baseline + the
+                  V peak + a filled dot at the apex. The baseline gives
+                  the glyph weight on the bottom so it can't be
+                  confused with a navigation control. */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3.5 14H14.5"
+                  stroke="#0F8A4B"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M4.5 11.5L9 4.5L13.5 11.5"
+                  stroke="#0F8A4B"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="9" cy="4.5" r="1.4" fill="#0F8A4B" />
               </svg>
             </div>
             <span className="text-lg font-bold tracking-tight text-ink">Payn</span>
@@ -198,21 +264,70 @@ export function Header({
             </label>
           </div>
 
-          <Link
-            href={localePath(locale, isSignedIn ? "/dashboard" : "/login")}
-            onClick={handleSignInClick}
-            className={clsx(
-              "hidden items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors lg:inline-flex",
-              isSignedIn
-                ? "border-accent-emerald/25 bg-accent-emerald-soft text-accent-emerald-strong hover:bg-accent-emerald-soft/80"
-                : "border-line bg-white text-ink hover:bg-bg-surface",
-            )}
-          >
-            <span className={clsx("text-[10px] font-semibold uppercase tracking-[0.16em]", isSignedIn ? "text-accent-emerald" : "text-ink-tertiary")}>
-              {authStateLabel}
-            </span>
-            <span>{isSignedIn ? uiCopy.dashboard.navItems.dashboard.label : dictionary.nav.signIn}</span>
-          </Link>
+          {/* WEB.3 — Compare chip sits between the country/lang picker
+              and the auth pill. Renders nothing when the compare set
+              is empty, so it doesn't take up space until the user has
+              actually picked something. */}
+          <CompareHeaderChip locale={locale} />
+
+          {isSignedIn ? (
+            <div ref={avatarMenuRef} className="relative hidden lg:block">
+              <button
+                type="button"
+                onClick={() => setAvatarMenuOpen((o) => !o)}
+                className="group inline-flex items-center gap-2 rounded-full border border-line bg-white py-1 pl-1 pr-3 text-[13px] font-semibold text-ink shadow-subtle transition-all hover:border-accent-emerald/40 hover:shadow-card"
+              >
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent-emerald-soft text-[11px] font-bold text-accent-emerald-strong">
+                  {avatarInitials}
+                </span>
+                <span className="max-w-[120px] truncate">{displayName}</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                  className={clsx("text-ink-tertiary transition-transform", avatarMenuOpen && "rotate-180")}
+                >
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {avatarMenuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-line bg-white p-1.5 shadow-card">
+                  <div className="border-b border-line px-3 py-2 mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">Account</p>
+                    <p className="mt-0.5 truncate text-sm font-medium text-ink">{user?.email}</p>
+                  </div>
+                  <Link
+                    href={localePath(locale, "/dashboard")}
+                    onClick={() => setAvatarMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-bg-surface"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setAvatarMenuOpen(false);
+                      await signOut?.();
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href={localePath(locale, "/login")}
+              onClick={handleSignInClick}
+              className="hidden items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-bg-surface lg:inline-flex"
+            >
+              {dictionary.nav.signIn}
+            </Link>
+          )}
 
           <button
             type="button"
@@ -279,29 +394,55 @@ export function Header({
 
           <div className="mt-4 rounded-[26px] border border-line bg-white p-4 shadow-subtle">
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                  {authStateLabel}
-                </p>
-                <p className="mt-1 text-sm text-ink-secondary">
-                  {preferences.countryLabel}
-                </p>
+              <div className="flex min-w-0 items-center gap-3">
+                {isSignedIn ? (
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-emerald-soft text-[11px] font-bold text-accent-emerald-strong">
+                    {avatarInitials}
+                  </span>
+                ) : null}
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                    {authStateLabel}
+                  </p>
+                  <p className="mt-0.5 truncate text-sm text-ink-secondary">
+                    {isSignedIn ? (user?.email ?? displayName) : preferences.countryLabel}
+                  </p>
+                </div>
               </div>
-              <Link
-                href={localePath(locale, isSignedIn ? "/dashboard" : "/login")}
-                onClick={() => {
-                  handleSignInClick();
-                  setMobileMenuOpen(false);
-                }}
-                className={clsx(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  isSignedIn
-                    ? "bg-accent-emerald-soft text-accent-emerald-strong hover:bg-accent-emerald-soft/80"
-                    : "border border-line bg-white text-ink hover:bg-bg-surface",
+              <div className="flex shrink-0 items-center gap-2">
+                {isSignedIn ? (
+                  <>
+                    <Link
+                      href={localePath(locale, "/dashboard")}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-full bg-accent-emerald-soft px-4 py-2 text-sm font-medium text-accent-emerald-strong transition-colors hover:bg-accent-emerald-soft/80"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        await signOut?.();
+                      }}
+                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href={localePath(locale, "/login")}
+                    onClick={() => {
+                      handleSignInClick();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-bg-surface"
+                  >
+                    {dictionary.nav.signIn}
+                  </Link>
                 )}
-              >
-                {isSignedIn ? uiCopy.dashboard.navItems.dashboard.label : dictionary.nav.signIn}
-              </Link>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">

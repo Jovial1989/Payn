@@ -1,32 +1,87 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
+import { marketplaceOffers } from "@/features/catalog/marketplace-offers";
 
 /* ═══════════════════════════════════════════════
    SYSTEM PROMPT
    ═══════════════════════════════════════════════ */
 
-const SYSTEM_PROMPT = `You are Payn AI, the built-in assistant for Payn - a European financial marketplace.
+const SYSTEM_PROMPT = `You are Payn AI — the built-in assistant for Payn, a European financial marketplace that ranks offers by what they actually cost, not by who pays the most commission.
 
-Payn helps users compare loans, credit cards, money transfers, and currency exchange from regulated European providers.
+## How to answer
+- Be concise. 2–4 sentences unless the user explicitly asks for more.
+- Sound polished, trustworthy, and product-native. No filler phrases.
+- Explain financial concepts simply — no jargon, no buzzwords.
+- Never give regulated financial advice. Never say "you should buy" or "I recommend this specific provider."
+- Always suggest the user review full terms on the provider's own website before applying.
+- Never guarantee approval, rates, or outcomes — every product is subject to individual eligibility.
+- Never invent provider details. If you're not certain, say so.
+- Prefer short paragraphs over bullet-point lists.
+- If you don't know, say so plainly. Don't guess.
 
-How to answer:
-- Be concise. 2-4 sentences unless the user asks for detail.
-- Sound polished, trustworthy, and product-native.
-- Explain financial concepts clearly without jargon.
-- Never give regulated financial advice. Never say "you should buy" or "I recommend this provider".
-- Always suggest the user review full terms on the provider website.
-- Never guarantee approval, rates, or outcomes.
-- Never invent provider details you are not certain about.
-- Avoid bullet-point dumps. Use short paragraphs.
-- Avoid generic motivational language.
-- If you don't know, say so plainly.
+## What Payn is
+Payn is a European fintech comparison marketplace. Every other comparison site sorts by who pays them the most. Payn ranks by product fit, cost, and provider quality — fees, FX spreads, APRs, and all-in costs. Commission is always disclosed and never determines ranking order.
 
-About Payn:
-- Offers are ranked by product fit, cost, and provider quality.
-- Commission is always disclosed. Compensation does not determine ranking order.
-- Categories: loans, credit cards, money transfers, currency exchange.
-- Providers include Revolut, Wise, N26, Klarna, bunq, Curve, ING, Santander, and others.
-- Available across multiple European markets.`;
+Payn covers 30 European markets. It tracks 200+ products from 100+ providers, with rates refreshed within 24 hours.
+
+## Categories and what to know about each
+
+### Money Transfers
+Payn compares international transfer providers on: transfer fee (flat or %), FX spread (mark-up above mid-market rate), speed, and supported currencies.
+Key providers and notable metrics:
+- Wise: ~0.41% FX spread (one of the lowest in the market), transparent fee structure, supports 40+ currencies
+- Revolut: free transfers up to monthly limits on Standard plan; Metal plan offers better limits
+- N26: standard SEPA transfers, competitive for EUR zone
+- Remitly, WorldRemit: strong for emerging-market corridors
+
+### Savings & Interest
+Payn compares savings accounts and investment accounts by AER (Annual Equivalent Rate).
+Key providers and notable rates (indicative, always check live rates):
+- Plum: up to 4.73% AER on interest pockets
+- Trade Republic: 4% AER on uninvested cash in the brokerage account
+- bunq: 3.11% AER on Easy Savings (green bank, B Corp certified)
+- Lightyear: ~€1/month management fee; competitive for passive investors across European markets
+
+### Credit Cards
+Ranked by: APR, cashback rate, annual fee, FX fee (for travel), and perks.
+Key providers:
+- Revolut Metal: 1% cashback on all purchases, premium perks, ~€16/month
+- Curve: consolidates cards, cashback on selected merchants, Go Back in Time feature
+- N26: free Mastercard, no foreign transaction fee, instant notifications
+- Klarna Card: buy-now-pay-later card, Pay in 3 for purchases, no interest if paid on time
+
+### Personal Loans
+Ranked by: APR (Annual Percentage Rate), loan term, max amount, and approval speed.
+APR includes both interest and mandatory fees — it's the true annual cost of borrowing.
+Payn shows representative APR and eligibility criteria. Actual rate depends on individual credit profile.
+
+### Currency Exchange
+Ranked by FX spread and mid-market rate accuracy.
+A "0% commission" headline often hides a mark-up in the exchange rate itself — Payn surfaces the all-in cost.
+
+### Investments
+Payn lists regulated investment platforms available in Europe.
+Key providers:
+- Lightyear: €1/month flat fee, stocks and ETFs, multi-currency account
+- Trade Republic: commission-free ETF savings plans, 4% AER on cash
+
+## How Payn ranking works
+1. Cost score — total cost to the user (fees + FX spread + APR)
+2. Product fit — eligibility, availability in the user's country, relevant features
+3. Provider quality — regulatory standing, user ratings, transparency
+4. Commercial disclosure — if Payn earns commission from a provider, it is always shown. Commission does NOT boost a provider's ranking.
+
+## Support
+If a user asks to speak to a human, connect with support, or contact the team:
+Tell them: "You can reach our support team at hello@payn.online — we typically reply within one business day."
+Do not invent a phone number, live chat, or other contact method.
+
+## What Payn is not
+- Not a bank. Not an FCA/BaFin/regulated advisor.
+- Not able to apply on the user's behalf or access their account data.
+- Not guaranteeing any rate, approval, or outcome.`;
+
+
 
 /* ═══════════════════════════════════════════════
    FAST-PATH LOCAL ANSWERS
@@ -99,6 +154,24 @@ const FAST_PATHS: FastPathEntry[] = [
       "Payn ranks offers by product fit, cost, and provider quality. When we earn commission from a provider, we disclose it - but compensation alone never determines ranking order. Every factor is visible so you can see why an offer scores the way it does.",
     suggestions: ["Is Payn free?", "Which providers are listed?", "How is commission handled?"],
   },
+  {
+    patterns: [
+      /talk\s+to\s+(a\s+)?(real\s+)?(human|person|agent|someone|support|team)/i,
+      /speak\s+to\s+(a\s+)?(real\s+)?(human|person|agent|someone|support|team)/i,
+      /connect\s+(me\s+)?(with|to)\s+(a\s+)?(real\s+)?(human|person|agent|support|team)/i,
+      /contact\s+(support|the\s+team|you|payn)/i,
+      /reach\s+(support|the\s+team|someone)/i,
+      /human\s+support/i,
+      /live\s+(chat|support|agent)/i,
+      /real\s+(person|human|agent)/i,
+      /email\s+(you|payn|support)/i,
+      /support\s+(team|email|contact)/i,
+      /how\s+(can\s+i\s+)?(contact|reach)\s+(you|payn|support)/i,
+    ],
+    answer:
+      "You can reach our support team at **hello@payn.online** — we typically reply within one business day.",
+    suggestions: ["How does Payn work?", "How do you rank?", "What is APR?"],
+  },
 ];
 
 function matchFastPath(message: string): FastPathEntry | null {
@@ -110,6 +183,50 @@ function matchFastPath(message: string): FastPathEntry | null {
   }
   return null;
 }
+
+/* ═══════════════════════════════════════════════
+   LIVE CATALOG CONTEXT
+   ═══════════════════════════════════════════════ */
+
+const CATALOG_CATEGORIES = [
+  "transfers",
+  "savings",
+  "cards",
+  "loans",
+  "exchange",
+  "investments",
+  "debit",
+  "neobanks",
+] as const;
+
+function buildCatalogContext(): string {
+  const lines: string[] = ["## Current top offers in Payn catalog\n"];
+
+  for (const cat of CATALOG_CATEGORIES) {
+    const top = marketplaceOffers
+      .filter((o) => o.category === cat)
+      .sort((a, b) => b.affiliatePriorityScore - a.affiliatePriorityScore)
+      .slice(0, 5);
+
+    if (!top.length) continue;
+
+    lines.push(`### ${cat.charAt(0).toUpperCase() + cat.slice(1)}`);
+    for (const o of top) {
+      const metrics = o.metrics
+        .slice(0, 2)
+        .map((m) => `${m.label}: ${m.value}`)
+        .join(", ");
+      const line = `- **${o.providerName}** — ${o.title}: ${o.subtitle}${metrics ? ` (${metrics})` : ""}`;
+      lines.push(line);
+    }
+    lines.push("");
+  }
+
+  lines.push("Slug format for deep-links: /offers/{slug}. Always suggest users click through to verify live rates.");
+  return lines.join("\n");
+}
+
+const CATALOG_CONTEXT = buildCatalogContext();
 
 /* ═══════════════════════════════════════════════
    CONTEXT-AWARE SUGGESTIONS
@@ -146,7 +263,48 @@ export async function POST(request: Request) {
       selectedFilters?: Record<string, unknown>;
     } = body.context ?? {};
 
-    const lastMessage = messages[messages.length - 1]?.content ?? "";
+    // SEC-FIX PAYN-A18: cap message count and per-message size to prevent token exhaustion
+    if (!Array.isArray(messages) || messages.length > 20) {
+      return NextResponse.json({ error: "Too many messages" }, { status: 400 });
+    }
+    const cappedMessages = messages.map((m: { role: string; content: string }) => ({
+      role: m.role,
+      content: typeof m.content === "string" ? m.content.slice(0, 2000) : "",
+    }));
+
+    // SEC-FIX PAYN-A06: validate context fields against allowlists to prevent prompt injection
+    const VALID_COUNTRIES = new Set([
+      "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT",
+      "LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB","NO","CH","IS","LI",
+      "US","CA","AU","NZ","SG","AE","ZA","JP","KR","IN","BR","MX","AR"
+    ]);
+    const VALID_CATEGORIES = new Set([
+      "banking","cards","savings","investments","insurance","loans","crypto",
+      "exchange","transfers","bnpl","expense","payroll","remittance","travel",
+      "debit","wallets","trading","cashback","budgeting","kids","business","neobanks","tax"
+    ]);
+
+    if (context) {
+      if (context.country && !VALID_COUNTRIES.has(String(context.country).toUpperCase())) {
+        context.country = undefined;
+      }
+      if (context.category && !VALID_CATEGORIES.has(String(context.category).toLowerCase())) {
+        context.category = undefined;
+      }
+      if (Array.isArray(context.goals)) {
+        context.goals = context.goals
+          .filter((g: unknown) => typeof g === "string")
+          .map((g: string) => g.slice(0, 100).replace(/[^\w\s,.-]/g, ""))
+          .slice(0, 5);
+      }
+      if (Array.isArray(context.categories)) {
+        context.categories = (context.categories as unknown[])
+          .filter((c): c is string => typeof c === "string" && VALID_CATEGORIES.has(c.toLowerCase()))
+          .slice(0, 5);
+      }
+    }
+
+    const lastMessage = cappedMessages[cappedMessages.length - 1]?.content ?? "";
 
     // ── Fast-path: local instant answers ──
     const fastMatch = matchFastPath(lastMessage);
@@ -169,7 +327,7 @@ export async function POST(request: Request) {
     }
 
     // Build context-enriched system prompt
-    let contextPrompt = SYSTEM_PROMPT;
+    let contextPrompt = SYSTEM_PROMPT + "\n\n" + CATALOG_CONTEXT;
     if (context.category) {
       contextPrompt += `\n\nThe user is currently browsing the ${context.category} category. Focus your answers on ${context.category}-related topics.`;
     }
@@ -183,7 +341,7 @@ export async function POST(request: Request) {
       contextPrompt += `\nUser's selected categories: ${context.categories.join(", ")}.`;
     }
 
-    const geminiMessages = messages.map((m) => ({
+    const geminiMessages = cappedMessages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
@@ -194,11 +352,12 @@ export async function POST(request: Request) {
 
     let response: Response;
     try {
+      // SEC-FIX PAYN-A02: API key moved to header — URL params appear in access logs
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.geminiApiKey}`,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": env.geminiApiKey },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: contextPrompt }] },
             contents: geminiMessages,

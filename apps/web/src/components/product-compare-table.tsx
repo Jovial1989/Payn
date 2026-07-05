@@ -73,7 +73,7 @@ export function ProductCompareTable({
   const resolvedDescription = description ?? copy.description;
 
   return (
-    <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-6">
+    <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
           {copy.eyebrow}
@@ -86,7 +86,7 @@ export function ProductCompareTable({
         {entries.map((entry) => (
           <article
             key={entry.offer.id}
-            className="rounded-[22px] border border-[#EAEAEA] bg-[#FCFCFD] px-4 py-4 shadow-[0_8px_22px_rgba(17,24,39,0.04)]"
+            className="rounded-[22px] border border-line bg-bg-surface px-4 py-4 shadow-card"
           >
             <div className="flex items-start gap-3">
               <ProviderLogo providerName={entry.offer.providerName} size="sm" />
@@ -162,13 +162,13 @@ export function ProductCompareTable({
         <table className="min-w-full border-separate border-spacing-0">
           <thead>
             <tr>
-              <th className="w-[220px] border-b border-[#ECEDEF] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+              <th className="w-[220px] border-b border-line px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
                 {copy.feature}
               </th>
               {entries.map((entry) => (
                 <th
                   key={entry.offer.id}
-                  className="min-w-[220px] border-b border-[#ECEDEF] px-4 py-3 text-left"
+                  className="min-w-[220px] border-b border-line px-4 py-3 text-left"
                 >
                   <div className="flex items-center gap-3">
                     <ProviderLogo providerName={entry.offer.providerName} size="sm" />
@@ -195,73 +195,73 @@ export function ProductCompareTable({
           </thead>
           <tbody>
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.provider}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-provider`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm font-semibold text-ink">
+                <td key={`${entry.offer.id}-provider`} className="border-b border-line px-4 py-3 text-sm font-semibold text-ink">
                   {entry.offer.providerName}
                 </td>
               ))}
             </tr>
             {primaryMetricLabel ? (
               <tr>
-                <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+                <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                   {primaryMetricLabel}
                 </td>
                 {entries.map((entry) => (
-                  <td key={`${entry.offer.id}-primary`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm font-semibold text-ink">
+                  <td key={`${entry.offer.id}-primary`} className="border-b border-line px-4 py-3 text-sm font-semibold text-ink">
                     {entry.primaryMetricValue ?? copy.checkDetails}
                   </td>
                 ))}
               </tr>
             ) : null}
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.fees}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-fees`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink">
+                <td key={`${entry.offer.id}-fees`} className="border-b border-line px-4 py-3 text-sm text-ink">
                   {entry.fees}
                 </td>
               ))}
             </tr>
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.speed}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-speed`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink">
+                <td key={`${entry.offer.id}-speed`} className="border-b border-line px-4 py-3 text-sm text-ink">
                   {entry.speed}
                 </td>
               ))}
             </tr>
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.rateOrApr}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-rate`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink">
+                <td key={`${entry.offer.id}-rate`} className="border-b border-line px-4 py-3 text-sm text-ink">
                   {entry.rateOrApr}
                 </td>
               ))}
             </tr>
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.keyBenefits}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-benefits`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink-secondary">
+                <td key={`${entry.offer.id}-benefits`} className="border-b border-line px-4 py-3 text-sm text-ink-secondary">
                   {entry.keyBenefits}
                 </td>
               ))}
             </tr>
             <tr>
-              <td className="border-b border-[#ECEDEF] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
+              <td className="border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
                 {copy.bestFor}
               </td>
               {entries.map((entry) => (
-                <td key={`${entry.offer.id}-best-for`} className="border-b border-[#ECEDEF] px-4 py-3 text-sm text-ink-secondary">
+                <td key={`${entry.offer.id}-best-for`} className="border-b border-line px-4 py-3 text-sm text-ink-secondary">
                   {entry.bestFor}
                 </td>
               ))}

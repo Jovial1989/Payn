@@ -2,6 +2,7 @@ enum PaynCategory {
   loans,
   cards,
   banking,
+  savings,
   transfers,
   exchange,
   insurance,
@@ -13,30 +14,39 @@ enum PaynCategory {
 }
 
 extension PaynCategoryLabel on PaynCategory {
+  /// English-only fallback. UI surfaces should prefer
+  /// `PaynCategoryL10n.localizedLabel(l10n)` (in
+  /// `core/localization/app_localizations_ext.dart`) so the user sees
+  /// the locale-correct string. This getter is the source of truth
+  /// when no `BuildContext` is available (catalog repositories,
+  /// analytics events). TASK-302 (PR-V3-02) brought every label here
+  /// in lockstep with `apps/web/src/lib/categories.ts`.
   String get label {
     switch (this) {
       case PaynCategory.loans:
-        return 'Loans';
+        return 'Borrowing';
       case PaynCategory.cards:
-        return 'Credit Cards';
+        return 'Cards';
       case PaynCategory.banking:
-        return 'Banking';
+        return 'Bank accounts';
+      case PaynCategory.savings:
+        return 'Saving';
       case PaynCategory.transfers:
-        return 'Money Transfers';
+        return 'Sending money';
       case PaynCategory.exchange:
-        return 'Exchange';
+        return 'Currency exchange';
       case PaynCategory.insurance:
         return 'Insurance';
       case PaynCategory.investments:
-        return 'Investments';
+        return 'Investing';
       case PaynCategory.crypto:
         return 'Crypto';
       case PaynCategory.business:
-        return 'Business Banking';
+        return 'For business';
       case PaynCategory.budgeting:
-        return 'Budgeting & Finance';
+        return 'Family budgeting';
       case PaynCategory.kids:
-        return 'Kids & Family';
+        return 'Family';
     }
   }
 
@@ -45,6 +55,7 @@ extension PaynCategoryLabel on PaynCategory {
       case PaynCategory.loans:       return 'loans';
       case PaynCategory.cards:       return 'cards';
       case PaynCategory.banking:     return 'banking';
+      case PaynCategory.savings:     return 'savings';
       case PaynCategory.transfers:   return 'transfers';
       case PaynCategory.exchange:    return 'exchange';
       case PaynCategory.insurance:   return 'insurance';
@@ -273,17 +284,24 @@ class PaynOffer {
     required this.affiliateLink,
     required this.affiliatePriorityScore,
     required this.updatedAt,
+    this.rawCategory,
     this.providerUrls = const <String, String>{},
     this.linkType = 'affiliate_redirect',
     this.attributes = const PaynOfferAttributes(),
   });
 
   factory PaynOffer.fromJson(Map<String, dynamic> json) {
+    final rawCat = (json['category'] as String?)?.trim().toLowerCase();
     return PaynOffer(
       id: (json['id'] as String? ?? '').trim(),
       slug: (json['slug'] as String? ?? '').trim(),
-      category:
-          _categoryFromName(json['category'] as String?) ?? PaynCategory.loans,
+      category: _categoryFromName(rawCat) ?? PaynCategory.loans,
+      // P1.6 — Preserve the raw API category alongside the folded enum.
+      // The folding (`debit` / `travel` / `cashback` → cards) helps the
+      // bucket UI but loses sub-type granularity. Keeping the original
+      // string lets sub-type chip rows on Cards / Banking / etc. group
+      // by something the data actually distinguishes.
+      rawCategory: rawCat,
       countryCodes:
           (json['countryCodes'] as List<dynamic>? ?? const <dynamic>[])
               .map((value) => value.toString())
@@ -322,6 +340,11 @@ class PaynOffer {
   final String id;
   final String slug;
   final PaynCategory category;
+  // P1.6 — Original API category string (e.g. "debit", "travel",
+  // "cashback") before folding into the bucket enum. Null for offers
+  // missing a category. Use this for sub-type chip rows where the
+  // folded enum loses too much detail.
+  final String? rawCategory;
   final List<String> countryCodes;
   final String providerMark;
   final String providerName;
@@ -443,6 +466,7 @@ class ExploreFilters {
     this.provider = '',
     this.feature = '',
     this.subtype = '',
+    this.quickFilter = '',
     this.amount = 25000,
     this.term = 60,
   });
@@ -451,6 +475,12 @@ class ExploreFilters {
   final String provider;
   final String feature;
   final String subtype;
+  // Category-scoped quick filter id from the inline chip row above the
+  // offer list (e.g. "cards:free-monthly", "transfers:instant",
+  // "loans:apr-under-5"). Empty when no chip is active. Matchers live in
+  // shared/services/quick_filters.dart so the repository can apply them
+  // without depending on the UI layer.
+  final String quickFilter;
   final int amount;
   final int term;
 
@@ -459,6 +489,7 @@ class ExploreFilters {
     String? provider,
     String? feature,
     String? subtype,
+    String? quickFilter,
     int? amount,
     int? term,
   }) {
@@ -467,6 +498,7 @@ class ExploreFilters {
       provider: provider ?? this.provider,
       feature: feature ?? this.feature,
       subtype: subtype ?? this.subtype,
+      quickFilter: quickFilter ?? this.quickFilter,
       amount: amount ?? this.amount,
       term: term ?? this.term,
     );
@@ -606,7 +638,50 @@ class TrendSignal {
   final String detail;
 }
 
+// Map raw API category strings → mobile bucket enum.
+// The web catalog uses ~21 granular categories (cards, debit, travel,
+// cashback, savings, transfers, exchange, remittance, banking, neobanks,
+// wallets, investments, trading, crypto, loans, bnpl, business, payroll,
+// tax, expense, kids, budgeting, insurance). Mobile rolls these up into
+// 9 bucket-level enum members that mirror web's OUTCOME_BUCKETS so the
+// browse UX stays the same on both surfaces.
 PaynCategory? _categoryFromName(String? value) {
+  if (value == null) return null;
+  switch (value.toLowerCase().trim()) {
+    case 'cards':
+    case 'debit':
+    case 'travel':
+    case 'cashback':
+      return PaynCategory.cards;
+    case 'savings':
+      return PaynCategory.savings;
+    case 'transfers':
+    case 'remittance':
+    case 'exchange':
+      return PaynCategory.transfers;
+    case 'banking':
+    case 'neobanks':
+    case 'wallets':
+      return PaynCategory.banking;
+    case 'investments':
+    case 'trading':
+    case 'crypto':
+      return PaynCategory.investments;
+    case 'loans':
+    case 'bnpl':
+      return PaynCategory.loans;
+    case 'business':
+    case 'payroll':
+    case 'tax':
+    case 'expense':
+      return PaynCategory.business;
+    case 'kids':
+    case 'budgeting':
+      return PaynCategory.kids;
+    case 'insurance':
+      return PaynCategory.insurance;
+  }
+  // Last-resort fallback: match by enum .name for any legacy payloads.
   for (final category in PaynCategory.values) {
     if (category.name == value) {
       return category;

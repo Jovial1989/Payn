@@ -1,5 +1,11 @@
 platform :ios, '13.0'
 
+# Required by Firebase pods (FirebaseCoreInternal etc.) — they ship as
+# Swift static libs and need their Obj-C deps (GoogleUtilities) to
+# generate module maps. Without this, `pod install` aborts with
+# "The following Swift pods cannot yet be integrated as static libraries".
+use_modular_headers!
+
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 

@@ -12,7 +12,35 @@ type LinkResult = {
   redirected_to?: string;
 };
 
+function isInternalHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  // Exact matches
+  if (["localhost", "0.0.0.0", "metadata.google.internal", "169.254.169.254"].includes(h)) return true;
+  // IPv6 loopback
+  if (h === "::1" || h.startsWith("[")) return true;
+  // Private IPv4 ranges
+  const parts = h.split(".").map(Number);
+  if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
+    if (parts[0] === 10) return true;
+    if (parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 0) return true;
+  }
+  return false;
+}
+
+// SEC-FIX SSRF-001: validate URL before issuing server-side request.
 async function probeUrl(url: string): Promise<{ status: number | "timeout" | "error"; redirected_to?: string }> {
+  // 1. Parse and scheme-check
+  let parsed: URL;
+  try { parsed = new URL(url); } catch { return { status: "error" }; }
+  if (parsed.protocol !== "https:") return { status: "error" };
+
+  // 2. Block internal hostnames (SSRF guard)
+  if (isInternalHost(parsed.hostname)) return { status: "error" };
+
   try {
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), 8000);
@@ -23,6 +51,13 @@ async function probeUrl(url: string): Promise<{ status: number | "timeout" | "er
       headers: { "User-Agent": "Payn-LinkChecker/1.0" },
     });
     clearTimeout(t);
+    // Check redirect target too
+    if (res.url !== url) {
+      try {
+        const redir = new URL(res.url);
+        if (redir.protocol !== "https:" || isInternalHost(redir.hostname)) return { status: "error" };
+      } catch { return { status: "error" }; }
+    }
     const redirected_to = res.url !== url ? res.url : undefined;
     return { status: res.status, redirected_to };
   } catch (e: unknown) {
@@ -32,7 +67,7 @@ async function probeUrl(url: string): Promise<{ status: number | "timeout" | "er
 }
 
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   // Pull affiliate links from DB if available, fall back to static catalog

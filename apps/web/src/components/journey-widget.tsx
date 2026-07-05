@@ -21,7 +21,7 @@ export function JourneyWidget({
   items: JourneyItem[];
 }) {
   return (
-    <section className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+    <section className="rounded-[24px] border border-line bg-white p-5 shadow-card">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
@@ -36,7 +36,7 @@ export function JourneyWidget({
         </div>
       </div>
 
-      <div className="mt-4 h-2 rounded-full bg-[#ECEDEF]">
+      <div className="mt-4 h-2 rounded-full bg-bg-overlay">
         <div
           className="h-full rounded-full bg-accent-emerald transition-[width] duration-300"
           style={{ width: `${progress}%` }}
@@ -48,14 +48,14 @@ export function JourneyWidget({
           <Link
             key={item.id}
             href={item.href}
-            className="flex items-start gap-3 rounded-[18px] border border-[#ECECEC] bg-[#F8F8F9] px-4 py-4 transition-colors hover:bg-white"
+            className="flex items-start gap-3 rounded-[18px] border border-line bg-bg-surface px-4 py-4 transition-colors hover:bg-white"
           >
             <div
               className={clsx(
                 "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold",
                 item.complete
                   ? "border-accent-emerald bg-accent-emerald text-white"
-                  : "border-[#DADCE0] bg-white text-ink-tertiary",
+                  : "border-line bg-white text-ink-tertiary",
               )}
             >
               {item.complete ? "✓" : "○"}

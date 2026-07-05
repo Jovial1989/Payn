@@ -1,10 +1,13 @@
 import { AuthRouteCard } from "@/components/auth-route-card";
-import { SiteShell } from "@/components/site-shell";
+import { AuthSSRFallback } from "@/components/auth-ssr-fallback";
 
 export default function SignupPage() {
   return (
-    <SiteShell hideHero>
+    <>
       <AuthRouteCard mode="signup" />
-    </SiteShell>
+      <noscript>
+        <AuthSSRFallback mode="signup" />
+      </noscript>
+    </>
   );
 }

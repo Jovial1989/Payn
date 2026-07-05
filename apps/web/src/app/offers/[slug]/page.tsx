@@ -6,7 +6,6 @@ import { buttonStyles } from "@/components/button";
 import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
-import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
 import { VerdictBar } from "@/features/offers/verdict-bar";
 import { PdpStickySummary } from "@/features/offers/pdp-sticky-summary";
@@ -16,6 +15,7 @@ import { TransfersCostEstimator } from "@/features/offers/transfers-cost-estimat
 import { SavingsCostEstimator } from "@/features/offers/savings-cost-estimator";
 import { MobileScrollHide } from "@/components/mobile-scroll-hide";
 import { PdpDeepDive } from "@/features/offers/pdp-deep-dive";
+import { OfferPlainSummary } from "@/features/offers/offer-plain-summary";
 import { SmartCrossSell } from "@/features/offers/smart-cross-sell";
 import type { MarketplaceCategory } from "@payn/types";
 
@@ -148,22 +148,28 @@ export default async function OfferDetailPage({
         language={preferences.locale}
         market={resolvedMarket}
       />
+      {/* RESP.9 — PDP hero padded p-4 on 375px (was p-6) and corner
+          radius dropped to rounded-[24px]; the rounded-4xl + p-6
+          combination ate 56px of horizontal room which made the
+          headline metric tower truncate on smaller phones. The
+          provider-row gap also collapses to gap-3 on mobile so the
+          ProviderLogo + name + tags column doesn't overflow. */}
       <section className="grid gap-5">
-        <div className="rounded-4xl border border-line bg-white p-6 shadow-card sm:p-8">
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex items-start gap-4">
+        <div className="rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] p-4 sm:rounded-4xl sm:p-8">
+          <div className="flex flex-col gap-6 sm:gap-8">
+            <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
-                <div>
-                  <p className="text-sm font-bold text-ink">{offer.providerName}</p>
-                  <p className="mt-1 text-sm text-ink-secondary">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-white">{offer.providerName}</p>
+                  <p className="mt-1 text-[13px] text-white/60 sm:text-sm">
                     {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {offer.bestFor.slice(0, 2).map((item) => (
-                      <Tag key={item} tone="muted">
+                      <span key={item} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80">
                         {normalizeDisplayText(item)}
-                      </Tag>
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -171,7 +177,10 @@ export default async function OfferDetailPage({
 
               <div className="flex flex-wrap gap-2">
                 <SaveOfferButton offer={offer} variant="ghost" size="md" />
-                <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
+                <Link
+                  href={categoryHref}
+                  className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+                >
                   {dictionary.offerDetail.backToCategory}
                 </Link>
               </div>
@@ -179,15 +188,15 @@ export default async function OfferDetailPage({
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
               <div>
-                <p className="eyebrow-cap">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
                   {primaryMetric
                     ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
                     : categoryLabel}
                 </p>
-                <h1 className="display-hero mt-3 tabular-nums">
+                <h1 className="mt-3 text-[2.5rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-white sm:text-[3.25rem]">
                   {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
                 </h1>
-                <p className="mt-4 max-w-prose-base text-base leading-relaxed text-ink-secondary">
+                <p className="mt-4 max-w-prose-base text-base leading-relaxed text-white/70">
                   {normalizeDisplayText(offer.subtitle)}
                 </p>
               </div>
@@ -199,7 +208,7 @@ export default async function OfferDetailPage({
                   The dictionary value is intentionally kept (empty string)
                   so future locales can re-introduce a contextual eyebrow
                   if needed without re-plumbing markup. */}
-              <div className="rounded-3xl bg-[#F7F9F7] p-5">
+              <div className="rounded-2xl bg-bg-surface p-5">
                 <div className="grid gap-3">
                   <ProviderLinkButton
                     offer={offer}
@@ -262,6 +271,15 @@ export default async function OfferDetailPage({
             categoryNoun: CATEGORY_NOUN[offer.category] ?? "product",
           }}
         />
+
+        {/* UX.6 — Plain-language summary block. Adds the FAQ section
+            (process questions: "will checking my rate hurt my credit
+            score?", "what if I lose my job mid-loan?") and the
+            explicit "last checked on <date>" stamp the rewrite spec
+            called out. The product questions ("What you get",
+            "Things to watch") are already handled by PdpDeepDive
+            above; this block fills the trust-signal gap underneath. */}
+        <OfferPlainSummary offer={offer} />
 
         {/* Mobile-only sticky bottom CTA, now wrapped in MobileScrollHide so
             it disappears while the user is scrolling down (reading) and

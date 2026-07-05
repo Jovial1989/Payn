@@ -11,15 +11,21 @@ import 'package:payn_mobile/l10n/app_localizations.dart';
 import 'package:payn_mobile/shared/services/analytics_service.dart';
 import 'package:payn_mobile/shared/services/app_controller.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/services/push_service.dart';
 import 'package:payn_mobile/shared/widgets/payn_motion.dart';
 import 'package:payn_mobile/shared/widgets/payn_mark.dart';
 
 class PaynApp extends StatefulWidget {
-  PaynApp({super.key, required this.controller})
+  PaynApp({super.key, required this.controller, this.pushService})
     : _router = createRouter(controller);
 
   final AppController controller;
   final GoRouter _router;
+  // PR-INT-01 — Optional so bootstrap can decline to wire push in
+  // environments where Firebase isn't configured. When present we wire
+  // the tap-to-route callback in initState, which gives PushService a
+  // way to navigate without holding a BuildContext.
+  final PushService? pushService;
 
   @override
   State<PaynApp> createState() => _PaynAppState();
@@ -61,19 +67,23 @@ class _PaynAppState extends State<PaynApp> with TickerProviderStateMixin {
 
     _splashController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 520),
+      duration: const Duration(milliseconds: 820),
     );
     _splashOpacity = CurvedAnimation(
       parent: _splashController,
       curve: Curves.easeOutCubic,
     );
-    _splashScale = Tween<double>(begin: 0.92, end: 1).animate(
+    _splashScale = Tween<double>(begin: 0.86, end: 1).animate(
       CurvedAnimation(parent: _splashController, curve: Curves.easeOutCubic),
     );
 
+    // Entrance choreography: 3.0s wall-time. Phases overlap so the
+    // splash reads as one continuous bloom — glow → tile pop → chevron
+    // stroke draw → wordmark → tagline → settle pulse → halo expand
+    // before the screen hands off.
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(milliseconds: 3000),
     )..forward();
     unawaited(
       widget.controller.analytics.track(
@@ -91,12 +101,31 @@ class _PaynAppState extends State<PaynApp> with TickerProviderStateMixin {
       _completeSplashIfReady();
     });
 
-    // Keep the branded launch surface visible until the app has produced
-    // its first real frame and the minimum splash duration has elapsed.
-    Timer(const Duration(milliseconds: 1180), () {
+    // Keep the branded launch surface visible long enough for the full
+    // choreography (glow → stroke draw → wordmark → tagline → settle
+    // pulse → halo expand) to play. Total ~3.1s of branded launch before
+    // the route surface fades in.
+    Timer(const Duration(milliseconds: 3100), () {
       if (!mounted) return;
       setState(() => _minimumSplashElapsed = true);
       _completeSplashIfReady();
+    });
+
+    // PR-INT-01 — Hand the router callback to PushService now that the
+    // router exists. If a cold-start push tap fired before this point,
+    // PushService has buffered the route and will replay it immediately
+    // via the callback we pass in.
+    widget.pushService?.attachRouter((route) {
+      // Schedule the navigation after the current frame so the route
+      // change doesn't race with the splash dismiss animation.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          widget._router.go(route);
+        } catch (e) {
+          debugPrint('[PaynApp] Failed to open push route "$route" — $e');
+        }
+      });
     });
   }
 
@@ -231,11 +260,24 @@ class _SplashScreen extends StatelessWidget {
         return 1 + c3 * math.pow(v - 1, 3) + c1 * math.pow(v - 1, 2).toDouble();
       }
 
-      final glowT = easeOutCubic(interval(0.0, 0.35));
-      final iconScaleT = easeOutBack(interval(0.05, 0.5));
-      final strokeT = easeOutCubic(interval(0.18, 0.65));
-      final wordT = easeOutCubic(interval(0.45, 0.8));
-      final tagT = easeOutCubic(interval(0.65, 1.0));
+      // Choreography across [0..1] of the entrance animation (now 3.0s
+      // wall-time). Phases overlap heavily so the splash reads as a
+      // continuous bloom rather than discrete beats.
+      final glowT = easeOutCubic(interval(0.0, 0.22));
+      final iconScaleT = easeOutBack(interval(0.03, 0.34));
+      final strokeT = easeOutCubic(interval(0.14, 0.5));
+      final wordT = easeOutCubic(interval(0.36, 0.6));
+      final tagT = easeOutCubic(interval(0.52, 0.76));
+
+      // Settle pulse — gentle breath at 70-85% of the timeline.
+      final settlePulsePhase = interval(0.7, 0.85);
+      final settlePulse = 1 + 0.025 * math.sin(settlePulsePhase * math.pi);
+
+      // Halo bloom — at 85-100% a soft radial glow grows behind the
+      // icon then fades, the visual "we're ready" beat right before
+      // the route surface fades in. Bell-curve so it peaks at ~92.5%.
+      final haloPhase = interval(0.85, 1.0);
+      final haloIntensity = math.sin(haloPhase * math.pi);
 
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -267,8 +309,30 @@ class _SplashScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Halo bloom — expanding ring during the final 15% of
+                // the timeline. Grows ~30% beyond the base glow and
+                // fades back to zero, signalling "ready to launch".
+                if (haloIntensity > 0)
+                  Opacity(
+                    opacity: 0.45 * haloIntensity,
+                    child: Container(
+                      width: 132 + 60 * haloIntensity,
+                      height: 132 + 60 * haloIntensity,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: <Color>[
+                            PaynColors.accent.withValues(alpha: 0.0),
+                            PaynColors.accent.withValues(alpha: 0.35),
+                            PaynColors.accent.withValues(alpha: 0.0),
+                          ],
+                          stops: const <double>[0.55, 0.78, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
                 Transform.scale(
-                  scale: 0.9 + 0.1 * iconScaleT,
+                  scale: (0.9 + 0.1 * iconScaleT) * settlePulse,
                   child: Container(
                     width: 84,
                     height: 84,

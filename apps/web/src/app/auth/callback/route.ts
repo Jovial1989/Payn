@@ -11,7 +11,13 @@ import { sendEmail } from "@/lib/email/resend";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/signup";
+  // SEC-FIX SEC-005-REDIRECT: validate 'next' to prevent open redirect.
+  // Reject double-slash (//evil.com), absolute URLs, and paths with colons.
+  const rawNext = searchParams.get("next") ?? "/signup";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.includes(":")
+      ? rawNext
+      : "/signup";
 
   if (!env.supabaseUrl || !env.supabaseAnonKey) {
     return NextResponse.redirect(`${origin}/login?auth_error=true`);

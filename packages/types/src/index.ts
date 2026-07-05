@@ -114,6 +114,25 @@ export interface MarketplaceOfferAttributes {
   platformUxLevel?: "beginner" | "intermediate" | "advanced" | "pro";
   minDeposit?: string;
   assetsAvailableLabel?: string;
+  // Provenance written by the FinanceAds sync engine. Its presence marks a row
+  // as live-synced from the affiliate API, which lets the catalog merge prefer
+  // it over the hand-curated static list ("live API wins").
+  financeads?: {
+    programId: number;
+    programName?: string;
+    materialId?: number | null;
+    country?: string | null;
+    cookieDays?: number | null;
+    commission?: string;
+    syncedAt?: string;
+  };
+  // Provenance written by the Gemini discovery engine.
+  discovery?: {
+    engine?: string;
+    source?: string;
+    reasoning?: string;
+    discoveredAt?: string;
+  };
 }
 
 export interface MarketplaceOffer {

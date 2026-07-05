@@ -37,7 +37,7 @@ export default async function HowWeMakeMoneyPage() {
       description="Payn is free to use. We earn revenue through affiliate referrals and partner listings — here is exactly how that works and what it means for you."
     >
       <div className="grid gap-5">
-        <section className="rounded-[28px] border border-line bg-white p-6 sm:p-8">
+        <section className="rounded-[24px] border border-line bg-white p-5 sm:rounded-[28px] sm:p-8">
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Revenue model</p>
           <h2 className="mt-3 text-h2 text-ink">Three ways we earn</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
@@ -87,7 +87,7 @@ export default async function HowWeMakeMoneyPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-line bg-bg-surface p-6 sm:p-8">
+        <section className="rounded-[24px] border border-line bg-bg-surface p-5 sm:rounded-[28px] sm:p-8">
           <p className="text-caption uppercase tracking-[0.28em] text-ink-tertiary">Our commitment</p>
           <h2 className="mt-3 text-h2 text-ink">Editorial independence</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">

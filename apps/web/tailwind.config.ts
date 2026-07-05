@@ -79,12 +79,22 @@ const config: Config = {
         "prose-wide":   "72ch",
       },
       fontFamily: {
-        sans: ["Manrope", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
+        // WEB.6 — Resolve `font-sans` to the next/font CSS variable so
+        // Tailwind's default body-font utility actually points at the
+        // self-hosted Manrope, not the un-loaded family name.
+        sans: ["var(--font-manrope)", "Manrope", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
       },
+      // RESP — Display/h1/h2/h3 use clamp() so they auto-shrink at
+      // narrow viewports. At 375px the values resolve to the lower
+      // bound (the explicit "rem" minimum); from ~768px they ramp
+      // toward the maximum which matches the original desktop sizes.
+      // This is the single highest-leverage mobile-responsive change
+      // — every page that uses `text-h1/h2/display` benefits without
+      // per-page mobile overrides.
       fontSize: {
-        display: ["4rem", { lineHeight: "1.05", fontWeight: "800", letterSpacing: "-0.04em" }],
-        h1: ["2.75rem", { lineHeight: "1.08", fontWeight: "800", letterSpacing: "-0.035em" }],
-        h2: ["2rem", { lineHeight: "1.15", fontWeight: "700", letterSpacing: "-0.025em" }],
+        display: ["clamp(2.4rem, 6vw, 4rem)", { lineHeight: "1.05", fontWeight: "800", letterSpacing: "-0.04em" }],
+        h1: ["clamp(2rem, 4.5vw, 2.75rem)", { lineHeight: "1.08", fontWeight: "800", letterSpacing: "-0.035em" }],
+        h2: ["clamp(1.5rem, 3.5vw, 2rem)", { lineHeight: "1.15", fontWeight: "700", letterSpacing: "-0.025em" }],
         h3: ["1.25rem", { lineHeight: "1.3", fontWeight: "700", letterSpacing: "-0.015em" }],
         caption: ["0.75rem", { lineHeight: "1.5", fontWeight: "600", letterSpacing: "0.04em" }],
       },

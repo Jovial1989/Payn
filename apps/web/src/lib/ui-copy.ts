@@ -243,9 +243,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "Payn keeps the marketplace grounded in institutions people already know so the filtering experience still feels credible while you compare.",
       mobileEyebrow: "Payn mobile",
-      mobileTitle: "Keep the shortlist in your pocket",
+      mobileTitle: "Take your shortlist with you on iPhone & Android",
       mobileDescription:
-        "The mobile app is still in rollout, but the waitlist is real and tied to the same comparison account you use on the web.",
+        "Your saved offers, compare picks, and search history sync to the mobile app the moment it ships. Join the waitlist with the same email you use here.",
       mobileBullets: [
         "Track saved offers across categories and countries",
         "Pick up where you left off after a provider click",
@@ -489,9 +489,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "Payn hält den Marktplatz in vertrauten Finanzmarken verankert, damit sich das Filtern beim Vergleichen glaubwürdig anfühlt.",
       mobileEyebrow: "Payn Mobile",
-      mobileTitle: "Behalte deine Shortlist in der Tasche",
+      mobileTitle: "Nimm deine Shortlist mit aufs iPhone & Android",
       mobileDescription:
-        "Die mobile App ist noch im Rollout, aber die Warteliste ist real und mit demselben Vergleichskonto verknüpft, das du im Web nutzt.",
+        "Deine gespeicherten Angebote, Vergleiche und Suchverläufe synchronisieren sich mit der mobilen App, sobald sie startet. Trag dich mit derselben E-Mail-Adresse ein, die du hier nutzt.",
       mobileBullets: [
         "Gespeicherte Angebote über Kategorien und Länder hinweg verfolgen",
         "Nach dem Klick zum Anbieter genau dort weitermachen",
@@ -736,9 +736,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "Payn mantiene el marketplace apoyado en instituciones que la gente ya conoce para que el filtrado siga siendo creíble mientras comparas.",
       mobileEyebrow: "Payn móvil",
-      mobileTitle: "Lleva tu shortlist en el bolsillo",
+      mobileTitle: "Lleva tu shortlist al iPhone y Android",
       mobileDescription:
-        "La app móvil sigue en despliegue, pero la lista de espera es real y está vinculada a la misma cuenta de comparación que usas en la web.",
+        "Tus ofertas guardadas, comparativas y búsquedas se sincronizarán con la app móvil cuando se lance. Apúntate con el mismo email que usas aquí.",
       mobileBullets: [
         "Seguir ofertas guardadas entre categorías y países",
         "Retomar donde lo dejaste después de ir al proveedor",
@@ -982,9 +982,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "Payn garde le marketplace ancré dans des institutions connues pour que l'expérience de filtrage reste crédible pendant la comparaison.",
       mobileEyebrow: "Payn mobile",
-      mobileTitle: "Gardez votre shortlist dans votre poche",
+      mobileTitle: "Emportez votre shortlist sur iPhone et Android",
       mobileDescription:
-        "L'application mobile est encore en déploiement, mais la liste d'attente est réelle et reliée au même compte de comparaison que sur le web.",
+        "Vos offres sauvegardées, comparaisons et recherches se synchroniseront avec l'application mobile à son lancement. Inscrivez-vous avec le même e-mail que vous utilisez ici.",
       mobileBullets: [
         "Suivre les offres sauvegardées entre catégories et pays",
         "Reprendre là où vous vous êtes arrêté après un clic vers un fournisseur",
@@ -1229,9 +1229,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "Payn mantiene il marketplace ancorato a istituzioni già note, così l'esperienza di filtro resta credibile mentre confronti.",
       mobileEyebrow: "Payn mobile",
-      mobileTitle: "Tieni la tua shortlist in tasca",
+      mobileTitle: "Porta la tua shortlist su iPhone & Android",
       mobileDescription:
-        "L'app mobile è ancora in rollout, ma la lista d'attesa è reale ed è collegata allo stesso account di confronto che usi sul web.",
+        "Le tue offerte salvate, confronti e ricerche si sincronizzeranno con l'app mobile al lancio. Iscriviti con la stessa email che usi qui.",
       mobileBullets: [
         "Seguire le offerte salvate tra categorie e paesi",
         "Riprendere da dove hai lasciato dopo il click verso un provider",
@@ -1475,9 +1475,9 @@ const uiCopy: Record<MarketplaceLocale, UiCopy> = {
       providerCoverageDescription:
         "A Payn mantém o marketplace assente em instituições que as pessoas já conhecem para que a experiência de filtragem continue credível enquanto compara.",
       mobileEyebrow: "Payn mobile",
-      mobileTitle: "Leve a shortlist no bolso",
+      mobileTitle: "Leve a shortlist para o iPhone & Android",
       mobileDescription:
-        "A app móvel ainda está em rollout, mas a lista de espera é real e está ligada à mesma conta de comparação que usa na web.",
+        "As suas ofertas guardadas, comparações e pesquisas vão sincronizar-se com a app móvel quando esta for lançada. Inscreva-se com o mesmo email que usa aqui.",
       mobileBullets: [
         "Acompanhar ofertas guardadas entre categorias e países",
         "Retomar onde ficou depois do clique para o fornecedor",
