@@ -9,6 +9,7 @@ import {
 } from "@/features/marketplace/offer-ranking";
 import { getMetricLabel } from "@/lib/i18n";
 import { normalizeDisplayText } from "@/lib/marketplace";
+import { offerStaleness } from "@/lib/staleness";
 
 // ─── PdpDeepDive ───────────────────────────────────────────────────────────────
 //
@@ -304,14 +305,31 @@ function EditorialBody({
     <div className="grid gap-3 text-[14px] leading-relaxed text-ink-secondary">
       <p>{lead}</p>
       {tradeoffText && <p>{tradeoffText}</p>}
-      <p className="text-[12px] text-ink-tertiary">
-        Last verified {new Date(offer.updatedAt).toLocaleDateString("en-GB", {
+      {(() => {
+        // P1.3 — surface staleness honestly. Past 60 days we drop the "we
+        // re-check monthly" reassurance and ask the user to confirm current
+        // terms with the provider (amber), rather than implying fresh data.
+        const { verifiedAt, level } = offerStaleness(offer, new Date());
+        const dateLabel = (verifiedAt ?? new Date(offer.updatedAt)).toLocaleDateString("en-GB", {
           day: "numeric",
           month: "short",
           year: "numeric",
-        })}
-        . We re-check provider terms at least monthly; live rates update daily.
-      </p>
+        });
+        if (level === "fresh") {
+          return (
+            <p className="text-[12px] text-ink-tertiary">
+              Last verified {dateLabel}. We re-check provider terms at least monthly; live rates
+              update daily.
+            </p>
+          );
+        }
+        return (
+          <p className="text-[12px] font-medium text-amber-600">
+            Last checked {dateLabel} — please confirm current terms with the provider before you
+            apply.
+          </p>
+        );
+      })()}
     </div>
   );
 }

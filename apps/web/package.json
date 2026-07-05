@@ -5,6 +5,7 @@
     "dev": "next dev",
     "build": "node scripts/check-banned-phrases.mjs && next build",
     "check:copy": "node scripts/check-banned-phrases.mjs",
+    "report:stale": "npx tsx scripts/report-stale-offers.ts",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "next typegen && mkdir -p .next/types && touch .next/types/cache-life.d.ts && tsc --project tsconfig.json --noEmit",
