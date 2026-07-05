@@ -53,6 +53,7 @@ import {
 } from "@/lib/marketplace";
 import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
+import { offerStaleness } from "@/lib/staleness";
 import { getOfferBySlug, listCategoryOffers, listMarketplaceOffers } from "@/server/catalog/catalog-service";
 
 function formatDate(value: string, locale: string) {
@@ -139,6 +140,7 @@ export default async function OfferDetailPage({
   );
   const tradeoff = getOfferTradeoff(offer);
   const primaryMetric = offer.metrics[0];
+  const heroStale = offerStaleness(offer, new Date()).level !== "fresh";
 
   return (
     <>
@@ -155,74 +157,69 @@ export default async function OfferDetailPage({
           provider-row gap also collapses to gap-3 on mobile so the
           ProviderLogo + name + tags column doesn't overflow. */}
       <section className="grid gap-5">
-        <div className="rounded-[24px] bg-gradient-to-br from-[#0D1812] to-[#13181A] p-4 sm:rounded-4xl sm:p-8">
-          <div className="flex flex-col gap-6 sm:gap-8">
-            <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-white">{offer.providerName}</p>
-                  <p className="mt-1 text-[13px] text-white/60 sm:text-sm">
-                    {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {offer.bestFor.slice(0, 2).map((item) => (
-                      <span key={item} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80">
-                        {normalizeDisplayText(item)}
-                      </span>
-                    ))}
-                  </div>
+        {/* Editorial hero — light ground, oversized metric as the anchor,
+            inline CTA (no card-in-card, no floating panel). Provider identity
+            + honest freshness up top; the primary action reads directly with a
+            reassurance line beneath it. */}
+        <div className="rounded-[24px] border border-line bg-white p-5 shadow-subtle sm:rounded-[32px] sm:p-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-ink">{offer.providerName}</p>
+                <p className={`mt-1 text-[13px] ${heroStale ? "font-medium text-amber-600" : "text-ink-tertiary"}`}>
+                  {heroStale
+                    ? `${categoryLabel} · last checked ${formatDate(offer.updatedAt, preferences.locale)} — confirm current terms`
+                    : `${categoryLabel} ${dictionary.offerDetail.reviewedOn} ${formatDate(offer.updatedAt, preferences.locale)}`}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {offer.bestFor.slice(0, 2).map((item) => (
+                    <span key={item} className="rounded-full border border-line bg-bg-surface px-3 py-1 text-xs font-semibold text-ink-secondary">
+                      {normalizeDisplayText(item)}
+                    </span>
+                  ))}
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <SaveOfferButton offer={offer} variant="ghost" size="md" />
-                <Link
-                  href={categoryHref}
-                  className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-                >
-                  {dictionary.offerDetail.backToCategory}
-                </Link>
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
-                  {primaryMetric
-                    ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
-                    : categoryLabel}
-                </p>
-                <h1 className="mt-3 text-[2.5rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-white sm:text-[3.25rem]">
-                  {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
-                </h1>
-                <p className="mt-4 max-w-prose-base text-base leading-relaxed text-white/70">
-                  {normalizeDisplayText(offer.subtitle)}
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <SaveOfferButton offer={offer} variant="secondary" size="md" />
+              <Link
+                href={categoryHref}
+                className="inline-flex items-center justify-center rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-line-strong hover:bg-bg-surface"
+              >
+                {dictionary.offerDetail.backToCategory}
+              </Link>
+            </div>
+          </div>
 
-              {/* Primary action panel — the "PRIMARY ACTION" eyebrow used
-                  to live here. It was a design-system artefact that leaked
-                  into prod: a label on a CTA that already speaks for itself.
-                  Now the panel reads directly: button + reassurance copy.
-                  The dictionary value is intentionally kept (empty string)
-                  so future locales can re-introduce a contextual eyebrow
-                  if needed without re-plumbing markup. */}
-              <div className="rounded-2xl bg-bg-surface p-5">
-                <div className="grid gap-3">
-                  <ProviderLinkButton
-                    offer={offer}
-                    label={dictionary.offerCard.providerCta[offer.category]}
-                    source="offer_detail"
-                    fullWidth
-                  />
-                  <p className="text-sm leading-relaxed text-ink-secondary">
-                    {formatCopy(dictionary.offerDetail.primaryActionBody, {
-                      provider: offer.providerName,
-                    })}
-                  </p>
-                </div>
-              </div>
+          <div className="mt-8 grid gap-6 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end lg:gap-10">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-emerald-strong">
+                {primaryMetric
+                  ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
+                  : categoryLabel}
+              </p>
+              <h1 className="mt-3 text-[2.75rem] font-extrabold leading-[0.95] tracking-[-0.045em] tabular-nums text-ink sm:text-[4rem]">
+                {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
+              </h1>
+              <p className="mt-5 max-w-prose-base text-base leading-relaxed text-ink-secondary">
+                {normalizeDisplayText(offer.subtitle)}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2.5 lg:items-stretch lg:text-right">
+              <ProviderLinkButton
+                offer={offer}
+                label={dictionary.offerCard.providerCta[offer.category]}
+                source="offer_detail"
+                fullWidth
+              />
+              <p className="text-[13px] leading-relaxed text-ink-tertiary">
+                {formatCopy(dictionary.offerDetail.primaryActionBody, {
+                  provider: offer.providerName,
+                })}
+              </p>
             </div>
           </div>
         </div>

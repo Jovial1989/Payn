@@ -70,18 +70,15 @@ export function PdpDeepDive({
           defaultOpen
           subtitle={`${offer.metrics.length} ${offer.metrics.length === 1 ? "metric" : "metrics"}`}
         >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
             {offer.metrics.map((m) => {
               const rank = ranking?.metricRanks[m.label];
               return (
-                <div
-                  key={m.label}
-                  className="rounded-2xl border border-line bg-bg-surface p-4"
-                >
+                <div key={m.label} className="bg-white p-4 sm:p-5">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                     {normalizeDisplayText(getMetricLabel(locale, m.label))}
                   </p>
-                  <p className="mt-1 text-[18px] font-extrabold tabular-nums tracking-tight-2 text-ink">
+                  <p className="mt-1.5 text-[22px] font-extrabold tabular-nums tracking-tight-2 text-ink">
                     {normalizeDisplayText(m.value)}
                   </p>
                   {rank && <RankGlyph rank={rank} />}
