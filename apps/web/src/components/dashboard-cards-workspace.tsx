@@ -18,6 +18,11 @@ import {
 } from "@/lib/marketplace";
 import { compareByRealCost } from "@/lib/ranking";
 import {
+  annualiseFee,
+  detectFeePeriod,
+  estimateCardYearlyCost,
+} from "@/lib/card-cost";
+import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
 } from "@/lib/product-workspace-state";
@@ -41,6 +46,8 @@ type RankedCardResult = {
   fxFee: number;
   annualFee: number;
   atmLimit: number;
+  grossFee: number;
+  cashbackOffsetsFee: boolean;
 };
 
 type CardWorkspaceDraft = {
@@ -102,7 +109,15 @@ function getAnnualFee(offer: MarketplaceOffer) {
     return explicit;
   }
 
-  return parseCurrencyAmount(getMetricValue(offer, ["Annual fee", "Monthly fee"])) || 0;
+  // No explicit amount — fall back to the display metric, but annualise it.
+  // A "Monthly fee EUR 16.90" must become €202.80/yr, or the estimate (and the
+  // cost-first rank) would treat a paid card as almost free.
+  const metric = offer.metrics?.find((m) => /annual fee|monthly fee/i.test(m.label));
+  if (!metric) {
+    return 0;
+  }
+  const amount = parseCurrencyAmount(metric.value) || 0;
+  return annualiseFee(amount, detectFeePeriod(metric.label, metric.value));
 }
 
 function getFxFee(offer: MarketplaceOffer) {
@@ -258,6 +273,10 @@ export function DashboardCardsWorkspace({
           summaryTravel: "Beste Reiseoption",
           summaryCashback: "Bestes Cashback-Profil",
           estimatedYearlyCost: "Geschätzte Jahreskosten",
+          spendNote: (spend: string) =>
+            `Jahreskosten bei ${spend}/Monat Umsatz — Jahresgebühr plus FX auf Auslandsausgaben, abzüglich verdientem Cashback.`,
+          cashbackCoversFee: (fee: string) =>
+            `Cashback deckt die Gebühr von ${fee}/Jahr bei diesem Umsatz`,
           rankedResults: "Sortierte Ergebnisse",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "Karte" : "Karten"} sortiert`,
           rankedDescription:
@@ -302,6 +321,10 @@ export function DashboardCardsWorkspace({
           summaryTravel: "Best travel fit",
           summaryCashback: "Best cashback angle",
           estimatedYearlyCost: "Estimated yearly cost",
+          spendNote: (spend: string) =>
+            `Yearly cost assumes ${spend}/mo spend — annual fee plus FX on foreign spend, minus the cashback you'd earn.`,
+          cashbackCoversFee: (fee: string) =>
+            `Cashback covers the ${fee}/yr fee at this spend`,
           rankedResults: "Ranked results",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "card" : "cards"} ranked`,
           rankedDescription:
@@ -469,14 +492,14 @@ export function DashboardCardsWorkspace({
       const fxFee = getFxFee(offer);
       const cashback = getCashback(offer);
       const atmLimit = getAtmLimit(offer);
-      const yearlySpend = monthlySpendValue * 12;
-      const foreignShare = travelMode ? 0.42 : 0.08;
-      const foreignSpend = yearlySpend * foreignShare;
-      const cashbackBenefit = yearlySpend * (cashback / 100) * 0.35;
-      const estimatedYearlyCost = Math.max(
-        0,
-        annualFee + foreignSpend * (fxFee / 100) - cashbackBenefit,
-      );
+      const costEstimate = estimateCardYearlyCost({
+        annualFee,
+        fxFeePercent: fxFee,
+        cashbackPercent: cashback,
+        monthlySpend: monthlySpendValue,
+        travelMode,
+      });
+      const estimatedYearlyCost = costEstimate.net;
       const text = cardText(offer);
       const popularity = offer.affiliatePriorityScore * 100;
       const relevance = clampPercent(
@@ -543,6 +566,8 @@ export function DashboardCardsWorkspace({
         fxFee,
         annualFee,
         atmLimit,
+        grossFee: costEstimate.grossFee,
+        cashbackOffsetsFee: costEstimate.cashbackOffsetsFee,
       } satisfies RankedCardResult;
     });
 
@@ -626,7 +651,15 @@ export function DashboardCardsWorkspace({
       `${r.primaryValue} ${copy.estimatedYearlyCost.toLowerCase()}`;
     const pct = (v: number) => v.toFixed(v >= 1 ? 0 : 2);
     const picks: SummaryPick[] = [
-      { row: overall, label: copy.summaryBest, detail: yearly(overall) },
+      {
+        row: overall,
+        label: copy.summaryBest,
+        // Never a bare "€0 estimated yearly cost" next to a card with a real
+        // fee — say the cashback covers it instead.
+        detail: overall.cashbackOffsetsFee
+          ? copy.cashbackCoversFee(formatCurrency(locale, overall.grossFee))
+          : yearly(overall),
+      },
     ];
     if (travel) {
       picks.push({
@@ -782,6 +815,9 @@ export function DashboardCardsWorkspace({
       </section>
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+        <p className="mb-3 text-[12px] leading-relaxed text-ink-tertiary">
+          {copy.spendNote(formatCurrency(locale, monthlySpendValue))}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {summaryPicks.map((pick) => (
             <div key={pick.label} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
