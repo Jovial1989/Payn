@@ -216,7 +216,7 @@ function StepIntro({
       <button
         type="button"
         onClick={onNext}
-        className="mt-8 inline-flex h-12 items-center gap-2 rounded-2xl bg-accent-emerald px-7 text-[15px] font-semibold text-white shadow-[0_8px_18px_rgba(15,138,75,0.24)] transition-all hover:bg-accent-emerald-strong hover:shadow-[0_10px_22px_rgba(15,138,75,0.32)] active:scale-[0.98]"
+        className="mt-8 inline-flex h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#14D474] to-[#0A7A40] px-7 text-[15px] font-semibold text-white shadow-[0_8px_20px_rgba(15,138,75,0.28)] transition-all hover:brightness-110 hover:shadow-[0_10px_26px_rgba(15,138,75,0.40)] active:scale-[0.98]"
       >
         Start
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">

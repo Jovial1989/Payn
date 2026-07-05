@@ -113,18 +113,21 @@ export function DiscoverPageView({
           providerCount={providerCount}
         />
 
-        {/* § 2 — What people are checking today. Keeps a sense of motion just
-                  below the fold so the page never feels static. */}
-        <TodayStrip getHref={categoryHref} />
+        {/* § 2 — What people are checking today. On mobile it drops BELOW the
+                  offers (order-3) so the ranked list is the first thing after
+                  the hero; on lg+ it keeps its original slot (order-2). */}
+        <div className="order-3 lg:order-2">
+          <TodayStrip getHref={categoryHref} />
+        </div>
 
         {/* § 3 — Atlas bucket grid. This is the primary navigation surface for
                   /discover — nine tiles, each opens a curated cluster of
                   products. Replaces the previous "browse by goal" pill row
                   that was hidden inside the workspace. */}
-        <section className="grid gap-2">
+        <section className="order-4 grid gap-2 lg:order-3">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-emerald-strong">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-tertiary">
                 {t.atlas.eyebrow}
               </p>
               <h2 className="mt-2 text-[1.5rem] font-bold tracking-[-0.025em] text-ink sm:text-[1.75rem]">
@@ -148,7 +151,7 @@ export function DiscoverPageView({
                   the actionable surface, so we moved straight from the
                   Atlas grid into the calculator. Brand-promise content
                   still lives on the landing page. */}
-        <div ref={workspaceRef}>
+        <div ref={workspaceRef} className="order-2 lg:order-4">
           <DashboardDiscoverWorkspace
             locale={preferences.locale}
             userId={user?.id ?? null}
@@ -162,8 +165,10 @@ export function DiscoverPageView({
           />
         </div>
 
-        {/* § 5 — Help me decide. */}
-        <HelpDecide contactHref={localePath(preferences.locale, "/contact")} />
+        {/* § 5 — Help me decide. Always last (order-5). */}
+        <div className="order-5">
+          <HelpDecide contactHref={localePath(preferences.locale, "/contact")} />
+        </div>
       </div>
     </>
   );

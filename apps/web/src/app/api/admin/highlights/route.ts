@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { checkAdminToken } from "@/lib/admin-api-auth";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
 export async function GET(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -62,5 +63,6 @@ export async function POST(request: Request) {
     .single<{ id: string }>();
 
   if (error || !data) return NextResponse.json({ error: error?.message ?? "Insert failed" }, { status: 500 });
+  revalidateTag("highlights", {});
   return NextResponse.json({ id: data.id });
 }

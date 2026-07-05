@@ -1,5 +1,9 @@
-import { Heading, Text, Section, Link, Hr } from "@react-email/components";
-import { EmailLayout } from "./_layout";
+import { Link, Section, Text } from "@react-email/components";
+import {
+  ColorTokens,
+  EmailLayout,
+  TextStyles,
+} from "./_layout";
 
 export interface MonthlyDigestOffer {
   category: string;
@@ -26,46 +30,111 @@ export default function MonthlyDigestEmail({
   const greeting = firstName ? `Hi ${firstName},` : "Hi,";
   return (
     <EmailLayout
-      preview={`Top financial offers in ${country} for ${month}.`}
+      preview={`Top offers in ${country} for ${month}.`}
       unsubscribeUrl={unsubscribeUrl}
     >
-      <Text style={{ fontSize: "14px", color: "#6b7280", marginTop: "24px" }}>{greeting}</Text>
-      <Heading style={{ fontSize: "22px", marginTop: "8px", color: "#1F2937" }}>
-        Top offers in {country} — {month}
-      </Heading>
-      <Text style={{ fontSize: "15px", lineHeight: "22px", color: "#4b5563" }}>
-        Here are the best-ranked financial products available in your area right now.
+      <Text style={TextStyles.eyebrow}>{month} · {country}</Text>
+      <Text style={TextStyles.heading}>Your top offers this month</Text>
+      <Text style={TextStyles.body}>
+        {greeting} here are the highest-ranked financial products for {country}
+        right now — based on published terms and our scoring model, not paid
+        placement.
       </Text>
-      <Section style={{ marginTop: "20px" }}>
+
+      <Section
+        style={{
+          margin: "20px 0 8px",
+          padding: 0,
+          border: `1px solid ${ColorTokens.lineSubtle}`,
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
         {topOffers.map((offer, i) => (
-          <Section
-            key={i}
+          <table
+            key={`${offer.providerName}-${offer.category}-${i}`}
+            cellPadding={0}
+            cellSpacing={0}
+            role="presentation"
             style={{
-              borderBottom: i < topOffers.length - 1 ? "1px solid #e5e7eb" : "none",
-              padding: "16px 0",
+              width: "100%",
+              borderTop:
+                i === 0 ? "none" : `1px solid ${ColorTokens.lineSubtle}`,
+              backgroundColor: ColorTokens.surface,
             }}
           >
-            <Text style={{ fontSize: "11px", color: "#10B981", margin: "0 0 4px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              {offer.category}
-            </Text>
-            <Text style={{ fontSize: "16px", fontWeight: 600, color: "#1F2937", margin: "0 0 2px" }}>
-              {offer.providerName}
-            </Text>
-            <Text style={{ fontSize: "14px", color: "#6b7280", margin: "0 0 8px" }}>
-              {offer.headline}
-            </Text>
-            <Link
-              href={offer.url}
-              style={{ fontSize: "14px", color: "#10B981", textDecoration: "none", fontWeight: 500 }}
-            >
-              See offer →
-            </Link>
-          </Section>
+            <tbody>
+              <tr>
+                <td style={{ padding: "18px 20px" }}>
+                  <table
+                    cellPadding={0}
+                    cellSpacing={0}
+                    role="presentation"
+                    style={{ width: "100%" }}
+                  >
+                    <tbody>
+                      <tr>
+                        <td valign="middle">
+                          <Text
+                            style={{
+                              ...TextStyles.eyebrow,
+                              color: ColorTokens.accentStrong,
+                              margin: 0,
+                              fontSize: 10,
+                            }}
+                          >
+                            #{i + 1} · {offer.category}
+                          </Text>
+                          <Text
+                            style={{
+                              ...TextStyles.body,
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: ColorTokens.ink,
+                              margin: "4px 0 2px",
+                            }}
+                          >
+                            {offer.providerName}
+                          </Text>
+                          <Text
+                            style={{
+                              ...TextStyles.body,
+                              fontSize: 14,
+                              margin: 0,
+                            }}
+                          >
+                            {offer.headline}
+                          </Text>
+                        </td>
+                        <td valign="middle" align="right" style={{ width: 100 }}>
+                          <Link
+                            href={offer.url}
+                            style={{
+                              fontFamily: TextStyles.body.fontFamily,
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: ColorTokens.accent,
+                              textDecoration: "none",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            See offer →
+                          </Link>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         ))}
       </Section>
-      <Hr style={{ marginTop: "8px", borderColor: "#e5e7eb" }} />
-      <Text style={{ fontSize: "13px", color: "#9ca3af", marginTop: "16px" }}>
-        Rankings are based on published terms and our scoring model — not paid placements.
+
+      <Text style={TextStyles.muted}>
+        Rankings are based on published terms and our scoring model — never paid
+        placement. We earn from affiliate links only when a provider monetises;
+        the ordering doesn&apos;t change based on payouts.
       </Text>
     </EmailLayout>
   );

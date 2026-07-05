@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:payn_mobile/core/localization/app_localizations_ext.dart';
 import 'package:payn_mobile/core/theme/app_theme.dart';
 import 'package:payn_mobile/shared/services/app_scope.dart';
+import 'package:payn_mobile/shared/widgets/gradient_button.dart';
 import 'package:payn_mobile/shared/widgets/provider_badge.dart';
 
 class OfferDetailScreen extends StatefulWidget {
@@ -63,12 +64,11 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-          child: FilledButton.icon(
+          child: GradientButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
               showProviderHandoffSheet(context, offer: offer);
             },
-            style: FilledButton.styleFrom(minimumSize: const Size(0, 56)),
+            minimumSize: const Size(double.infinity, 56),
             icon: const Icon(Icons.lock_outline_rounded, size: 16),
             label: Text(l10n.offerCtaCheckRate),
           ),
@@ -83,12 +83,12 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
             decoration: BoxDecoration(
               color: PaynColors.surface,
               borderRadius: BorderRadius.circular(PaynRadius.panel),
-              border: Border.all(color: PaynColors.outlineSubtle),
+              border: Border.all(color: PaynColors.outline),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 26,
-                  offset: const Offset(0, 12),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -119,6 +119,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                             style: theme.textTheme.headlineMedium?.copyWith(
                               fontSize: 24,
                               letterSpacing: -0.7,
+                              color: PaynColors.text,
                             ),
                           ),
                         ],
@@ -134,16 +135,18 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                     fontSize: 10,
                     letterSpacing: 1.7,
                     fontWeight: FontWeight.w700,
+                    color: PaynColors.accentStrong,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   primaryMetric?.value ?? l10n.offerOnRequest,
                   style: theme.textTheme.headlineMedium?.copyWith(
-                    fontSize: 40,
+                    fontSize: 44,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1.8,
                     height: 0.95,
+                    color: PaynColors.text,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -155,24 +158,33 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                // TASK-319 — The fallback badge used to render the generic
+                // "Strong match" l10n string for any offer with score < 110,
+                // which left the user staring at a pill that said nothing.
+                // The same screen already lists the actual ranking reasons
+                // in the Benefits section below, so we now promote the
+                // single top reason into the badge itself — concrete,
+                // specific, and free. Score >= 110 keeps `compareBestOption`
+                // ("Best option") since that is already a concrete claim
+                // about position in the ranked list. Empty-reasons fallback
+                // drops the badge entirely rather than putting a generic
+                // pill back on screen.
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: <Widget>[
-                    _Badge(
-                      label:
-                          ranked.score >= 110
-                              ? l10n.compareBestOption
-                              : l10n.offerStrongMatch,
-                      bg:
-                          ranked.score >= 110
-                              ? PaynColors.positiveSurface
-                              : PaynColors.accentSurface,
-                      fg:
-                          ranked.score >= 110
-                              ? PaynColors.positive
-                              : PaynColors.accent,
-                    ),
+                    if (ranked.score >= 110)
+                      _Badge(
+                        label: l10n.compareBestOption,
+                        bg: PaynColors.accentSurface,
+                        fg: PaynColors.accentStrong,
+                      )
+                    else if (reasons.isNotEmpty)
+                      _Badge(
+                        label: reasons.first,
+                        bg: PaynColors.accentSurface,
+                        fg: PaynColors.accentStrong,
+                      ),
                     _Badge(
                       label: offer.category.localizedLabel(l10n),
                       bg: PaynColors.surfaceDim,

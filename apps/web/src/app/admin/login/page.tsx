@@ -46,14 +46,14 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="grid gap-4">
             <label className="grid gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                Email
+                Username
               </span>
               <input
                 name="email"
-                type="email"
+                type="text"
                 autoComplete="username"
                 required
-                defaultValue="admin@admin.com"
+                placeholder="admin"
                 className="h-11 rounded-xl border border-line bg-white px-4 text-sm text-ink outline-none placeholder:text-ink-tertiary focus:border-accent-emerald/50 focus:ring-2 focus:ring-accent-emerald/15"
               />
             </label>

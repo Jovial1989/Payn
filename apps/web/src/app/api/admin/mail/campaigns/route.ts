@@ -15,7 +15,7 @@ type CampaignBody = {
 };
 
 export async function GET(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();

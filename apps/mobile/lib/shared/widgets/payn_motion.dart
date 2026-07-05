@@ -5,7 +5,10 @@ class PaynMotion {
 
   static const Duration fast = Duration(milliseconds: 180);
   static const Duration medium = Duration(milliseconds: 280);
-  static const Duration route = Duration(milliseconds: 360);
+  // Route transitions take a touch longer — the Revolut-style stack push
+  // (incoming slides + scales, outgoing recedes + dims) needs ~460ms to
+  // breathe without feeling laggy.
+  static const Duration route = Duration(milliseconds: 460);
   static const Duration sheet = Duration(milliseconds: 380);
 
   static const Curve ease = Curves.easeOutCubic;

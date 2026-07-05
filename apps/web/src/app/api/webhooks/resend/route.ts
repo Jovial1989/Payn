@@ -26,16 +26,18 @@ const EVENT_TYPE_MAP: Record<string, string> = {
 export async function POST(request: Request) {
   const body = await request.text();
 
-  // Verify Svix signature if secret is set
-  if (env.resendWebhookSecret) {
-    const wh = new Webhook(env.resendWebhookSecret);
-    const headers: Record<string, string> = {};
-    request.headers.forEach((v, k) => { headers[k] = v; });
-    try {
-      wh.verify(body, headers);
-    } catch {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-    }
+  // SEC-FIX PAYN-005: verification is now unconditional — fail closed if
+  // RESEND_WEBHOOK_SECRET is absent so forged webhook events cannot be accepted.
+  if (!env.resendWebhookSecret) {
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 503 });
+  }
+  const wh = new Webhook(env.resendWebhookSecret);
+  const svixHeaders: Record<string, string> = {};
+  request.headers.forEach((v, k) => { svixHeaders[k] = v; });
+  try {
+    wh.verify(body, svixHeaders);
+  } catch {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   let event: ResendEvent;
@@ -120,13 +122,13 @@ export async function POST(request: Request) {
         .update({ marketing_opt_in: false, updated_at: now })
         .eq("user_id", msg.user_id);
 
-      const toAddress = (event.data.to as string[] | undefined)?.[0] ?? "";
       await admin.from("admin_audit_log").insert({
         actor: "system",
         action: "auto_unsubscribe",
         target_id: msg.user_id,
         target_type: "user",
-        metadata: { reason: eventType, email: toAddress },
+        // SEC-FIX PAYN-A21: removed email from metadata — user_id in target_id is sufficient
+        metadata: { reason: eventType },
       });
     }
 

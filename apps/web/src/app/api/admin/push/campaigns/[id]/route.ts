@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { checkAdminToken } from "@/lib/admin-api-auth";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
-import { dispatchCampaign } from "@/app/api/admin/push/campaigns/route";
+import { dispatchCampaign, sanitiseDeepLink } from "@/app/api/admin/push/campaigns/route";
 
 type Params = { params: Promise<{ id: string }> };
 
 // GET — campaign detail
 export async function GET(request: Request, { params }: Params) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: Params) {
 
 // PATCH — update draft/scheduled, or trigger send
 export async function PATCH(request: Request, { params }: Params) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -40,6 +40,7 @@ export async function PATCH(request: Request, { params }: Params) {
       audience_countries: campaign.audience_countries ?? [],
       audience_languages: campaign.audience_languages ?? [],
       audience_last_active_days: campaign.audience_last_active_days ?? undefined,
+      deep_link: campaign.deep_link ?? null,
     });
     const { data: updated } = await admin.from("push_campaigns").select("*").eq("id", id).single();
     return NextResponse.json(updated);
@@ -59,15 +60,23 @@ export async function PATCH(request: Request, { params }: Params) {
       audience_countries: src.audience_countries,
       audience_languages: src.audience_languages,
       audience_last_active_days: src.audience_last_active_days,
+      deep_link: src.deep_link,
       status: "draft",
     }).select().single();
     return NextResponse.json(copy, { status: 201 });
   }
 
   // Plain field update (draft/scheduled edits)
+  // PR-INT-01 — `deep_link` joins the allow-list so admins can edit a
+  // draft's target screen. We run it through the same sanitiser as the
+  // POST handler to keep stored values consistent (always leading `/`,
+  // empty → NULL).
   const allowed = ["title", "body", "audience_countries", "audience_languages",
-    "audience_last_active_days", "scheduled_at", "status"];
+    "audience_last_active_days", "scheduled_at", "status", "deep_link"];
   const patch = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)));
+  if ("deep_link" in patch) {
+    patch.deep_link = sanitiseDeepLink(patch.deep_link as string | null | undefined);
+  }
   const { data, error } = await admin.from("push_campaigns").update(patch).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

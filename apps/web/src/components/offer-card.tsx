@@ -59,11 +59,19 @@ export function OfferCard({
 
   return (
     <article
-      className="premium-card premium-card-hover motion-card group overflow-hidden rounded-[24px]"
+      // WEB.6 — `flex h-full flex-col` lets the article fill its grid
+      // cell when the parent uses `lg:grid-cols-3`. Without h-full the
+      // CTA footer landed at different vertical positions per card,
+      // because each card sized to its own content height and the
+      // grid only `items-stretch`ed implicit children of the same
+      // height. The body div takes `flex-1` to push the CTA footer
+      // to the bottom of every card, so the row of "Check my rate" /
+      // "Get card" buttons across the three tiles always line up.
+      className="premium-card premium-card-hover motion-card group flex h-full flex-col overflow-hidden rounded-[24px]"
       style={{ ["--motion-delay" as string]: `${Math.min(rank * 70, 280)}ms` }}
       aria-label={`${offer.providerName} ${offer.title}`}
     >
-      <div className="flex flex-col gap-6 p-5 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -121,7 +129,7 @@ export function OfferCard({
                     {normalizeDisplayText(getMetricLabel(locale, m.label))}
                   </dt>
                   <dd
-                    className="mt-0.5 truncate text-[14px] font-bold text-ink"
+                    className="mt-0.5 truncate text-[14px] font-bold tabular-nums text-ink"
                     title={normalizeDisplayText(m.value)}
                   >
                     {normalizeDisplayText(m.value)}

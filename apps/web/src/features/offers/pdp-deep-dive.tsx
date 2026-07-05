@@ -9,6 +9,7 @@ import {
 } from "@/features/marketplace/offer-ranking";
 import { getMetricLabel } from "@/lib/i18n";
 import { normalizeDisplayText } from "@/lib/marketplace";
+import { offerStaleness } from "@/lib/staleness";
 
 // ─── PdpDeepDive ───────────────────────────────────────────────────────────────
 //
@@ -55,7 +56,7 @@ export function PdpDeepDive({
   const weaknesses = computeWeaknesses(offer, ranking?.metricRanks);
 
   return (
-    <section className="rounded-3xl border border-line bg-white p-6 shadow-subtle sm:p-8">
+    <section className="rounded-[24px] border border-line bg-white p-4 shadow-subtle sm:rounded-3xl sm:p-8">
       <div className="mb-5 max-w-prose-base">
         <p className="eyebrow-cap">Everything you should know</p>
         <h2 className="display-lead mt-2 text-[1.5rem] sm:text-[1.75rem]">
@@ -69,18 +70,15 @@ export function PdpDeepDive({
           defaultOpen
           subtitle={`${offer.metrics.length} ${offer.metrics.length === 1 ? "metric" : "metrics"}`}
         >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
             {offer.metrics.map((m) => {
               const rank = ranking?.metricRanks[m.label];
               return (
-                <div
-                  key={m.label}
-                  className="rounded-2xl border border-line bg-bg-surface p-4"
-                >
+                <div key={m.label} className="bg-white p-4 sm:p-5">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
                     {normalizeDisplayText(getMetricLabel(locale, m.label))}
                   </p>
-                  <p className="mt-1 text-[18px] font-extrabold tabular-nums tracking-tight-2 text-ink">
+                  <p className="mt-1.5 text-[22px] font-extrabold tabular-nums tracking-tight-2 text-ink">
                     {normalizeDisplayText(m.value)}
                   </p>
                   {rank && <RankGlyph rank={rank} />}
@@ -304,14 +302,31 @@ function EditorialBody({
     <div className="grid gap-3 text-[14px] leading-relaxed text-ink-secondary">
       <p>{lead}</p>
       {tradeoffText && <p>{tradeoffText}</p>}
-      <p className="text-[12px] text-ink-tertiary">
-        Last verified {new Date(offer.updatedAt).toLocaleDateString("en-GB", {
+      {(() => {
+        // P1.3 — surface staleness honestly. Past 60 days we drop the "we
+        // re-check monthly" reassurance and ask the user to confirm current
+        // terms with the provider (amber), rather than implying fresh data.
+        const { verifiedAt, level } = offerStaleness(offer, new Date());
+        const dateLabel = (verifiedAt ?? new Date(offer.updatedAt)).toLocaleDateString("en-GB", {
           day: "numeric",
           month: "short",
           year: "numeric",
-        })}
-        . We re-check provider terms every 24h.
-      </p>
+        });
+        if (level === "fresh") {
+          return (
+            <p className="text-[12px] text-ink-tertiary">
+              Last verified {dateLabel}. We re-check provider terms at least monthly; live rates
+              update daily.
+            </p>
+          );
+        }
+        return (
+          <p className="text-[12px] font-medium text-amber-600">
+            Last checked {dateLabel} — please confirm current terms with the provider before you
+            apply.
+          </p>
+        );
+      })()}
     </div>
   );
 }

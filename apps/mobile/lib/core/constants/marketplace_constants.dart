@@ -19,11 +19,6 @@ const Map<PaynMarket, MarketDefinition> marketDefinitions =
         currency: 'EUR',
         label: 'All Europe',
       ),
-      PaynMarket.international: MarketDefinition(
-        marketCode: 'INTL',
-        currency: 'Multi',
-        label: 'International',
-      ),
       PaynMarket.de: MarketDefinition(
         marketCode: 'DE',
         currency: 'EUR',

@@ -16,6 +16,13 @@ import {
   normalizeDisplayText,
   parseMetricRange,
 } from "@/lib/marketplace";
+import { compareByRealCost } from "@/lib/ranking";
+import {
+  annualiseFee,
+  detectFeePeriod,
+  estimateCardYearlyCost,
+} from "@/lib/card-cost";
+import { formatMarketName } from "@/lib/market-name";
 import {
   readPersistedProductWorkspaceState,
   writePersistedProductWorkspaceState,
@@ -40,6 +47,8 @@ type RankedCardResult = {
   fxFee: number;
   annualFee: number;
   atmLimit: number;
+  grossFee: number;
+  cashbackOffsetsFee: boolean;
 };
 
 type CardWorkspaceDraft = {
@@ -101,7 +110,15 @@ function getAnnualFee(offer: MarketplaceOffer) {
     return explicit;
   }
 
-  return parseCurrencyAmount(getMetricValue(offer, ["Annual fee", "Monthly fee"])) || 0;
+  // No explicit amount — fall back to the display metric, but annualise it.
+  // A "Monthly fee EUR 16.90" must become €202.80/yr, or the estimate (and the
+  // cost-first rank) would treat a paid card as almost free.
+  const metric = offer.metrics?.find((m) => /annual fee|monthly fee/i.test(m.label));
+  if (!metric) {
+    return 0;
+  }
+  const amount = parseCurrencyAmount(metric.value) || 0;
+  return annualiseFee(amount, detectFeePeriod(metric.label, metric.value));
 }
 
 function getFxFee(offer: MarketplaceOffer) {
@@ -232,9 +249,9 @@ export function DashboardCardsWorkspace({
     locale === "de"
       ? {
           categoryEyebrow: "Karten",
-          title: `Karten für ${marketLabel.toLowerCase()} vergleichen`,
+          title: `Die richtige Karte in ${formatMarketName(marketLabel)} finden`,
           description:
-            "Filtere nach Gebühren, Reiseeinsatz, Cashback, Bargeldzugang und Krypto-Support und prüfe dann eine einzige sortierte Liste.",
+            `Vergleiche Gebühren, FX-Kosten, Cashback und Bargeldzugang — sortiert nach dem, was du in ${formatMarketName(marketLabel)} wirklich zahlst.`,
           backToDiscover: "Zurück zur Suche",
           search: "Suche",
           searchPlaceholder: "Produkte oder Anbieter suchen",
@@ -257,10 +274,14 @@ export function DashboardCardsWorkspace({
           summaryTravel: "Beste Reiseoption",
           summaryCashback: "Bestes Cashback-Profil",
           estimatedYearlyCost: "Geschätzte Jahreskosten",
+          spendNote: (spend: string) =>
+            `Jahreskosten bei ${spend}/Monat Umsatz — Jahresgebühr plus FX auf Auslandsausgaben, abzüglich verdientem Cashback.`,
+          cashbackCoversFee: (fee: string) =>
+            `Cashback deckt die Gebühr von ${fee}/Jahr bei diesem Umsatz`,
           rankedResults: "Sortierte Ergebnisse",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "Karte" : "Karten"} sortiert`,
           rankedDescription:
-            "Sortiert nach Relevanz, realem Gebühreneffekt, Einfachheit, Reiseeinsatz und Popularität.",
+            "Nach realen Kosten sortiert — günstigste zuerst. Bei exakt gleichen Kosten entscheidet nur unser offengelegter Tie-Breaker.",
           noCardsTitle: "Noch keine Karten für diese Filter",
           noCardsDescription: "Erweitere Gebühren- oder Cashback-Filter und Payn baut das Ranking sofort neu auf.",
           compareCardsTitle: "Kartenanbieter vergleichen",
@@ -276,9 +297,9 @@ export function DashboardCardsWorkspace({
         }
       : {
           categoryEyebrow: "Cards",
-          title: `Browse card routes for ${marketLabel.toLowerCase()}`,
+          title: `Find the right card in ${formatMarketName(marketLabel)}`,
           description:
-            "Cards work better as a browse-and-analytics flow. Filter by fees, travel fit, cashback, ATM access, and crypto support, then review one ranked list instead of duplicated card blocks.",
+            `Compare fees, FX costs, cashback and ATM access — ranked by what you'd actually pay in ${formatMarketName(marketLabel)}.`,
           backToDiscover: "Back to Discover",
           search: "Search",
           searchPlaceholder: "Search products or providers",
@@ -301,10 +322,14 @@ export function DashboardCardsWorkspace({
           summaryTravel: "Best travel fit",
           summaryCashback: "Best cashback angle",
           estimatedYearlyCost: "Estimated yearly cost",
+          spendNote: (spend: string) =>
+            `Yearly cost assumes ${spend}/mo spend — annual fee plus FX on foreign spend, minus the cashback you'd earn.`,
+          cashbackCoversFee: (fee: string) =>
+            `Cashback covers the ${fee}/yr fee at this spend`,
           rankedResults: "Ranked results",
           cardsRanked: (count: number) => `${count} ${count === 1 ? "card" : "cards"} ranked`,
           rankedDescription:
-            "Sorted by relevance, real fee outcome, simplicity, travel fit, and popularity. Cards stay in one ranked list, with no duplicated sections and no card grid.",
+            "Ranked by real cost — cheapest first. When two cards cost exactly the same, we fall back to our disclosed tie-breaker, nothing else.",
           noCardsTitle: "No cards match these filters yet",
           noCardsDescription: "Widen the fee or cashback filters and Payn will rebuild the ranking immediately.",
           compareCardsTitle: "Compare card providers",
@@ -343,7 +368,18 @@ export function DashboardCardsWorkspace({
   const [minAtmLimit, setMinAtmLimit] = useState(defaultWorkspaceState.minAtmLimit);
   const [monthlySpend, setMonthlySpend] = useState(defaultWorkspaceState.monthlySpend);
   const [compareSelection, setCompareSelection] = useState<string[]>(defaultWorkspaceState.compareSelection);
+  // Refine is OPEN on desktop (the inputs are part of the product) but
+  // COLLAPSED on mobile, where the tall panel buried the ranked cards below
+  // it. Starts collapsed for SSR/mobile; opens on lg+ after mount.
   const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      setFiltersOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     const persistedState = readPersistedProductWorkspaceState(
@@ -457,14 +493,14 @@ export function DashboardCardsWorkspace({
       const fxFee = getFxFee(offer);
       const cashback = getCashback(offer);
       const atmLimit = getAtmLimit(offer);
-      const yearlySpend = monthlySpendValue * 12;
-      const foreignShare = travelMode ? 0.42 : 0.08;
-      const foreignSpend = yearlySpend * foreignShare;
-      const cashbackBenefit = yearlySpend * (cashback / 100) * 0.35;
-      const estimatedYearlyCost = Math.max(
-        0,
-        annualFee + foreignSpend * (fxFee / 100) - cashbackBenefit,
-      );
+      const costEstimate = estimateCardYearlyCost({
+        annualFee,
+        fxFeePercent: fxFee,
+        cashbackPercent: cashback,
+        monthlySpend: monthlySpendValue,
+        travelMode,
+      });
+      const estimatedYearlyCost = costEstimate.net;
       const text = cardText(offer);
       const popularity = offer.affiliatePriorityScore * 100;
       const relevance = clampPercent(
@@ -531,6 +567,8 @@ export function DashboardCardsWorkspace({
         fxFee,
         annualFee,
         atmLimit,
+        grossFee: costEstimate.grossFee,
+        cashbackOffsetsFee: costEstimate.cashbackOffsetsFee,
       } satisfies RankedCardResult;
     });
 
@@ -542,7 +580,26 @@ export function DashboardCardsWorkspace({
       [...rows].sort((left, right) => right.cashback - left.cashback)[0]?.offer.id ?? null;
 
     const uniqueRows = rows
-      .sort((left, right) => right.score - left.score)
+      // Promise A: cards rank by estimated yearly cost, cheapest first. The
+      // composite `score` is kept only for internal signals — it can no longer
+      // reorder the list. Exact ties fall back to disclosed affiliate priority,
+      // then provider name.
+      .sort((left, right) =>
+        compareByRealCost(
+          {
+            costValue: left.estimatedYearlyCost,
+            costDirection: "asc",
+            affiliatePriorityScore: left.offer.affiliatePriorityScore ?? 0,
+            tieLabel: left.offer.providerName,
+          },
+          {
+            costValue: right.estimatedYearlyCost,
+            costDirection: "asc",
+            affiliatePriorityScore: right.offer.affiliatePriorityScore ?? 0,
+            tieLabel: right.offer.providerName,
+          },
+        ),
+      )
       .filter((row, index, source) => source.findIndex((item) => item.offer.providerName === row.offer.providerName) === index);
 
     return uniqueRows.map((row) => ({
@@ -571,7 +628,59 @@ export function DashboardCardsWorkspace({
     );
   }, [rankedResults]);
 
-  const topResults = rankedResults.slice(0, 3);
+  // Three angle-distinct picks instead of top-3-by-score (which all surfaced
+  // an identical "€0/yr"). Overall = top rank, travel = lowest FX, cashback =
+  // highest cashback — each shows the number that earns it that slot, so the
+  // three cards visibly differ instead of repeating the same figure.
+  type SummaryPick = {
+    row: (typeof rankedResults)[number];
+    label: string;
+    detail: string;
+  };
+  const summaryPicks: SummaryPick[] = (() => {
+    const overall = rankedResults[0];
+    if (!overall) return [];
+    const travel = [...rankedResults]
+      .filter((r) => r.offer.id !== overall.offer.id)
+      .sort((a, b) => a.fxFee - b.fxFee)[0];
+    const cashback = [...rankedResults]
+      .filter(
+        (r) => r.offer.id !== overall.offer.id && r.offer.id !== travel?.offer.id,
+      )
+      .sort((a, b) => b.cashback - a.cashback)[0];
+    const yearly = (r: (typeof rankedResults)[number]) =>
+      `${r.primaryValue} ${copy.estimatedYearlyCost.toLowerCase()}`;
+    const pct = (v: number) => v.toFixed(v >= 1 ? 0 : 2);
+    const picks: SummaryPick[] = [
+      {
+        row: overall,
+        label: copy.summaryBest,
+        // Never a bare "€0 estimated yearly cost" next to a card with a real
+        // fee — say the cashback covers it instead.
+        detail: overall.cashbackOffsetsFee
+          ? copy.cashbackCoversFee(formatCurrency(locale, overall.grossFee))
+          : yearly(overall),
+      },
+    ];
+    if (travel) {
+      picks.push({
+        row: travel,
+        label: copy.summaryTravel,
+        detail: `${travel.fxFee <= 0 ? "0" : pct(travel.fxFee)}% FX fee`,
+      });
+    }
+    if (cashback) {
+      picks.push({
+        row: cashback,
+        label: copy.summaryCashback,
+        detail:
+          cashback.cashback > 0
+            ? `${pct(cashback.cashback)}% cashback`
+            : yearly(cashback),
+      });
+    }
+    return picks;
+  })();
   const selectedCompareRows = rankedResults
     .filter((row) => compareSelection.includes(row.offer.id))
     .slice(0, 3);
@@ -707,16 +816,19 @@ export function DashboardCardsWorkspace({
       </section>
 
       <section className="rounded-[24px] border border-line bg-white p-5 shadow-card sm:p-6">
+        <p className="mb-3 text-[12px] leading-relaxed text-ink-tertiary">
+          {copy.spendNote(formatCurrency(locale, monthlySpendValue))}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {topResults.map((row, index) => (
-            <div key={row.offer.id} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
+          {summaryPicks.map((pick) => (
+            <div key={pick.label} className="rounded-[18px] border border-line bg-bg-surface px-4 py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                {index === 0 ? copy.summaryBest : index === 1 ? copy.summaryTravel : copy.summaryCashback}
+                {pick.label}
               </p>
               <p className="mt-2 text-sm font-bold text-ink">
-                {row.offer.providerName} · {row.offer.title}
+                {pick.row.offer.providerName} · {pick.row.offer.title}
               </p>
-              <p className="mt-2 text-sm text-ink-secondary">{row.primaryValue} {copy.estimatedYearlyCost.toLowerCase()}</p>
+              <p className="mt-2 text-sm text-ink-secondary">{pick.detail}</p>
             </div>
           ))}
         </div>

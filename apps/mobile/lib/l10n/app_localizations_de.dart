@@ -15,34 +15,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get categoryLoans => 'Kredite';
 
   @override
-  String get categoryCards => 'Kreditkarten';
+  String get categoryCards => 'Karten';
 
   @override
-  String get categoryBanking => 'Banking';
+  String get categoryBanking => 'Bankkonten';
 
   @override
-  String get categoryTransfers => 'Geldtransfers';
+  String get categoryTransfers => 'Geld senden';
 
   @override
   String get categoryExchange => 'Währungswechsel';
 
   @override
-  String get categoryInsurance => 'Versicherungen';
+  String get categoryInsurance => 'Versicherung';
 
   @override
-  String get categoryInvestments => 'Investments';
+  String get categoryInvestments => 'Anlegen';
 
   @override
   String get categoryCrypto => 'Krypto';
 
   @override
-  String get categoryBusiness => 'Geschäftskonto';
+  String get categoryBusiness => 'Für Unternehmen';
 
   @override
-  String get categoryBudgeting => 'Budget & Finanzen';
+  String get categoryBudgeting => 'Familienbudget';
 
   @override
-  String get categoryKids => 'Kinder & Familie';
+  String get categoryKids => 'Familie';
+
+  @override
+  String get categorySavings => 'Sparen';
 
   @override
   String get profileTypePersonal => 'Privat';
@@ -99,7 +102,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get localePortuguese => 'Portugiesisch';
 
   @override
-  String get homeLiveRanking => 'Live-Ranking';
+  String get homeLiveRanking => 'Live FX-Kurse';
 
   @override
   String get homeHeroTitle => 'Beste Optionen für dich';
@@ -216,7 +219,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get savedCompare => 'Vergleichen';
 
   @override
-  String get savedRecent => 'Zuletzt';
+  String get savedRecent => 'Zuletzt angesehen';
 
   @override
   String get savedCompareLimit => 'Vergleiche unterstützen bis zu 3 Angebote.';
@@ -291,7 +294,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileInterestsSubtitle =>
-      'Richte zukünftige Empfehlungen auf die Kategorien aus, die dich interessieren.';
+      'Tippe Themen an, die dir wichtig sind. Wir zeigen sie zuerst.';
 
   @override
   String get profileSecurityTitle => 'Sicherheit';
@@ -355,7 +358,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'Anmeldung ist optional. Der Gastmodus funktioniert ohne Konto.';
+      'Anmeldung ist optional — als Gast stöbern oder jederzeit ein Konto erstellen.';
 
   @override
   String get authSignUp => 'Registrieren';
@@ -411,7 +414,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Du kannst das jederzeit in deinem Profil ändern.';
 
   @override
-  String get exploreLiveRanking => 'Live-Ranking';
+  String get exploreLiveRanking => 'Live FX-Kurse';
 
   @override
   String get exploreBestOptions => 'Was brauchst du?';
@@ -477,11 +480,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exploreApply => 'Anwenden';
 
   @override
-  String get exploreMarketIntelligenceTitle => 'Marktintelligenz';
+  String get exploreMarketIntelligenceTitle => 'Markt heute';
 
   @override
   String get exploreMarketIntelligenceSubtitle =>
-      'Beobachte den Live-Marktkontext, bevor du in Investmentprodukte wechselst.';
+      'Sieh, wie sich der Markt bewegt, bevor du investierst.';
 
   @override
   String get offerDecisionReviewed => 'Geprüft';
@@ -710,12 +713,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get marketAssetPriceFutures => 'Futures-Preis';
 
   @override
-  String get splashTagline => 'Transparenz für deine Finanzen';
+  String get splashTagline => 'Alle Geldoptionen, an einem Ort';
 
   @override
   String get routerError => 'Diese Seite konnte nicht geöffnet werden.';
 
   @override
   String get catalogSyncError =>
-      'Die neuesten Marktplatzdaten konnten nicht synchronisiert werden. Gespeicherte Angebote werden angezeigt.';
+      'Die neuesten Angebote konnten nicht synchronisiert werden. Gespeicherte Angebote werden angezeigt.';
 }

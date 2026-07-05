@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { MarketplaceLocale } from "@payn/types";
 import { localePath } from "@/lib/locale";
 import { ScrambleNumber } from "@/features/home/scramble-number";
+import { SectionNum } from "@/features/home/section-num";
 
 // Three concrete money examples — these are the questions visitors actually
 // ask themselves. Numbers reference real provider terms; they're conservative
@@ -121,20 +122,23 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
   const paynWidth = (paynAbs / maxAbs) * 100;
 
   return (
-    <section className="relative overflow-hidden rounded-4xl border border-line bg-white px-6 py-12 shadow-card sm:px-10 sm:py-14 lg:px-14 lg:py-16">
-      <div className="pointer-events-none absolute -right-32 -top-32 h-72 w-72 rounded-full bg-accent-emerald/12 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-[#10B981]/8 blur-3xl" />
+    <section className="relative overflow-hidden rounded-4xl border border-white/[0.07] bg-gradient-to-br from-[#0D1812] to-[#13181A] px-6 py-12 shadow-card sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+      <div className="pointer-events-none absolute -right-32 -top-32 h-72 w-72 rounded-full bg-accent-emerald/[0.20] blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-accent-emerald/[0.10] blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(15,138,75,0.14),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:40px_40px] opacity-70" />
 
       <div className="relative">
         <div className="mb-8 max-w-prose-wide">
-          <p className="eyebrow-cap" data-tone="emerald">
+          <p className="eyebrow-cap text-accent-emerald-soft/80">
+            <SectionNum value="03" className="mr-2.5 text-[10px] text-white/30" />
             See the real cost
           </p>
-          <h2 className="display-lead mt-3">
-            What banks quietly charge you — and what you'd pay through Payn.
+          <h2 className="mt-3 text-[1.6rem] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[2rem] md:text-[2.4rem]">
+            What banks quietly charge you — and what you&apos;d pay through Payn.
           </h2>
-          <p className="mt-3 max-w-prose-base text-[15px] leading-relaxed text-ink-secondary">
-            Same product, different provider. The difference is what you don't see on your statement.
+          <p className="mt-3 max-w-prose-base text-[15px] leading-relaxed text-white/65">
+            Same product, different provider. The difference is what you don&apos;t see on your statement.
           </p>
         </div>
 
@@ -151,8 +155,8 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
                   className={[
                     "group flex items-center gap-4 rounded-2xl border p-4 text-left transition-all",
                     isActive
-                      ? "border-accent-emerald/40 bg-accent-emerald-soft shadow-subtle"
-                      : "border-line bg-white hover:-translate-y-px hover:border-accent-emerald/25 hover:shadow-subtle",
+                      ? "border-accent-emerald/50 bg-accent-emerald/[0.10] shadow-subtle"
+                      : "border-white/[0.08] bg-white/[0.04] hover:-translate-y-px hover:border-accent-emerald/30 hover:bg-white/[0.07]",
                   ].join(" ")}
                 >
                   <span
@@ -160,18 +164,18 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
                       "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
                       isActive
                         ? "bg-accent-emerald text-white"
-                        : "bg-bg-surface text-ink-secondary group-hover:bg-accent-emerald-soft group-hover:text-accent-emerald-strong",
+                        : "bg-white/[0.06] text-white/50 group-hover:bg-accent-emerald/[0.12] group-hover:text-accent-emerald",
                     ].join(" ")}
                   >
                     <IconFor name={scenario.icon} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-tertiary">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
                       {scenario.pillCopy}
                     </p>
                     <p className={[
                       "mt-1 truncate text-[14px] font-semibold leading-tight",
-                      isActive ? "text-ink" : "text-ink-secondary",
+                      isActive ? "text-white" : "text-white/65",
                     ].join(" ")}>
                       {scenario.setup}
                     </p>
@@ -184,7 +188,7 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
                     <span
                       className={[
                         "text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors",
-                        isActive ? "text-accent-emerald-strong/80" : "text-ink-tertiary",
+                        isActive ? "text-accent-emerald/80" : "text-white/35",
                       ].join(" ")}
                     >
                       {verbForScenario(scenario)}
@@ -192,7 +196,7 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
                     <span
                       className={[
                         "mt-1 text-[18px] font-extrabold tabular-nums tracking-tight-1 transition-colors",
-                        isActive ? "text-accent-emerald-strong" : "text-ink",
+                        isActive ? "text-accent-emerald" : "text-white",
                       ].join(" ")}
                     >
                       {eur(scenario.saved)}
@@ -211,17 +215,17 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
               animate={shouldReduce ? false : { opacity: 1, y: 0 }}
               exit={shouldReduce ? undefined : { opacity: 0, y: -8 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-3xl border border-line bg-bg-surface p-6 sm:p-8"
+              className="rounded-[24px] border border-white/[0.08] bg-white/[0.05] p-5 backdrop-blur-sm sm:rounded-3xl sm:p-8"
             >
-              <p className="eyebrow-cap">Annual cost</p>
+              <p className="eyebrow-cap text-white/50">Annual cost</p>
 
               {/* Bank cost bar */}
               <div className="mt-5">
                 <div className="flex items-baseline justify-between text-[13px]">
-                  <span className="font-semibold text-ink-secondary">{active.bankLabel}</span>
-                  <span className="font-bold tabular-nums text-ink">{eur(bankAbs)}</span>
+                  <span className="font-semibold text-white/65">{active.bankLabel}</span>
+                  <span className="font-bold tabular-nums text-white">{eur(bankAbs)}</span>
                 </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full bg-white shadow-inner">
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-white/[0.08] shadow-inner">
                   <motion.div
                     className="h-full rounded-full"
                     style={{
@@ -237,10 +241,10 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
               {/* Payn cost bar */}
               <div className="mt-5">
                 <div className="flex items-baseline justify-between text-[13px]">
-                  <span className="font-semibold text-accent-emerald-strong">{active.paynLabel}</span>
-                  <span className="font-bold tabular-nums text-ink">{eur(paynAbs)}</span>
+                  <span className="font-semibold text-accent-emerald">{active.paynLabel}</span>
+                  <span className="font-bold tabular-nums text-white">{eur(paynAbs)}</span>
                 </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full bg-white shadow-inner">
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-white/[0.08] shadow-inner">
                   <motion.div
                     className="h-full rounded-full"
                     style={{
@@ -254,22 +258,22 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
               </div>
 
               {/* Delta */}
-              <div className="mt-7 rounded-2xl border border-accent-emerald/25 bg-white p-5">
-                <p className="eyebrow-cap" data-tone="emerald">
+              <div className="mt-7 rounded-2xl border border-accent-emerald/40 bg-accent-emerald/[0.08] p-5">
+                <p className="eyebrow-cap text-accent-emerald/80">
                   You {verb} per year
                 </p>
-                <p className="display-lead mt-1 tabular-nums">
+                <p className="mt-1 text-[2.4rem] font-extrabold leading-none tracking-[-0.04em] text-white tabular-nums">
                   <ScrambleNumber
                     value={active.saved}
                     decimals={0}
                     suffix=""
                     cacheKey={`spotlight-${active.id}`}
                   />
-                  <span className="ml-1 text-[1.6rem] text-accent-emerald-strong">€</span>
+                  <span className="ml-1 text-[1.6rem] text-accent-emerald">€</span>
                 </p>
                 <Link
                   href={localePath(locale, active.href)}
-                  className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent-emerald-strong transition-colors hover:text-accent-emerald"
+                  className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent-emerald transition-colors hover:text-white"
                 >
                   See {active.pillCopy.toLowerCase()} on Payn
                   <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -281,7 +285,7 @@ export function SavingsSpotlight({ locale }: SavingsSpotlightProps) {
           </AnimatePresence>
         </div>
 
-        <p className="mt-6 text-[11px] leading-relaxed text-ink-tertiary">
+        <p className="mt-6 text-[11px] leading-relaxed text-white/35">
           Illustrative annual costs based on published provider terms. Your actual amounts depend on eligibility, market, and usage.
         </p>
       </div>

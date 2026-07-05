@@ -24,6 +24,8 @@ extension PaynCategoryL10n on PaynCategory {
         return l10n.categoryInvestments;
       case PaynCategory.banking:
         return l10n.categoryBanking;
+      case PaynCategory.savings:
+        return l10n.categorySavings;
       case PaynCategory.crypto:
         return l10n.categoryCrypto;
       case PaynCategory.business:
@@ -41,8 +43,6 @@ extension PaynMarketL10n on PaynMarket {
     switch (this) {
       case PaynMarket.eu:
         return l10n.marketEu;
-      case PaynMarket.international:
-        return l10n.marketInternational;
       case PaynMarket.de:
         return l10n.marketGermany;
       case PaynMarket.es:

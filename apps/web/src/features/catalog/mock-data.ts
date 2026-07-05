@@ -172,7 +172,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.79,
     providerWebsiteUrl: "https://bunq.com",
-    affiliateLink: "https://www.bunq.com/loans",
+    affiliateLink: "https://www.bunq.com",
     updatedAt: "2026-03-22T00:00:00Z",
   },
   {
@@ -340,8 +340,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.87,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/sg/blog/uob-personal-loan",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-03-24T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "loan-curve-credit",
@@ -380,7 +381,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     metrics: [
       { label: "Cashback", value: "Up to 1%" },
       { label: "FX Fee", value: "0%" },
-      { label: "Monthly fee", value: "EUR 13.99" },
+      { label: "Monthly fee", value: "€13.99" },
     ],
     bestFor: ["Travel", "Cashback", "No FX fees"],
     linkType: "affiliate_redirect",
@@ -388,6 +389,13 @@ export const featuredOffers: MarketplaceOffer[] = [
     providerWebsiteUrl: "https://revolut.com",
     affiliateLink: "https://www.revolut.com/cards/",
     updatedAt: "2026-03-24T00:00:00Z",
+    attributes: {
+      // BUG-104 — €13.99/mo × 12 = €167.88/yr so the yearly cost
+      // calculator in the Cards workspace produces correct output.
+      annualFeeAmount: 167.88,
+      fxFeePercent: 0,
+      cashbackPercent: 1,
+    },
   },
   {
     id: "card-n26-you",
@@ -448,8 +456,8 @@ export const featuredOffers: MarketplaceOffer[] = [
     bestFor: ["Card consolidation", "Go Back in Time", "Cashback"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.80,
-    providerWebsiteUrl: "https://www.curve.com/en-gb/pricing/",
-    affiliateLink: "https://www.curve.com/en-gb/pricing/",
+    providerWebsiteUrl: "https://www.curve.com/",
+    affiliateLink: "https://www.curve.com/",
     updatedAt: "2026-05-19T00:00:00Z",
   },
   {
@@ -596,8 +604,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.82,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/gb/business/card/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-03-23T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "card-ing-credit",
@@ -664,8 +673,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.96,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/gb/send-money/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-03-24T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "transfer-revolut-send",
@@ -811,8 +821,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.81,
     providerWebsiteUrl: "https://xe.com",
-    affiliateLink: "https://www.xe.com/send-money/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C5110119576T",
     updatedAt: "2026-03-23T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "transfer-remitly-express",
@@ -941,8 +952,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.95,
     providerWebsiteUrl: "https://wise.com",
-    affiliateLink: "https://wise.com/gb/currency-converter/",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-03-24T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "exchange-revolut-fx",
@@ -1166,7 +1178,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     metrics: [
       { label: "Spread", value: "0% (weekday)" },
       { label: "Smart rules", value: "Per currency" },
-      { label: "Limit", value: "GBP 500/mo free" },
+      // CAT.5 — Was "GBP 500/mo free" — current Curve Pay (free
+      // tier) allowance is £250/mo, raised on higher Pro/Pro+ tiers.
+      { label: "Limit", value: "GBP 250/mo free (Pay tier)" },
     ],
     bestFor: ["Smart routing", "Travel spending", "Card optimization"],
     linkType: "affiliate_redirect",
@@ -1193,8 +1207,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.88,
     providerWebsiteUrl: "https://wise.com/business",
-    affiliateLink: "https://wise.com/business",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C127676432T",
     updatedAt: "2026-03-24T00:00:00Z",
+    attributes: { monetized: true, affiliate: true, isPartner: true, dataSource: "affiliate", confidenceScore: 0.97 },
   },
   {
     id: "exchange-santander-fx",
@@ -1239,7 +1254,7 @@ export const featuredOffers: MarketplaceOffer[] = [
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.84,
     providerWebsiteUrl: "https://wirexapp.com",
-    affiliateLink: "https://wirexapp.com/en/wirex-card",
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C251169530T",
     updatedAt: "2026-05-07T00:00:00Z",
     attributes: { cryptoSupport: true, affiliate: true, monetized: true },
   },
@@ -1285,7 +1300,9 @@ export const featuredOffers: MarketplaceOffer[] = [
     metrics: [
       { label: "Banks connected", value: "100+" },
       { label: "App", value: "Free" },
-      { label: "Savings found", value: "Avg. GBP 1,500/yr" },
+      // STRAT.5 — attribute the savings figure as Snoop's own estimate, not
+      // a Payn guarantee. "~" + "avg" + the source keep it an honest claim.
+      { label: "Savings (Snoop's est.)", value: "~£1,500/yr avg" },
     ],
     bestFor: ["Spending insights", "Bill tracking", "Subscription tracking"],
     linkType: "affiliate_redirect",
@@ -1310,47 +1327,21 @@ export const featuredOffers: MarketplaceOffer[] = [
     subtitle: "The pocket money app designed for 6–18 year olds. Kids get a debit card and spending app; parents set limits, assign chores, and track spending in real time.",
     metrics: [
       { label: "Age range", value: "6 – 18 years" },
-      { label: "Monthly fee", value: "From GBP 2.99" },
+      // CAT.5 — Was "From GBP 2.99" — that was the 2022 entry tier;
+      // GoHenry's current minimum (Everyday plan, May 2026) is £3.99
+      // per child / month.
+      { label: "Monthly fee", value: "GBP 3.99/child (Everyday)" },
       { label: "Parental controls", value: "Full" },
     ],
     bestFor: ["Pocket money", "Parental controls", "Financial literacy"],
     linkType: "affiliate_redirect",
     affiliatePriorityScore: 0.86,
     providerWebsiteUrl: "https://www.gohenry.com",
-    affiliateLink: "https://www.gohenry.com",
-    updatedAt: "2026-05-07T00:00:00Z",
-    attributes: { affiliate: true, monetized: true, availability: "regional" },
+    affiliateLink: "https://www.financeads.net/tc.php?t=83248C401682562T",
+    updatedAt: "2026-05-22T00:00:00Z",
+    attributes: { affiliate: true, monetized: true, isPartner: true, availability: "regional", dataSource: "affiliate", confidenceScore: 0.98 },
   },
 
-  // ═══════════════════════════════════════════════════
-  // FINANCEADS IMPORT — NEEDS REVIEW
-  // ═══════════════════════════════════════════════════
-  {
-    id: "financeads-83248c4120135638t",
-    slug: "financeads-83248c4120135638t",
-    category: "banking",
-    countryCodes: ["EU"],
-    providerMark: "?",
-    providerName: "Unknown Provider",
-    title: "Financeads Partner Offer",
-    subtitle: "Affiliate offer imported from Financeads network. Provider identity not yet resolved — pending manual review.",
-    metrics: [
-      { label: "Source", value: "Financeads" },
-      { label: "Campaign ID", value: "83248C4120135638T" },
-    ],
-    bestFor: ["Needs review"],
-    linkType: "affiliate_redirect",
-    affiliatePriorityScore: 0,
-    providerWebsiteUrl: "",
-    affiliateLink: "https://www.financeads.net/tc.php?t=83248C4120135638T",
-    updatedAt: "2026-05-07T00:00:00Z",
-    attributes: {
-      affiliate: true,
-      monetized: true,
-      dataSource: "affiliate",
-      confidenceScore: 0,
-      searchTags: ["needs_review", "financeads", "pending"],
-      informational: false,
-    },
-  },
+  // (Financeads Airwallex placeholder removed — replaced by the typed
+  // entry in financeads-monetized.ts with proper provider metadata.)
 ];

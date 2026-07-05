@@ -335,33 +335,54 @@ function getAccessFitScore(match: InvestmentAccessMatch, assetId: MarketIntellig
   return 58;
 }
 
+// TASK-317 — Was a 3-branch template that only varied on
+// timeframe + recurring-flag + bestFor, so two providers with the same
+// flag set produced the same sentence ("For short-term market access,
+// this route keeps access tighter while staying relevant for BTC.").
+// The audit flagged it as a leaked template; the chartOnly flag on
+// /explore/investing already hid the whole provider list, but the
+// dashboard + legacy marketplace-explorer surfaces still render it.
+//
+// New logic prefers per-offer copy:
+//   1. `match.notes` — hand-written per-offer line in the access-
+//      profile data (already specific, e.g. "A cleaner fit if you want
+//      scheduled crypto accumulation in EUR rather than active
+//      execution"). Used as-is when present.
+//   2. Combined `bestFor` + `feeModel` — both are per-offer fields, so
+//      "Best for In-app crypto access — Plan-based spread pricing" is
+//      distinct per row. Fee model gets sentence-cased so the line
+//      reads naturally.
+//   3. Final fallback: a single localised sentence that at least names
+//      the offer's bestFor — no timeframe filler.
+//
+// Parameters timeframe + assetId are still accepted for backwards
+// compatibility with the call site, but no longer drive the copy —
+// timeframe context was confusing in the "why this provider" subtitle
+// (users read it as "this provider only works at this timeframe").
 function getDynamicProviderWhy(
   locale: MarketplaceLocale,
   match: InvestmentAccessMatch,
-  timeframe: MarketIntelligenceTimeframe,
-  assetId: MarketIntelligenceAssetId,
+  _timeframe: MarketIntelligenceTimeframe,
+  _assetId: MarketIntelligenceAssetId,
 ) {
-  const focus = getLocalizedTimeframeFocus(locale, timeframe).label;
-
-  if (timeframe === "1D" || timeframe === "1W") {
-    if (locale === "de") {
-      return `Für ${focus} hält diese Route den Zugang schlank und bleibt für ${marketIntelligenceAssets[assetId].label} passend.`;
-    }
-    return `For ${focus}, this route keeps access tighter while staying relevant for ${marketIntelligenceAssets[assetId].label}.`;
+  const trimmed = match.notes.trim();
+  if (trimmed.length > 0) {
+    return trimmed;
   }
 
-  if (match.recurringSupported) {
-    if (locale === "de") {
-      return `Für ${focus} ist diese Route stärker, wenn regelmäßige Einzahlungen wichtiger sind als punktuelles Timing.`;
-    }
-    return `For ${focus}, this route is stronger if you prefer regular contributions rather than one-off timing.`;
+  const best = match.bestFor.trim();
+  const fee = match.feeModel.trim();
+  if (best && fee) {
+    if (locale === "de") return `Stärke: ${best}. ${fee}.`;
+    return `Best for ${best.toLowerCase()} — ${fee.toLowerCase()}.`;
+  }
+  if (best) {
+    if (locale === "de") return `Stärke: ${best}.`;
+    return `Best for ${best.toLowerCase()}.`;
   }
 
-  if (locale === "de") {
-    return `Für ${focus} ist diese Route nützlicher, wenn ${match.bestFor.toLowerCase()}.`;
-  }
-
-  return `For ${focus}, this route is more useful when ${match.bestFor.toLowerCase()}.`;
+  if (locale === "de") return "Eine weitere Zugangsroute für dieses Asset.";
+  return "Another access route for this asset.";
 }
 
 function getSignalByIndex(payload: MarketIntelligencePayload | null, index: number) {
@@ -531,6 +552,7 @@ export function InvestmentIntelligenceBlock({
   providerMatches,
   marketLabel,
   offers,
+  chartOnly = false,
 }: {
   locale: MarketplaceLocale;
   assetId?: MarketIntelligenceAssetId;
@@ -538,6 +560,12 @@ export function InvestmentIntelligenceBlock({
   providerMatches?: InvestmentAccessMatch[];
   marketLabel?: string;
   offers?: MarketplaceOffer[];
+  /** When true, render only the chart + market-pulse section. Hides the
+   *  "Compare access routes for <asset>" provider list below. Used on
+   *  `/explore/investing` where the BucketWorkspace already renders the
+   *  full offer list right under the chart — the duplicate provider
+   *  table just pushed the real offers off-screen. */
+  chartOnly?: boolean;
 }) {
   const preferences = useMarketplacePreferences();
   const userCurrency = getCountryCurrency(preferences.country);
@@ -885,7 +913,7 @@ export function InvestmentIntelligenceBlock({
         </div>
       </section>
 
-      {providerRows.length > 0 ? (
+      {!chartOnly && providerRows.length > 0 ? (
         <section className="rounded-[28px] border border-[#EAEAEA] bg-white px-5 py-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:px-6 sm:py-6">
           <div className="flex flex-col gap-3">
             <div>

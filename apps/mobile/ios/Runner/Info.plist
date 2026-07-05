@@ -4,11 +4,36 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>LSApplicationQueriesSchemes</key>
+	<!-- Supabase OAuth callback deep link -->
+	<key>CFBundleURLTypes</key>
 	<array>
-		<string>https</string>
-		<string>http</string>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>supabase-oauth-callback</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.supabase.xxyawuovvaklpsafzcqc</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-sign-in-callback</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Reversed iOS OAuth client ID from Google Cloud Console.
+				     Format: com.googleusercontent.apps.YOUR-CLIENT-ID
+				     Example: com.googleusercontent.apps.643986868857-abcxyz -->
+				<string>com.googleusercontent.apps.643986868857-objpogbq2od2egim0gljohvahrvcjo98</string>
+			</array>
+		</dict>
 	</array>
+	<!-- Google Sign-In: iOS OAuth client ID.
+	     Get this from Firebase Console → Authentication → Sign-in method → Google → iOS client ID
+	     OR from Google Cloud Console → Credentials → OAuth 2.0 Client IDs → iOS.
+	     Bundle ID: online.payn.paynMobile
+	     IMPORTANT: Also add the REVERSED_CLIENT_ID as a URL scheme above. -->
+	<key>GIDClientID</key>
+	<string>643986868857-objpogbq2od2egim0gljohvahrvcjo98.apps.googleusercontent.com</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -71,5 +96,24 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Push notifications: `remote-notification` was disabled to let
+	     debug builds sign on a free Personal Apple Developer team,
+	     which doesn't have the Push Notifications capability. Restore
+	     when the team is enrolled in the paid program.
+	     <key>UIBackgroundModes</key>
+	     <array>
+	         <string>remote-notification</string>
+	         <string>fetch</string>
+	     </array>
+	-->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+	<!-- Let firebase_messaging swizzle UIApplicationDelegate so APNs
+	     token forwarding works out of the box. Set to false if you
+	     want to handle delegate callbacks manually. -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
 </dict>
 </plist>

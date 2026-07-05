@@ -6,7 +6,6 @@ import { buttonStyles } from "@/components/button";
 import { ProviderLinkButton } from "@/components/provider-link-button";
 import { ProviderLogo } from "@/components/provider-logo";
 import { SaveOfferButton } from "@/components/save-offer-button";
-import { Tag } from "@/components/tag";
 import { OfferViewTracker } from "@/components/offer-view-tracker";
 import { VerdictBar } from "@/features/offers/verdict-bar";
 import { PdpStickySummary } from "@/features/offers/pdp-sticky-summary";
@@ -16,6 +15,7 @@ import { TransfersCostEstimator } from "@/features/offers/transfers-cost-estimat
 import { SavingsCostEstimator } from "@/features/offers/savings-cost-estimator";
 import { MobileScrollHide } from "@/components/mobile-scroll-hide";
 import { PdpDeepDive } from "@/features/offers/pdp-deep-dive";
+import { OfferPlainSummary } from "@/features/offers/offer-plain-summary";
 import { SmartCrossSell } from "@/features/offers/smart-cross-sell";
 import type { MarketplaceCategory } from "@payn/types";
 
@@ -53,6 +53,7 @@ import {
 } from "@/lib/marketplace";
 import { localePath } from "@/lib/locale";
 import { getRequestPreferences } from "@/lib/request-preferences";
+import { offerStaleness } from "@/lib/staleness";
 import { getOfferBySlug, listCategoryOffers, listMarketplaceOffers } from "@/server/catalog/catalog-service";
 
 function formatDate(value: string, locale: string) {
@@ -139,6 +140,7 @@ export default async function OfferDetailPage({
   );
   const tradeoff = getOfferTradeoff(offer);
   const primaryMetric = offer.metrics[0];
+  const heroStale = offerStaleness(offer, new Date()).level !== "fresh";
 
   return (
     <>
@@ -148,72 +150,76 @@ export default async function OfferDetailPage({
         language={preferences.locale}
         market={resolvedMarket}
       />
+      {/* RESP.9 — PDP hero padded p-4 on 375px (was p-6) and corner
+          radius dropped to rounded-[24px]; the rounded-4xl + p-6
+          combination ate 56px of horizontal room which made the
+          headline metric tower truncate on smaller phones. The
+          provider-row gap also collapses to gap-3 on mobile so the
+          ProviderLogo + name + tags column doesn't overflow. */}
       <section className="grid gap-5">
-        <div className="rounded-4xl border border-line bg-white p-6 shadow-card sm:p-8">
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex items-start gap-4">
-                <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
-                <div>
-                  <p className="text-sm font-bold text-ink">{offer.providerName}</p>
-                  <p className="mt-1 text-sm text-ink-secondary">
-                    {categoryLabel} {dictionary.offerDetail.reviewedOn} {formatDate(offer.updatedAt, preferences.locale)}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {offer.bestFor.slice(0, 2).map((item) => (
-                      <Tag key={item} tone="muted">
-                        {normalizeDisplayText(item)}
-                      </Tag>
-                    ))}
-                  </div>
+        {/* Editorial hero — light ground, oversized metric as the anchor,
+            inline CTA (no card-in-card, no floating panel). Provider identity
+            + honest freshness up top; the primary action reads directly with a
+            reassurance line beneath it. */}
+        <div className="rounded-[24px] border border-line bg-white p-5 shadow-subtle sm:rounded-[32px] sm:p-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <ProviderLogo providerName={offer.providerName} websiteUrl={offer.providerWebsiteUrl} size="lg" muted={false} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-ink">{offer.providerName}</p>
+                <p className={`mt-1 text-[13px] ${heroStale ? "font-medium text-amber-600" : "text-ink-tertiary"}`}>
+                  {heroStale
+                    ? `${categoryLabel} · last checked ${formatDate(offer.updatedAt, preferences.locale)} — confirm current terms`
+                    : `${categoryLabel} ${dictionary.offerDetail.reviewedOn} ${formatDate(offer.updatedAt, preferences.locale)}`}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {offer.bestFor.slice(0, 2).map((item) => (
+                    <span key={item} className="rounded-full border border-line bg-bg-surface px-3 py-1 text-xs font-semibold text-ink-secondary">
+                      {normalizeDisplayText(item)}
+                    </span>
+                  ))}
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <SaveOfferButton offer={offer} variant="ghost" size="md" />
-                <Link href={categoryHref} className={buttonStyles({ variant: "secondary", size: "md" })}>
-                  {dictionary.offerDetail.backToCategory}
-                </Link>
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
-              <div>
-                <p className="eyebrow-cap">
-                  {primaryMetric
-                    ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
-                    : categoryLabel}
-                </p>
-                <h1 className="display-hero mt-3 tabular-nums">
-                  {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
-                </h1>
-                <p className="mt-4 max-w-prose-base text-base leading-relaxed text-ink-secondary">
-                  {normalizeDisplayText(offer.subtitle)}
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <SaveOfferButton offer={offer} variant="secondary" size="md" />
+              <Link
+                href={categoryHref}
+                className="inline-flex items-center justify-center rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-line-strong hover:bg-bg-surface"
+              >
+                {dictionary.offerDetail.backToCategory}
+              </Link>
+            </div>
+          </div>
 
-              {/* Primary action panel — the "PRIMARY ACTION" eyebrow used
-                  to live here. It was a design-system artefact that leaked
-                  into prod: a label on a CTA that already speaks for itself.
-                  Now the panel reads directly: button + reassurance copy.
-                  The dictionary value is intentionally kept (empty string)
-                  so future locales can re-introduce a contextual eyebrow
-                  if needed without re-plumbing markup. */}
-              <div className="rounded-3xl bg-[#F7F9F7] p-5">
-                <div className="grid gap-3">
-                  <ProviderLinkButton
-                    offer={offer}
-                    label={dictionary.offerCard.providerCta[offer.category]}
-                    source="offer_detail"
-                    fullWidth
-                  />
-                  <p className="text-sm leading-relaxed text-ink-secondary">
-                    {formatCopy(dictionary.offerDetail.primaryActionBody, {
-                      provider: offer.providerName,
-                    })}
-                  </p>
-                </div>
-              </div>
+          <div className="mt-8 grid gap-6 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end lg:gap-10">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-emerald-strong">
+                {primaryMetric
+                  ? normalizeDisplayText(getMetricLabel(preferences.locale, primaryMetric.label))
+                  : categoryLabel}
+              </p>
+              <h1 className="mt-3 text-[2.75rem] font-extrabold leading-[0.95] tracking-[-0.045em] tabular-nums text-ink sm:text-[4rem]">
+                {primaryMetric ? normalizeDisplayText(primaryMetric.value) : normalizeDisplayText(offer.title)}
+              </h1>
+              <p className="mt-5 max-w-prose-base text-base leading-relaxed text-ink-secondary">
+                {normalizeDisplayText(offer.subtitle)}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2.5 lg:items-stretch lg:text-right">
+              <ProviderLinkButton
+                offer={offer}
+                label={dictionary.offerCard.providerCta[offer.category]}
+                source="offer_detail"
+                fullWidth
+              />
+              <p className="text-[13px] leading-relaxed text-ink-tertiary">
+                {formatCopy(dictionary.offerDetail.primaryActionBody, {
+                  provider: offer.providerName,
+                })}
+              </p>
             </div>
           </div>
         </div>
@@ -262,6 +268,15 @@ export default async function OfferDetailPage({
             categoryNoun: CATEGORY_NOUN[offer.category] ?? "product",
           }}
         />
+
+        {/* UX.6 — Plain-language summary block. Adds the FAQ section
+            (process questions: "will checking my rate hurt my credit
+            score?", "what if I lose my job mid-loan?") and the
+            explicit "last checked on <date>" stamp the rewrite spec
+            called out. The product questions ("What you get",
+            "Things to watch") are already handled by PdpDeepDive
+            above; this block fills the trust-signal gap underneath. */}
+        <OfferPlainSummary offer={offer} />
 
         {/* Mobile-only sticky bottom CTA, now wrapped in MobileScrollHide so
             it disappears while the user is scrolling down (reading) and

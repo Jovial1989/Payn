@@ -1,16 +1,5 @@
-import Link from "next/link";
 import { AdminSidebarLogout } from "@/components/admin-sidebar-logout";
-
-const navItems = [
-  { href: "/admin", label: "Overview", exact: true },
-  { href: "/admin/users", label: "Users" },
-  { href: "/admin/offers", label: "Offers" },
-  { href: "/admin/highlights", label: "Highlights" },
-  { href: "/admin/clicks", label: "Clicks" },
-  { href: "/admin/mail", label: "Mail" },
-  { href: "/admin/push", label: "Push" },
-  { href: "/admin/parser", label: "Parser" },
-];
+import { AdminSidebarNav } from "@/components/admin-sidebar-nav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,17 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-0.5 p-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-[10px] px-3 py-2 text-sm font-medium text-ink-secondary transition-colors hover:bg-bg-surface hover:text-ink"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <AdminSidebarNav />
 
         <div className="border-t border-line p-3">
           <AdminSidebarLogout />

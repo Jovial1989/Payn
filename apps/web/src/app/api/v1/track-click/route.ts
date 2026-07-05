@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
     category,
     country,
     language,
-    is_monetised,
     outbound_url,
     source_page,
   } = body as {
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
     category?: string;
     country?: string;
     language?: string;
-    is_monetised?: boolean;
     outbound_url?: string;
     source_page?: string;
   };
@@ -30,6 +28,24 @@ export async function POST(request: NextRequest) {
 
   const admin = createSupabaseAdminClient();
   if (!admin) return NextResponse.json({ ok: true });
+
+  // SEC-FIX PAYN-008-CLICK: look up is_monetised server-side — never trust
+  // client-supplied value as it would allow arbitrary revenue metric corruption.
+  let isMonetised = false;
+  try {
+    const { data: offerRow } = await admin
+      .from("product_offers")
+      .select("is_monetised")
+      .eq("id", offer_id)
+      .maybeSingle<{ is_monetised: boolean }>();
+    // SEC-FIX PAYN-A19: reject clicks for non-existent offers to prevent analytics pollution
+    if (!offerRow) {
+      return NextResponse.json({ error: "Offer not found" }, { status: 404 });
+    }
+    isMonetised = offerRow.is_monetised ?? false;
+  } catch {
+    // non-fatal — default to false
+  }
 
   const ua = request.headers.get("user-agent") ?? "";
   const deviceType = /mobile|android|iphone|ipad/i.test(ua) ? "mobile" : "desktop";
@@ -55,7 +71,7 @@ export async function POST(request: NextRequest) {
     language: language ?? "en",
     device_type: deviceType,
     source_page: source_page ?? "",
-    is_monetised: is_monetised ?? false,
+    is_monetised: isMonetised,
     outbound_url: outbound_url ?? "",
   });
 

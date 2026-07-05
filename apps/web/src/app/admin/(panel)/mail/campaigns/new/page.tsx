@@ -4,7 +4,7 @@ import { useCallback, useDeferredValue, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TEMPLATE_REGISTRY, type TemplateId } from "@/lib/email/templates";
 
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_API_TOKEN ?? "";
+// SEC-FIX SEC-002: removed NEXT_PUBLIC_ADMIN_API_TOKEN — session cookie handles auth
 
 const COUNTRIES = ["DE", "ES", "IT", "FR", "UK", "NL", "PT", "All"];
 const LANGUAGES = ["en", "de", "es", "fr", "it", "pt", "All"];
@@ -92,7 +92,6 @@ export default function NewEmailCampaignPage() {
   // Debounced audience size
   useEffect(() => {
     const t = setTimeout(async () => {
-      if (!ADMIN_TOKEN) return;
       try {
         const audience = {
           countries: dCountries.includes("All") ? [] : dCountries,
@@ -102,7 +101,7 @@ export default function NewEmailCampaignPage() {
         };
         const res = await fetch("/api/admin/mail/campaigns/audience-size", {
           method: "POST",
-          headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+          headers: { "content-type": "application/json" },
           body: JSON.stringify(audience),
         });
         if (res.ok) setAudienceSize(((await res.json()) as { count: number }).count);
@@ -117,7 +116,7 @@ export default function NewEmailCampaignPage() {
     const t = setTimeout(async () => {
       const res = await fetch("/api/admin/mail/preview", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ templateId, props: TEMPLATE_REGISTRY[templateId].sampleProps }),
       });
       if (res.ok) setPreviewHtml(((await res.json()) as { html: string }).html);
@@ -144,7 +143,7 @@ export default function NewEmailCampaignPage() {
     try {
       const res = await fetch("/api/admin/mail/campaigns", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           subject: subject.trim(),

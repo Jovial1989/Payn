@@ -129,7 +129,11 @@ export function LocaleGate() {
                 </option>
                 {languageOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.native} — {dictionary.locales[opt.value]}
+                    {/* Collapse "English — English" → "English"; keep the
+                        English gloss only when it differs from the native name. */}
+                    {dictionary.locales[opt.value]?.toLowerCase() === opt.native.toLowerCase()
+                      ? opt.native
+                      : `${opt.native} — ${dictionary.locales[opt.value]}`}
                   </option>
                 ))}
               </select>

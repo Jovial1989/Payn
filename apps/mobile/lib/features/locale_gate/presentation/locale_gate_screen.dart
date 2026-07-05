@@ -57,11 +57,20 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final selectedMarketValue = _selectedMarket?.localizedLabel(l10n);
+    final selectedMarketFlag =
+        _selectedMarket != null ? _flagForMarket(_selectedMarket!) : null;
     String? selectedLanguageValue;
+    String? selectedLanguageFlag;
     final selectedLanguage = _selectedLanguage;
     if (selectedLanguage != null) {
       selectedLanguageValue =
-          '${selectedLanguage.native} — ${selectedLanguage.localizedLabel(l10n)}';
+          selectedLanguage.native.toLowerCase() ==
+                  selectedLanguage.localizedLabel(l10n).toLowerCase()
+              // Collapse "English — English" → "English" (P2.12 parity).
+              ? selectedLanguage.native
+              : '${selectedLanguage.native} — ${selectedLanguage.localizedLabel(l10n)}';
+      selectedLanguageFlag =
+          selectedLanguage.flag.isNotEmpty ? selectedLanguage.flag : null;
     }
 
     return Scaffold(
@@ -139,16 +148,18 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
                 label: l10n.localeGateRegion,
                 hint: l10n.localeGateSelectCountry,
                 value: selectedMarketValue,
+                leadingEmoji: selectedMarketFlag,
                 onTap: () => _showMarketPicker(context),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Language selector
               _SelectorField(
                 label: l10n.localeGateLanguage,
                 hint: l10n.localeGateSelectLanguage,
                 value: selectedLanguageValue,
+                leadingEmoji: selectedLanguageFlag,
                 onTap: () => _showLanguagePicker(context),
               ),
 
@@ -196,6 +207,18 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
     );
   }
 
+  String _flagForMarket(PaynMarket market) {
+    return _supportedMarkets
+        .firstWhere(
+          (e) => e.market == market,
+          orElse: () => _MarketEntry(
+            market: market,
+            flag: '🇪🇺',
+          ),
+        )
+        .flag;
+  }
+
   void _showMarketPicker(BuildContext context) {
     final controller = AppScope.of(context);
     showPaynSelectionBottomSheet<PaynMarket>(
@@ -203,22 +226,9 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
       title: context.l10n.localeGateSelectCountry,
       options:
           controller.availableMarkets.map((market) {
-            final entry = _supportedMarkets.firstWhere(
-              (item) => item.market == market,
-              orElse:
-                  () => _MarketEntry(
-                    market: market,
-                    flag:
-                        market == PaynMarket.international
-                            ? '🌍'
-                            : market == PaynMarket.eu
-                            ? '🇪🇺'
-                            : market.name.toUpperCase(),
-                  ),
-            );
             return SelectionSheetOption<PaynMarket>(
               value: market,
-              leading: entry.flag,
+              leading: _flagForMarket(market),
               label: market.localizedLabel(context.l10n),
               selected: _selectedMarket == market,
             );
@@ -257,7 +267,11 @@ class _LocaleGateScreenState extends State<LocaleGateScreen> {
               value: language,
               leading: language.flag,
               label:
-                  '${language.native} — ${language.localizedLabel(context.l10n)}',
+                  language.native.toLowerCase() ==
+                          language.localizedLabel(context.l10n).toLowerCase()
+                      // Collapse "English — English" → "English" (P2.12 parity).
+                      ? language.native
+                      : '${language.native} — ${language.localizedLabel(context.l10n)}',
               selected: _selectedLanguage?.code == language.code,
             );
           }).toList(),
@@ -301,7 +315,6 @@ const _supportedMarkets = <_MarketEntry>[
   _MarketEntry(market: PaynMarket.nl, flag: '🇳🇱'),
   _MarketEntry(market: PaynMarket.pt, flag: '🇵🇹'),
   _MarketEntry(market: PaynMarket.eu, flag: '🇪🇺'),
-  _MarketEntry(market: PaynMarket.international, flag: '🌍'),
 ];
 
 class _AppLanguage {
@@ -360,10 +373,12 @@ class _SelectorField extends StatelessWidget {
     required this.hint,
     required this.value,
     required this.onTap,
+    this.leadingEmoji,
   });
   final String label;
   final String hint;
   final String? value;
+  final String? leadingEmoji;
   final VoidCallback onTap;
 
   @override
@@ -371,64 +386,94 @@ class _SelectorField extends StatelessWidget {
     final theme = Theme.of(context);
     final hasValue = value != null;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          label.toUpperCase(),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: PaynColors.textTertiary,
-            letterSpacing: 0.9,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            height: 54,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: PaynColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color:
-                    hasValue
-                        ? PaynColors.text.withValues(alpha: 0.15)
-                        : PaynColors.outline,
-              ),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        splashColor: PaynColors.accent.withValues(alpha: 0.05),
+        highlightColor: PaynColors.accent.withValues(alpha: 0.03),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: PaynColors.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: hasValue ? PaynColors.outline : PaynColors.outlineSubtle,
+              width: 1,
             ),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Color(0x06000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: <Widget>[
-                Expanded(
-                  child: Text(
-                    value ?? hint,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color:
-                          hasValue ? PaynColors.text : PaynColors.textTertiary,
-                      fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
+                // Flag bubble when a value is selected
+                if (hasValue && leadingEmoji != null) ...<Widget>[
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: PaynColors.surfaceRaised,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    overflow: TextOverflow.ellipsis,
+                    alignment: Alignment.center,
+                    child: Text(
+                      leadingEmoji!,
+                      style: const TextStyle(fontSize: 18, height: 1),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                // Label + hint/value stacked
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: hasValue
+                              ? PaynColors.textTertiary
+                              : PaynColors.textTertiary,
+                          letterSpacing: 0.2,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value ?? hint,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: hasValue
+                              ? PaynColors.text
+                              : PaynColors.textTertiary,
+                          fontWeight:
+                              hasValue ? FontWeight.w500 : FontWeight.w400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 20,
+                  Icons.unfold_more_rounded,
+                  size: 18,
                   color: PaynColors.textTertiary,
                 ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

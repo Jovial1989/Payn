@@ -6,7 +6,7 @@ import { dispatchCampaign } from "@/app/api/admin/push/campaigns/route";
 // POST /api/admin/push/dispatch-scheduled
 // Vercel cron hits this every minute. Picks up campaigns due for sending.
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       audience_countries: campaign.audience_countries ?? [],
       audience_languages: campaign.audience_languages ?? [],
       audience_last_active_days: campaign.audience_last_active_days ?? undefined,
+      deep_link: campaign.deep_link ?? null,
     });
   }
 

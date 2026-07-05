@@ -9,7 +9,7 @@ type PreviewBody = {
 };
 
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const body = (await request.json().catch(() => null)) as PreviewBody | null;

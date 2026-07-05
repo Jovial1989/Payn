@@ -169,6 +169,41 @@ const PROVIDER_DOMAINS: Record<string, string> = {
   "Younited Credit":      "younited-credit.com",
   "Zopa":                 "zopa.com",
   "Zurich":               "zurich.com",
+  // WEB.6 — Catalog-expansion providers that hadn't been added to
+  // the domain map yet. Each entry maps the catalog display name to
+  // the brand's canonical domain so the Google favicon proxy can
+  // resolve a high-res icon at build time.
+  "ActivTrades":          "activtrades.com",
+  "Airwallex":            "airwallex.com",
+  "BlueTax":              "bluetax.eu",
+  "Coinhouse":            "coinhouse.com",
+  "Contabilidade Online": "contabilidadeonline.pt",
+  "Cornerstone":          "cornerstone.eu",
+  "Currensea":            "currensea.com",
+  "Deblock":              "deblock.com",
+  "Declareo":             "declareo.fr",
+  "Enky Invest":          "enkyinvest.com",
+  "Expatax":              "expatax.nl",
+  "Fiscozen":             "fiscozen.it",
+  "Hilton Honors":        "hilton.com",
+  "Juste":                "juste.app",
+  "Keyfin":               "keyfin.de",
+  "Krak Card":            "krak.com",
+  "NHR Advisors":         "nhradvisors.pt",
+  "Orange Protect":       "orange.fr",
+  "Quelimpôt":            "quelimpot.fr",
+  "Sorted":               "sorted.com",
+  "Steuergo":             "steuergo.de",
+  "SumUp":                "sumup.com",
+  "TaxCalc":              "taxcalc.com",
+  "TaxDown":              "taxdown.es",
+  "TaxSavers":            "thetaxsavers.nl",
+  "Taxback Portugal":     "taxback.pt",
+  "Taxfix":               "taxfix.de",
+  "Wallester":            "wallester.com",
+  "Waltio":               "waltio.com",
+  "Wundertax":            "wundertax.de",
+  "YouHodler":            "youhodler.com",
 };
 
 const SKIP_PROVIDERS = new Set(["Unknown Provider"]);
@@ -183,21 +218,44 @@ function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
-async function downloadLogo(domain: string, destPath: string): Promise<"ok" | "error"> {
-  // Google's favicon proxy fetches apple-touch-icon / high-res favicon from brand CDNs
-  const url = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=64`;
+async function tryFetch(url: string, destPath: string): Promise<boolean> {
   try {
     const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(10_000) });
-    if (!res.ok) return "error";
+    if (!res.ok) return false;
     const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.startsWith("image/")) return "error";
+    if (!contentType.startsWith("image/")) return false;
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.byteLength < 100) return "error";
+    if (buf.byteLength < 200) return false; // empty favicons / 1×1 sentinels
     writeFileSync(destPath, buf);
-    return "ok";
+    return true;
   } catch {
-    return "error";
+    return false;
   }
+}
+
+async function downloadLogo(domain: string, destPath: string): Promise<"ok" | "error"> {
+  // WEB.6 — Multi-source fallback chain. The previous single-source
+  // (Google favicon proxy) failed on ~20% of providers because some
+  // brand domains either lack a proper apple-touch-icon or block
+  // Google's crawler. We now try, in order:
+  //   1. Clearbit Logo API — clean square PNG, no auth needed for
+  //      low-volume one-shot ingestion.
+  //   2. Google favicon V2 at size 128 — slightly higher than 64,
+  //      catches more brands with a real icon.
+  //   3. Google favicon V2 at size 64 — final fallback for the cases
+  //      that worked before.
+  // First success wins; if all fail we report "error" and the slug
+  // stays out of KNOWN_LOGOS so the row falls back to provider
+  // initials.
+  const candidates = [
+    `https://logo.clearbit.com/${domain}?size=128`,
+    `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`,
+    `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=64`,
+  ];
+  for (const url of candidates) {
+    if (await tryFetch(url, destPath)) return "ok";
+  }
+  return "error";
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

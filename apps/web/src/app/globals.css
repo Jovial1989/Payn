@@ -5,8 +5,13 @@
 @layer base {
   :root {
     color-scheme: light;
-    --font-body: "Manrope", "Inter", "Avenir Next", "Segoe UI", sans-serif;
-    --font-display: "Manrope", "Inter", "Avenir Next Condensed", sans-serif;
+    /* WEB.6 — `--font-manrope` is the self-hosted variable injected
+       by `next/font/google` in app/layout.tsx (className passed to
+       <html>). Listing it first means the browser actually picks up
+       the loaded font instead of falling through to system Manrope
+       (which doesn't exist on most machines) and then to system-ui. */
+    --font-body: var(--font-manrope), "Manrope", "Inter", "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: var(--font-manrope), "Manrope", "Inter", "Avenir Next Condensed", sans-serif;
     --font-mono: "Geist Mono", "SFMono-Regular", "SF Mono", "Menlo", monospace;
     --bg-base: #ffffff;
     --surface-base: #ffffff;
@@ -38,8 +43,28 @@
   html {
     background: var(--bg-base);
     color: var(--ink-primary);
+    /* overflow-x: clip does NOT create a new containing block (unlike
+       overflow-x: hidden) so position:sticky still works inside. iOS 16+
+       supports it; older Safari falls back to visible which is fine — we
+       rely on max-width: 100vw to prevent horizontal scroll anyway. */
     overflow-x: clip;
+    max-width: 100vw;
     scroll-behavior: smooth;
+  }
+
+  /* RESP — Tailwind's `grid` utility only sets `display: grid` but leaves
+     `grid-template-columns` unset. Bare `<div className="grid gap-X">`
+     therefore auto-sizes its single column to the MAX-CONTENT width of
+     the widest child, which on mobile means a button with truncated text
+     (the SavingsSpotlight scenarios, the Quick check form, etc.) pushes
+     the grid wider than the viewport.
+     Defaulting `.grid` to `minmax(0, 1fr)` forces a single fluid column
+     that respects the parent width. Tailwind's `grid-cols-N` utilities
+     (which output `grid-template-columns: repeat(N, minmax(0, 1fr))`)
+     have higher specificity in the cascade and override this when
+     present, so this fix only affects grids that were already bugged. */
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   body {
@@ -51,7 +76,10 @@
     font-family: var(--font-body), sans-serif;
     font-feature-settings: "ss01" on, "cv01" on, "cv11" on, "tnum" on;
     overflow-x: clip;
+    max-width: 100vw;
+    position: relative;
   }
+
 
   a { color: inherit; text-decoration: none; }
   img, svg, video, canvas { max-width: 100%; }

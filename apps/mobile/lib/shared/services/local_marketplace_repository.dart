@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:payn_mobile/core/constants/marketplace_constants.dart';
 import 'package:payn_mobile/shared/models/payn_models.dart';
+import 'package:payn_mobile/shared/services/quick_filters.dart';
 
 class _NumberRange {
   const _NumberRange({this.min, this.max});
@@ -73,8 +74,30 @@ class LocalMarketplaceRepository {
         }
       }
 
-      if (filters.subtype.isNotEmpty &&
-          offer.attributes.subtype != filters.subtype) {
+      if (filters.subtype.isNotEmpty) {
+        // P1.6 — Subtype filtering now reads from two sources:
+        //   • attributes.subtype — for insurance (health/travel/life/…)
+        //     and any other category that gets server-side classified.
+        //   • rawCategory — for the Cards bucket where each card flavour
+        //     (cards/debit/travel/cashback) lives as its own top-level
+        //     category before being folded into PaynCategory.cards.
+        // We check both, fold nomad→travel for insurance, and accept any
+        // hit. Offers with no subtype data are dropped (a missing field
+        // shouldn't silently match every filter).
+        final attrSubtype = offer.attributes.subtype ?? '';
+        final rawCat = offer.rawCategory ?? '';
+        final candidates = <String>{
+          if (attrSubtype.isNotEmpty)
+            (attrSubtype == 'nomad' ? 'travel' : attrSubtype),
+          if (rawCat.isNotEmpty) rawCat,
+        };
+        if (!candidates.contains(filters.subtype)) {
+          return false;
+        }
+      }
+
+      if (filters.quickFilter.isNotEmpty &&
+          !applyQuickFilter(offer, filters.quickFilter)) {
         return false;
       }
 
@@ -336,6 +359,15 @@ class LocalMarketplaceRepository {
           _ =>
             'Deposit protection, availability, and account fees may shift after the first months.',
         };
+      case PaynCategory.savings:
+        return switch (languageCode) {
+          'de' =>
+            'Beworbene Zinssätze können Aktionen, Mindestbeträge oder Bindungsdauern voraussetzen.',
+          'es' =>
+            'Las tasas anunciadas pueden requerir promociones, importes mínimos o periodos de fidelización.',
+          _ =>
+            'Headline rates may rely on promos, minimum balances, or lock-in periods.',
+        };
       case PaynCategory.crypto:
         return switch (languageCode) {
           'de' =>
@@ -384,11 +416,20 @@ class LocalMarketplaceRepository {
     };
   }
 
+  // TASK-318 — Was "Visible across European comparison flows" (en) /
+  // "In europäischen Vergleichsflüssen sichtbar" (de) — pure internal
+  // marketing-deck phrasing that leaked into the Benefits section on
+  // PDP. Replaced with user-facing copy that says what the customer
+  // actually gets: a cross-border product they can sign up for from
+  // their EU country of residence.
   String _regionalVisibilityReason(String languageCode) =>
       switch (languageCode) {
-        'de' => 'In europäischen Vergleichsflüssen sichtbar',
-        'es' => 'Visible en comparativas europeas',
-        _ => 'Visible across European comparison flows',
+        'de' => 'Grenzüberschreitend in der EU verfügbar',
+        'es' => 'Disponible para clientes en toda la UE',
+        'fr' => 'Disponible aux clients dans toute l\'UE',
+        'it' => 'Disponibile ai clienti in tutta l\'UE',
+        'pt' => 'Disponível para clientes em toda a UE',
+        _ => 'Available to customers across the EU',
       };
 
   String _categoryFocusReason(PaynCategory category, String languageCode) {
@@ -518,12 +559,6 @@ class LocalMarketplaceRepository {
           'es' => 'Toda Europa',
           _ => 'All Europe',
         };
-      case PaynMarket.international:
-        return switch (languageCode) {
-          'de' => 'International',
-          'es' => 'Internacional',
-          _ => 'International',
-        };
       case PaynMarket.de:
         return switch (languageCode) {
           'de' => 'Deutschland',
@@ -570,48 +605,82 @@ class LocalMarketplaceRepository {
   }
 
   String _categoryLabel(PaynCategory category, String languageCode) {
+    // TASK-302 (PR-V3-02). Aligned with `PaynCategoryLabel.label` and
+    // the ARB `categoryX` strings. Six locales kept for parity with
+    // the rest of the catalogue — when the caller has a `BuildContext`
+    // it should still prefer `PaynCategoryL10n.localizedLabel(l10n)`.
     switch (category) {
       case PaynCategory.loans:
         return switch (languageCode) {
           'de' => 'Kredite',
-          'es' => 'Préstamos',
-          _ => 'Loans',
+          'es' => 'Pedir prestado',
+          'fr' => 'Emprunter',
+          'it' => 'Prendere in prestito',
+          'pt' => 'Pedir emprestado',
+          _ => 'Borrowing',
         };
       case PaynCategory.cards:
         return switch (languageCode) {
           'de' => 'Karten',
           'es' => 'Tarjetas',
+          'fr' => 'Cartes',
+          'it' => 'Carte',
+          'pt' => 'Cartões',
           _ => 'Cards',
         };
       case PaynCategory.transfers:
         return switch (languageCode) {
-          'de' => 'Überweisungen',
-          'es' => 'Transferencias',
-          _ => 'Transfers',
+          'de' => 'Geld senden',
+          'es' => 'Enviar dinero',
+          'fr' => "Envoyer de l'argent",
+          'it' => 'Inviare denaro',
+          'pt' => 'Enviar dinheiro',
+          _ => 'Sending money',
         };
       case PaynCategory.exchange:
         return switch (languageCode) {
-          'de' => 'Wechsel',
-          'es' => 'Cambio',
-          _ => 'Exchange',
+          'de' => 'Währungswechsel',
+          'es' => 'Cambio de divisas',
+          'fr' => 'Change',
+          'it' => 'Cambio valuta',
+          'pt' => 'Câmbio',
+          _ => 'Currency exchange',
         };
       case PaynCategory.insurance:
         return switch (languageCode) {
-          'de' => 'Versicherungen',
+          'de' => 'Versicherung',
           'es' => 'Seguros',
+          'fr' => 'Assurance',
+          'it' => 'Assicurazione',
+          'pt' => 'Seguros',
           _ => 'Insurance',
         };
       case PaynCategory.investments:
         return switch (languageCode) {
-          'de' => 'Investments',
-          'es' => 'Inversiones',
-          _ => 'Investments',
+          'de' => 'Anlegen',
+          'es' => 'Invertir',
+          'fr' => 'Investir',
+          'it' => 'Investire',
+          'pt' => 'Investir',
+          _ => 'Investing',
         };
       case PaynCategory.banking:
         return switch (languageCode) {
-          'de' => 'Banking',
-          'es' => 'Banca',
-          _ => 'Banking',
+          'de' => 'Bankkonten',
+          'es' => 'Cuentas bancarias',
+          'fr' => 'Comptes bancaires',
+          'it' => 'Conti bancari',
+          'pt' => 'Contas bancárias',
+          _ => 'Bank accounts',
+        };
+      case PaynCategory.savings:
+        return switch (languageCode) {
+          'de' => 'Sparen',
+          'es' => 'Ahorrar',
+          'fr' => 'Épargner',
+          'it' => 'Risparmiare',
+          'pt' => 'Poupar',
+          _ => 'Saving',
         };
       case PaynCategory.crypto:
         return switch (languageCode) {
@@ -700,13 +769,6 @@ class LocalMarketplaceRepository {
 
     if (market == PaynMarket.eu) {
       return euWideMatch || internationalMatch || codes.length >= 4;
-    }
-
-    if (market == PaynMarket.international) {
-      return euWideMatch ||
-          codes.length >= 4 ||
-          internationalMatch ||
-          globallyRecognizedProviders.contains(offer.providerName);
     }
 
     return codes.contains(marketCode) || euWideMatch || internationalMatch;
@@ -1472,6 +1534,426 @@ class LocalMarketplaceRepository {
           'btc',
           'cold storage',
         ],
+      ),
+    ),
+
+    // ── SAVINGS (easy-access) ──────────────────────────────────────────────
+    PaynOffer(
+      id: 'savings-trade-republic',
+      slug: 'trade-republic-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE', 'AT', 'ES', 'FR', 'IT', 'PT', 'NL', 'BE'],
+      providerMark: 'TR',
+      providerName: 'Trade Republic',
+      title: 'Trade Republic Savings',
+      subtitle:
+          '4% interest on uninvested cash with daily accrual. Backed by Deutsche Bank and BaFin regulated. No minimum deposit required.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Interest rate', value: '4.0% per year'),
+        PaynMetric(label: 'Access', value: 'Instant'),
+        PaynMetric(label: 'Deposit protection', value: 'EUR 100,000'),
+      ],
+      bestFor: <String>['High yield', 'No minimum', 'Daily interest'],
+      providerWebsiteUrl: 'https://traderepublic.com/en-de/cash',
+      affiliateLink: 'https://traderepublic.com/en-de/cash',
+      affiliatePriorityScore: 0.96,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        minDeposit: 'EUR 1',
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'high yield', 'interest'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-raisin-eu',
+      slug: 'raisin-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE', 'AT', 'ES', 'FR', 'IT', 'PT', 'NL'],
+      providerMark: 'RS',
+      providerName: 'Raisin',
+      title: 'Raisin Savings Marketplace',
+      subtitle:
+          "Europe's leading deposit marketplace. Access savings accounts from 100+ European banks through one platform. Compare rates and switch instantly.",
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Interest rate', value: 'Up to 4.5% per year'),
+        PaynMetric(label: 'Access', value: 'Instant — switch banks any time'),
+        PaynMetric(
+          label: 'Deposit protection',
+          value: 'Up to EUR 100,000 per bank',
+        ),
+      ],
+      bestFor: <String>[
+        'Best rates in Europe',
+        'Multiple banks',
+        'EUR 1,000+ deposits',
+      ],
+      providerWebsiteUrl: 'https://www.raisin.com/en-eu/savings/',
+      affiliateLink: 'https://www.raisin.com/en-eu/savings/',
+      affiliatePriorityScore: 0.92,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        minDeposit: 'EUR 1,000',
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'deposit', 'best rates'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-revolut-savings',
+      slug: 'revolut-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['EU', 'UK'],
+      providerMark: 'R',
+      providerName: 'Revolut',
+      title: 'Revolut Savings Vault',
+      subtitle:
+          'Flexible savings pocket within your Revolut app. Rates vary by currency and plan; instant access, no lock-in.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'EUR rate (Metal)', value: 'Up to 1.96% AER'),
+        PaynMetric(label: 'GBP rate (Metal)', value: 'Up to 3.64% AER'),
+        PaynMetric(label: 'Access', value: 'Instant'),
+      ],
+      bestFor: <String>['Revolut users', 'Instant access', 'No lock-in'],
+      providerWebsiteUrl: 'https://www.revolut.com/savings/',
+      affiliateLink: 'https://www.revolut.com/savings/',
+      affiliatePriorityScore: 0.83,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        minDeposit: 'EUR 1',
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'revolut', 'flexible'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-n26-savings',
+      slug: 'n26-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE', 'AT', 'ES', 'FR', 'IT'],
+      providerMark: 'N26',
+      providerName: 'N26',
+      title: 'N26 Savings',
+      subtitle:
+          'Savings account built into N26 banking app. Instant access, no fees, and backed by German deposit protection up to EUR 100,000.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Interest rate', value: 'Up to 4.0% AER'),
+        PaynMetric(label: 'Access', value: 'Instant'),
+        PaynMetric(label: 'Deposit protection', value: 'EUR 100,000'),
+      ],
+      bestFor: <String>[
+        'N26 customers',
+        'German deposit protection',
+        'No fees',
+      ],
+      providerWebsiteUrl: 'https://n26.com/en-eu/compare-bank-accounts',
+      affiliateLink: 'https://n26.com/en-eu/compare-bank-accounts',
+      affiliatePriorityScore: 0.79,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        minDeposit: 'EUR 1',
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'N26', 'Germany'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-lightyear',
+      slug: 'lightyear-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['UK', 'EU'],
+      providerMark: 'LY',
+      providerName: 'Lightyear',
+      title: 'Lightyear Cash Account',
+      subtitle:
+          'Yield on idle cash via money-market funds, accessible inside the same app you use for stocks and ETFs. Note: held in MMFs, not as a bank deposit.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'USD rate', value: 'Up to 3.75% (variable)'),
+        PaynMetric(label: 'EUR rate', value: '1.94% AER (variable)'),
+        PaynMetric(
+          label: 'Protection',
+          value: '€20,000 IPSF (MMF, not FSCS deposit)',
+        ),
+      ],
+      bestFor: <String>['Investors', 'Multi-currency cash', 'UK/EU residents'],
+      providerWebsiteUrl: 'https://lightyear.com/gb/invest',
+      affiliateLink: 'https://lightyear.com/gb/invest',
+      affiliatePriorityScore: 0.77,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'cash account', 'interest'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-vivid-prime',
+      slug: 'vivid-savings',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE', 'FR', 'ES', 'IT'],
+      providerMark: 'VV',
+      providerName: 'Vivid Money',
+      title: 'Vivid Savings',
+      subtitle:
+          'Earn up to 4% interest on EUR savings through Vivid Prime. Access your funds any time with no minimum deposit.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: 'Interest rate', value: 'Up to 4.0%'),
+        PaynMetric(label: 'Access', value: 'Instant'),
+        PaynMetric(label: 'Plan required', value: 'Vivid Prime (EUR 9.90/month)'),
+      ],
+      bestFor: <String>[
+        'Cashback + savings combo',
+        'EU residents',
+        'Vivid users',
+      ],
+      providerWebsiteUrl: 'https://vivid.money/en-de/pricing/',
+      affiliateLink: 'https://vivid.money/en-de/pricing/',
+      affiliatePriorityScore: 0.73,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'easy-access',
+        minDeposit: 'EUR 1',
+        feeProfile: 'medium',
+        availability: 'eu_wide',
+        searchTags: <String>['savings', 'Vivid', 'interest'],
+      ),
+    ),
+
+    // ── SAVINGS (fixed-term deposits) ─────────────────────────────────────
+    PaynOffer(
+      id: 'savings-raisin-festgeld',
+      slug: 'raisin-festgeld',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE', 'AT', 'ES', 'FR', 'IT', 'PT', 'NL'],
+      providerMark: 'RS',
+      providerName: 'Raisin',
+      title: 'Raisin Festgeld (fixed-term deposit)',
+      subtitle:
+          'One-click access to fixed-term deposits from 100+ European partner banks. Lock in 1-, 2-, 3-, or 5-year rates without opening separate accounts.',
+      metrics: <PaynMetric>[
+        PaynMetric(
+          label: '1-year rate',
+          value: 'Up to 3.10% p.a. (variable per bank)',
+        ),
+        PaynMetric(label: 'Term length', value: '1 / 2 / 3 / 5 years'),
+        PaynMetric(label: 'Minimum deposit', value: 'EUR 1,000'),
+        PaynMetric(
+          label: 'Deposit protection',
+          value: 'Up to EUR 100,000 per bank (EU DGS)',
+        ),
+      ],
+      bestFor: <String>[
+        'Locked-in rate',
+        'Best of 100+ banks',
+        'EUR 1,000+ savings',
+      ],
+      providerWebsiteUrl: 'https://www.raisin.com/en-eu/fixed-term-deposit/',
+      affiliateLink: 'https://www.raisin.com/en-eu/fixed-term-deposit/',
+      affiliatePriorityScore: 0.90,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'EUR 1,000',
+        minTermMonths: 12,
+        maxTermMonths: 60,
+        feeProfile: 'low',
+        availability: 'eu_wide',
+        searchTags: <String>['fixed-term', 'Festgeld', 'deposit', 'fixed rate'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-klarna-festgeld',
+      slug: 'klarna-festgeld',
+      category: PaynCategory.savings,
+      countryCodes: <String>['DE'],
+      providerMark: 'K',
+      providerName: 'Klarna',
+      title: 'Klarna Festgeld',
+      subtitle:
+          "Fixed-term deposit from Klarna's Swedish banking entity. Lock in a guaranteed rate for 1–4 years with Swedish deposit protection.",
+      metrics: <PaynMetric>[
+        PaynMetric(
+          label: '1-year rate',
+          value: 'Up to 2.85% p.a. (variable)',
+        ),
+        PaynMetric(label: 'Term length', value: '1 / 2 / 3 / 4 years'),
+        PaynMetric(label: 'Minimum deposit', value: 'EUR 1'),
+        PaynMetric(
+          label: 'Deposit protection',
+          value: 'EUR 100,000 (Swedish DGS via Klarna Bank AB)',
+        ),
+      ],
+      bestFor: <String>['No minimum', 'Familiar brand DE', 'Fixed return'],
+      providerWebsiteUrl: 'https://www.klarna.com/de/festgeld/',
+      affiliateLink: 'https://www.klarna.com/de/festgeld/',
+      affiliatePriorityScore: 0.82,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'EUR 1',
+        minTermMonths: 12,
+        maxTermMonths: 48,
+        feeProfile: 'low',
+        availability: 'local',
+        searchTags: <String>['Festgeld', 'Klarna', 'fixed-term'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-myinvestor-deposito',
+      slug: 'myinvestor-deposito',
+      category: PaynCategory.savings,
+      countryCodes: <String>['ES'],
+      providerMark: 'MI',
+      providerName: 'MyInvestor',
+      title: 'MyInvestor Depósito a Plazo Fijo',
+      subtitle:
+          'Spanish fixed-term deposit from MyInvestor (Andbank-backed). 12-month locked rate with Spanish FGD deposit protection.',
+      metrics: <PaynMetric>[
+        PaynMetric(
+          label: '12-month rate',
+          value: 'Up to 2.75% TAE (variable)',
+        ),
+        PaynMetric(label: 'Term length', value: '12 months'),
+        PaynMetric(label: 'Minimum deposit', value: 'EUR 10,000'),
+        PaynMetric(label: 'Deposit protection', value: 'EUR 100,000 (Spanish FGD)'),
+      ],
+      bestFor: <String>[
+        'Spanish residents',
+        'Locked-in rate',
+        'Tax-resident in ES',
+      ],
+      providerWebsiteUrl: 'https://myinvestor.es/ahorro/deposito-a-plazo/',
+      affiliateLink: 'https://myinvestor.es/ahorro/deposito-a-plazo/',
+      affiliatePriorityScore: 0.78,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'EUR 10,000',
+        minTermMonths: 12,
+        maxTermMonths: 12,
+        feeProfile: 'low',
+        availability: 'local',
+        searchTags: <String>['depósito', 'plazo fijo', 'MyInvestor', 'ES'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-illimity-conto-deposito',
+      slug: 'illimity-conto-deposito',
+      category: PaynCategory.savings,
+      countryCodes: <String>['IT'],
+      providerMark: 'IL',
+      providerName: 'Illimity Bank',
+      title: 'Illimity Conto Deposito',
+      subtitle:
+          'Italian online-only fixed-term deposit from Illimity. Choose tenor from 6 to 60 months with Italian FITD deposit protection.',
+      metrics: <PaynMetric>[
+        PaynMetric(
+          label: '12-month rate',
+          value: 'Up to 2.90% lordo (variable)',
+        ),
+        PaynMetric(label: 'Term length', value: '6 / 12 / 24 / 36 / 60 months'),
+        PaynMetric(label: 'Minimum deposit', value: 'EUR 1,000'),
+        PaynMetric(label: 'Deposit protection', value: 'EUR 100,000 (Italian FITD)'),
+      ],
+      bestFor: <String>[
+        'Italian residents',
+        'Online-only',
+        'Flexible tenor',
+      ],
+      providerWebsiteUrl:
+          'https://www.illimitybank.com/it/private/conto-deposito',
+      affiliateLink:
+          'https://www.illimitybank.com/it/private/conto-deposito',
+      affiliatePriorityScore: 0.76,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'EUR 1,000',
+        minTermMonths: 6,
+        maxTermMonths: 60,
+        feeProfile: 'low',
+        availability: 'local',
+        searchTags: <String>['conto deposito', 'Illimity', 'IT', 'fixed-term'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-distingo-livret',
+      slug: 'distingo-livret',
+      category: PaynCategory.savings,
+      countryCodes: <String>['FR'],
+      providerMark: 'DB',
+      providerName: 'Distingo Bank',
+      title: 'Distingo Compte à Terme',
+      subtitle:
+          'French fixed-term deposit from Distingo Bank (PSA Banque Finance). Lock in a guaranteed rate for 1, 2, 3, or 5 years.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: '1-year rate', value: 'Up to 2.60% brut (variable)'),
+        PaynMetric(label: 'Term length', value: '1 / 2 / 3 / 5 years'),
+        PaynMetric(label: 'Minimum deposit', value: 'EUR 1,000'),
+        PaynMetric(label: 'Deposit protection', value: 'EUR 100,000 (French FGDR)'),
+      ],
+      bestFor: <String>[
+        'French residents',
+        'Locked-in rate',
+        'Complement to Livret A',
+      ],
+      providerWebsiteUrl: 'https://www.distingo.fr/compte-a-terme',
+      affiliateLink: 'https://www.distingo.fr/compte-a-terme',
+      affiliatePriorityScore: 0.74,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'EUR 1,000',
+        minTermMonths: 12,
+        maxTermMonths: 60,
+        feeProfile: 'low',
+        availability: 'local',
+        searchTags: <String>['compte à terme', 'Distingo', 'FR', 'fixed-term'],
+      ),
+    ),
+    PaynOffer(
+      id: 'savings-nsi-bonds',
+      slug: 'nsi-guaranteed-bonds',
+      category: PaynCategory.savings,
+      countryCodes: <String>['UK'],
+      providerMark: 'NSI',
+      providerName: 'NS&I',
+      title: 'NS&I Guaranteed Growth Bonds (1-Year)',
+      subtitle:
+          'UK-government-backed fixed-term bonds from NS&I. 100% capital protected — backed by HM Treasury, no FSCS cap.',
+      metrics: <PaynMetric>[
+        PaynMetric(label: '1-year rate', value: 'Up to 3.95% AER (variable)'),
+        PaynMetric(label: 'Term length', value: '1 / 2 / 3 / 5 years'),
+        PaynMetric(label: 'Minimum deposit', value: 'GBP 500'),
+        PaynMetric(
+          label: 'Protection',
+          value: '100% HM Treasury backed (no FSCS cap)',
+        ),
+      ],
+      bestFor: <String>[
+        'UK residents',
+        'Above-FSCS-cap savers',
+        'Government guarantee',
+      ],
+      providerWebsiteUrl:
+          'https://www.nsandi.com/products/guaranteed-growth-bonds',
+      affiliateLink:
+          'https://www.nsandi.com/products/guaranteed-growth-bonds',
+      affiliatePriorityScore: 0.85,
+      updatedAt: '2026-05-01T00:00:00Z',
+      attributes: PaynOfferAttributes(
+        accessType: 'fixed-term',
+        minDeposit: 'GBP 500',
+        minTermMonths: 12,
+        maxTermMonths: 60,
+        feeProfile: 'low',
+        availability: 'local',
+        searchTags: <String>['bonds', 'NS&I', 'UK', 'fixed-term', 'government'],
       ),
     ),
   ];

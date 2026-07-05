@@ -12,37 +12,40 @@ class AppLocalizationsIt extends AppLocalizations {
   String get appTitle => 'Payn';
 
   @override
-  String get categoryLoans => 'Prestiti';
+  String get categoryLoans => 'Prendere in prestito';
 
   @override
-  String get categoryCards => 'Carte di credito';
+  String get categoryCards => 'Carte';
 
   @override
-  String get categoryBanking => 'Banca';
+  String get categoryBanking => 'Conti bancari';
 
   @override
-  String get categoryTransfers => 'Bonifici';
+  String get categoryTransfers => 'Inviare denaro';
 
   @override
   String get categoryExchange => 'Cambio valuta';
 
   @override
-  String get categoryInsurance => 'Assicurazioni';
+  String get categoryInsurance => 'Assicurazione';
 
   @override
-  String get categoryInvestments => 'Investimenti';
+  String get categoryInvestments => 'Investire';
 
   @override
   String get categoryCrypto => 'Cripto';
 
   @override
-  String get categoryBusiness => 'Conto aziendale';
+  String get categoryBusiness => 'Per aziende';
 
   @override
-  String get categoryBudgeting => 'Budget e finanze';
+  String get categoryBudgeting => 'Budget familiare';
 
   @override
-  String get categoryKids => 'Bambini e famiglia';
+  String get categoryKids => 'Famiglia';
+
+  @override
+  String get categorySavings => 'Risparmiare';
 
   @override
   String get profileTypePersonal => 'Personale';
@@ -216,7 +219,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get savedCompare => 'Confronta';
 
   @override
-  String get savedRecent => 'Recenti';
+  String get savedRecent => 'Visti di recente';
 
   @override
   String get savedCompareLimit => 'Il confronto supporta fino a 3 offerte.';
@@ -291,7 +294,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get profileInterestsSubtitle =>
-      'Adatta i suggerimenti futuri alle categorie che ti interessano.';
+      'Tocca gli argomenti che ti interessano. Li mostriamo prima.';
 
   @override
   String get profileSecurityTitle => 'Sicurezza';
@@ -355,7 +358,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authOptionalDescription =>
-      'L\'accesso è facoltativo. La modalità ospite funziona senza account.';
+      'L\'accesso è facoltativo: esplora come ospite o crea un account quando vuoi.';
 
   @override
   String get authSignUp => 'Registrati';
@@ -477,11 +480,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get exploreApply => 'Applica';
 
   @override
-  String get exploreMarketIntelligenceTitle => 'Analisi di mercato';
+  String get exploreMarketIntelligenceTitle => 'Mercato oggi';
 
   @override
   String get exploreMarketIntelligenceSubtitle =>
-      'Segui il contesto di mercato live prima di passare ai prodotti di investimento.';
+      'Guarda come si muove il mercato prima di investire.';
 
   @override
   String get offerDecisionReviewed => 'Verificata';
@@ -711,12 +714,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get marketAssetPriceFutures => 'Prezzo futures';
 
   @override
-  String get splashTagline => 'Gestisci il denaro con più chiarezza';
+  String get splashTagline => 'Ogni opzione di denaro, in un unico posto';
 
   @override
   String get routerError => 'Impossibile aprire questa schermata.';
 
   @override
   String get catalogSyncError =>
-      'Non è stato possibile sincronizzare gli ultimi dati del marketplace. Sono mostrate le offerte salvate.';
+      'Non è stato possibile sincronizzare le ultime offerte. Sono mostrate le offerte salvate.';
 }

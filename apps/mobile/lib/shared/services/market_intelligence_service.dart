@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 import 'package:payn_mobile/shared/models/analytics_models.dart';
 
 class MarketIntelligenceService {
@@ -427,15 +428,22 @@ class MarketIntelligenceService {
     }
   }
 
+  // TASK-313 (PR-V3-07). Locale-aware thousands separators. Was raw
+  // `$75605` — looked like a typo, not a price. The intl package is
+  // already a transitive dep of flutter_localizations so this is free.
+  // We don't pass a locale here; the default uses the platform locale,
+  // which matches the user's app language because the same intl is
+  // configured by flutter_localizations on startup.
   String _formatValue(MarketAsset asset, double value) {
     switch (asset) {
       case MarketAsset.btc:
       case MarketAsset.gold:
-        return '\$${value.toStringAsFixed(0)}';
+        return '\$${NumberFormat.decimalPattern().format(value.round())}';
       case MarketAsset.sp500:
-        return value.toStringAsFixed(0);
+        return NumberFormat.decimalPattern().format(value.round());
       case MarketAsset.eurUsd:
-        return value.toStringAsFixed(4);
+        // Keep 4 decimals — FX pairs read as `1.0827`, not `1`.
+        return NumberFormat('#,##0.0000').format(value);
     }
   }
 

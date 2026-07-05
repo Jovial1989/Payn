@@ -120,7 +120,7 @@ const copy: Record<MarketplaceLocale, DashboardDecisionCopy> = {
     transferToolTitle: "See what your recipient gets",
     exchangeToolTitle: "See who gives the strongest exchange outcome",
     calculatorDescription:
-      "Enter an amount and compare providers by delivered value, fee level, and speed.",
+      "Enter an amount and see who delivers most, fastest, with the lowest fee.",
     amountLabel: "Amount",
     fromLabel: "From",
     toLabel: "To",

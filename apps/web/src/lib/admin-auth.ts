@@ -4,7 +4,11 @@ export const SESSION_COOKIE = "payn-admin-session";
 const SESSION_MAX_AGE = 28800; // 8 hours
 
 function getSecret(): string {
-  return process.env.ADMIN_SESSION_SECRET ?? "dev-secret-change-me";
+  const s = process.env.ADMIN_SESSION_SECRET;
+  // SEC-FIX AUTH-005: fail hard at startup rather than silently falling back
+  // to a publicly-known string that allows offline session forgery.
+  if (!s) throw new Error("ADMIN_SESSION_SECRET env var must be set");
+  return s;
 }
 
 async function hmacHex(message: string): Promise<string> {

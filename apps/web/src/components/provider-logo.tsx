@@ -4,6 +4,26 @@ import clsx from "clsx";
 import { useState } from "react";
 import { getProviderBrand } from "@/lib/provider-brands";
 
+// P1.1b — For the ~90 providers without a curated SVG in /public/logos/,
+// fall back to Google's favicon proxy keyed on the provider's
+// websiteUrl. `sz=128` requests the largest available favicon (Google
+// upscales from whatever the origin serves). When even Google can't
+// return a meaningful icon (e.g. the domain has no <link rel="icon">),
+// the `onError` handler swaps to the monogram avatar — same code path
+// that used to fire for every logo-less provider. End result: the
+// ranked-cards grid now shows real brand marks across nearly every
+// row instead of a wall of two-letter initials.
+function deriveFaviconUrl(websiteUrl?: string): string | null {
+  if (!websiteUrl) return null;
+  try {
+    const { hostname } = new URL(websiteUrl);
+    if (!hostname) return null;
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=128`;
+  } catch {
+    return null;
+  }
+}
+
 const sizeConfig = {
   sm: {
     frame: "h-10 w-10 rounded-[12px]",
@@ -69,7 +89,7 @@ function getMonogramTextColor(bg: string, text: string) {
 
 export function ProviderLogo({
   providerName,
-  websiteUrl: _websiteUrl,
+  websiteUrl: websiteUrlOverride,
   size = "md",
   muted = true,
   className,
@@ -83,7 +103,21 @@ export function ProviderLogo({
   const brand = getProviderBrand(providerName);
   const [broken, setBroken] = useState(false);
   const fallbackMark = brand.mark || getProviderInitials(providerName);
-  const useFallback = broken || !brand.logoPath;
+  // P1.1b — Three-tier logo resolution:
+  //   1. Curated SVG in /public/logos/ (hand-picked, best quality)
+  //   2. Google favicon proxy keyed on the provider's websiteUrl
+  //      (covers the long tail without manual asset work)
+  //   3. Colored monogram with provider initials (final fallback when
+  //      both above sources fail at runtime)
+  const faviconUrl = brand.logoPath
+    ? null
+    : deriveFaviconUrl(websiteUrlOverride ?? brand.websiteUrl);
+  const remoteLogo = brand.logoPath ?? faviconUrl;
+  const useFallback = broken || !remoteLogo;
+  // Favicons are less polished than curated SVGs — fixed background,
+  // pixel-perfect at 16/32/48px. Drop the extra image padding for
+  // favicons so the brand mark fills the available space.
+  const isFavicon = !brand.logoPath && Boolean(faviconUrl);
   const accentColor = brand.bg;
   const monogramTextColor = getMonogramTextColor(brand.bg, brand.text);
   const monogramBackground = hexToRgba(accentColor, 0.12);
@@ -112,25 +146,36 @@ export function ProviderLogo({
         <span
           className={clsx(
             "relative z-[1] flex h-full w-full items-center justify-center",
-            config.imagePad,
+            // Favicons are tighter — use less padding so the small
+            // square logo fills the stage; curated SVGs keep the
+            // generous padding they were art-directed against.
+            isFavicon ? "p-1.5" : config.imagePad,
           )}
         >
           <img
-            src={brand.logoPath}
+            src={remoteLogo!}
             alt={`${providerName} logo`}
             loading="lazy"
             decoding="async"
+            referrerPolicy={isFavicon ? "no-referrer" : undefined}
             onError={() => setBroken(true)}
             className={clsx(
               "h-auto w-auto object-contain transition-transform duration-200 group-hover/provider:scale-[1.04]",
-              config.imageBounds,
+              // Favicons render at their native 16/32/48/128 sizes — let
+              // them grow to fill the inner stage rather than respecting
+              // the curated SVG bounds.
+              isFavicon ? "h-full w-full" : config.imageBounds,
               muted ? "opacity-[0.96]" : "opacity-100",
               brand.logoImageClassName,
             )}
-            style={{
-              transform: `translateY(${brand.logoTranslateY ?? 0}px) scale(${brand.logoScale ?? 1})`,
-              transformOrigin: "center",
-            }}
+            style={
+              isFavicon
+                ? undefined
+                : {
+                    transform: `translateY(${brand.logoTranslateY ?? 0}px) scale(${brand.logoScale ?? 1})`,
+                    transformOrigin: "center",
+                  }
+            }
           />
         </span>
       ) : (

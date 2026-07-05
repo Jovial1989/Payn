@@ -5,7 +5,7 @@ import { sendPush } from "@/lib/push/send-push";
 
 // GET — list campaigns
 export async function GET(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
 // POST — create and optionally send/schedule a campaign
 export async function POST(request: Request) {
-  const denied = checkAdminToken(request);
+  const denied = await checkAdminToken(request);
   if (denied) return denied;
 
   const admin = createSupabaseAdminClient();
@@ -36,10 +36,16 @@ export async function POST(request: Request) {
     audience_last_active_days?: number;
     send_mode?: "draft" | "now" | "scheduled";
     scheduled_at?: string;
+    // PR-INT-01 — Optional in-app route the push should open. Forwarded
+    // to mobile as `route` in the FCM data payload. Sanitised to a
+    // leading `/` because go_router on the device only resolves
+    // absolute paths. Empty string treated the same as null.
+    deep_link?: string;
   };
 
   const { title, body: msgBody, audience_countries = [], audience_languages = [],
     audience_last_active_days, send_mode = "draft", scheduled_at } = body;
+  const deepLink = sanitiseDeepLink(body.deep_link);
 
   if (!title || !msgBody) {
     return NextResponse.json({ error: "title and body are required" }, { status: 400 });
@@ -57,6 +63,7 @@ export async function POST(request: Request) {
       audience_last_active_days: audience_last_active_days ?? null,
       status,
       scheduled_at: scheduled_at ?? null,
+      deep_link: deepLink,
     })
     .select()
     .single();
@@ -68,10 +75,25 @@ export async function POST(request: Request) {
   if (send_mode === "now") {
     await dispatchCampaign(admin, campaign.id, title, msgBody, {
       audience_countries, audience_languages, audience_last_active_days,
+      deep_link: deepLink,
     });
   }
 
   return NextResponse.json(campaign, { status: 201 });
+}
+
+// PR-INT-01 — Normalise admin-supplied deep links.
+//   • trim whitespace
+//   • require a leading slash (otherwise go_router won't navigate)
+//   • return null for empty input so DB stores a real NULL
+// Anything more elaborate (allow-list, regex against known routes) can
+// land in a follow-up; this layer just protects against typos that
+// would obviously fail on the device.
+export function sanitiseDeepLink(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
 
 export async function dispatchCampaign(
@@ -79,7 +101,14 @@ export async function dispatchCampaign(
   campaignId: string,
   title: string,
   body: string,
-  audience: { audience_countries: string[]; audience_languages: string[]; audience_last_active_days?: number },
+  audience: {
+    audience_countries: string[];
+    audience_languages: string[];
+    audience_last_active_days?: number;
+    // PR-INT-01 — Threaded into FCM `data.route` so the mobile app
+    // can resolve the tap target. Optional.
+    deep_link?: string | null;
+  },
 ) {
   let query = admin
     .from("device_tokens")
@@ -108,10 +137,17 @@ export async function dispatchCampaign(
   let invalidCount = 0;
   const batchSize = 500;
 
+  // PR-INT-01 — Build the FCM `data` payload once per campaign. The
+  // mobile PushService reads `data.route` on tap and feeds it to
+  // go_router. We only include the key when the admin actually set a
+  // deep link — otherwise FCM rejects empty-string values on iOS.
+  const payloadData: Record<string, string> | undefined =
+    audience.deep_link ? { route: audience.deep_link } : undefined;
+
   // TODO: migrate to job queue when audience regularly exceeds 10k tokens
   for (let i = 0; i < tokens.length; i += batchSize) {
     const batch = tokens.slice(i, i + batchSize);
-    const result = await sendPush(batch, { title, body });
+    const result = await sendPush(batch, { title, body, data: payloadData });
     delivered += result.successCount;
     failed += result.failureCount;
 
