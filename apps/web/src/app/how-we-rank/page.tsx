@@ -110,8 +110,10 @@ export default async function HowWeRankPage() {
           <h2 className="mt-3 text-h2 text-ink">Where the data comes from</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-secondary">
             Provider metrics are sourced from official pricing pages, provider APIs, and periodic
-            manual reviews. We update catalogue data at minimum monthly. If you spot an error or
-            outdated figure, please contact us — we will investigate and correct it within 48 hours.
+            manual reviews. Live rates (transfers and FX) refresh daily; catalogue terms — fees and
+            features — are verified at least monthly, and every offer shows its own last-checked
+            date. If you spot an error or outdated figure, please contact us — we will investigate
+            and correct it within 48 hours.
           </p>
         </section>
       </div>

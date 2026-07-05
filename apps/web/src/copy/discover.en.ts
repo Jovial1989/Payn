@@ -39,10 +39,12 @@ export const discoverCopy = {
       // "countries", not a marketing "30" — the picker offers 7 named
       // markets (DE/ES/IT/FR/UK/NL/PT) + an all-Europe scope.
       markets: "countries",
-      // CAT.11 — honest framing: the catalogue is reviewed monthly and
-      // each offer carries its own last-updated date. Never claim "daily".
-      refresh: "Updated monthly",
-      refreshSub: "Every offer shows its last-checked date",
+      // P1.3 — one honest, tiered freshness promise, matched on /how-we-rank
+      // and every offer page: live FX rates refresh daily; catalogue terms
+      // (fees, features) are verified at least monthly; each offer shows its
+      // own last-checked date.
+      refresh: "Rate refresh",
+      refreshSub: "Catalogue terms verified monthly; each offer shows its date",
     },
   },
 

@@ -252,7 +252,7 @@ export function DiscoverHero({
             />
             <StatTile
               kicker={t.hero.stats.refresh}
-              staticValue="24h"
+              staticValue="Daily"
               caption={t.hero.stats.refreshSub}
               delay={360}
               live

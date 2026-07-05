@@ -310,7 +310,7 @@ function EditorialBody({
           month: "short",
           year: "numeric",
         })}
-        . We re-check provider terms every 24h.
+        . We re-check provider terms at least monthly; live rates update daily.
       </p>
     </div>
   );
